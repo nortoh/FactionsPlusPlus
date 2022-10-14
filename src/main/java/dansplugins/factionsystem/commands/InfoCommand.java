@@ -13,10 +13,12 @@ import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.utils.TabCompleteTools;
 import dansplugins.factionsystem.utils.extended.Messenger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,7 +30,7 @@ public class InfoCommand extends SubCommand {
     public InfoCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Messenger messenger, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "info", LOCALE_PREFIX + "CmdInfo"
-        }, false, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, false, new String[] {"mf.info"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
         this.messenger = messenger;
     }
 
@@ -53,30 +55,50 @@ public class InfoCommand extends SubCommand {
      */
     @Override
     public void execute(CommandSender sender, String[] args, String key) {
-        final String permission = "mf.info";
-        if (!(checkPermissions(sender, permission))) return;
         final Faction target;
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                playerService.sendMessage(sender, getText("OnlyPlayersCanUseCommand")
-                        , "OnlyPlayersCanUseCommand", false);
+                this.playerService.sendMessage(
+                    sender,
+                    this.getText("OnlyPlayersCanUseCommand"),
+                    "OnlyPlayersCanUseCommand",
+                    false
+                );
                 return;
             }
-            target = getPlayerFaction(sender);
+            target = this.getPlayerFaction(sender);
             if (target == null) {
-                playerService.sendMessage(sender, "&c" + getText("AlertMustBeInFactionToUseCommand")
-                        , "AlertMustBeInFactionToUseCommand", false);
+                this.playerService.sendMessage(
+                    sender,
+                    "&c" + this.getText("AlertMustBeInFactionToUseCommand"),
+                    "AlertMustBeInFactionToUseCommand",
+                    false
+                );
                 return;
             }
         } else {
             target = getFaction(String.join(" ", args));
             if (target == null) {
-                playerService.sendMessage(sender, "&c" + getText("FactionNotFound")
-                        , Objects.requireNonNull(messageService.getLanguage().getString("FactionNotFound"))
-                                .replace("#faction#", String.join(" ", args)), true);
+                this.playerService.sendMessage(
+                    sender,
+                    "&c" + this.getText("FactionNotFound"),
+                    Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
+                    true
+                );
                 return;
             }
         }
-        messenger.sendFactionInfo(sender, target, target.getClaimedChunks().size());
+        this.messenger.sendFactionInfo(sender, target, target.getClaimedChunks().size());
+    }
+
+    /**
+     * Method to handle tab completion.
+     * 
+     * @param sender who sent the command.
+     * @param args   of the command.
+     */
+    @Override
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

@@ -73,10 +73,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
         handleIntegrations();
         makeSureEveryPlayerExperiencesPowerDecay();
 
-        getCommand("mf").setTabCompleter(new TabCompleterBase(persistentData, configService));
-        getCommand("f").setTabCompleter(new TabCompleterBase(persistentData, configService));
-        getCommand("medievalfactions").setTabCompleter(new TabCompleterBase(persistentData, configService));
-        getCommand("factions").setTabCompleter(new TabCompleterBase(persistentData, configService));
+        getCommand("mf").setTabCompleter(commandService);
     }
 
     /**
@@ -220,8 +217,10 @@ public class MedievalFactions extends PonderBukkitPlugin {
     }
 
     private void handlebStatsIntegration() {
-        int pluginId = 8929;
-        new Metrics(this, pluginId);
+        if (Bukkit.getPluginManager().getPlugin("bStats") != null) {
+            int pluginId = 8929;
+            new Metrics(this, pluginId);
+        }
     }
 
     private void handleDynmapIntegration() {
