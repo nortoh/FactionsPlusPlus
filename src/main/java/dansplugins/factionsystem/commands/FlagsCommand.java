@@ -4,12 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -22,10 +21,19 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class FlagsCommand extends SubCommand {
 
-    public FlagsCommand() {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
+
+    @Inject
+    public FlagsCommand(PlayerService playerService, MessageService messageService, LocaleService localeService) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
         this
             .setNames("flags", LOCALE_PREFIX + "CmdFlags")
             .requiresPermissions("mf.flags")
@@ -44,7 +52,7 @@ public class FlagsCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.getText("ValidSubCommandsShowSet"), "ValidSubCommandsShowSet", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("ValidSubCommandsShowSet"), "ValidSubCommandsShowSet", false);
             return;
         }
 
@@ -52,13 +60,13 @@ public class FlagsCommand extends SubCommand {
 
         final boolean show = this.safeEquals(args[0], "get", "show", 
             this.playerService.decideWhichMessageToUse(
-                this.getText("CmdFlagsShow"), 
+                this.localeService.getText("CmdFlagsShow"), 
                 this.messageService.getLanguage().getString("Alias.CmdFlagsShow")
             )
         );
         final boolean set = this.safeEquals(args[0], "set", 
             this.playerService.decideWhichMessageToUse(
-                this.getText("CmdFlagsSet"), 
+                this.localeService.getText("CmdFlagsSet"), 
                 this.messageService.getLanguage().getString("Alias.CmdFlagsSet")
             )
         );
@@ -66,7 +74,7 @@ public class FlagsCommand extends SubCommand {
             playersFaction.getFlags().sendFlagList(player);
         } else if (set) {
             if (args.length < 3) {
-                this.playerService.sendMessage(player, "&c" + this.getText("UsageFlagsSet"), "UsageFlagsSet", false);
+                this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageFlagsSet"), "UsageFlagsSet", false);
             } else {
                 final StringBuilder builder = new StringBuilder(); // Send the flag_argument as one String
                 for (int i = 2; i < args.length; i++) builder.append(args[i]).append(" ");
@@ -74,7 +82,7 @@ public class FlagsCommand extends SubCommand {
 
             }
         } else {
-            this.playerService.sendMessage(player, "&c" + this.getText("ValidSubCommandsShowSet"), "ValidSubCommandsShowSet", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("ValidSubCommandsShowSet"), "ValidSubCommandsShowSet", false);
 
         }
     }

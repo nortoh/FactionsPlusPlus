@@ -8,12 +8,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -31,15 +27,21 @@ import java.util.Objects;
  */
 @Singleton
 public class JoinCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
     private final Logger logger;
 
     @Inject
-    public JoinCommand(final Logger logger) {
+    public JoinCommand(PlayerService playerService, MessageService messageService, LocaleService localeService, Logger logger) {
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
+        this.logger = logger;
         this
             .setNames("join", LOCALE_PREFIX + "CmdJoin")
             .requiresPermissions("mf.join")
             .isPlayerCommand();
-        this.logger = logger;
     }
 
     /**
@@ -54,7 +56,7 @@ public class JoinCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageJoin"),
+                "&c" + this.localeService.getText("UsageJoin"),
                 "UsageJoin",
                 false
             );
@@ -63,7 +65,7 @@ public class JoinCommand extends SubCommand {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertAlreadyInFaction"),
+                "&c" + this.localeService.getText("AlertAlreadyInFaction"),
                 "AlertAlreadyInFaction",
                 false
             );
@@ -73,7 +75,7 @@ public class JoinCommand extends SubCommand {
         if (target == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -96,14 +98,14 @@ public class JoinCommand extends SubCommand {
         }
         this.messageFaction(
             target,
-            "&a" + this.getText("HasJoined", player.getName(), target.getName()),
+            "&a" + this.localeService.getText("HasJoined", player.getName(), target.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasJoined"))
                 .replace("#name#", player.getName())
                 .replace("#faction#", target.getName())
         );
         target.addMember(player.getUniqueId());
         target.uninvite(player.getUniqueId());
-        player.sendMessage(this.translate("&a" + this.getText("AlertJoinedFaction")));
+        player.sendMessage(this.translate("&a" + this.localeService.getText("AlertJoinedFaction")));
     }
 
     /**

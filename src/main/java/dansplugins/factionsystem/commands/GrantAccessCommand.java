@@ -4,11 +4,10 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -24,10 +23,19 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class GrantAccessCommand extends SubCommand {
 
-    public GrantAccessCommand() {
+    private final LocaleService localeService;
+    private final MessageService messageService;
+    private final PlayerService playerService;
+
+    @Inject
+    public GrantAccessCommand(LocaleService localeService, MessageService messageService, PlayerService playerService) {
         super();
+        this.localeService = localeService;
+        this.messageService = messageService;
+        this.playerService = playerService;
         this
             .setNames("grantaccess", "ga", LOCALE_PREFIX + "CmdGrantAccess")
             .isPlayerCommand();
@@ -45,7 +53,7 @@ public class GrantAccessCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageGrantAccess"),
+                "&c" + this.localeService.getText("UsageGrantAccess"),
                 "UsageGrantAccess",
                 false
             );
@@ -54,7 +62,7 @@ public class GrantAccessCommand extends SubCommand {
         if (args[0].equalsIgnoreCase("cancel")) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CommandCancelled"),
+                "&c" + this.localeService.getText("CommandCancelled"),
                 "CommandCancelled",
                 false
             );
@@ -63,7 +71,7 @@ public class GrantAccessCommand extends SubCommand {
         if (this.ephemeralData.getPlayersGrantingAccess().containsKey(player.getUniqueId())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertAlreadyGrantingAccess"),
+                "&c" + this.localeService.getText("AlertAlreadyGrantingAccess"),
                 "AlertAlreadyGrantingAccess",
                 false
             );
@@ -74,7 +82,7 @@ public class GrantAccessCommand extends SubCommand {
         if (targetUUID == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("PlayerNotFound"),
+                "&c" + this.localeService.getText("PlayerNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                 true
             );
@@ -83,7 +91,7 @@ public class GrantAccessCommand extends SubCommand {
         if (targetUUID == player.getUniqueId()) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotGrantAccessToSelf"),
+                "&c" + this.localeService.getText("CannotGrantAccessToSelf"),
                 "CannotGrantAccessToSelf",
                 false
             );
@@ -92,7 +100,7 @@ public class GrantAccessCommand extends SubCommand {
         this.ephemeralData.getPlayersGrantingAccess().put(player.getUniqueId(), targetUUID);
         this.playerService.sendMessage(
             player,
-            "&a" + this.getText("RightClickGrantAccess", args[0]),
+            "&a" + this.localeService.getText("RightClickGrantAccess", args[0]),
             Objects.requireNonNull(this.messageService.getLanguage().getString("RightClickGrantAccess")).replace("#name#", args[0]),
             true
         );

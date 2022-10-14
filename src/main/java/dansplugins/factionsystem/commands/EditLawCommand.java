@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -28,13 +29,15 @@ public class EditLawCommand extends SubCommand {
     private final PlayerService playerService;
     private final MessageService messageService;
     private final PersistentData persistentData;
+    private final LocaleService localeService;
 
     @Inject
-    public EditLawCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData) {
+    public EditLawCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, PersistentData persistentData) {
         super();
         this.playerService = playerService;
         this.messageService = messageService;
         this.persistentData = persistentData;
+        this.localeService = localeService;
         this
             .setNames("editlaw", "el", LOCALE_PREFIX + "CmdEditLaw")
             .requiresPermissions("mf.editlaw")

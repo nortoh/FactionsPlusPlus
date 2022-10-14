@@ -4,14 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,12 +21,17 @@ import java.util.stream.IntStream;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class HelpCommand extends SubCommand {
     private static final int LAST_PAGE = 7;
     private final HashMap<Integer, List<String>> helpPages = new HashMap<>();
 
-    public HelpCommand() {
+    private final LocaleService localeService;
+
+    @Inject
+    public HelpCommand(LocaleService localeService) {
         super();
+        this.localeService = localeService;
         this
             .setNames("help", LOCALE_PREFIX + "CmdHelp")
             .requiresPermissions("mf.help");
@@ -71,8 +73,8 @@ public class HelpCommand extends SubCommand {
         if (page <= 0) {
             page = 1; // Lower Limit to 0
         }
-        sender.sendMessage(this.translate("&b&l" + this.getText("CommandsPage" + page, LAST_PAGE)));
-        this.helpPages.get(page).forEach(line -> sender.sendMessage(this.translate("&b" + this.getText("Help" + line))));
+        sender.sendMessage(this.translate("&b&l" + this.localeService.getText("CommandsPage" + page, LAST_PAGE)));
+        this.helpPages.get(page).forEach(line -> sender.sendMessage(this.translate("&b" + this.localeService.getText("Help" + line))));
     }
 
     /**

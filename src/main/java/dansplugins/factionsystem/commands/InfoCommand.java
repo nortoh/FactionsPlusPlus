@@ -8,11 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -29,14 +25,20 @@ import java.util.Objects;
  */
 @Singleton
 public class InfoCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
     private final Messenger messenger;
 
     @Inject
-    public InfoCommand(final Messenger messenger) {
+    public InfoCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, Messenger messenger) {
         super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.messageService = messageService;
+        this.messenger = messenger;
         this
             .setNames("info", LOCALE_PREFIX + "CmdInfo");
-        this.messenger = messenger;
     }
 
     /**
@@ -65,7 +67,7 @@ public class InfoCommand extends SubCommand {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
                     sender,
-                    this.getText("OnlyPlayersCanUseCommand"),
+                    this.localeService.getText("OnlyPlayersCanUseCommand"),
                     "OnlyPlayersCanUseCommand",
                     false
                 );
@@ -75,7 +77,7 @@ public class InfoCommand extends SubCommand {
             if (target == null) {
                 this.playerService.sendMessage(
                     sender,
-                    "&c" + this.getText("AlertMustBeInFactionToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand"),
                     "AlertMustBeInFactionToUseCommand",
                     false
                 );
@@ -86,7 +88,7 @@ public class InfoCommand extends SubCommand {
             if (target == null) {
                 this.playerService.sendMessage(
                     sender,
-                    "&c" + this.getText("FactionNotFound"),
+                    "&c" + this.localeService.getText("FactionNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                     true
                 );

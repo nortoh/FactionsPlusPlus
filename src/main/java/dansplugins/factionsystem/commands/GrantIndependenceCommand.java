@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -23,10 +26,21 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class GrantIndependenceCommand extends SubCommand {
 
-    public GrantIndependenceCommand() {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
+    private final PersistentData persistentData;
+
+    @Inject
+    public GrantIndependenceCommand(PlayerService playerService, MessageService messageService, LocaleService localeService, PersistentData persistentData) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
+        this.persistentData = persistentData;
         this
             .setNames("grantindependence", "gi", LOCALE_PREFIX + "CmdGrantIndependence")
             .requiresPermissions("mf.grantindependence")
@@ -46,22 +60,22 @@ public class GrantIndependenceCommand extends SubCommand {
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
             player.sendMessage(
-                this.translate("&c" + this.getText("UsageGrantIndependence"))
+                this.translate("&c" + this.localeService.getText("UsageGrantIndependence"))
             );
             return;
         }
-        final Faction target = this.getFaction(String.join(" ", args));
+        final Faction target = this.persistentData.getFaction(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
             return;
         }
         if (!target.isLiege(this.faction.getName())) {
-            player.sendMessage(this.translate("&c" + this.getText("FactionIsNotVassal")));
+            player.sendMessage(this.translate("&c" + this.localeService.getText("FactionIsNotVassal")));
             return;
         }
         target.setLiege("none");
@@ -69,14 +83,14 @@ public class GrantIndependenceCommand extends SubCommand {
         // inform all players in that faction that they are now independent
         this.messageFaction(
             target,
-            this.translate("&a" + this.getText("AlertGrantedIndependence", this.faction.getName())),
+            this.translate("&a" + this.localeService.getText("AlertGrantedIndependence", this.faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertGrantedIndependence"))
                 .replace("#name#", faction.getName())
         );
         // inform all players in players faction that a vassal was granted independence
         this.messageFaction(
             this.faction,
-            this.translate("&a" + this.getText("AlertNoLongerVassalFaction", target.getName())),
+            this.translate("&a" + this.localeService.getText("AlertNoLongerVassalFaction", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNoLongerVassalFaction"))
                 .replace("#name#", target.getName())
         );
