@@ -114,7 +114,7 @@ public class DynmapIntegrator {
             return;
         }
 
-        if (this.hasDynmap()) {
+        if (DynmapIntegrator.hasDynmap()) {
             updateClaimsAreaMarkers = true;
         }
     }
