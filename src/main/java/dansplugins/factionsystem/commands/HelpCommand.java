@@ -82,7 +82,7 @@ public class HelpCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         return TabCompleteTools.filterStartingWith(args[0], IntStream.range(1, this.helpPages.size()).mapToObj(String::valueOf));
     }
 }

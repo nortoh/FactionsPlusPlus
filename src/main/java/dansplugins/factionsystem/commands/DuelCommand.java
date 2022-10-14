@@ -183,7 +183,7 @@ public class DuelCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (args.length === 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "challenge", "accept", "cancel");
         } else if (args.length === 2) {

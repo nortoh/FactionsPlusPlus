@@ -91,7 +91,7 @@ public class WhoCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         return TabCompleteTools.allOnlinePlayersMatching(args[0]);
     }
 }

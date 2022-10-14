@@ -14,6 +14,7 @@ import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
+import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -143,7 +144,7 @@ public class KickCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         final List<String> membersInFaction = new ArrayList<>();
         if (this.persistentData.isInFaction(sender.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());

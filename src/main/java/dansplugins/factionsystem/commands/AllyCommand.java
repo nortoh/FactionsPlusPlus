@@ -141,7 +141,7 @@ public class AllyCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(sender.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());

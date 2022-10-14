@@ -106,7 +106,7 @@ public class ConfigCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
         } else if (args.length == 2) {

@@ -228,7 +228,7 @@ public class GateCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "cancel", "create", "list", "remove", "name");
         } 

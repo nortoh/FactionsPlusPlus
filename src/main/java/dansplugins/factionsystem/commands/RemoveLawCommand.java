@@ -84,7 +84,7 @@ public class RemoveLawCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (this.persistentData.isInFaction(sender.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
             if (playerFaction.getNumLaws() != 0) {

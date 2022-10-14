@@ -125,7 +125,7 @@ public class UnclaimallCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (! this.checkPermissions(sender)) return null;
         return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }

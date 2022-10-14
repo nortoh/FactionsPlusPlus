@@ -13,6 +13,7 @@ import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -91,7 +92,7 @@ public class FlagsCommand extends SubCommand {
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(Sender sender, String[] args) {
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "set", "show");
         } else if (args.length == 2) {
