@@ -67,7 +67,7 @@ public class WhoCommand extends SubCommand {
             );
             return;
         }
-        final Faction temp = this.getPlayerFaction(targetUUID);
+        final Faction temp = this.playerService.getPlayerFaction(targetUUID);
         if (temp == null) {
             this.playerService.sendMessage(player, "&c" + this.getText("PlayerIsNotInAFaction")
                     , "PlayerIsNotInAFaction", false);

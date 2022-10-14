@@ -66,7 +66,7 @@ public class MembersCommand extends SubCommand {
                 );
                 return;
             }
-            faction = getPlayerFaction(sender);
+            faction = this.playerService.getPlayerFaction(sender);
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender, 

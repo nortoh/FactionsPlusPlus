@@ -64,14 +64,14 @@ public class CommandService implements TabCompleter {
                 this.medievalFactions.getInjector().getInstance(BreakAllianceCommand.class),
                 this.medievalFactions.getInjector().getInstance(BypassCommand.class),
                 this.medievalFactions.getInjector().getInstance(ChatCommand.class),
-                this.medievalFactions.getInjector().getInstance(CheckAccessCommand.class)
-                /*this.medievalFactions.getInjector().getInstance(ClaimCommand.class),
+                this.medievalFactions.getInjector().getInstance(CheckAccessCommand.class),
+                this.medievalFactions.getInjector().getInstance(ClaimCommand.class),
                 this.medievalFactions.getInjector().getInstance(ConfigCommand.class),
                 this.medievalFactions.getInjector().getInstance(CreateCommand.class),
                 this.medievalFactions.getInjector().getInstance(DeclareIndependenceCommand.class),
                 this.medievalFactions.getInjector().getInstance(DeclareWarCommand.class),
-                this.medievalFactions.getInjector().getInstance(DemoteCommand.class),
-                this.medievalFactions.getInjector().getInstance(DescCommand.class),
+                this.medievalFactions.getInjector().getInstance(DemoteCommand.class)
+                /*this.medievalFactions.getInjector().getInstance(DescCommand.class),
                 this.medievalFactions.getInjector().getInstance(DisbandCommand.class),
                 this.medievalFactions.getInjector().getInstance(DuelCommand.class),
                 this.medievalFactions.getInjector().getInstance(EditLawCommand.class),

@@ -18,7 +18,7 @@ import org.bukkit.entity.Player;
 @Singleton
 public class AutoClaimCommand extends SubCommand {
 
-    private final PlayerSerivce playerService;
+    private final PlayerService playerService;
 
     /**
      * Constructor to initialise a Command.

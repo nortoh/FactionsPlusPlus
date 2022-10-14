@@ -45,7 +45,7 @@ public class LawsCommand extends SubCommand {
     public void execute(Player player, String[] args, String key) {
         final Faction target;
         if (args.length == 0) {
-            target = this.getPlayerFaction(player);
+            target = this.playerService.getPlayerFaction(player);
             if (target == null) {
                 this.playerService.sendMessage(
                     player,

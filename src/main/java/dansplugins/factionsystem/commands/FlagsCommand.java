@@ -48,7 +48,7 @@ public class FlagsCommand extends SubCommand {
             return;
         }
 
-        final Faction playersFaction = this.getPlayerFaction(player);
+        final Faction playersFaction = this.playerService.getPlayerFaction(player);
 
         final boolean show = this.safeEquals(args[0], "get", "show", 
             this.playerService.decideWhichMessageToUse(

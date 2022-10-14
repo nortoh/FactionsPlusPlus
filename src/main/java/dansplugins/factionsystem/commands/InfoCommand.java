@@ -71,7 +71,7 @@ public class InfoCommand extends SubCommand {
                 );
                 return;
             }
-            target = this.getPlayerFaction(sender);
+            target = this.playerService.getPlayerFaction(sender);
             if (target == null) {
                 this.playerService.sendMessage(
                     sender,

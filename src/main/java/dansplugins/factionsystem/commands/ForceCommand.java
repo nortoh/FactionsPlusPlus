@@ -174,7 +174,7 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(translate("&c" + getText("PlayerNotFound")));
             return;
         }
-        final Faction faction = getPlayerFaction(player);
+        final Faction faction = this.playerService.getPlayerFaction(player);
         if (!faction.isOfficer(player.getUniqueId())) {
             sender.sendMessage(translate("&c" + getText("PlayerIsNotOfficerOfFaction")));
             return;
@@ -252,7 +252,7 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(translate("&c" + getText("PlayerNotFound")));
             return;
         }
-        final Faction faction = getPlayerFaction(target);
+        final Faction faction = this.playerService.getPlayerFaction(target);
         if (faction == null) {
             sender.sendMessage(translate("&c" + getText("FactionNotFound")));
             return;

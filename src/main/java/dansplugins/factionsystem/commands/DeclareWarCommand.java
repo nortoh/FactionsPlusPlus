@@ -8,14 +8,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.factories.WarFactory;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -33,18 +30,27 @@ import java.util.Objects;
  */
 @Singleton
 public class DeclareWarCommand extends SubCommand {
+
+    private final ConfigService configService;
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
     private final WarFactory warFactory;
 
     @Inject
-    public DeclareWarCommand(WarFactory warFactory) {
+    public DeclareWarCommand(ConfigService configService, PlayerService playerService, MessageService messageService, PersistentData persistentData, WarFactory warFactory) {
         super();
+        this.configService = configService;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.warFactory = warFactory;
         this
             .setNames("declarewar", "dw", LOCALE_PREFIX + "CmdDeclareWar")
             .requiresPermissions("mf.declarewar")
             .isPlayerCommand()
             .requiresPlayerInFaction()
             .requiresFactionOfficer();
-        this.warFactory = warFactory;
     }
 
     /**

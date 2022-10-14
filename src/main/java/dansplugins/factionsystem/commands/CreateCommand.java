@@ -31,18 +31,39 @@ import java.util.Objects;
  */
 @Singleton
 public class CreateCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final ConfigService configService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+    private final LocaleService localeService;
     private final Logger logger;
     private final MedievalFactions medievalFactions;
+    private final DynmapIntegrator dynmapIntegrator;
 
     @Inject
-    public CreateCommand(final Logger logger, final MedievalFactions medievalFactions) {
+    public CreateCommand(
+        PlayerService playerService,
+        ConfigService configService,
+        MessageService messageService,
+        PersistentData persistentData,
+        Logger logger,
+        LocaleService localeService,
+        MedievalFactions medievalFactions,
+        DynmapIntegrator dynmapIntegrator
+    ) {
         super();
+        this.playerService = playerService;
+        this.configService = configService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.logger = logger;
+        this.localeService = localeService;
+        this.medievalFactions = medievalFactions;
+        this.dynmapIntegrator = dynmapIntegrator;
         this
             .setNames("create", LOCALE_PREFIX + "CmdCreate")
             .requiresPermissions("mf.create")
             .isPlayerCommand();
-        this.logger = logger;
-        this.medievalFactions = medievalFactions;
     }
 
     /**
@@ -54,7 +75,7 @@ public class CreateCommand extends SubCommand {
      */
     @Override
     public void execute(Player player, String[] args, String key) {
-        Faction playerFaction = getPlayerFaction(player);
+        Faction playerFaction = this.playerService.getPlayerFaction(player);
         if (playerFaction != null) {
             this.playerService.sendMessage(player, "&c" + this.getText("AlreadyInFaction"),
                     "AlreadyInFaction", false);

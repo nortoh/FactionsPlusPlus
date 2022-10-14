@@ -4,14 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.Bukkit;
@@ -23,10 +22,19 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DeclareIndependenceCommand extends SubCommand {
 
-    public DeclareIndependenceCommand() {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final ConfigService configService;
+
+    @Inject
+    public DeclareIndependenceCommand(PlayerService playerService, MessageService messageService, ConfigService configService) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.configService = configService;
         this
             .setNames("declareindependence", "di", LOCALE_PREFIX + "CmdDeclareIndependence")
             .requiresPermissions("mf.declareindependence")

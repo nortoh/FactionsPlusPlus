@@ -33,6 +33,14 @@ import java.util.UUID;
  */
 public abstract class SubCommand implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
+    protected MessageService messageService;
+    protected PlayerService playerService;
+    protected LocaleService localeService;
+    protected ConfigService configService;
+    protected PersistentData persistentData;
+    protected EphemeralData ephemeralData;
+    protected PersistentData.ChunkDataAccessor chunkDataAccessor;
+    protected DynmapIntegrator dynmapIntegrator;
     private boolean playerCommand;
     private boolean requiresFaction;
     private boolean requiresOfficer;

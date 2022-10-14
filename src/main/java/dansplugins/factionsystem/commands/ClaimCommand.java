@@ -4,13 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,10 +17,19 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class ClaimCommand extends SubCommand {
 
-    public ClaimCommand() {
+    private final PlayerService playerService;
+    private final PersistentData.ChunkDataAccessor chunkDataAccessor;
+    private final DynmapIntegrator dynmapIntegrator;
+
+    @Inject
+    public ClaimCommand(PlayerService playerService, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator) {
         super();
+        this.playerService = playerService;
+        this.chunkDataAccessor = chunkDataAccessor;
+        this.dynmapIntegrator = dynmapIntegrator;
         this
             .setNames("claim", LOCALE_PREFIX + "CmdClaim")
             .isPlayerCommand()

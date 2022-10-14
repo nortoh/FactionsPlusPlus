@@ -9,13 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -28,15 +23,20 @@ import java.util.List;
  */
 @Singleton
 public class ConfigCommand extends SubCommand {
+
+    private final ConfigService configService;
+    private final MessageService messageService;
     private final MedievalFactions medievalFactions;
 
     @Inject
-    public ConfigCommand(final MedievalFactions medievalFactions) {
+    public ConfigCommand(ConfigService configService, MessageService messageService, MedievalFactions medievalFactions) {
         super();
+        this.configService = configService;
+        this.messageService = messageService;
+        this.medievalFactions = medievalFactions;
         this
             .setNames("config", LOCALE_PREFIX + "CmdConfig")
             .requiresPermissions("mf.config", "mf.admin");
-        this.medievalFactions = medievalFactions;
     }
 
     /**
@@ -119,7 +119,7 @@ public class ConfigCommand extends SubCommand {
             return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
         } else if (args.length == 2) {
             if (args[0] == "show") return TabCompleteTools.completeMultipleOptions(args[1], "1", "2");
-            if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], configService.getStringConfigOptions());
+            if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
         }
         return null;
     }

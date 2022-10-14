@@ -65,7 +65,7 @@ public class UnclaimallCommand extends SubCommand {
                 return;
             }
             if (!(this.checkPermissions(sender, "mf.unclaimall"))) return;
-            faction = this.getPlayerFaction(sender);
+            faction = this.playerService.getPlayerFaction(sender);
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender, 

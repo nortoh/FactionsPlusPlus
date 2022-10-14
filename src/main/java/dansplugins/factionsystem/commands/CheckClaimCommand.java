@@ -4,13 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,10 +18,17 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class CheckClaimCommand extends SubCommand {
 
-    public CheckClaimCommand() {
+    private final PersistentData.ChunkDataAccessor chunkDataAccessor;
+    private final PlayerService playerService;
+
+    @Inject
+    public CheckClaimCommand(PlayerService playerService, PersistentData.ChunkDataAccessor chunkDataAccessor) {
         super();
+        this.playerService = playerService;
+        this.chunkDataAccessor = chunkDataAccessor;
         this
             .setNames("checkclaim", "cc", LOCALE_PREFIX + "CmdCheckClaim")
             .requiresPermissions("mf.checkclaim")

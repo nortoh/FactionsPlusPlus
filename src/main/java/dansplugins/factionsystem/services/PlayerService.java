@@ -101,7 +101,7 @@ public class PlayerService {
      * @throws IllegalArgumentException when the object isn't compatible.
      */
     @SuppressWarnings("deprecation")
-    protected Faction getPlayerFaction(Object object) {
+    public Faction getPlayerFaction(Object object) {
         if (object instanceof OfflinePlayer) {
             return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
         } else if (object instanceof UUID) {

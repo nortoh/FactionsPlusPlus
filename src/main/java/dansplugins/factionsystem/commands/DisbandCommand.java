@@ -75,7 +75,7 @@ public class DisbandCommand extends SubCommand {
                 }
                 return;
             }
-            disband = this.getPlayerFaction(sender);
+            disband = this.playerService.getPlayerFaction(sender);
             self = true;
             if (disband.getPopulation() != 1) {
                 this.playerService.sendMessage(
@@ -88,7 +88,7 @@ public class DisbandCommand extends SubCommand {
             }
         } else {
             if (!this.checkPermissions(sender, "mf.disband.others", "mf.admin")) return;
-            disband = this.getFaction(String.join(" ", args));
+            disband = this.persistentData.getFaction(String.join(" ", args));
             self = false;
         }
         if (disband == null) {
@@ -100,7 +100,7 @@ public class DisbandCommand extends SubCommand {
             );
             return;
         }
-        final int factionIndex = persistentData.getFactionIndexOf(disband);
+        final int factionIndex = this.persistentData.getFactionIndexOf(disband);
         if (self) {
             this.playerService.sendMessage(
                 sender,
