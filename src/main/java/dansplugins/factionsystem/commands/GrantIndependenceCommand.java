@@ -17,6 +17,7 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -40,7 +41,7 @@ public class GrantIndependenceCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            this.player.sendMessage(
+            player.sendMessage(
                 this.translate("&c" + this.getText("UsageGrantIndependence"))
             );
             return;
@@ -92,14 +93,15 @@ public class GrantIndependenceCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+    public List<String> handleTabComplete(Player player, String[] args) {
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             return TabCompleteTools.filterStartingWith(args[0], playerFaction.getVassals());
         }
+        return null;
     }
 }

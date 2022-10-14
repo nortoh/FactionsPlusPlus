@@ -8,6 +8,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -19,6 +20,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -130,13 +132,12 @@ public class TransferCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         final List<String> membersInFaction = new ArrayList<>();
-        Player player = (Player)sender;
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             for (UUID uuid : playerFaction.getMemberList()) {
@@ -147,5 +148,6 @@ public class TransferCommand extends SubCommand {
             }
             return TabCompleteTools.filterStartingWith(args[0], membersInFaction);
         }
+        return null;
     }
 }

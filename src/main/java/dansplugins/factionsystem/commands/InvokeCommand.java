@@ -45,7 +45,7 @@ public class InvokeCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length < 2) {
-            this.player.sendMessage(
+            player.sendMessage(
                 this.translate("&c" + "Usage: /mf invoke \"ally\" \"enemy\"")
             );
             return;
@@ -147,18 +147,19 @@ public class InvokeCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (this.persistentData.isInFaction(sender.getUniqueId)) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+    public List<String> handleTabComplete(Player player, String[] args) {
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             if (args.length == 1) {
                 return TabCompleteTools.filterStartingWithAddQuotes(args[0], playerFaction.getAllies());
             } else if (args.length == 2) {
                 return TabCompleteTools.filterStartingWithAddQuotes(args[0], playerFaction.getEnemyFactions());
             }
         }
+        return null;
     }
 }

@@ -16,6 +16,8 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 /**
  * @author Callum Johnson
  */
@@ -70,11 +72,11 @@ public class CheckAccessCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         return TabCompleteTools.completeSingleOption(args[0], "cancel");
     }
 }

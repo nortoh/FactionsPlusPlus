@@ -8,6 +8,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -83,12 +84,11 @@ public class RemoveLawCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        Player player = (Player)sender;
+    public List<String> handleTabComplete(Player player, String[] args) {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             if (playerFaction.getNumLaws() != 0) {

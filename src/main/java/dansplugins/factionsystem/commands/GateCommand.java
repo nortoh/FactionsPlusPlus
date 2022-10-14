@@ -225,13 +225,14 @@ public class GateCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "cancel", "create", "list", "remove", "name");
-        } 
+        }
+        return null;
     }
 }

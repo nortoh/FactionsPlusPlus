@@ -17,7 +17,8 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
 
-/*public class TabCompleterBase implements TabCompleter {
+public class TabCompleterBase {
+	/*
 	private PersistentData persistentData;
 	private ConfigService configService;
 
@@ -179,5 +180,5 @@ import javax.annotation.Nullable;
 
 		return null;
 	}
+	*/
 }
-*/

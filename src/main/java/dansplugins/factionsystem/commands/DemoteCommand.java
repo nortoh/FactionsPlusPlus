@@ -8,6 +8,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -18,6 +19,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -121,14 +124,14 @@ public class DemoteCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         final List<String> officersInFaction = new ArrayList<>();
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             for (UUID uuid : playerFaction.getOfficerList()) {
                 Player officer = Bukkit.getPlayer(uuid);
                 if (officer != null) {
@@ -137,5 +140,6 @@ public class DemoteCommand extends SubCommand {
             }
             return TabCompleteTools.filterStartingWith(args[0], officersInFaction);
         }
+        return null;
     }
 }

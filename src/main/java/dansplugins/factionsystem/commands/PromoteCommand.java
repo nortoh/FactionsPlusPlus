@@ -145,14 +145,14 @@ public class PromoteCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         final List<String> membersInFaction = new ArrayList<>();
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             for (UUID uuid : playerFaction.getMemberList()) {
                 Player member = Bukkit.getPlayer(uuid);
                 if (member != null) {
@@ -163,5 +163,6 @@ public class PromoteCommand extends SubCommand {
             }
             return TabCompleteTools.filterStartingWith(args[0], membersInFaction);
         }
+        return null;
     }
 }

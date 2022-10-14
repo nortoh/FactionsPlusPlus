@@ -18,6 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 

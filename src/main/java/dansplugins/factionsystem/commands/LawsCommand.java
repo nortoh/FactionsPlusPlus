@@ -17,6 +17,7 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
@@ -109,11 +110,11 @@ public class LawsCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

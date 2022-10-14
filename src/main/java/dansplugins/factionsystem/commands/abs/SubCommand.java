@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -191,6 +192,12 @@ public abstract class SubCommand implements ColorTranslator {
      */
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         if (!this.checkPermissions(sender)) return null;
+        if (this.playerCommand) {
+            if (!(sender instanceof Player)) {
+                return this.handleTabComplete((Player)sender, args);
+            }
+            return null;
+        }
         return this.handleTabComplete(sender, args);
     }
 
@@ -198,6 +205,10 @@ public abstract class SubCommand implements ColorTranslator {
      * Child method to conduct tab completion. Classes that inherit this class should override this if they can offer tab completion.
      */
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
+        return null;
+    }
+
+    public List<String> handleTabComplete(Player player, String[] args) {
         return null;
     }
 
@@ -237,11 +248,11 @@ public abstract class SubCommand implements ColorTranslator {
      */
     public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing, String... permissions) {
         boolean hasPermission = false;
-        String[] missingPermissions = new String[]{};
+        List<String> missingPermissions = new ArrayList<String>();
         for (String perm : permissions) {
             hasPermission = sender.hasPermission(perm);
             if (hasPermission) break;
-            missingPermissions.append(perm);
+            missingPermissions.add(perm);
         }
         if (!hasPermission && announcePermissionsMissing) {
             this.playerService.sendMessage(

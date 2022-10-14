@@ -115,11 +115,11 @@ public class RevokeAccessCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         return TabCompleteTools.allOnlinePlayersMatching(args[0], true);
     }
 }

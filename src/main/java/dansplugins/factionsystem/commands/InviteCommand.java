@@ -21,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -139,11 +140,11 @@ public class InviteCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         return TabCompleteTools.allOnlinePlayersMatching(args[0]);
     }
 }

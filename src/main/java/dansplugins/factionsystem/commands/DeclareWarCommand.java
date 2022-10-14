@@ -200,12 +200,11 @@ public class DeclareWarCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        Player player = (Player)sender;
+    public List<String> handleTabComplete(Player player, String[] args) {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             final List<String> factionsAllowedtoWar = new ArrayList<>();
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());

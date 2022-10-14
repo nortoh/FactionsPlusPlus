@@ -17,6 +17,8 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 /**
  * @author Callum Johnson
  */
@@ -88,16 +90,16 @@ public class FlagsCommand extends SubCommand {
     /**
      * Method to handle tab completion.
      * 
-     * @param sender who sent the command.
+     * @param player who sent the command.
      * @param args   of the command.
      */
     @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    public List<String> handleTabComplete(Player player, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "set", "show");
         } else if (args.length == 2) {
             if (args[0] == "set") {
-                if (this.persistentData.isInFaction(sender.getUniqueId())) {
+                if (this.persistentData.isInFaction(player.getUniqueId())) {
                     Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
                     return TabCompleteTools.filterStartingWith(args[1], faction.getFlags().getFlagNamesList());
                 }

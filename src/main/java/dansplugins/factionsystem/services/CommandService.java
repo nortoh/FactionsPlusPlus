@@ -181,7 +181,6 @@ public class CommandService implements TabCompleter {
                 System.arraycopy(args, 1, arguments, 0, arguments.length);
                 return subCommand.onTabComplete(sender, arguments);
             }
-            return null;
         }
         return null;
     }
