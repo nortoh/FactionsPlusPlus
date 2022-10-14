@@ -117,7 +117,6 @@ public class CreateCommand extends SubCommand {
         }
 
         playerFaction = this.factionFactory.create(factionName, player.getUniqueId());
-        playerFaction = new Faction(factionName, player.getUniqueId(), this.configService, this.localeService, this.dynmapIntegrator, this.logger, this.persistentData, this.medievalFactions, this.playerService);
         playerFaction.addMember(player.getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, player);
         Bukkit.getPluginManager().callEvent(createEvent);

@@ -77,7 +77,6 @@ public class MedievalFactions extends PonderBukkitPlugin {
     public void onEnable() {
         this.injector = (new PluginModule(this)).createInjector();
         initializeConfig();
-        messageService.createLanguageFile();
         load();
         scheduleRecurringTasks();
         registerEventHandlers();

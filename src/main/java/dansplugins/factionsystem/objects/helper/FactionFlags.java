@@ -4,6 +4,8 @@
  */
 package dansplugins.factionsystem.objects.helper;
 
+import com.google.inject.Inject;
+
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -37,6 +39,7 @@ public class FactionFlags {
     private HashMap<String, Double> doubleValues = new HashMap<>();
     private HashMap<String, String> stringValues = new HashMap<>();
 
+    @Inject
     public FactionFlags(ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PlayerService playerService) {
         this.configService = configService;
         this.localeService = localeService;

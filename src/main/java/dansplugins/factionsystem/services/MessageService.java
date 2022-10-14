@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
+import dansplugins.factionsystem.utils.Logger;
+
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -12,44 +14,51 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 
+@Singleton
 public class MessageService {
 
-    @Inject private MedievalFactions medievalFactions;
+    private final MedievalFactions medievalFactions;
     private File languageFile;
     private FileConfiguration language;
 
+    @Inject
+    public MessageService(MedievalFactions medievalFactions) {
+        this.medievalFactions = medievalFactions;
+        this.createLanguageFile();
+    }
+
     public void createLanguageFile() {
-        languageFile = new File(medievalFactions.getDataFolder(), "language.yml");
-        if (!languageFile.exists()) medievalFactions.saveResource("language.yml", false);
-        language = new YamlConfiguration();
+        this.languageFile = new File(this.medievalFactions.getDataFolder(), "language.yml");
+        if (!this.languageFile.exists()) this.medievalFactions.saveResource("language.yml", false);
+        this.language = new YamlConfiguration();
         try {
-            language.load(languageFile);
+            this.language.load(this.languageFile);
         } catch (IOException | InvalidConfigurationException e) {
-            medievalFactions.getLogger().log(Level.WARNING, e.getCause().toString());
+            this.medievalFactions.getLogger().log(Level.WARNING, e.getCause().toString());
         }
     }
 
     public FileConfiguration getLanguage() {
-        return language;
+        return this.language;
     }
 
 
     public void reloadLanguage() {
         if (languageFile.exists()) {
-            language = YamlConfiguration.loadConfiguration(languageFile);
+            this.language = YamlConfiguration.loadConfiguration(this.languageFile);
         } else {
-            createLanguageFile();
+            this.createLanguageFile();
         }
     }
 
     public void saveLanguage() {
-        if (languageFile.exists()) {
+        if (this.languageFile.exists()) {
             try {
-                language.save(languageFile);
+                this.language.save(this.languageFile);
             } catch (IOException ignored) {
             }
         } else {
-            createLanguageFile();
+            this.createLanguageFile();
         }
     }
 

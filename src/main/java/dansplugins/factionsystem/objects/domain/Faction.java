@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.factories.FactionFlagFactory;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.helper.FactionFlags;
 import dansplugins.factionsystem.objects.inherited.Nation;
@@ -64,7 +65,8 @@ public class Faction extends Nation implements Feudal, Savable {
         Logger logger,
         PersistentData persistentData,
         MedievalFactions medievalFactions,
-        PlayerService playerService
+        PlayerService playerService,
+        FactionFlagFactory factionFlagFactory
     ) {
         this.configService = configService;
         this.localeService = localeService;
@@ -76,7 +78,7 @@ public class Faction extends Nation implements Feudal, Savable {
         setName(initialName);
         setOwner(creator);
         prefix = initialName;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, playerService);
+        flags = factionFlagFactory.create();
         flags.initializeFlagValues();
     }
 
@@ -89,7 +91,8 @@ public class Faction extends Nation implements Feudal, Savable {
         Logger logger,
         PersistentData persistentData,
         MedievalFactions medievalFactions,
-        PlayerService playerService
+        PlayerService playerService,
+        FactionFlagFactory factionFlagFactory
     ) {
         this.configService = configService;
         this.localeService = localeService;
@@ -98,7 +101,7 @@ public class Faction extends Nation implements Feudal, Savable {
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
         this.playerService = playerService;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, playerService);
+        flags = factionFlagFactory.create();
         this.load(data);
     }
 
@@ -111,7 +114,8 @@ public class Faction extends Nation implements Feudal, Savable {
         Logger logger,
         PersistentData persistentData,
         MedievalFactions medievalFactions,
-        PlayerService playerService
+        PlayerService playerService,
+        FactionFlagFactory factionFlagFactory
     ) {
         this.configService = configService;
         this.localeService = localeService;
@@ -122,7 +126,7 @@ public class Faction extends Nation implements Feudal, Savable {
         this.playerService = playerService;
         setName(initialName);
         prefix = initialName;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, playerService);
+        flags = factionFlagFactory.create();
         flags.initializeFlagValues();
     }
 
