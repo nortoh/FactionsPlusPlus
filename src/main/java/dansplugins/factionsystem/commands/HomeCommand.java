@@ -27,7 +27,7 @@ public class HomeCommand extends SubCommand {
     public HomeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Scheduler scheduler, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "home", LOCALE_PREFIX + "CmdHome"
-        }, true, true, ["mf.home"], persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, true, true, new String[] {"mf.home"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
         this.scheduler = scheduler;
     }
 

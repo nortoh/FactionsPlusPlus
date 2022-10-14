@@ -25,7 +25,7 @@ public class UnclaimCommand extends SubCommand {
     public UnclaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "unclaim", LOCALE_PREFIX + "CmdUnclaim"
-        }, true, true, ["mf.unclaim"], persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, true, true, new String[] {"mf.unclaim"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
     }
 
     /**
@@ -43,7 +43,7 @@ public class UnclaimCommand extends SubCommand {
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId()) && !isPlayerBypassing) {
                 this.playerService.sendMessage(
                     player, 
-                    "&c" + "You're not able to claim land at this time."
+                    "&c" + "You're not able to claim land at this time.",
                     "NotAbleToClaim", 
                     false
                 );

@@ -31,7 +31,7 @@ public class JoinCommand extends SubCommand {
     public JoinCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "join", LOCALE_PREFIX + "CmdJoin"
-        }, true, ["mf.join"], persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, true, new String[] {"mf.join"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
         this.logger = logger;
     }
 
@@ -90,7 +90,7 @@ public class JoinCommand extends SubCommand {
         this.messageFaction(
             target,
             "&a" + this.getText("HasJoined", player.getName(), target.getName()),
-            Objects.requireNonNull(this./messageService.getLanguage().getString("HasJoined"))
+            Objects.requireNonNull(this.messageService.getLanguage().getString("HasJoined"))
                 .replace("#name#", player.getName())
                 .replace("#faction#", target.getName())
         );

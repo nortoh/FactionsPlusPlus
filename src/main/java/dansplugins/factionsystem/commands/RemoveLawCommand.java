@@ -16,6 +16,9 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Callum Johnson
  */
@@ -24,7 +27,7 @@ public class RemoveLawCommand extends SubCommand {
     public RemoveLawCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "removelaw", LOCALE_PREFIX + "CmdRemoveLaw"
-        }, true, true, false, true, ["mf.removelaw"], localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+        }, true, true, false, true, new String[] {"mf.removelaw"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
     }
 
     /**
@@ -85,8 +88,9 @@ public class RemoveLawCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+        Player player = (Player)sender;
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             if (playerFaction.getNumLaws() != 0) {
                 ArrayList<String> numbers = new ArrayList<>();
                 for (int i = 1; i < playerFaction.getNumLaws() + 1; i++) {

@@ -26,7 +26,7 @@ public class AutoClaimCommand extends SubCommand {
     public AutoClaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "autoclaim", "AC", LOCALE_PREFIX + "CmdAutoClaim"
-        }, true, true, false, true, ["mf.autoclaim"], localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+        }, true, true, false, true, new String[] {"mf.autoclaim"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
     }
 
     /**

@@ -20,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,7 +32,7 @@ public class DuelCommand extends SubCommand {
     public DuelCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
         super(new String[]{
             "duel", "dl", LOCALE_PREFIX + "CmdDuel"
-        }, true, ["mf.duel"], persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, true, new String[] {"mf.duel"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
         this.medievalFactions = medievalFactions;
     }
 
@@ -58,7 +59,7 @@ public class DuelCommand extends SubCommand {
                 return;
             }
             if (isDuelling(player)) {
-                pthis.layerService.sendMessage(player, "&c" + this.getText("AlertAlreadyDuelingSomeone"), "AlertAlreadyDuelingSomeone", false);
+                this.playerService.sendMessage(player, "&c" + this.getText("AlertAlreadyDuelingSomeone"), "AlertAlreadyDuelingSomeone", false);
                 return;
             }
             Player target = Bukkit.getPlayer(args[1]);
@@ -184,10 +185,10 @@ public class DuelCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (args.length === 1) {
+        if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "challenge", "accept", "cancel");
-        } else if (args.length === 2) {
-            if (args[0] === "challenge") return TabCompleteTools.allOnlinePlayersMatching(args[1]);
+        } else if (args.length == 2) {
+            if (args[0] == "challenge") return TabCompleteTools.allOnlinePlayersMatching(args[1]);
         }
         return null;
     }

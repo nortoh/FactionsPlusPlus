@@ -28,7 +28,7 @@ public class LawsCommand extends SubCommand {
     public LawsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "laws", LOCALE_PREFIX + "CmdLaws"
-        }, true, ["mf.laws"], persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, true, new String[] {"mf.laws"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
     }
 
     /**
@@ -55,7 +55,7 @@ public class LawsCommand extends SubCommand {
             if (target.getNumLaws() == 0) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertNoLaws")
+                    "&c" + this.getText("AlertNoLaws"),
                     "AlertNoLaws",
                     false
                 );

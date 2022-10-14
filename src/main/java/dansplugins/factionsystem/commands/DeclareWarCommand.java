@@ -21,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import preponderous.ponder.misc.ArgumentParser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,7 +34,7 @@ public class DeclareWarCommand extends SubCommand {
     public DeclareWarCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, WarFactory warFactory, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "declarewar", "dw", LOCALE_PREFIX + "CmdDeclareWar"
-        }, true, true, true, false, ["mf.declarewar"], localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+        }, true, true, true, false, new String[] {"mf.declarewar"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
         this.warFactory = warFactory;
     }
 
@@ -204,7 +205,8 @@ public class DeclareWarCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
+        Player player = (Player)sender;
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
             final List<String> factionsAllowedtoWar = new ArrayList<>();
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> playerEnemies = playerFaction.getEnemyFactions();

@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -109,7 +110,7 @@ public abstract class SubCommand implements ColorTranslator {
      * @param dynmapIntegrator
      */
     public SubCommand(String[] names, boolean playerCommand, String[] requiredPermissions, PersistentData persistentData, LocaleService localeService, EphemeralData ephemeralData, ConfigService configService, PlayerService playerService, MessageService messageService, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator) {
-        this(names, playerCommand, false, persistentData, requiredPermissions, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        this(names, playerCommand, false, requiredPermissions, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
     }
 
     protected void loadCommandNames(String[] names) {
@@ -213,11 +214,11 @@ public abstract class SubCommand implements ColorTranslator {
 
     // Helper methods for checkPermissions in different cases
     public boolean checkPermissions(CommandSender sender) {
-        return this.checkPermissions(sender, false, ...this.requiredPermissions);
+        return this.checkPermissions(sender, false, this.requiredPermissions);
     }
 
     public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing) {
-        return this.checkPermissions(sender, announcePermissionsMissing, ...this.requiredPermissions);
+        return this.checkPermissions(sender, announcePermissionsMissing, this.requiredPermissions);
     }
 
     public boolean checkPermissions(CommandSender sender, String... permissions) {
@@ -236,14 +237,20 @@ public abstract class SubCommand implements ColorTranslator {
      */
     public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing, String... permissions) {
         boolean hasPermission = false;
-        String[] missingPermissions = [];
+        String[] missingPermissions = new String[]{};
         for (String perm : permissions) {
             hasPermission = sender.hasPermission(perm);
             if (hasPermission) break;
             missingPermissions.append(perm);
         }
         if (!hasPermission && announcePermissionsMissing) {
-            playerService.sendMessage(sender, translate("&c" + getText("PermissionNeeded", missingPermissions.join(', '))), Objects.requireNonNull(this.messageService.getLanguage().getString("PermissionNeeded")).replace("#permission#", missingPermissions.join(' ')), true);
+            this.playerService.sendMessage(
+                sender,
+                this.translate("&c" + this.getText("PermissionNeeded", String.join(", ", missingPermissions))), 
+                Objects.requireNonNull(this.messageService.getLanguage().getString("PermissionNeeded"))
+                    .replace("#permission#", String.join(", ", missingPermissions)), 
+                true
+            );
         }
         return hasPermission;
     }

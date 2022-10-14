@@ -18,6 +18,8 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,7 +31,7 @@ public class VassalizeCommand extends SubCommand {
     public VassalizeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "vassalize", LOCALE_PREFIX + "CmdVassalize"
-        }, true, true, false, true, ["mf.vassalize"], localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+        }, true, true, false, true, new String[] {"mf.vassalize"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
         this.logger = logger;
     }
 
@@ -151,8 +153,9 @@ public class VassalizeCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+        Player player = (Player)sender;
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> vassalizeableFactions = new ArrayList<>();
             for (Faction faction : this.persistentData.getFactions()) {
                 if (!playerFaction.getVassals().contains(faction.getName())) {

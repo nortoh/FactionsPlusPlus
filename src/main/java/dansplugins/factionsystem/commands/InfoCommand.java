@@ -29,7 +29,7 @@ public class InfoCommand extends SubCommand {
     public InfoCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Messenger messenger, PlayerService playerService, MessageService messageService) {
         super(new String[]{
                 "info", LOCALE_PREFIX + "CmdInfo"
-        }, false, ["mf.info"], persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+        }, false, new String[] {"mf.info"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
         this.messenger = messenger;
     }
 

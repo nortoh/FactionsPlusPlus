@@ -19,10 +19,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -111,7 +114,7 @@ public class CommandService implements TabCompleter {
                     sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("DeveloperList"), this.medievalFactions.getDescription().getAuthors()));
                     sender.sendMessage(ChatColor.AQUA + this.localeService.get("WikiLink"));
                     sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("CurrentLanguageID"), this.configService.getString("languageid")));
-                    sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("SupportedLanguageIDList"), this.localeService.getSupportedLanguageIDsSeparatedByCommas()));
+                    sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("SupportedLanguageIDList"), this.localeService.getSupportedLanguageIDsSeparatedByCommas()));
                 } else {
                     this.messageService.getLanguage().getStringList("PluginInfo")
                             .forEach(s -> {
@@ -146,7 +149,7 @@ public class CommandService implements TabCompleter {
 
     private ArrayList<String> getSubCommandNamesForSender(CommandSender sender) {
         ArrayList<String> commandNames = new ArrayList<String>();
-        for (SubCommand subCommand : this.subCommand) {
+        for (SubCommand subCommand : this.subCommands) {
             if (subCommand.checkPermissions(sender)) commandNames.add(subCommand.getPrimaryCommandName().toLowerCase());
         }
         return commandNames;
@@ -181,4 +184,5 @@ public class CommandService implements TabCompleter {
             return null;
         }
         return null;
+    }
 }

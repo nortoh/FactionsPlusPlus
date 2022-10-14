@@ -30,7 +30,7 @@ public class LeaveCommand extends SubCommand {
     public LeaveCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, DisbandCommand disbandCommand, PlayerService playerService, MessageService messageService) {
         super(new String[]{
             "leave", LOCALE_PREFIX + "CmdLeave"
-        }, true, true, false, false, ["mf.leave"], localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+        }, true, true, false, false, new String[] {"mf.leave"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
         this.logger = logger;
         this.disbandCommand = disbandCommand;
     }

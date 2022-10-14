@@ -19,6 +19,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class TransferCommand extends SubCommand {
     public TransferCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
         super(new String[]{
             "transfer", LOCALE_PREFIX + "CmdTransfer"
-        }, true, true, false, true, ["mf.transfer"], localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+        }, true, true, false, true, new String[] {"mf.transfer"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
     }
 
     /**
@@ -135,8 +136,9 @@ public class TransferCommand extends SubCommand {
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
         final List<String> membersInFaction = new ArrayList<>();
-        if (this.persistentData.isInFaction(sender.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(sender.getUniqueId());
+        Player player = (Player)sender;
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             for (UUID uuid : playerFaction.getMemberList()) {
                 Player member = Bukkit.getPlayer(uuid);
                 if (member != null) {

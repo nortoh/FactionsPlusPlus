@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
 
-public class TabCompleterBase implements TabCompleter {
+/*public class TabCompleterBase implements TabCompleter {
 	private PersistentData persistentData;
 	private ConfigService configService;
 
@@ -76,219 +76,20 @@ public class TabCompleterBase implements TabCompleter {
 			Player player = (Player) sender;
 			if (argsLength1.isEmpty()) {
 				argsLength1.addAll(Arrays.asList(
-						"declarewar",
-						"demote",
-						"desc",
-						"disband",
-						"editlaw",
-						"flags",
 						"force",
-						"gate",
-						"grantindependence",
-						"help",
-						"home",
-						"info",
-						"invoke",
-						"join",
-						"kick",
-						"laws",
-						"leave",
-						"list",
-						"lock",
-						"makepeace",
-						"map",
-						"members",
-						"prefix",
-						"promote",
-						"removelaw",
-						"rename",
-						"revokeaccess",
-						"sethome",
-						"stats",
-						"swearfealty",
-						"transfer",
-						"unclaimall",
-						"unclaim",
-						"vassalize"
 				));
 			}
 			if (args.length == 2) {
-				if (args[0].equalsIgnoreCase("declarewar")) {
-					if(persistentData.isInFaction(player.getUniqueId())) {
-						Faction playerFaction = persistentData.getPlayersFaction(player.getUniqueId());
-						ArrayList<String> playerEnemies = playerFaction.getEnemyFactions();
-						ArrayList<String> playerAllies = playerFaction.getAllies();
-						for(Faction faction : persistentData.getFactions()) {
-							// If the faction is not an ally and they are not already enemied to them
-							if(!playerAllies.contains(faction.getName()) && !playerEnemies.contains(faction.getName()) && !faction.getName().equalsIgnoreCase(playerFaction.getName())) {
-								factionsAllowedtoWar.add(faction.getName());
-							}
-						}
-						return filterStartingWith(args[1], tackOnBeginningAndEndQuotes(factionsAllowedtoWar));
-					}
-				}
-				if (args[0].equalsIgnoreCase("demote")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction playerFaction = persistentData.getPlayersFaction(player.getUniqueId());
-						for (UUID uuid : playerFaction.getOfficerList()) {
-							Player officer = Bukkit.getPlayer(uuid);
-							if (officer != null) {
-								officersInFaction.add(officer.getName());
-							}
-						}
-						return filterStartingWith(args[1], officersInFaction);
-					}
-				}
-				if (args[0].equalsIgnoreCase("disband")) {
-					if (sender.hasPermission("mf.admin") || sender.hasPermission("mf.disband.others")) {
-						persistentData.getFactions().forEach(faction1 -> factionNames.add(faction1.getName()));
-						return filterStartingWith(args[1], factionNames);
-					}
-				}
-				if (args[0].equalsIgnoreCase("editlaw")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction playerFaction = persistentData.getPlayersFaction(player.getUniqueId());
-						if (playerFaction.getNumLaws() != 0) {
-							ArrayList<String> numbers = new ArrayList<>();
-							for (int i = 1; i < playerFaction.getNumLaws() + 1; i++) {
-								numbers.add(Integer.toString(i));
-							}
-							return filterStartingWith(args[1], numbers);
-						}
-					}
-				}
-				if (args[0].equalsIgnoreCase("flags")) {
-					return filterStartingWith(args[1], Arrays.asList("set", "show"));
-				}
 				if (args[0].equalsIgnoreCase("force")) {
 					if(sender.hasPermission("mf.force.*")) {
 						return filterStartingWith(args[1], Arrays.asList("save", "load", "peace", "demote", "join", "kick", "power", "renounce", "transfer", "removevassal", "rename", "bonuspower", "unlock", "create", "claim", "flag"));
-					}
-				}
-				if (args[0].equalsIgnoreCase("gate")) {
-					return filterStartingWith(args[1], Arrays.asList("create", "name", "list", "remove", "cancel"));
-				}
-				if (args[0].equalsIgnoreCase("grantindependence")) {
-					if(persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						return filterStartingWith(args[1], faction.getVassals());
-					}
-				}
-				if (args[0].equalsIgnoreCase("help")) {
-					return filterStartingWith(args[1], IntStream.range(1, 7).mapToObj(String::valueOf));
-				}
-				if (args[0].equalsIgnoreCase("info")) {
-					persistentData.getFactions().forEach(faction1 -> factionNames.add(faction1.getName()));
-					return filterStartingWith(args[1], factionNames);
-				}
-				if (args[0].equalsIgnoreCase("invoke")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						ArrayList<String> allies = faction.getAllies();
-						return filterStartingWith(args[1], tackOnBeginningAndEndQuotes(allies));
-					}
-				}
-				if (args[0].equalsIgnoreCase("join")) {
-					persistentData.getFactions().forEach(faction1 -> factionNames.add(faction1.getName()));
-					return filterStartingWith(args[1], factionNames);
-				}
-				if (args[0].equalsIgnoreCase("kick")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						for (UUID uuid : faction.getMemberList()) {
-							Player member = Bukkit.getPlayer(uuid);
-							if (member != null) {
-								membersInFaction.add(member.getName());
-							}
-						}
-						return filterStartingWith(args[1], membersInFaction);
-					}
-				}
-				if (args[0].equalsIgnoreCase("lock")) {
-					return filterStartingWith(args[1], Collections.singletonList("cancel"));
-				}
-				if (args[0].equalsIgnoreCase("makepeace")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						ArrayList<String> enemies = faction.getEnemyFactions();
-						return filterStartingWith(args[1], enemies);
-					}
-				}
-				if (args[0].equalsIgnoreCase("members")) {
-					persistentData.getFactions().forEach(faction1 -> factionNames.add(faction1.getName()));
-					return filterStartingWith(args[1], factionNames);
-				}
-				if (args[0].equalsIgnoreCase("promote")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						for (UUID uuid : faction.getMemberList()) {
-							Player member = Bukkit.getPlayer(uuid);
-							if (member != null) {
-								if (!faction.getOfficerList().contains(uuid)) {
-									membersInFaction.add(member.getName());
-								}
-							}
-						}
-						return filterStartingWith(args[1], membersInFaction);
-					}
-				}
-				if (args[0].equalsIgnoreCase("removelaw")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction playerFaction = persistentData.getPlayersFaction(player.getUniqueId());
-						if (playerFaction.getNumLaws() != 0) {
-							ArrayList<String> numbers = new ArrayList<>();
-							for (int i = 1; i < playerFaction.getNumLaws() + 1; i++) {
-								numbers.add(Integer.toString(i));
-							}
-							return filterStartingWith(args[1], numbers);
-						}
-					}
-				}
-				if (args[0].equalsIgnoreCase("revokeaccess")) {
-					List<String> addCancelString = getOnlinePlayers(args[1]);
-					addCancelString.add("cancel");
-					return filterStartingWith(args[1], addCancelString);
-				}
-				if (args[0].equalsIgnoreCase("swearfealty")) {
-					persistentData.getFactions().forEach(faction1 -> factionNames.add(faction1.getName()));
-					return filterStartingWith(args[1], factionNames);
-				}
-				if (args[0].equalsIgnoreCase("transfer")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						for (UUID uuid : faction.getMemberList()) {
-							Player member = Bukkit.getPlayer(uuid);
-							if (member != null) {
-								membersInFaction.add(member.getName());
-							}
-						}
-						return filterStartingWith(args[1], membersInFaction);
-					}
-				}
-				if (args[0].equalsIgnoreCase("vassalize")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction playerFaction = persistentData.getPlayersFaction(player.getUniqueId());
-						ArrayList<String> vassalizeableFactions = new ArrayList<>();
-						for (Faction faction : persistentData.getFactions()) {
-							if (!playerFaction.getVassals().contains(faction.getName())) {
-								vassalizeableFactions.add(faction.getName());
-							}
-						}
-						return filterStartingWith(args[1], vassalizeableFactions);
 					}
 				}
 				return null;
 			}
 
 			if (args.length == 3) {
-				if (args[0].equalsIgnoreCase("flags")) {
-					if (args[1].equalsIgnoreCase("set")) {
-						if (persistentData.isInFaction(player.getUniqueId())) {
-							Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-							return filterStartingWith(args[2], faction.getFlags().getFlagNamesList());
-						}
-					}
-				}
+
 				if (args[0].equalsIgnoreCase("force")) {
 					if (args[1].equalsIgnoreCase("peace")) {
 						persistentData.getFactions().forEach(faction1 -> factionNames.add(faction1.getName()));
@@ -342,13 +143,6 @@ public class TabCompleterBase implements TabCompleter {
 						return filterStartingWith(args[2], tackOnBeginningAndEndQuotes(factionNames));
 					}
 				}
-				if (args[0].equalsIgnoreCase("invoke")) {
-					if (persistentData.isInFaction(player.getUniqueId())) {
-						Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
-						ArrayList<String> enemies = faction.getEnemyFactions();
-						return filterStartingWith(args[1], tackOnBeginningAndEndQuotes(enemies));
-					}
-				}
 				return null;
 			}
 
@@ -386,3 +180,4 @@ public class TabCompleterBase implements TabCompleter {
 		return null;
 	}
 }
+*/
