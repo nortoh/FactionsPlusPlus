@@ -11,6 +11,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.Bukkit;
@@ -27,11 +28,13 @@ public class DeclareIndependenceCommand extends SubCommand {
 
     private final PlayerService playerService;
     private final MessageService messageService;
+    private final LocaleService localeService;
     private final ConfigService configService;
 
     @Inject
-    public DeclareIndependenceCommand(PlayerService playerService, MessageService messageService, ConfigService configService) {
+    public DeclareIndependenceCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, ConfigService configService) {
         super();
+        this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this.configService = configService;
@@ -53,7 +56,7 @@ public class DeclareIndependenceCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (!(this.faction.hasLiege()) || this.faction.getLiege() == null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("NotAVassalOfAFaction"), "NotAVassalOfAFaction", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("NotAVassalOfAFaction"), "NotAVassalOfAFaction", false);
             return;
         }
 
@@ -89,7 +92,7 @@ public class DeclareIndependenceCommand extends SubCommand {
             }
         }
         this.messageServer(
-            "&c" + this.getText("HasDeclaredIndependence", this.faction.getName(), liege.getName()), 
+            "&c" + this.localeService.getText("HasDeclaredIndependence", this.faction.getName(), liege.getName()), 
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredIndependence"))
                 .replace("#faction_a#", this.faction.getName())
                 .replace("#faction_b#", liege.getName())

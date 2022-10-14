@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,12 +22,14 @@ import org.bukkit.entity.Player;
 public class ClaimCommand extends SubCommand {
 
     private final PlayerService playerService;
+    private final LocaleService localeService;
     private final PersistentData persistentData;
     private final DynmapIntegrator dynmapIntegrator;
 
     @Inject
-    public ClaimCommand(PlayerService playerService, PersistentData persistentData, DynmapIntegrator dynmapIntegrator) {
+    public ClaimCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData, DynmapIntegrator dynmapIntegrator) {
         super();
+        this.localeService = localeService;
         this.playerService = playerService;
         this.persistentData = persistentData;
         this.dynmapIntegrator = dynmapIntegrator;
@@ -48,7 +51,7 @@ public class ClaimCommand extends SubCommand {
         if ((boolean) this.faction.getFlags().getFlag("mustBeOfficerToManageLand")) {
             // officer or owner rank required
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
-                this.playerService.sendMessage(player, "&a" + this.getText("AlertMustBeOfficerOrOwnerToClaimLand"), "AlertMustBeOfficerOrOwnerToClaimLand", false);
+                this.playerService.sendMessage(player, "&a" + this.localeService.getText("AlertMustBeOfficerOrOwnerToClaimLand"), "AlertMustBeOfficerOrOwnerToClaimLand", false);
                 return;
             }
         }
@@ -57,7 +60,7 @@ public class ClaimCommand extends SubCommand {
             int depth = this.getIntSafe(args[0], -1);
 
             if (depth <= 0) {
-                this.playerService.sendMessage(player, "&a" + this.getText("UsageClaimRadius"), "UsageClaimRadius", false);
+                this.playerService.sendMessage(player, "&a" + this.localeService.getText("UsageClaimRadius"), "UsageClaimRadius", false);
             } else {
                 this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
             }

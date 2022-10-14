@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,14 +22,16 @@ import java.util.Objects;
 @Singleton
 public class CheckClaimCommand extends SubCommand {
 
-    private final PersistentData.ChunkDataAccessor chunkDataAccessor;
+    private final PersistentData persistentData;
     private final PlayerService playerService;
+    private final LocaleService localeService;
 
     @Inject
-    public CheckClaimCommand(PlayerService playerService, PersistentData.ChunkDataAccessor chunkDataAccessor) {
+    public CheckClaimCommand(PlayerService playerService, PersistentData persistentData, LocaleService localeService) {
         super();
+        this.localeService = localeService;
+        this.persistentData = persistentData;
         this.playerService = playerService;
-        this.chunkDataAccessor = chunkDataAccessor;
         this
             .setNames("checkclaim", "cc", LOCALE_PREFIX + "CmdCheckClaim")
             .requiresPermissions("mf.checkclaim")
@@ -44,12 +47,12 @@ public class CheckClaimCommand extends SubCommand {
      */
     @Override
     public void execute(Player player, String[] args, String key) {
-        final String result = this.chunkDataAccessor.checkOwnershipAtPlayerLocation(player);
+        final String result = this.persistentData.getChunkDataAccessor().checkOwnershipAtPlayerLocation(player);
 
         if (result.equals("unclaimed")) {
-            this.playerService.sendMessage(player, "&a" + this.getText("LandIsUnclaimed"), "LandIsUnclaimed", false);
+            this.playerService.sendMessage(player, "&a" + this.localeService.getText("LandIsUnclaimed"), "LandIsUnclaimed", false);
         } else {
-            this.playerService.sendMessage(player, "&c" + this.getText("LandClaimedBy"), Objects.requireNonNull(this.messageService.getLanguage().getString("LandClaimedBy"))
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("LandClaimedBy"), Objects.requireNonNull(this.messageService.getLanguage().getString("LandClaimedBy"))
                     .replace("#player#", result), true);
         }
     }

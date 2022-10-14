@@ -11,6 +11,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.MessageService;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -30,12 +31,14 @@ import java.util.UUID;
 public class DemoteCommand extends SubCommand {
 
     private final PlayerService playerService;
+    private final LocaleService localeService;
     private final MessageService messageService;
     private final PersistentData persistentData;
 
     @Inject
-    public DemoteCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData) {
+    public DemoteCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, PersistentData persistentData) {
         super();
+        this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this.persistentData = persistentData;
@@ -59,7 +62,7 @@ public class DemoteCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("UsageDemote"),
+                "&c" + this.localeService.getText("UsageDemote"),
                 "UsageDemote", 
                 false
             );
@@ -76,7 +79,7 @@ public class DemoteCommand extends SubCommand {
         if (playerToBeDemoted == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("PlayerByNameNotFound"),
+                "&c" + this.localeService.getText("PlayerByNameNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerByNameNotFound")).replace("#name#", args[0]), 
                 true
             );
@@ -86,7 +89,7 @@ public class DemoteCommand extends SubCommand {
         if (playerToBeDemoted.getUniqueId() == player.getUniqueId()) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("CannotDemoteSelf"),
+                "&c" + this.localeService.getText("CannotDemoteSelf"),
                 "CannotDemoteSelf", 
                 false
             );
@@ -96,7 +99,7 @@ public class DemoteCommand extends SubCommand {
         if (!this.faction.isOfficer(playerToBeDemoted.getUniqueId())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("PlayerIsNotOfficerOfFaction"),
+                "&c" + this.localeService.getText("PlayerIsNotOfficerOfFaction"),
                 "PlayerIsNotOfficerOfFaction", 
                 false
             );
@@ -108,14 +111,14 @@ public class DemoteCommand extends SubCommand {
         if (playerToBeDemoted.isOnline()) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertDemotion"),
+                "&c" + this.localeService.getText("AlertDemotion"),
                 "AlertDemotion",
                 false
             );
         }
         this.playerService.sendMessage(
             player,
-            "&c" + this.getText("PlayerDemoted"),
+            "&c" + this.localeService.getText("PlayerDemoted"),
             Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerDemoted")).replace("#name#", playerToBeDemoted.getName()), 
             true
         );

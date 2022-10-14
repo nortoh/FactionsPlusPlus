@@ -13,6 +13,7 @@ import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.factories.WarFactory;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -35,11 +36,20 @@ public class DeclareWarCommand extends SubCommand {
     private final PlayerService playerService;
     private final MessageService messageService;
     private final PersistentData persistentData;
+    private final LocaleService localeService;
     private final WarFactory warFactory;
 
     @Inject
-    public DeclareWarCommand(ConfigService configService, PlayerService playerService, MessageService messageService, PersistentData persistentData, WarFactory warFactory) {
+    public DeclareWarCommand(
+        ConfigService configService,
+        LocaleService localeService,
+        PlayerService playerService,
+        MessageService messageService,
+        PersistentData persistentData,
+        WarFactory warFactory
+    ) {
         super();
+        this.localeService = localeService;
         this.configService = configService;
         this.playerService = playerService;
         this.messageService = messageService;
@@ -91,7 +101,7 @@ public class DeclareWarCommand extends SubCommand {
         if (opponent == null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -101,7 +111,7 @@ public class DeclareWarCommand extends SubCommand {
         if (opponent == this.faction) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("CannotDeclareWarOnYourself"),
+                "&c" + this.localeService.getText("CannotDeclareWarOnYourself"),
                 "CannotDeclareWarOnYourself",
                 false
             );
@@ -111,7 +121,7 @@ public class DeclareWarCommand extends SubCommand {
         if (this.faction.isEnemy(opponent.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertAlreadyAtWarWith"),
+                "&c" + this.localeService.getText("AlertAlreadyAtWarWith"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAlreadyAtWarWith")).replace("#faction#", opponent.getName()),
                 true
             );
@@ -122,7 +132,7 @@ public class DeclareWarCommand extends SubCommand {
             if (this.faction.isVassal(opponent.getName())) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("CannotDeclareWarOnVassal"),
+                    "&c" + this.localeService.getText("CannotDeclareWarOnVassal"),
                     "CannotDeclareWarOnVassal",
                     false
                 );
@@ -135,7 +145,7 @@ public class DeclareWarCommand extends SubCommand {
                         enemyLiege.getMaximumCumulativePowerLevel() / 2) {
                     this.playerService.sendMessage(
                         player,
-                        "&c" + this.getText("CannotDeclareWarIfLiegeNotWeakened"),
+                        "&c" + this.localeService.getText("CannotDeclareWarIfLiegeNotWeakened"),
                         "CannotDeclareWarIfLiegeNotWeakened",
                         false
                     );
@@ -146,7 +156,7 @@ public class DeclareWarCommand extends SubCommand {
         if (this.faction.isLiege(opponent.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotDeclareWarOnLiege"),
+                "&c" + this.localeService.getText("CannotDeclareWarOnLiege"),
                 "CannotDeclareWarOnLiege",
                 false
             );
@@ -156,7 +166,7 @@ public class DeclareWarCommand extends SubCommand {
         if (this.faction.isAlly(opponent.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotDeclareWarOnAlly"),
+                "&c" + this.localeService.getText("CannotDeclareWarOnAlly"),
                 "CannotDeclareWarOnAlly",
                 false
             );
@@ -166,7 +176,7 @@ public class DeclareWarCommand extends SubCommand {
         if (this.configService.getBoolean("allowNeutrality") && ((boolean) opponent.getFlags().getFlag("neutral"))) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotDeclareWarOnNeutralFaction"),
+                "&c" + this.localeService.getText("CannotDeclareWarOnNeutralFaction"),
                 "CannotDeclareWarOnNeutralFaction",
                 false
             );
@@ -176,7 +186,7 @@ public class DeclareWarCommand extends SubCommand {
         if (this.configService.getBoolean("allowNeutrality") && ((boolean) faction.getFlags().getFlag("neutral"))) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotDeclareWarIfNeutralFaction"),
+                "&c" + this.localeService.getText("CannotDeclareWarIfNeutralFaction"),
                 "CannotDeclareWarIfNeutralFaction",
                 false
             );
@@ -191,7 +201,7 @@ public class DeclareWarCommand extends SubCommand {
             opponent.addEnemy(faction.getName());
             warFactory.createWar(this.faction, opponent);
             this.messageServer(
-                "&c" + this.getText("HasDeclaredWarAgainst", this.faction.getName(), opponent.getName()), 
+                "&c" + this.localeService.getText("HasDeclaredWarAgainst", this.faction.getName(), opponent.getName()), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredWarAgainst"))
                     .replace("#f_a#", this.faction.getName())
                     .replace("#f_b#", opponent.getName())

@@ -48,7 +48,7 @@ public class AutoClaimCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         this.faction.toggleAutoClaim();
-        this.playerService.sendMessage(player, "&b" + getText("AutoclaimToggled"), "AutoclaimToggled", false);
+        this.playerService.sendMessage(player, "&b" + this.localeService.getText("AutoclaimToggled"), "AutoclaimToggled", false);
     }
 
     /**

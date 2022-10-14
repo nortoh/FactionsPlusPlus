@@ -9,11 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
@@ -29,10 +25,12 @@ public class CheckAccessCommand extends SubCommand {
 
     private final PlayerService playerService;
     private final EphemeralData ephemeralData;
+    private final LocaleService localeService;
 
     @Inject
-    public CheckAccessCommand(PlayerService playerService, EphemeralData ephemeralData) {
+    public CheckAccessCommand(PlayerService playerService, EphemeralData ephemeralData, LocaleService localeService) {
         super();
+        this.localeService = localeService;
         this.playerService = playerService;
         this.ephemeralData = ephemeralData;
         this
@@ -58,13 +56,13 @@ public class CheckAccessCommand extends SubCommand {
 
         if (cancel && contains) {
             this.ephemeralData.getPlayersCheckingAccess().remove(player.getUniqueId());
-            this.playerService.sendMessage(player, "&c" + this.getText("Cancelled"), "Cancelled", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("Cancelled"), "Cancelled", false);
         } else {
             if (contains) {
-                this.playerService.sendMessage(player, "&c" + this.getText("AlreadyEnteredCheckAccess"), "AlreadyEnteredCheckAccess", false);
+                this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlreadyEnteredCheckAccess"), "AlreadyEnteredCheckAccess", false);
             } else {
                 this.ephemeralData.getPlayersCheckingAccess().add(player.getUniqueId());
-                this.playerService.sendMessage(player, "&a" + this.getText("RightClickCheckAccess"), "RightClickCheckAccess", false);
+                this.playerService.sendMessage(player, "&a" + this.localeService.getText("RightClickCheckAccess"), "RightClickCheckAccess", false);
             }
         }
     }

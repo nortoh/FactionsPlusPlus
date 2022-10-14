@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,15 +21,17 @@ import org.bukkit.entity.Player;
 public class BypassCommand extends SubCommand {
 
     private final EphemeralData ephemeralData;
+    private final LocaleService localeService;
     private final PlayerService playerService;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public BypassCommand(PlayerService playerService, EphemeralData ephemeralData) {
+    public BypassCommand(PlayerService playerService, LocaleService localeService, EphemeralData ephemeralData) {
         super();
         this.playerService = playerService;
+        this.localeService = localeService;
         this.ephemeralData = ephemeralData;
         this
             .setNames("bypass", LOCALE_PREFIX + "CmdBypass")
@@ -54,7 +57,7 @@ public class BypassCommand extends SubCommand {
         } else {
             this.ephemeralData.getAdminsBypassingProtections().add(player.getUniqueId());
         }
-        this.playerService.sendMessage(player, "&a" + this.getText(path), path, false);
+        this.playerService.sendMessage(player, "&a" + this.localeService.getText(path), path, false);
     }
 
     /**

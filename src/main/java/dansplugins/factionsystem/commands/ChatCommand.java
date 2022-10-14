@@ -9,11 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,13 +21,15 @@ import org.bukkit.entity.Player;
 public class ChatCommand extends SubCommand {
 
     private final PlayerService playerService;
+    private final LocaleService localeService;
     private final EphemeralData ephemeralData;
 
     @Inject
-    public ChatCommand(PlayerService playerService, EphemeralData ephemeralData) {
+    public ChatCommand(PlayerService playerService, EphemeralData ephemeralData, LocaleService localeService) {
         super();
         this.playerService = playerService;
         this.ephemeralData = ephemeralData;
+        this.localeService = localeService;
         this
             .setNames("chat", LOCALE_PREFIX + "CmdChat")
             .requiresPermissions("mf.chat")
@@ -57,7 +55,7 @@ public class ChatCommand extends SubCommand {
         } else {
             this.ephemeralData.getPlayersInFactionChat().add(player.getUniqueId());
         }
-        this.playerService.sendMessage(player, "&c" + this.getText(path), path, false);
+        this.playerService.sendMessage(player, "&c" + this.localeService.getText(path), path, false);
     }
 
     /**

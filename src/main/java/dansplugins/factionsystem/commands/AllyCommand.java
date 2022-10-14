@@ -34,7 +34,7 @@ public class AllyCommand extends SubCommand {
     protected final PlayerService playerService;
     protected final PersistentData persistentData;
     protected final LocaleService localeService;
-    
+
     /**
      * Constructor to initialise a Command.
      */
@@ -63,7 +63,7 @@ public class AllyCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.getText("UsageAlly"), "UsageAlly", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageAlly"), "UsageAlly", false);
             return;
         }
 
@@ -72,20 +72,20 @@ public class AllyCommand extends SubCommand {
 
         // the faction needs to exist to ally
         if (otherFaction == null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("FactionNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
                     .replace("#faction#", String.join(" ", args)), true);
             return;
         }
 
         // the faction can't be itself
         if (otherFaction == this.faction) {
-            this.playerService.sendMessage(player, "&c" + this.getText("CannotAllyWithSelf"), "CannotAllyWithSelf", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("CannotAllyWithSelf"), "CannotAllyWithSelf", false);
             return;
         }
 
         // no need to allow them to ally if they're already allies
         if (this.faction.isAlly(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&c" + this.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
             return;
         }
 
@@ -95,7 +95,7 @@ public class AllyCommand extends SubCommand {
         }
 
         if (this.faction.isRequestedAlly(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&c" + this.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
             return;
         }
 
@@ -133,7 +133,7 @@ public class AllyCommand extends SubCommand {
             // message target faction
             this.messageFaction(
                 otherFaction, 
-                this.translate("&a" + this.getText("AlertNowAlliedWith", this.faction.getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", this.faction.getName())
+                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", this.faction.getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", this.faction.getName())
             );
 
             // remove alliance requests

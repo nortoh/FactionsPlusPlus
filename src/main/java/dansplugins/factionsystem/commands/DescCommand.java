@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
@@ -22,11 +23,13 @@ import java.util.Objects;
 public class DescCommand extends SubCommand {
 
     private final PlayerService playerService;
+    private final LocaleService localeService;
     private final MessageService messageService;
 
     @Inject
-    public DescCommand(PlayerService playerService, MessageService messageService) {
+    public DescCommand(PlayerService playerService, LocaleService localeService, MessageService messageService) {
         super();
+        this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this
@@ -49,7 +52,7 @@ public class DescCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("UsageDesc"),
+                "&c" + this.localeService.getText("UsageDesc"),
                 "UsageDesc", 
                 false
             );
@@ -59,7 +62,7 @@ public class DescCommand extends SubCommand {
         this.faction.setDescription(String.join(" ", args));
         this.playerService.sendMessage(
             player, 
-            "&c" + this.getText("DescriptionSet"),
+            "&c" + this.localeService.getText("DescriptionSet"),
             Objects.requireNonNull(this.messageService.getLanguage().getString("Description")).replace("#desc#", String.join(" ", args)), 
             true
         );

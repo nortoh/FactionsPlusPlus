@@ -81,13 +81,13 @@ public class CreateCommand extends SubCommand {
     public void execute(Player player, String[] args, String key) {
         Faction playerFaction = this.playerService.getPlayerFaction(player);
         if (playerFaction != null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("AlreadyInFaction"),
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlreadyInFaction"),
                     "AlreadyInFaction", false);
             return;
         }
 
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.getText("UsageCreate"),
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageCreate"),
                     "UsageCreate", false);
             return;
         }
@@ -99,7 +99,7 @@ public class CreateCommand extends SubCommand {
         if (factionName.length() > config.getInt("factionMaxNameLength")) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionNameTooLong"),
+                "&c" + this.localeService.getText("FactionNameTooLong"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNameTooLong"))
                     .replace("#name#", factionName), true
             );
@@ -109,7 +109,7 @@ public class CreateCommand extends SubCommand {
         if (this.persistentData.getFaction(factionName) != null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionAlreadyExists"),
+                "&c" + this.localeService.getText("FactionAlreadyExists"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionAlreadyExists"))
                     .replace("#name#", factionName), true
             );

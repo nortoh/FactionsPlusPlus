@@ -13,6 +13,7 @@ import dansplugins.factionsystem.events.FactionDisbandEvent;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
@@ -37,6 +38,7 @@ public class DisbandCommand extends SubCommand {
     private final PersistentData persistentData;
     private final DynmapIntegrator dynmapIntegrator;
     private final Logger logger;
+    private final LocaleService localeService;
 
     @Inject
     public DisbandCommand(
@@ -44,10 +46,12 @@ public class DisbandCommand extends SubCommand {
         MessageService messageService,
         ConfigService configService,
         Logger logger,
+        LocaleService localeService,
         PersistentData persistentData,
         DynmapIntegrator dynmapIntegrator
     ) {
         super();
+        this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this.configService = configService;
@@ -85,7 +89,7 @@ public class DisbandCommand extends SubCommand {
             if (!this.checkPermissions(sender, "mf.disband")) return;
             if (!(sender instanceof Player)) { // ONLY Players can be in a Faction
                 if (!this.configService.getBoolean("useNewLanguageFile")) {
-                    sender.sendMessage(this.translate(this.getText("OnlyPlayersCanUseCommand")));
+                    sender.sendMessage(this.translate(this.localeService.getText("OnlyPlayersCanUseCommand")));
                 } else {
                     this.playerService.sendMessageToConsole(sender.getServer().getConsoleSender(), "OnlyPlayersCanUseCommand", true);
                 }
@@ -96,7 +100,7 @@ public class DisbandCommand extends SubCommand {
             if (disband.getPopulation() != 1) {
                 this.playerService.sendMessage(
                     sender,
-                    "&c" + this.getText("AlertMustKickAllPlayers"),
+                    "&c" + this.localeService.getText("AlertMustKickAllPlayers"),
                     "AlertMustKickAllPlayers",
                     false
                 );
@@ -110,7 +114,7 @@ public class DisbandCommand extends SubCommand {
         if (disband == null) {
             this.playerService.sendMessage(
                 sender,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -120,7 +124,7 @@ public class DisbandCommand extends SubCommand {
         if (self) {
             this.playerService.sendMessage(
                 sender,
-                "&c" + this.getText("FactionSuccessfullyDisbanded"),
+                "&c" + this.localeService.getText("FactionSuccessfullyDisbanded"),
                 "FactionSuccessfullyDisbanded", 
                 false
             );
@@ -128,7 +132,7 @@ public class DisbandCommand extends SubCommand {
         } else {
             this.playerService.sendMessage(
                 sender,
-                "&c" + this.getText("SuccessfulDisbandment", disband.getName()),
+                "&c" + this.localeService.getText("SuccessfulDisbandment", disband.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("SuccessfulDisbandment")).replace("#faction#", disband.getName()), 
                 true
             );
