@@ -217,8 +217,10 @@ public class MedievalFactions extends PonderBukkitPlugin {
     }
 
     private void handlebStatsIntegration() {
-        int pluginId = 8929;
-        new Metrics(this, pluginId);
+        if (Bukkit.getPluginManager().getPlugin("bStats") != null) {
+            int pluginId = 8929;
+            new Metrics(this, pluginId);
+        }
     }
 
     private void handleDynmapIntegration() {
