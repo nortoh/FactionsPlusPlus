@@ -29,13 +29,12 @@ public class AddLawCommand extends SubCommand {
     protected final MessageService messageService;
     protected final PlayerService playerService;
     protected final LocaleService localeService;
-    
+
     /**
      * Constructor to initialise a Command.
      */
     @Inject
     public AddLawCommand(MessageService messageService, PlayerService playerService, LocaleService localeService) {
-        super();
         this.messageService = messageService;
         this.playerService = playerService;
         this.localeService = localeService;
@@ -58,13 +57,13 @@ public class AddLawCommand extends SubCommand {
     public void execute(Player player, String[] args, String key) {
         // check if they have provided any strings beyond "addlaw"
         if (args.length == 0) {
-            this.playerService.sendMessage(player, translate("&c" + getText("UsageAddLaw")), "UsageAddLaw", false);
+            this.playerService.sendMessage(player, translate("&c" + this.localeService.getText("UsageAddLaw")), "UsageAddLaw", false);
             return;
         }
 
         // add the law and send a success message.
         this.faction.addLaw(String.join(" ", args));
-        this.playerService.sendMessage(player, "&a" + this.getText("LawAdded"), Objects.requireNonNull(this.messageService.getLanguage().getString("LawAdded"))
+        this.playerService.sendMessage(player, "&a" + this.localeService.getText("LawAdded"), Objects.requireNonNull(this.messageService.getLanguage().getString("LawAdded"))
                 .replace("#law#", String.join(" ", args)), true);
     }
 

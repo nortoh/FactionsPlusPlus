@@ -32,9 +32,9 @@ import java.util.Objects;
 public class AllyCommand extends SubCommand {
     protected final MessageService messageService;
     protected final PlayerService playerService;
-    protected final LocaleService localeService;
     protected final PersistentData persistentData;
-
+    protected final LocaleService localeService;
+    
     /**
      * Constructor to initialise a Command.
      */
@@ -43,8 +43,8 @@ public class AllyCommand extends SubCommand {
         super();
         this.messageService = messageService;
         this.playerService = playerService;
-        this.localeService = localeService;
         this.persistentData = persistentData;
+        this.localeService = localeService;
         this
             .setNames("ally", LOCALE_PREFIX + "CmdAlly")
             .requiresPermissions("mf.ally")
@@ -63,7 +63,7 @@ public class AllyCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + getText("UsageAlly"), "UsageAlly", false);
+            this.playerService.sendMessage(player, "&c" + this.getText("UsageAlly"), "UsageAlly", false);
             return;
         }
 

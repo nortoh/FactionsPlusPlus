@@ -4,13 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -23,10 +22,19 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class EditLawCommand extends SubCommand {
 
-    public EditLawCommand() {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+
+    @Inject
+    public EditLawCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
         this
             .setNames("editlaw", "el", LOCALE_PREFIX + "CmdEditLaw")
             .requiresPermissions("mf.editlaw")

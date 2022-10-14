@@ -58,7 +58,7 @@ public class DynmapIntegrator {
         /* Get dynmap */
         dynmap = pm.getPlugin("dynmap");
 
-        if (isDynmapMissing()) {
+        if (dynmap == null) {
             this.logger.debug(this.localeService.get("CannotFindDynmap"));
         } else {
             try {

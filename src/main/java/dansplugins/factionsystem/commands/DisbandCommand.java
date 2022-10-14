@@ -8,13 +8,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionDisbandEvent;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
@@ -32,14 +30,32 @@ import java.util.Objects;
  */
 @Singleton
 public class DisbandCommand extends SubCommand {
+
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final ConfigService configService;
+    private final PersistentData persistentData;
+    private final DynmapIntegrator dynmapIntegrator;
     private final Logger logger;
 
     @Inject
-    public DisbandCommand(final Logger logger) {
+    public DisbandCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        ConfigService configService,
+        Logger logger,
+        PersistentData persistentData,
+        DynmapIntegrator dynmapIntegrator
+    ) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.configService = configService;
+        this.logger = logger;
+        this.persistentData = persistentData;
+        this.dynmapIntegrator = dynmapIntegrator;
         this
             .setNames("disband", LOCALE_PREFIX + "CmdDisband");
-        this.logger = logger;
     }
 
     /**

@@ -10,12 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.Duel.DuelState;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -31,16 +27,22 @@ import java.util.Objects;
  */
 @Singleton
 public class DuelCommand extends SubCommand {
+    private final EphemeralData ephemeralData;
+    private final PlayerService playerService;
+    private final MessageService messageService;
     private final MedievalFactions medievalFactions;
 
     @Inject
-    public DuelCommand(MedievalFactions medievalFactions) {
+    public DuelCommand(EphemeralData ephemeralData, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions) {
         super();
+        this.ephemeralData = ephemeralData;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.medievalFactions = medievalFactions;
         this
             .setNames("duel", "dl", LOCALE_PREFIX + "CmdDuel")
             .requiresPermissions("mf.duel")
             .isPlayerCommand();
-        this.medievalFactions = medievalFactions;
     }
 
     /**

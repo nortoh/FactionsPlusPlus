@@ -21,14 +21,14 @@ import org.bukkit.entity.Player;
 public class ClaimCommand extends SubCommand {
 
     private final PlayerService playerService;
-    private final PersistentData.ChunkDataAccessor chunkDataAccessor;
+    private final PersistentData persistentData;
     private final DynmapIntegrator dynmapIntegrator;
 
     @Inject
-    public ClaimCommand(PlayerService playerService, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator) {
+    public ClaimCommand(PlayerService playerService, PersistentData persistentData, DynmapIntegrator dynmapIntegrator) {
         super();
         this.playerService = playerService;
-        this.chunkDataAccessor = chunkDataAccessor;
+        this.persistentData = persistentData;
         this.dynmapIntegrator = dynmapIntegrator;
         this
             .setNames("claim", LOCALE_PREFIX + "CmdClaim")
@@ -59,10 +59,10 @@ public class ClaimCommand extends SubCommand {
             if (depth <= 0) {
                 this.playerService.sendMessage(player, "&a" + this.getText("UsageClaimRadius"), "UsageClaimRadius", false);
             } else {
-                this.chunkDataAccessor.radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
+                this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
             }
         } else {
-            this.chunkDataAccessor.claimChunkAtLocation(player, player.getLocation(), this.faction);
+            this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), this.faction);
         }
         this.dynmapIntegrator.updateClaims();
     }

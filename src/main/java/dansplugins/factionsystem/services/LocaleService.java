@@ -56,6 +56,17 @@ public class LocaleService {
         return strings.get(key);
     }
 
+    /**
+     * Method to obtain text from a key with replacements.
+     *
+     * @param key          to obtain.
+     * @param replacements to replace within the message using {@link String#format(String, Object...)}.
+     * @return String message
+     */
+    public String getText(String key, Object... replacements) {
+        return String.format(this.getText(key), replacements);
+    }
+
     public void loadStrings() {
 
         if (isFilePresent(localizationFilePath)) {

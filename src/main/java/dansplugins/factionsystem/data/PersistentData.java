@@ -14,6 +14,7 @@ import com.google.gson.stream.JsonReader;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.events.FactionClaimEvent;
 import dansplugins.factionsystem.events.FactionUnclaimEvent;
+import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.*;
 import dansplugins.factionsystem.services.ConfigService;
@@ -54,6 +55,7 @@ public class PersistentData {
     private final Messenger messenger;
     private final EphemeralData ephemeralData;
     private final Logger logger;
+    private final FactionFactory factionFactory;
     private final InteractionAccessChecker interactionAccessChecker;
     private final ArrayList<Faction> factions = new ArrayList<>();
     private final ArrayList<ClaimedChunk> claimedChunks = new ArrayList<>();
@@ -67,7 +69,7 @@ public class PersistentData {
     private final BlockChecker blockChecker;
 
     @Inject
-    public PersistentData(final LocaleService localeService, final ConfigService configService, final MedievalFactions medievalFactions, final PlayerService playerService, final MessageService messageService, final Messenger messenger, final Logger logger, final EphemeralData ephemeralData, final BlockChecker blockChecker) {
+    public PersistentData(final LocaleService localeService, final ConfigService configService, final MedievalFactions medievalFactions, final PlayerService playerService, final MessageService messageService, final Messenger messenger, final Logger logger, final EphemeralData ephemeralData, final BlockChecker blockChecker, FactionFactory factionFactory) {
         this.localeService = localeService;
         this.configService = configService;
         this.medievalFactions = medievalFactions;
@@ -76,6 +78,7 @@ public class PersistentData {
         this.messenger = messenger;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
+        this.factionFactory = factionFactory;
         interactionAccessChecker = new InteractionAccessChecker(this, configService, ephemeralData, logger);
         dynmapIntegrator = new DynmapIntegrator(logger, configService.getLocaleService(), medievalFactions, this); // TODO: resolve circular dependency
         this.blockChecker = blockChecker;
@@ -95,6 +98,10 @@ public class PersistentData {
 
     public LocalStorageService getLocalStorageService() {
         return localStorageService;
+    }
+
+    public FactionFactory geFactionFactory() {
+        return factionFactory;
     }
 
     /**
@@ -1432,7 +1439,7 @@ public class PersistentData {
             ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + FACTIONS_FILE_NAME);
 
             for (Map<String, String> factionData : data) {
-                Faction newFaction = new Faction(factionData, configService, localeService, dynmapIntegrator, logger, persistentData, medievalFactions, playerService);
+                Faction newFaction = persistentData.geFactionFactory().create(factionData);
                 factions.add(newFaction);
             }
         }

@@ -11,6 +11,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.*;
+import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
@@ -35,6 +36,7 @@ import java.util.*;
 public class ForceCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
     private final Logger logger;
+    private FactionFactory factionFactory;
 
     private final String[] commands = new String[]{
             "Save", "Load", "Peace", "Demote", "Join", "Kick", "Power", "Renounce", "Transfer", "RemoveVassal", "Rename", "BonusPower", "Unlock", "Create", "Claim", "Flag"
@@ -45,12 +47,13 @@ public class ForceCommand extends SubCommand {
     private final UUIDChecker uuidChecker = new UUIDChecker();
 
     @Inject
-    public ForceCommand(final MedievalFactions medievalFactions, final Logger logger) {
+    public ForceCommand(FactionFactory factionFactory, MedievalFactions medievalFactions, Logger logger) {
         super();
         this
             .setNames("force", LOCALE_PREFIX + "CmdForce");
         this.medievalFactions = medievalFactions;
         this.logger = logger;
+        this.factionFactory = factionFactory;
         // Register sub-commands.
         Arrays.stream(commands).forEach(command ->
                 subMap.put(Arrays.asList(command, getText("CmdForce" + command)), "force" + command)
@@ -554,7 +557,7 @@ public class ForceCommand extends SubCommand {
             return;
         }
 
-        this.faction = new Faction(configService, localeService, dynmapIntegrator, logger, persistentData, medievalFactions, playerService, newFactionName);
+        this.faction = this.factionFactory.create(newFactionName);
         FactionCreateEvent createEvent = new FactionCreateEvent(this.faction, player);
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {

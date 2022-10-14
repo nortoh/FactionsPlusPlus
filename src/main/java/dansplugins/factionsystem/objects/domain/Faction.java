@@ -4,6 +4,10 @@
  */
 package dansplugins.factionsystem.objects.domain;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -50,7 +54,18 @@ public class Faction extends Nation implements Feudal, Savable {
     private int bonusPower = 0;
     private boolean autoclaim = false;
 
-    public Faction(String initialName, UUID creator, ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PersistentData persistentData, MedievalFactions medievalFactions, PlayerService playerService) {
+    @AssistedInject
+    public Faction(
+        @Assisted String initialName,
+        @Assisted UUID creator,
+        ConfigService configService,
+        LocaleService localeService,
+        DynmapIntegrator dynmapIntegrator,
+        Logger logger,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions,
+        PlayerService playerService
+    ) {
         this.configService = configService;
         this.localeService = localeService;
         this.dynmapIntegrator = dynmapIntegrator;
@@ -61,11 +76,43 @@ public class Faction extends Nation implements Feudal, Savable {
         setName(initialName);
         setOwner(creator);
         prefix = initialName;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, this.playerService);
+        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, playerService);
         flags.initializeFlagValues();
     }
 
-    public Faction(ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PersistentData persistentData, MedievalFactions medievalFactions, PlayerService playerService, String initialName) {
+    @AssistedInject
+    public Faction(
+        @Assisted Map<String, String> data,
+        ConfigService configService,
+        LocaleService localeService,
+        DynmapIntegrator dynmapIntegrator,
+        Logger logger,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions,
+        PlayerService playerService
+    ) {
+        this.configService = configService;
+        this.localeService = localeService;
+        this.dynmapIntegrator = dynmapIntegrator;
+        this.logger = logger;
+        this.persistentData = persistentData;
+        this.medievalFactions = medievalFactions;
+        this.playerService = playerService;
+        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, playerService);
+        this.load(data);
+    }
+
+    @AssistedInject
+    public Faction(
+        @Assisted String initialName,
+        ConfigService configService,
+        LocaleService localeService,
+        DynmapIntegrator dynmapIntegrator,
+        Logger logger,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions,
+        PlayerService playerService
+    ) {
         this.configService = configService;
         this.localeService = localeService;
         this.dynmapIntegrator = dynmapIntegrator;
@@ -75,20 +122,8 @@ public class Faction extends Nation implements Feudal, Savable {
         this.playerService = playerService;
         setName(initialName);
         prefix = initialName;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, this.playerService);
+        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, playerService);
         flags.initializeFlagValues();
-    }
-
-    public Faction(Map<String, String> data, ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PersistentData persistentData, MedievalFactions medievalFactions, PlayerService playerService) {
-        this.configService = configService;
-        this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
-        this.logger = logger;
-        this.persistentData = persistentData;
-        this.medievalFactions = medievalFactions;
-        this.playerService = playerService;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, this.playerService);
-        this.load(data);
     }
 
     public int getTotalGates() {

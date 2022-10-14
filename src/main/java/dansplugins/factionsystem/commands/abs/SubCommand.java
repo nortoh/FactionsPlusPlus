@@ -49,6 +49,10 @@ public abstract class SubCommand implements ColorTranslator {
     protected String[] names;
     protected String[] requiredPermissions;
 
+    public SubCommand() {
+        this.requiredPermissions = new String[]{};
+    }
+    
     public void setUserFaction(Faction faction) {
         this.faction = faction;
     }
@@ -159,15 +163,15 @@ public abstract class SubCommand implements ColorTranslator {
 
     // Helper methods for checkPermissions in different cases
     public boolean checkPermissions(CommandSender sender) {
-        return this.checkPermissions(sender, false, this.requiredPermissions);
+        return this.checkPermissions(sender, this.requiredPermissions);
     }
 
     public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing) {
-        return this.checkPermissions(sender, announcePermissionsMissing, this.requiredPermissions);
+        return this.checkPermissions(sender, this.requiredPermissions);
     }
 
-    public boolean checkPermissions(CommandSender sender, String... permissions) {
-        return this.checkPermissions(sender, true, permissions);
+    public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing, String... permissions) {
+        return this.checkPermissions(sender, permissions);
     }
 
     /**
@@ -180,7 +184,7 @@ public abstract class SubCommand implements ColorTranslator {
      * @param permission to test for.
      * @return {@code true} if they do.
      */
-    public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing, String... permissions) {
+    public boolean checkPermissions(CommandSender sender, String... permissions) {
         boolean hasPermission = false;
         List<String> missingPermissions = new ArrayList<String>();
         for (String perm : permissions) {

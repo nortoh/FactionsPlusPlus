@@ -212,7 +212,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
                 new EffectHandler(ephemeralData, this, relationChecker),
                 new InteractionHandler(persistentData, persistentData.getInteractionAccessChecker(), localeService, persistentData.getBlockChecker(), this, lockService, ephemeralData, gateService, playerService, messageService),
                 new JoinHandler(persistentData, localeService, configService, logger, messenger, territoryOwnerNotifier),
-                new MoveHandler(persistentData, territoryOwnerNotifier, localeService, this, persistentData.getDynmapIntegrator(), playerService),
+                //new MoveHandler(persistentData, territoryOwnerNotifier, localeService, this, persistentData.getDynmapIntegrator(), playerService),
                 new QuitHandler(ephemeralData, persistentData, actionBarService),
                 new SpawnHandler(configService, persistentData)
         ));
@@ -236,7 +236,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
 
     private void handleDynmapIntegration() {
         logger.debug("Handling dynmap integration...");
-        if (DynmapIntegrator.hasDynmap()) {
+        if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
             logger.debug("Found dynmap! Scheduling claims update and updating claims.");
             persistentData.getDynmapIntegrator().scheduleClaimsUpdate(600); // Check once every 30 seconds for updates.
             persistentData.getDynmapIntegrator().updateClaims();

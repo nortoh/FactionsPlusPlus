@@ -12,6 +12,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionCreateEvent;
+import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
@@ -35,10 +36,11 @@ public class CreateCommand extends SubCommand {
     private final ConfigService configService;
     private final MessageService messageService;
     private final PersistentData persistentData;
-    private final LocaleService localeService;
     private final Logger logger;
+    private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
     private final DynmapIntegrator dynmapIntegrator;
+    private final FactionFactory factionFactory;
 
     @Inject
     public CreateCommand(
@@ -49,7 +51,8 @@ public class CreateCommand extends SubCommand {
         Logger logger,
         LocaleService localeService,
         MedievalFactions medievalFactions,
-        DynmapIntegrator dynmapIntegrator
+        DynmapIntegrator dynmapIntegrator,
+        FactionFactory factionFactory
     ) {
         super();
         this.playerService = playerService;
@@ -60,6 +63,7 @@ public class CreateCommand extends SubCommand {
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
         this.dynmapIntegrator = dynmapIntegrator;
+        this.factionFactory = factionFactory;
         this
             .setNames("create", LOCALE_PREFIX + "CmdCreate")
             .requiresPermissions("mf.create")
@@ -112,6 +116,7 @@ public class CreateCommand extends SubCommand {
             return;
         }
 
+        playerFaction = this.factionFactory.create(factionName, player.getUniqueId());
         playerFaction = new Faction(factionName, player.getUniqueId(), this.configService, this.localeService, this.dynmapIntegrator, this.logger, this.persistentData, this.medievalFactions, this.playerService);
         playerFaction.addMember(player.getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, player);

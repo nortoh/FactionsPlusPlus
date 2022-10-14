@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.services.LocaleService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -19,14 +20,16 @@ import org.bukkit.entity.Player;
 public class AutoClaimCommand extends SubCommand {
 
     private final PlayerService playerService;
+    private final LocaleService localeService;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public AutoClaimCommand(PlayerService playerService) {
+    public AutoClaimCommand(PlayerService playerService, LocaleService localeService) {
         super();
         this.playerService = playerService;
+        this.localeService = localeService;
         this
             .setNames("autoclaim", "AC", LOCALE_PREFIX + "CmdAutoClaim")
             .requiresPermissions("mf.autoclaim")

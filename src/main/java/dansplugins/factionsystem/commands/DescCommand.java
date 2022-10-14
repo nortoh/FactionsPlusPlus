@@ -4,12 +4,10 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
@@ -20,10 +18,17 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DescCommand extends SubCommand {
 
-    public DescCommand() {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+
+    @Inject
+    public DescCommand(PlayerService playerService, MessageService messageService) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
         this
             .setNames("description", "desc", LOCALE_PREFIX + "CmdDesc")
             .requiresPermissions("mf.desc")
