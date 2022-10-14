@@ -24,10 +24,14 @@ import java.util.List;
  */
 public class FlagsCommand extends SubCommand {
 
-    public FlagsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "flags", LOCALE_PREFIX + "CmdFlags"
-        }, true, true, false, true, new String[] {"mf.flags"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public FlagsCommand() {
+        super();
+        this
+            .setNames("flags", LOCALE_PREFIX + "CmdFlags")
+            .requiresPermissions("mf.flags")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

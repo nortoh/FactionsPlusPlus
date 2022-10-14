@@ -1,5 +1,8 @@
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,13 +14,9 @@ import java.util.logging.Level;
 
 public class MessageService {
 
-    private final MedievalFactions medievalFactions;
+    @Inject private MedievalFactions medievalFactions;
     private File languageFile;
     private FileConfiguration language;
-
-    public MessageService(MedievalFactions medievalFactions) {
-        this.medievalFactions = medievalFactions;
-    }
 
     public void createLanguageFile() {
         languageFile = new File(medievalFactions.getDataFolder(), "language.yml");

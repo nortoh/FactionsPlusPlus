@@ -4,13 +4,10 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,15 +15,24 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class AutoClaimCommand extends SubCommand {
+
+    private final PlayerSerivce playerService;
 
     /**
      * Constructor to initialise a Command.
      */
-    public AutoClaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "autoclaim", "AC", LOCALE_PREFIX + "CmdAutoClaim"
-        }, true, true, false, true, new String[] {"mf.autoclaim"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public AutoClaimCommand(PlayerService playerService) {
+        super();
+        this.playerService = playerService;
+        this
+            .setNames("autoclaim", "AC", LOCALE_PREFIX + "CmdAutoClaim")
+            .requiresPermissions("mf.autoclaim")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

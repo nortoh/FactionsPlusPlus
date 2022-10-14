@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -26,13 +29,17 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class WhoCommand extends SubCommand {
     private final Messenger messenger;
 
-    public WhoCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Messenger messenger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "who", LOCALE_PREFIX + "CmdWho"
-        }, true, new String[] {"mf.who"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public WhoCommand(final Messenger messenger) {
+        super();
+        this
+            .setNames("who", LOCALE_PREFIX + "CmdWho")
+            .requiresPermissions("mf.who")
+            .isPlayerCommand();
         this.messenger = messenger;
     }
 

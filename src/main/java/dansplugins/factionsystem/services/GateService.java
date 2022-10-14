@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.ClaimedChunk;
@@ -18,18 +21,21 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Objects;
+import javax.inject.Provider;
 
 /**
  * @author Caibinus
  */
+@Singleton
 public class GateService {
-    private final PersistentData persistentData;
+    private final Provider<PersistentData> persistentData;
     private final LocaleService localeService;
     private final EphemeralData ephemeralData;
     private final PlayerService playerService;
     private final MessageService messageService;
 
-    public GateService(PersistentData persistentData, LocaleService localeService, EphemeralData ephemeralData, PlayerService playerService, MessageService messageService) {
+    @Inject
+    public GateService(Provider<PersistentData> persistentData, final LocaleService localeService, final EphemeralData ephemeralData, final PlayerService playerService, final MessageService messageService) {
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.ephemeralData = ephemeralData;
@@ -38,13 +44,13 @@ public class GateService {
     }
 
     public void handlePotentialGateInteraction(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        if (!persistentData.getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
+        if (!persistentData.get().getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
             return;
         }
 
-        ClaimedChunk claim = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
-        Faction faction = persistentData.getFaction(claim.getHolder());
-        Faction playersFaction = persistentData.getPlayersFaction(player.getUniqueId());
+        ClaimedChunk claim = persistentData.get().getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        Faction faction = persistentData.get().getFaction(claim.getHolder());
+        Faction playersFaction = persistentData.get().getPlayersFaction(player.getUniqueId());
 
         if (!faction.getName().equals(playersFaction.getName())) {
             return;
@@ -80,9 +86,9 @@ public class GateService {
     }
 
     public void handlePotentialGateInteraction(Block block, BlockRedstoneEvent event) {
-        if (persistentData.getChunkDataAccessor().isClaimed(block.getChunk())) {
-            ClaimedChunk claim = persistentData.getChunkDataAccessor().getClaimedChunk(block.getChunk());
-            Faction faction = persistentData.getFaction(claim.getHolder());
+        if (persistentData.get().getChunkDataAccessor().isClaimed(block.getChunk())) {
+            ClaimedChunk claim = persistentData.get().getChunkDataAccessor().getClaimedChunk(block.getChunk());
+            Faction faction = persistentData.get().getFaction(claim.getHolder());
 
             if (faction.hasGateTrigger(block)) {
                 for (Gate g : faction.getGatesForTrigger(block)) {
@@ -107,19 +113,19 @@ public class GateService {
     }
 
     public void handleCreatingGate(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        if (!persistentData.getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
+        if (!persistentData.get().getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
             playerService.sendMessage(player, ChatColor.RED + localeService.get("CanOnlyCreateGatesInClaimedTerritory"), "CanOnlyCreateGatesInClaimedTerritory", false);
             return;
         } else {
-            ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+            ClaimedChunk claimedChunk = persistentData.get().getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
             if (claimedChunk != null) {
-                if (!persistentData.getFaction(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
+                if (!persistentData.get().getFaction(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
                     playerService.sendMessage(player, ChatColor.RED + localeService.get("AlertMustBeMemberToCreateGate"), "AlertMustBeMemberToCreateGate", false);
 
                     return;
                 } else {
-                    if (!persistentData.getFaction(claimedChunk.getHolder()).isOwner(player.getUniqueId())
-                            && !persistentData.getFaction(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
+                    if (!persistentData.get().getFaction(claimedChunk.getHolder()).isOwner(player.getUniqueId())
+                            && !persistentData.get().getFaction(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
                         playerService.sendMessage(player, ChatColor.RED + localeService.get("AlertMustBeOwnerOrOfficerToCreateGate"), "AlertMustBeOwnerOrOfficerToCreateGate", false);
                         return;
                     }
@@ -189,11 +195,11 @@ public class GateService {
                     && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getTrigger() == null
                     && !ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord2().equals(clickedBlock)) {
                 if (clickedBlock.getBlockData() instanceof Powerable) {
-                    if (persistentData.getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
+                    if (persistentData.get().getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
                         Gate.ErrorCodeAddCoord e = ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).addCoord(clickedBlock);
                         if (e.equals(Gate.ErrorCodeAddCoord.None)) {
-                            ClaimedChunk claim = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
-                            Faction faction = persistentData.getFaction(claim.getHolder());
+                            ClaimedChunk claim = persistentData.get().getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+                            Faction faction = persistentData.get().getFaction(claim.getHolder());
                             faction.addGate(ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()));
                             ephemeralData.getCreatingGatePlayers().remove(event.getPlayer().getUniqueId());
                             playerService.sendMessage(event.getPlayer(), ChatColor.GREEN + "Creating Gate 4/4: Trigger successfully linked."

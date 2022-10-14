@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -19,13 +22,16 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class VersionCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
 
-    public VersionCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "version", LOCALE_PREFIX + "CmdVersion"
-        }, false, new String[] {"mf.version"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public VersionCommand(final MedievalFactions medievalFactions) {
+        super();
+        this
+            .setNames("version", LOCALE_PREFIX + "CmdVersion")
+            .requiresPermissions("mf.version");
         this.medievalFactions = medievalFactions;
     }
 

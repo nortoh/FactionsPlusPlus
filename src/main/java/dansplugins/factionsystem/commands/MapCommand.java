@@ -29,10 +29,12 @@ import java.util.List;
 public class MapCommand extends SubCommand {
     private final char[] map_keys = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789abcdeghjmnopqrsuvwxyz?".toCharArray();
 
-    public MapCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "map", "showmap", "displaymap"
-        }, true, new String[] {"mf.map"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public MapCommand() {
+        super();
+        this
+            .setNames("map", "showmap", "displaymap")
+            .requiresPermissions("mf.map")
+            .isPlayerCommand();
     }
 
     /**

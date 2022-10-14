@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -25,14 +28,20 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class RenameCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
     private final Logger logger;
 
-    public RenameCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "rename"
-        }, true, true, false, true, new String[] {"mf.rename"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public RenameCommand(final MedievalFactions medievalFactions, final Logger logger) {
+        super();
+        this
+            .setNames("rename")
+            .requiresPermissions("mf.rename")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
         this.medievalFactions = medievalFactions;
         this.logger = logger;
     }

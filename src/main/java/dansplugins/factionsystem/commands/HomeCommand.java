@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -21,13 +24,18 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class HomeCommand extends SubCommand {
     private final Scheduler scheduler;
 
-    public HomeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Scheduler scheduler, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "home", LOCALE_PREFIX + "CmdHome"
-        }, true, true, new String[] {"mf.home"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public HomeCommand(final Scheduler scheduler) {
+        super();
+        this
+            .setNames("home", LOCALE_PREFIX + "CmdHome")
+            .requiresPermissions("mf.home")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
         this.scheduler = scheduler;
     }
 

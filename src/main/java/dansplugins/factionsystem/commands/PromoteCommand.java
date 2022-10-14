@@ -30,10 +30,14 @@ import java.util.UUID;
  */
 public class PromoteCommand extends SubCommand {
 
-    public PromoteCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "promote", LOCALE_PREFIX + "CmdPromote"
-        }, true, true, false, true, new String[] {"mf.promote"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public PromoteCommand() {
+        super();
+        this
+            .setNames("promote", LOCALE_PREFIX + "CmdPromote")
+            .requiresPermissions("mf.promote")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

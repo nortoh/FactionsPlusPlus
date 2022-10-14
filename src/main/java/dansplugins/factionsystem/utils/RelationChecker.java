@@ -1,12 +1,17 @@
 package dansplugins.factionsystem.utils;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.PersistentData;
 import org.bukkit.entity.Player;
 import preponderous.ponder.misc.Pair;
 
+@Singleton
 public class RelationChecker {
     private final PersistentData persistentData;
 
+    @Inject
     public RelationChecker(PersistentData persistentData) {
         this.persistentData = persistentData;
     }

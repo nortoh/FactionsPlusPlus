@@ -4,6 +4,8 @@
  */
 package dansplugins.factionsystem.data;
 
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.Gate;
 import org.bukkit.entity.AreaEffectCloud;
@@ -17,6 +19,7 @@ import java.util.UUID;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class EphemeralData {
     private final HashMap<UUID, Gate> creatingGatePlayers = new HashMap<>();
 

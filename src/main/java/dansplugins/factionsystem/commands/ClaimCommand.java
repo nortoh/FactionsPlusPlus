@@ -20,10 +20,12 @@ import org.bukkit.entity.Player;
  */
 public class ClaimCommand extends SubCommand {
 
-    public ClaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "claim", LOCALE_PREFIX + "CmdClaim"
-        }, true, true, new String[] {}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public ClaimCommand() {
+        super();
+        this
+            .setNames("claim", LOCALE_PREFIX + "CmdClaim")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**

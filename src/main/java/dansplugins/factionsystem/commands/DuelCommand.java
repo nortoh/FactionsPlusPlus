@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -26,13 +29,17 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DuelCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
 
-    public DuelCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "duel", "dl", LOCALE_PREFIX + "CmdDuel"
-        }, true, new String[] {"mf.duel"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public DuelCommand(MedievalFactions medievalFactions) {
+        super();
+        this
+            .setNames("duel", "dl", LOCALE_PREFIX + "CmdDuel")
+            .requiresPermissions("mf.duel")
+            .isPlayerCommand();
         this.medievalFactions = medievalFactions;
     }
 

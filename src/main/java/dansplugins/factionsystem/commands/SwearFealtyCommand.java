@@ -25,10 +25,14 @@ import java.util.Objects;
  */
 public class SwearFealtyCommand extends SubCommand {
 
-    public SwearFealtyCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "swearfealty", LOCALE_PREFIX + "CmdSwearFealty", "sf"
-        }, true, true, false, true, new String[] {"mf.swearfealty"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public SwearFealtyCommand() {
+        super();
+        this
+            .setNames("swearfealty", "sf", LOCALE_PREFIX + "CmdSwearFealty")
+            .requiresPermissions("mf.swearfealty")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

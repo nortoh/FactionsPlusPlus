@@ -23,13 +23,14 @@ import java.util.List;
  * @author Callum Johnson
  */
 public class UnlockCommand extends SubCommand {
-    private final RelationChecker relationChecker;
 
-    public UnlockCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, RelationChecker relationChecker, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "unlock", LOCALE_PREFIX + "CmdUnlock"
-        }, true, true, new String[] {"mf.unlock"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
-        this.relationChecker = relationChecker;
+    public UnlockCommand() {
+        super();
+        this
+            .setNames("unlock", LOCALE_PREFIX + "CmdUnlock")
+            .requiresPermissions("mf.unlock")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**

@@ -27,10 +27,11 @@ import java.util.UUID;
  */
 public class PowerCommand extends SubCommand {
 
-    public PowerCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "power", LOCALE_PREFIX + "CmdPower"
-        }, false, new String[] {"mf.power"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public PowerCommand() {
+        super();
+        this
+            .setNames("power", LOCALE_PREFIX + "CmdPower")
+            .requiresPermissions("mf.power");
     }
 
     /**

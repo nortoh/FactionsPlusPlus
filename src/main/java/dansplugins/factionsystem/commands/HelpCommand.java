@@ -28,11 +28,11 @@ public class HelpCommand extends SubCommand {
     private static final int LAST_PAGE = 7;
     private final HashMap<Integer, List<String>> helpPages = new HashMap<>();
 
-    public HelpCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "help", LOCALE_PREFIX + "CmdHelp"
-        }, false, new String[] {"mf.help"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
-
+    public HelpCommand() {
+        super();
+        this
+            .setNames("help", LOCALE_PREFIX + "CmdHelp")
+            .requiresPermissions("mf.help");
         // there should be 9 commands per page
         this.helpPages.put(1, Arrays.asList("Help", "List", "Info", "Members", "Join", "Leave", "Create", "Invite", "Desc"));
         this.helpPages.put(2, Arrays.asList("FlagsShow", "FlagsSet", "Kick", "Transfer", "Disband", "DeclareWar", "MakePeace", "Invoke", "Claim"));

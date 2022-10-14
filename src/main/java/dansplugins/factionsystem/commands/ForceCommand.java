@@ -4,6 +4,8 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -42,10 +44,11 @@ public class ForceCommand extends SubCommand {
     private final ArgumentParser argumentParser = new ArgumentParser();
     private final UUIDChecker uuidChecker = new UUIDChecker();
 
-    public ForceCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "force", LOCALE_PREFIX + "CmdForce"
-        }, false, new String[] {}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public ForceCommand(final MedievalFactions medievalFactions, final Logger logger) {
+        super();
+        this
+            .setNames("force", LOCALE_PREFIX + "CmdForce");
         this.medievalFactions = medievalFactions;
         this.logger = logger;
         // Register sub-commands.

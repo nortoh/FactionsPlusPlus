@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -26,13 +29,16 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class JoinCommand extends SubCommand {
     private final Logger logger;
 
-    public JoinCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "join", LOCALE_PREFIX + "CmdJoin"
-        }, true, new String[] {"mf.join"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public JoinCommand(final Logger logger) {
+        this
+            .setNames("join", LOCALE_PREFIX + "CmdJoin")
+            .requiresPermissions("mf.join")
+            .isPlayerCommand();
         this.logger = logger;
     }
 

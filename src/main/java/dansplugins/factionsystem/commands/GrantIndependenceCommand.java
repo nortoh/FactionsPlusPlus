@@ -25,10 +25,14 @@ import java.util.Objects;
  */
 public class GrantIndependenceCommand extends SubCommand {
 
-    public GrantIndependenceCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "grantindependence", "gi", LOCALE_PREFIX + "CmdGrantIndependence"
-        }, true, true, false, true, new String[] {"mf.grantindependence"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public GrantIndependenceCommand() {
+        super();
+        this
+            .setNames("grantindependence", "gi", LOCALE_PREFIX + "CmdGrantIndependence")
+            .requiresPermissions("mf.grantindependence")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

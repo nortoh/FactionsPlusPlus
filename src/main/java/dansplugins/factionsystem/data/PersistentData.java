@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.data;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -40,6 +43,7 @@ import static org.bukkit.Material.LADDER;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class PersistentData {
     final HashSet<War> wars = new HashSet<>();
     private final LocaleService localeService;
@@ -62,18 +66,19 @@ public class PersistentData {
     private final DynmapIntegrator dynmapIntegrator;
     private final BlockChecker blockChecker;
 
-    public PersistentData(LocaleService localeService, ConfigService configService, MedievalFactions medievalFactions, Messenger messenger, EphemeralData ephemeralData, Logger logger, PlayerService playerService, MessageService messageService) {
+    @Inject
+    public PersistentData(final LocaleService localeService, final ConfigService configService, final MedievalFactions medievalFactions, final PlayerService playerService, final MessageService messageService, final Messenger messenger, final Logger logger, final EphemeralData ephemeralData, final BlockChecker blockChecker) {
         this.localeService = localeService;
         this.configService = configService;
         this.medievalFactions = medievalFactions;
+        this.playerService = playerService;
+        this.messageService = messageService;
         this.messenger = messenger;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
-        this.playerService = playerService;
-        this.messageService = messageService;
         interactionAccessChecker = new InteractionAccessChecker(this, configService, ephemeralData, logger);
         dynmapIntegrator = new DynmapIntegrator(logger, configService.getLocaleService(), medievalFactions, this); // TODO: resolve circular dependency
-        blockChecker = new BlockChecker(this); // TODO: resolve circular dependency
+        this.blockChecker = blockChecker;
     }
 
     public DynmapIntegrator getDynmapIntegrator() {

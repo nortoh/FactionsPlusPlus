@@ -21,15 +21,11 @@ import org.bukkit.entity.Player;
  * @author Callum Johnson
  */
 public class StatsCommand extends SubCommand {
-    private MedievalFactions medievalFactions;
-    private PersistentData persistentData;
 
-    public StatsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions) {
-        super(new String[]{
-                "stats", LOCALE_PREFIX + "CmdStats"
-        }, false, false, false, false, new String[] {}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
-        this.medievalFactions = medievalFactions;
-        this.persistentData = persistentData;
+    public StatsCommand() {
+        super();
+        this
+            .setNames("stats", LOCALE_PREFIX + "CmdStats");
     }
 
     @Override

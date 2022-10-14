@@ -25,10 +25,14 @@ import java.util.List;
  */
 public class EditLawCommand extends SubCommand {
 
-    public EditLawCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "editlaw", "el", LOCALE_PREFIX + "CmdEditLaw"
-        }, true, true, false, true, new String[] {"mf.editlaw"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public EditLawCommand() {
+        super();
+        this
+            .setNames("editlaw", "el", LOCALE_PREFIX + "CmdEditLaw")
+            .requiresPermissions("mf.editlaw")
+            .requiresPlayerInFaction()
+            .requiresFactionOwner()
+            .isPlayerCommand();
     }
 
     /**

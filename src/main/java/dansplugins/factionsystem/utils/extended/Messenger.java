@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.utils.extended;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
@@ -24,20 +27,13 @@ import static org.bukkit.Bukkit.getServer;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messenger {
-    private final LocaleService localeService;
-    private final PlayerService playerService;
-    private final MessageService messageService;
-    private final MedievalFactions medievalFactions;
-    private final ConfigService configService;
-
-    public Messenger(LocaleService localeService, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions, ConfigService configService) {
-        this.localeService = localeService;
-        this.playerService = playerService;
-        this.messageService = messageService;
-        this.medievalFactions = medievalFactions;
-        this.configService = configService;
-    }
+    @Inject private LocaleService localeService;
+    @Inject private PlayerService playerService;
+    @Inject private MessageService messageService;
+    @Inject private MedievalFactions medievalFactions;
+    @Inject private ConfigService configService;
 
     public void sendFactionInfo(CommandSender sender, Faction faction, int power) {
         UUIDChecker uuidChecker = new UUIDChecker();

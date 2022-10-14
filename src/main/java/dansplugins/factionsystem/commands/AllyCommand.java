@@ -4,6 +4,10 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import dansplugins.factionsystem.annotations.PostConstruct;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -24,15 +28,29 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class AllyCommand extends SubCommand {
+    protected final MessageService messageService;
+    protected final PlayerService playerService;
+    protected final LocaleService localeService;
+    protected final PersistentData persistentData;
 
     /**
      * Constructor to initialise a Command.
      */
-    public AllyCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "ally", LOCALE_PREFIX + "CmdAlly"
-        }, true, true, true, false, new String[] {"mf.ally"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public AllyCommand(MessageService messageService, PlayerService playerService, LocaleService localeService, PersistentData persistentData) {
+        super();
+        this.messageService = messageService;
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.persistentData = persistentData;
+        this
+            .setNames("ally", LOCALE_PREFIX + "CmdAlly")
+            .requiresPermissions("mf.ally")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOfficer();
     }
 
     /**

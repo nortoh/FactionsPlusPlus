@@ -4,6 +4,8 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -29,10 +31,14 @@ import java.util.Objects;
  */
 public class InvokeCommand extends SubCommand {
 
-    public InvokeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "invoke", LOCALE_PREFIX + "CmdInvoke"
-        }, true, true, false, true, new String[] {"mf.invoke"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public InvokeCommand() {
+        super();
+        this
+            .setNames("invoke", LOCALE_PREFIX + "CmdInvoke")
+            .requiresPermissions("mf.invoke")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -26,14 +29,18 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class CreateCommand extends SubCommand {
     private final Logger logger;
     private final MedievalFactions medievalFactions;
 
-    public CreateCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "create", LOCALE_PREFIX + "CmdCreate"
-        }, true, new String[] {"mf.create"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public CreateCommand(final Logger logger, final MedievalFactions medievalFactions) {
+        super();
+        this
+            .setNames("create", LOCALE_PREFIX + "CmdCreate")
+            .requiresPermissions("mf.create")
+            .isPlayerCommand();
         this.logger = logger;
         this.medievalFactions = medievalFactions;
     }

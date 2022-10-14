@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -30,13 +33,19 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class KickCommand extends SubCommand {
     private final Logger logger;
 
-    public KickCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "kick", LOCALE_PREFIX + "CmdKick"
-        }, true, true, true, false, new String[] {"mf.kick"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public KickCommand(final Logger logger) {
+        super();
+        this
+            .setNames("kick", LOCALE_PREFIX + "CmdKick")
+            .requiresPermissions("mf.kick")
+            .isPlayerCommand()
+            .requiresFactionOfficer()
+            .requiresPlayerInFaction();
         this.logger = logger;
     }
 

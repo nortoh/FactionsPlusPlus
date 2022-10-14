@@ -25,10 +25,10 @@ import java.util.Objects;
  */
 public class UnclaimallCommand extends SubCommand {
 
-    public UnclaimallCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "unclaimall", "ua", LOCALE_PREFIX + "CmdUnclaimall"
-        }, false, new String[] {}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public UnclaimallCommand() {
+        super();
+        this
+            .setNames("unclaimall", "ua", LOCALE_PREFIX + "CmdUnclaimall");
     }
 
     /**

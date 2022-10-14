@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -25,13 +28,19 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class VassalizeCommand extends SubCommand {
     private final Logger logger;
-
-    public VassalizeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "vassalize", LOCALE_PREFIX + "CmdVassalize"
-        }, true, true, false, true, new String[] {"mf.vassalize"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    
+    @Inject
+    public VassalizeCommand(final Logger logger) {
+        super();
+        this
+            .setNames("vassalize", LOCALE_PREFIX + "CmdVassalize")
+            .requiresPermissions("mf.vassalize")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
         this.logger = logger;
     }
 

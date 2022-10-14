@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -21,12 +24,21 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class CheckAccessCommand extends SubCommand {
 
-    public CheckAccessCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "checkaccess", "ca", LOCALE_PREFIX + "CmdCheckAccess"
-        }, true, new String[] {"mf.checkaccess"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final PlayerService playerService;
+    private final EphemeralData ephemeralData;
+
+    @Inject
+    public CheckAccessCommand(PlayerService playerService, EphemeralData ephemeralData) {
+        super();
+        this.playerService = playerService;
+        this.ephemeralData = ephemeralData;
+        this
+            .setNames("checkaccess", "ca", LOCALE_PREFIX + "CmdCheckAccess")
+            .requiresPermissions("mf.checkaccess")
+            .isPlayerCommand();
     }
 
     /**

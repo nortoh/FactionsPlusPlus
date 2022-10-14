@@ -25,10 +25,14 @@ import java.util.List;
  */
 public class RemoveLawCommand extends SubCommand {
 
-    public RemoveLawCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "removelaw", LOCALE_PREFIX + "CmdRemoveLaw"
-        }, true, true, false, true, new String[] {"mf.removelaw"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public RemoveLawCommand() {
+        super();
+        this
+            .setNames("removelaw", LOCALE_PREFIX + "CmdRemoveLaw")
+            .requiresPermissions("mf.removelaw")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

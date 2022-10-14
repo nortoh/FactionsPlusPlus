@@ -26,13 +26,12 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 public class MembersCommand extends SubCommand {
-    private final MedievalFactions medievalFactions;
 
-    public MembersCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions) {
-        super(new String[]{
-                "members", LOCALE_PREFIX + "CmdMembers"
-        }, false, new String[] {"mf.members"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
-        this.medievalFactions = medievalFactions;
+    public MembersCommand() {
+        super();
+        this
+            .setNames("members", LOCALE_PREFIX + "CmdMembers")
+            .requiresPermissions("mf.members");
     }
 
     /**

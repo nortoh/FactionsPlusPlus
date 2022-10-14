@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -30,13 +33,18 @@ import static org.bukkit.Bukkit.getServer;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class InviteCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
 
-    public InviteCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "invite", LOCALE_PREFIX + "CmdInvite"
-        }, true, true, new String[] {"mf.invite"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public InviteCommand(final MedievalFactions medievalFactions) {
+        super();
+        this
+            .setNames("invite", LOCALE_PREFIX + "CmdInvite")
+            .requiresPermissions("mf.invite")
+            .requiresPlayerInFaction()
+            .isPlayerCommand();
         this.medievalFactions = medievalFactions;
     }
 

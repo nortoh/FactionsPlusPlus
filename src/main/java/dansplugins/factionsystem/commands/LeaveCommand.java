@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -23,14 +26,19 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class LeaveCommand extends SubCommand {
     private final Logger logger;
     private final DisbandCommand disbandCommand;
 
-    public LeaveCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, DisbandCommand disbandCommand, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "leave", LOCALE_PREFIX + "CmdLeave"
-        }, true, true, false, false, new String[] {"mf.leave"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public LeaveCommand(final Logger logger, final DisbandCommand disbandCommand) {
+        super();
+        this
+            .setNames("leave", LOCALE_PREFIX + "CmdLeave")
+            .requiresPermissions("mf.leave")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
         this.logger = logger;
         this.disbandCommand = disbandCommand;
     }

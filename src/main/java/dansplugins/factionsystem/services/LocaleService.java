@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import preponderous.ponder.misc.Pair;
 
@@ -11,13 +14,15 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import javax.inject.Provider;
 
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class LocaleService {
-    private final MedievalFactions medievalFactions;
-    private final ConfigService configService;
+    private final Provider<MedievalFactions> medievalFactions;
+    private final Provider<ConfigService> configService;
 
     private final ArrayList<String> supportedLanguageIDs = new ArrayList<>(Arrays.asList("en-us", "es", "ru", "pt-br", "de"));
 
@@ -28,7 +33,8 @@ public class LocaleService {
     private String localizationFileName;
     private String localizationFilePath;
 
-    public LocaleService(MedievalFactions medievalFactions, ConfigService configService) {
+    @Inject
+    public LocaleService(Provider<MedievalFactions> medievalFactions, Provider<ConfigService> configService) {
         this.medievalFactions = medievalFactions;
         this.configService = configService;
         initializePaths();
@@ -37,7 +43,7 @@ public class LocaleService {
     private void initializePaths() {
         String pluginFolderPath = "./plugins/MedievalFactions/";
         languageFolderPath = pluginFolderPath + "languages/";
-        localizationFileName = configService.getString("languageid") + ".tsv";
+        localizationFileName = configService.get().getString("languageid") + ".tsv";
         localizationFilePath = languageFolderPath + localizationFileName;
     }
 
@@ -54,16 +60,16 @@ public class LocaleService {
 
         if (isFilePresent(localizationFilePath)) {
             loadFromPluginFolder();
-            if (medievalFactions.isDebugEnabled()) {
+            if (medievalFactions.get().isDebugEnabled()) {
                 System.out.println("[DEBUG] Loaded from plugin folder!");
             }
         } else {
             loadFromResource();
-            if (medievalFactions.isDebugEnabled()) {
+            if (medievalFactions.get().isDebugEnabled()) {
                 System.out.println("[DEBUG] Loaded from resource!");
             }
         }
-        if (medievalFactions.isDebugEnabled()) {
+        if (medievalFactions.get().isDebugEnabled()) {
             System.out.printf((getText("KeysLoaded")) + "%n", keys.size());
         }
     }
@@ -105,7 +111,7 @@ public class LocaleService {
             saveToPluginFolder();
 
         } catch (Exception e) {
-            if (medievalFactions.isDebugEnabled()) {
+            if (medievalFactions.get().isDebugEnabled()) {
                 System.out.println("[DEBUG] Something went wrong loading from the plugin folder.");
             }
             e.printStackTrace();
@@ -126,7 +132,7 @@ public class LocaleService {
             }
 
         } catch (Exception e) {
-            if (medievalFactions.isDebugEnabled()) {
+            if (medievalFactions.get().isDebugEnabled()) {
                 System.out.println("[DEBUG] Something went wrong loading from file!");
             }
             e.printStackTrace();
@@ -136,10 +142,10 @@ public class LocaleService {
 
     // this should be called after loading from plugin folder
     private void updateCurrentLocalLanguageFile() {
-        if (medievalFactions.isDebugEnabled()) {
+        if (medievalFactions.get().isDebugEnabled()) {
             System.out.println("[DEBUG] LocaleManager is updating supported local language files.");
         }
-        String ID = configService.getString("languageid");
+        String ID = configService.get().getString("languageid");
         if (isLanguageIDSupported(ID)) {
             InputStream inputStream;
             inputStream = getResourceAsInputStream(ID + ".tsv");
@@ -152,7 +158,7 @@ public class LocaleService {
     }
 
     private InputStream getResourceAsInputStream(String fileName) {
-        return medievalFactions.getResource(fileName);
+        return medievalFactions.get().getResource(fileName);
     }
 
     private void loadFromResource() {
@@ -166,7 +172,7 @@ public class LocaleService {
             loadMissingKeysFromInputStream(inputStream);
             saveToPluginFolder();
         } catch (Exception e) {
-            if (medievalFactions.isDebugEnabled()) {
+            if (medievalFactions.get().isDebugEnabled()) {
                 System.out.println("[DEBUG] Error loading from resource!");
             }
             e.printStackTrace();
@@ -219,7 +225,7 @@ public class LocaleService {
             File folder = new File(languageFolderPath);
             if (!folder.exists()) {
                 if (!folder.mkdir()) {
-                    if (medievalFactions.isDebugEnabled()) {
+                    if (medievalFactions.get().isDebugEnabled()) {
                         System.out.println("[DEBUG] Failed to create directory.");
                     }
                     return;
@@ -228,7 +234,7 @@ public class LocaleService {
             File file = new File(localizationFilePath);
             if (!file.exists()) {
                 if (!file.createNewFile()) {
-                    if (medievalFactions.isDebugEnabled()) {
+                    if (medievalFactions.get().isDebugEnabled()) {
                         System.out.println("[DEBUG] Failed to create file.");
                     }
                     return;
@@ -240,12 +246,12 @@ public class LocaleService {
                     output.write(key + "\t" + strings.get(key) + "\n");
                 }
             } catch (Exception ex) {
-                if (medievalFactions.isDebugEnabled()) {
+                if (medievalFactions.get().isDebugEnabled()) {
                     System.out.println("[DEBUG] Failed to write to file.");
                 }
             }
         } catch (Exception e) {
-            if (medievalFactions.isDebugEnabled()) {
+            if (medievalFactions.get().isDebugEnabled()) {
                 System.out.println("[DEBUG] There was a problem saving the strings.");
             }
             e.printStackTrace();

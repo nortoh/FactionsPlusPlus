@@ -24,10 +24,11 @@ import java.util.List;
  */
 public class ListCommand extends SubCommand {
 
-    public ListCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "list", LOCALE_PREFIX + "CmdList"
-        }, false, new String[] {"mf.list"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public ListCommand() {
+        super();
+        this
+            .setNames("list", LOCALE_PREFIX + "CmdList")
+            .requiresPermissions("mf.list");
     }
 
     /**

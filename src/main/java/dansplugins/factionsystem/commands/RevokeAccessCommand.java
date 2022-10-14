@@ -26,10 +26,12 @@ import java.util.UUID;
  */
 public class RevokeAccessCommand extends SubCommand {
 
-    public RevokeAccessCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "revokeaccess", "ra", LOCALE_PREFIX + "CmdRevokeAccess"
-        }, true, new String[] {"mf.revokeaccess"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public RevokeAccessCommand() {
+        super();
+        this
+            .setNames("revokeaccess", "ra", LOCALE_PREFIX + "CmdRevokeAccess")
+            .requiresPermissions("mf.revokeaccess")
+            .isPlayerCommand();
     }
 
     /**

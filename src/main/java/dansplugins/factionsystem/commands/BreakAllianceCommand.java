@@ -4,13 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -24,15 +23,28 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class BreakAllianceCommand extends SubCommand {
+
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
 
     /**
      * Constructor to initialise a Command.
      */
-    public BreakAllianceCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "breakalliance", "ba", LOCALE_PREFIX + "CmdBreakAlliance"
-        }, true, true, false, true, new String[] {"mf.breakalliance"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public BreakAllianceCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData) {
+        super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this
+            .setNames("breakalliance", "ba", LOCALE_PREFIX + "CmdBreakAlliance")
+            .requiresPermissions("mf.breakalliance")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

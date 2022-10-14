@@ -4,7 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
-import dansplugins.factionsystem.MedievalFactions;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -28,16 +30,16 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DisbandCommand extends SubCommand {
     private final Logger logger;
-    private final MedievalFactions medievalFactions;
 
-    public DisbandCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions) {
-        super(new String[]{
-                "disband", LOCALE_PREFIX + "CmdDisband"
-        }, false, new String[] {}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public DisbandCommand(final Logger logger) {
+        super();
+        this
+            .setNames("disband", LOCALE_PREFIX + "CmdDisband");
         this.logger = logger;
-        this.medievalFactions = medievalFactions;
     }
 
     /**

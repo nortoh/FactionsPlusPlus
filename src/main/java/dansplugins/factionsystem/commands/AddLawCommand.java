@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -20,15 +23,28 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class AddLawCommand extends SubCommand {
 
+    protected final MessageService messageService;
+    protected final PlayerService playerService;
+    protected final LocaleService localeService;
+    
     /**
      * Constructor to initialise a Command.
      */
-    public AddLawCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "addlaw", LOCALE_PREFIX + "CMDAddLaw", "AL"
-        }, true, true, false, true, new String[] {"mf.addlaw"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public AddLawCommand(MessageService messageService, PlayerService playerService, LocaleService localeService) {
+        super();
+        this.messageService = messageService;
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this
+            .setNames("addlaw", LOCALE_PREFIX + "CMDAddLaw", "AL")
+            .requiresPermissions("mf.addlaw")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -28,13 +31,19 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DeclareWarCommand extends SubCommand {
     private final WarFactory warFactory;
 
-    public DeclareWarCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, WarFactory warFactory, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "declarewar", "dw", LOCALE_PREFIX + "CmdDeclareWar"
-        }, true, true, true, false, new String[] {"mf.declarewar"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public DeclareWarCommand(WarFactory warFactory) {
+        super();
+        this
+            .setNames("declarewar", "dw", LOCALE_PREFIX + "CmdDeclareWar")
+            .requiresPermissions("mf.declarewar")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOfficer();
         this.warFactory = warFactory;
     }
 

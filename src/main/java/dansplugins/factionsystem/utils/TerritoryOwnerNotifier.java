@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.utils;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ActionBarService;
 import dansplugins.factionsystem.services.ConfigService;
@@ -17,11 +20,13 @@ import preponderous.ponder.minecraft.bukkit.tools.ColorChecker;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class TerritoryOwnerNotifier {
     private final LocaleService localeService;
     private final ConfigService configService;
     private final ActionBarService actionBarService;
 
+    @Inject
     public TerritoryOwnerNotifier(LocaleService localeService, ConfigService configService, ActionBarService actionBarService) {
         this.localeService = localeService;
         this.configService = configService;

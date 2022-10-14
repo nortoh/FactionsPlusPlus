@@ -20,10 +20,11 @@ import org.bukkit.entity.Player;
  */
 public class ResetPowerLevelsCommand extends SubCommand {
 
-    public ResetPowerLevelsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "resetpowerlevels", LOCALE_PREFIX + "CmdResetPowerLevels", "rpl"
-        }, false, new String[] {"mf.resetpowerlevels", "mf.admin"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public ResetPowerLevelsCommand() {
+        super();
+        this
+            .setNames("resetpowerlevels", "rpl", LOCALE_PREFIX + "CmdResetPowerLevels")
+            .requiresPermissions("mf.resetpowerlevels", "mf.admin");
     }
 
     /**

@@ -28,10 +28,14 @@ import java.util.Objects;
  */
 public class MakePeaceCommand extends SubCommand {
 
-    public MakePeaceCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "makepeace", "mp", LOCALE_PREFIX + "CmdMakePeace"
-        }, true, true, true, false, new String[] {"mf.makepeace"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public MakePeaceCommand() {
+        super();
+        this
+            .setNames("makepeace", "mp", LOCALE_PREFIX + "CmdMakePeace")
+            .requiresPermissions("mf.makepeace")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOfficer();
     }
 
     /**

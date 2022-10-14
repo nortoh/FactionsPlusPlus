@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -23,13 +26,16 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class ConfigCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
 
-    public ConfigCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "config", LOCALE_PREFIX + "CmdConfig"
-        }, false, new String[] {"mf.config", "mf.admin"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public ConfigCommand(final MedievalFactions medievalFactions) {
+        super();
+        this
+            .setNames("config", LOCALE_PREFIX + "CmdConfig")
+            .requiresPermissions("mf.config", "mf.admin");
         this.medievalFactions = medievalFactions;
     }
 

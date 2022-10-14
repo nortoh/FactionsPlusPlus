@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
@@ -27,13 +30,18 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class GateCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
-
-    public GateCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "gate", "gt", LOCALE_PREFIX + "CmdGate"
-        }, true, true, new String[] {"mf.gate"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    
+    @Inject
+    public GateCommand(final MedievalFactions medievalFactions) {
+        super();
+        this
+            .setNames("gate", "gt", LOCALE_PREFIX + "CmdGate")
+            .requiresPermissions("mf.gate")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
         this.medievalFactions = medievalFactions;
     }
 

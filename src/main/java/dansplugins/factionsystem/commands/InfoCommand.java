@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -24,13 +27,15 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class InfoCommand extends SubCommand {
     private final Messenger messenger;
 
-    public InfoCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Messenger messenger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "info", LOCALE_PREFIX + "CmdInfo"
-        }, false, new String[] {"mf.info"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public InfoCommand(final Messenger messenger) {
+        super();
+        this
+            .setNames("info", LOCALE_PREFIX + "CmdInfo");
         this.messenger = messenger;
     }
 

@@ -26,10 +26,12 @@ import java.util.stream.IntStream;
  */
 public class LawsCommand extends SubCommand {
 
-    public LawsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "laws", LOCALE_PREFIX + "CmdLaws"
-        }, true, new String[] {"mf.laws"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public LawsCommand() {
+        super();
+        this
+            .setNames("laws", LOCALE_PREFIX + "CmdLaws")
+            .requiresPermissions("mf.laws")
+            .isPlayerCommand();
     }
 
     /**

@@ -4,13 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,15 +16,24 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class BypassCommand extends SubCommand {
+
+    private final EphemeralData ephemeralData;
+    private final PlayerService playerService;
 
     /**
      * Constructor to initialise a Command.
      */
-    public BypassCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "bypass", LOCALE_PREFIX + "CmdBypass"
-        }, true, new String[] {"mf.bypass", "mf.admin"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public BypassCommand(PlayerService playerService, EphemeralData ephemeralData) {
+        super();
+        this.playerService = playerService;
+        this.ephemeralData = ephemeralData;
+        this
+            .setNames("bypass", LOCALE_PREFIX + "CmdBypass")
+            .requiresPermissions("mf.bypass", "mf.admin")
+            .isPlayerCommand();
     }
 
     /**

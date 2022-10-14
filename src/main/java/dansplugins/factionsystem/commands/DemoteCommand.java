@@ -29,10 +29,14 @@ import java.util.UUID;
  */
 public class DemoteCommand extends SubCommand {
 
-    public DemoteCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "demote", LOCALE_PREFIX + "CmdDemote"
-        }, true, true, false, true, new String[] {"mf.demote"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public DemoteCommand() {
+        super();
+        this
+            .setNames("demote", LOCALE_PREFIX + "CmdDemote")
+            .requiresPermissions("mf.demote")
+            .requiresPlayerInFaction()
+            .isPlayerCommand()
+            .requiresFactionOwner();
     }
 
     /**

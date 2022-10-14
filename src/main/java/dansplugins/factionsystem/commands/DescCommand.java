@@ -22,10 +22,14 @@ import java.util.Objects;
  */
 public class DescCommand extends SubCommand {
 
-    public DescCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "description", "desc", LOCALE_PREFIX + "CmdDesc"
-        }, true, true, false, true, new String[] {"mf.desc"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public DescCommand() {
+        super();
+        this
+            .setNames("description", "desc", LOCALE_PREFIX + "CmdDesc")
+            .requiresPermissions("mf.desc")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**

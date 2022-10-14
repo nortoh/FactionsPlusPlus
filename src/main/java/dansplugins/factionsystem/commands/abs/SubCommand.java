@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.commands.abs;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
@@ -30,145 +33,68 @@ import java.util.UUID;
  */
 public abstract class SubCommand implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
-    protected final LocaleService localeService;
-    protected final PersistentData persistentData;
-    protected final EphemeralData ephemeralData;
-    protected final PersistentData.ChunkDataAccessor chunkDataAccessor;
-    protected final DynmapIntegrator dynmapIntegrator;
-    protected final ConfigService configService;
-    protected final PlayerService playerService;
-    protected final MessageService messageService;
-    private final boolean playerCommand;
-    private final boolean requiresFaction;
-    private final boolean requiresOfficer;
-    private final boolean requiresOwner;
+    private boolean playerCommand;
+    private boolean requiresFaction;
+    private boolean requiresOfficer;
+    private boolean requiresOwner;
     protected Faction faction = null;
     protected String[] names;
     protected String[] requiredPermissions;
 
-    /**
-     * Constructor to initialise a Command.
-     *
-     * @param names             of the command, for example, "Fly, FFly, Flight".
-     * @param playerCommand     if the command is exclusive to players.
-     * @param requiresFaction   if the command requires a Faction to perform.
-     * @param requiresOfficer   if the command requires officer or higher.
-     * @param requiresOwner     if the command is reserved for Owners.
-     * @param requiredPermissions permissions required to utilize this command
-     * @param localeService
-     * @param persistentData
-     * @param ephemeralData
-     * @param chunkDataAccessor
-     * @param dynmapIntegrator
-     * @param configService
-     */
-    public SubCommand(String[] names, boolean playerCommand, boolean requiresFaction, boolean requiresOfficer, boolean requiresOwner, String[] requiredPermissions, LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        this.localeService = localeService;
-        this.persistentData = persistentData;
-        this.ephemeralData = ephemeralData;
-        this.chunkDataAccessor = chunkDataAccessor;
-        this.dynmapIntegrator = dynmapIntegrator;
-        this.configService = configService;
-        loadCommandNames(names);
-        this.playerCommand = playerCommand;
-        this.requiresFaction = requiresFaction;
-        this.requiresOfficer = requiresOfficer;
-        this.requiresOwner = requiresOwner;
-        this.playerService = playerService;
-        this.messageService = messageService;
-        this.requiredPermissions = requiredPermissions;
+    public void setUserFaction(Faction faction) {
+        this.faction = faction;
     }
 
-    /**
-     * Constructor to initialise a command without owner/faction checks.
-     *
-     * @param names               of the command.
-     * @param playerCommand       if the command is exclusive to players.
-     * @param requiresFaction     if the command requires a Faction to do.
-     * @param requiredPermissions permissions required to utilize this command
-     * @param persistentData
-     * @param localeService
-     * @param ephemeralData
-     * @param configService
-     * @param chunkDataAccessor
-     * @param dynmapIntegrator
-     */
-    public SubCommand(String[] names, boolean playerCommand, boolean requiresFaction, String[] requiredPermissions, PersistentData persistentData, LocaleService localeService, EphemeralData ephemeralData, ConfigService configService, PlayerService playerService, MessageService messageService, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator) {
-        this(names, playerCommand, requiresFaction, false, false, requiredPermissions, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    public void setName(Integer index, String name) {
+        this.names[index] = name;
     }
 
-    /**
-     * Constructor to initialise a command without faction checks.
-     *
-     * @param names             of the command.
-     * @param playerCommand     if the command is exclusive to players.
-     * @param requiredPermissions permissions required to utilize this command
-     * @param persistentData
-     * @param localeService
-     * @param ephemeralData
-     * @param configService
-     * @param chunkDataAccessor
-     * @param dynmapIntegrator
-     */
-    public SubCommand(String[] names, boolean playerCommand, String[] requiredPermissions, PersistentData persistentData, LocaleService localeService, EphemeralData ephemeralData, ConfigService configService, PlayerService playerService, MessageService messageService, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator) {
-        this(names, playerCommand, false, requiredPermissions, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public SubCommand setNames(String... names) {
+        this.names = names;
+        return this;
     }
 
-    protected void loadCommandNames(String[] names) {
-        this.names = new String[names.length];
-        for (int i = 0; i < this.names.length; i++) {
-            String name = names[i];
-            if (name.contains(LOCALE_PREFIX)) name = this.localeService.getText(name.replace(LOCALE_PREFIX, ""));
-            this.names[i] = name;
-        }
+    public SubCommand requiresFactionOfficer() {
+        this.requiresOfficer = true;
+        return this;
     }
 
-    /**
-     * Method to be called by the command interpreter <em>only</em>.
-     * <p>
-     * This method uses the in-class variables to call a different method based on the parameters specified.
-     * <br>For example, if {@link SubCommand#playerCommand} is {@code true},
-     * <br>{@link SubCommand#execute(Player, String[], String)} is executed,
-     * <br>not {@link SubCommand#execute(CommandSender, String[], String)}.
-     * </p>
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command.
-     */
-    public void performCommand(CommandSender sender, String[] args, String key) {
-        if (this.playerCommand) {
-            if (!(sender instanceof Player)) { // Require a player for a player-only command.
-                sender.sendMessage(translate(getText("OnlyPlayersCanUseCommand")));
-                return;
-            }
-            Player player = (Player) sender;
-            if (this.requiresFaction) { // Find and check the status of a Faction.
-                this.faction = this.getPlayerFaction(player);
-                if (this.faction == null) {
-                    player.sendMessage(translate("&c" + getText("AlertMustBeInFactionToUseCommand")));
-                    return;
-                }
-                if (this.requiresOfficer) { // If the command requires an Officer or higher, check for it.
-                    if (!(faction.isOwner(player.getUniqueId()) || faction.isOfficer(player.getUniqueId()))) {
-                        player.sendMessage(translate("&c" + getText("AlertMustBeOwnerOrOfficerToUseCommand")));
-                        return;
-                    }
-                }
-                if (this.requiresOwner && !faction.isOwner(player.getUniqueId())) { // If the command requires an owner only, check for it.
-                    player.sendMessage(translate("&c" + getText("AlertMustBeOwnerToUseCommand")));
-                    return;
-                }
-            }
-            if (!this.checkPermissions(sender, true)) {
-                return;
-            }
-            this.execute(player, args, key); // 100% a player so you can safely use it
-            return;
-        }
-        this.execute(sender, args, key); // Sender can still be a player if this is executed.
+    public SubCommand requiresFactionOwner() {
+        this.requiresOfficer = true;
+        return this;
     }
 
+    public SubCommand isPlayerCommand() {
+        this.playerCommand = true;
+        return this;
+    }
+
+    public SubCommand requiresPlayerInFaction() {
+        this.requiresFaction = true;
+        return this;
+    }
+
+    public SubCommand requiresPermissions(String... permissions) {
+        this.requiredPermissions = permissions;
+        return this;
+    }
+
+    public boolean shouldRequireFactionOwner() {
+        return this.requiresOwner;
+    }
+
+    public boolean shouldRequireFactionOfficer() {
+        return this.requiresOfficer;
+    }
+
+    public boolean shouldBePlayerCommand() {
+        return this.playerCommand;
+    }
+
+    public boolean shouldRequirePlayerInFaction() {
+        return this.requiresFaction;
+    }
+    
     /**
      * Method to execute the command for a player.
      *
@@ -254,15 +180,6 @@ public abstract class SubCommand implements ColorTranslator {
             if (hasPermission) break;
             missingPermissions.add(perm);
         }
-        if (!hasPermission && announcePermissionsMissing) {
-            this.playerService.sendMessage(
-                sender,
-                this.translate("&c" + this.getText("PermissionNeeded", String.join(", ", missingPermissions))), 
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PermissionNeeded"))
-                    .replace("#permission#", String.join(", ", missingPermissions)), 
-                true
-            );
-        }
         return hasPermission;
     }
 
@@ -286,36 +203,6 @@ public abstract class SubCommand implements ColorTranslator {
      */
     protected String getText(String key, Object... replacements) {
         return String.format(this.getText(key), replacements);
-    }
-
-    /**
-     * Method to obtain a Player faction from an object.
-     * <p>
-     * This method can accept a UUID, Player, OfflinePlayer and a String (name or UUID).<br>
-     * If the type isn't found, an exception is thrown.
-     * </p>
-     *
-     * @param object to obtain the Player faction from.
-     * @return {@link Faction}
-     * @throws IllegalArgumentException when the object isn't compatible.
-     */
-    @SuppressWarnings("deprecation")
-    protected Faction getPlayerFaction(Object object) {
-        if (object instanceof OfflinePlayer) {
-            return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
-        } else if (object instanceof UUID) {
-            return this.persistentData.getPlayersFaction((UUID) object);
-        } else if (object instanceof String) {
-            try {
-                return persistentData.getPlayersFaction(UUID.fromString((String) object));
-            } catch (Exception e) {
-                OfflinePlayer player = Bukkit.getOfflinePlayer((String) object);
-                if (player.hasPlayedBefore()) {
-                    return this.persistentData.getPlayersFaction(player.getUniqueId());
-                }
-            }
-        }
-        throw new IllegalArgumentException(object + " cannot be transferred into a Player");
     }
 
     /** 

@@ -22,10 +22,13 @@ import java.util.Objects;
  */
 public class UnclaimCommand extends SubCommand {
 
-    public UnclaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "unclaim", LOCALE_PREFIX + "CmdUnclaim"
-        }, true, true, new String[] {"mf.unclaim"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    public UnclaimCommand() {
+        super();
+        this
+            .setNames("unclaim", LOCALE_PREFIX + "CmdUnclaim")
+            .requiresPermissions("mf.unclaim")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
