@@ -4,15 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
-import dansplugins.factionsystem.utils.RelationChecker;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,10 +20,23 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class UnlockCommand extends SubCommand {
 
-    public UnlockCommand() {
+    private final EphemeralData ephemeralData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+
+    @Inject
+    public UnlockCommand(
+        EphemeralData ephemeralData,
+        PlayerService playerService,
+        LocaleService localeService
+    ) {
         super();
+        this.ephemeralData = ephemeralData;
+        this.playerService = playerService;
+        this.localeService = localeService;
         this
             .setNames("unlock", LOCALE_PREFIX + "CmdUnlock")
             .requiresPermissions("mf.unlock")
@@ -47,7 +58,7 @@ public class UnlockCommand extends SubCommand {
             this.ephemeralData.getForcefullyUnlockingPlayers().remove(player.getUniqueId()); // just in case the player tries to cancel a forceful unlock without using the force command
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("AlertUnlockingCancelled"),
+                "&c" + this.localeService.getText("AlertUnlockingCancelled"),
                 "AlertUnlockingCancelled", 
                 false
             );
@@ -61,7 +72,7 @@ public class UnlockCommand extends SubCommand {
         // inform them they need to right click the block that they want to lock or type /mf lock cancel to cancel it
         this.playerService.sendMessage(
             player, 
-            "&a" + this.getText("RightClickUnlock"),
+            "&a" + this.localeService.getText("RightClickUnlock"),
             "RightClickUnlock", 
             false
         );

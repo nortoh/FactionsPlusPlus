@@ -4,14 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
@@ -23,10 +21,17 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class RemoveLawCommand extends SubCommand {
 
-    public RemoveLawCommand() {
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+
+    @Inject
+    public RemoveLawCommand(PlayerService playerService, LocaleService localeService) {
         super();
+        this.playerService = playerService;
+        this.localeService = localeService;
         this
             .setNames("removelaw", LOCALE_PREFIX + "CmdRemoveLaw")
             .requiresPermissions("mf.removelaw")
@@ -47,7 +52,7 @@ public class RemoveLawCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageRemoveLaw"),
+                "&c" + this.localeService.getText("UsageRemoveLaw"),
                 "UsageRemoveLaw",
                 false
             );
@@ -57,7 +62,7 @@ public class RemoveLawCommand extends SubCommand {
         if (lawToRemove < 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageRemoveLaw"),
+                "&c" + this.localeService.getText("UsageRemoveLaw"),
                 "UsageRemoveLaw",
                 false
             );
@@ -66,7 +71,7 @@ public class RemoveLawCommand extends SubCommand {
         if (this.faction.removeLaw(lawToRemove)) {
             this.playerService.sendMessage(
                 player, 
-                "&a" + this.getText("LawRemoved"),
+                "&a" + this.localeService.getText("LawRemoved"),
                 "LawRemoved",
                 false
             );

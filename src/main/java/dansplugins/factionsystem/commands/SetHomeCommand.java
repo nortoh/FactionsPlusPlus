@@ -4,14 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -19,10 +18,19 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class SetHomeCommand extends SubCommand {
 
-    public SetHomeCommand() {
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+
+    @Inject
+    public SetHomeCommand(PersistentData persistentData, PlayerService playerService, LocaleService localeService) {
         super();
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.localeService = localeService;
         this
             .setNames("sethome", "sh", LOCALE_PREFIX + "CmdSetHome")
             .requiresPermissions("mf.sethome")
@@ -40,20 +48,20 @@ public class SetHomeCommand extends SubCommand {
      */
     @Override
     public void execute(Player player, String[] args, String key) {
-        if (!this.chunkDataAccessor.isClaimed(player.getLocation().getChunk())) {
+        if (!this.persistentData.getChunkDataAccessor().isClaimed(player.getLocation().getChunk())) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("LandIsNotClaimed"),
+                "&c" + this.localeService.getText("LandIsNotClaimed"),
                 "LandIsNotClaimed", 
                 false
             );
             return;
         }
-        ClaimedChunk chunk = this.chunkDataAccessor.getClaimedChunk(player.getLocation().getChunk());
+        ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk());
         if (chunk == null || !chunk.getHolder().equalsIgnoreCase(this.faction.getName())) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("CannotSetFactionHomeInWilderness"),
+                "&c" + this.localeService.getText("CannotSetFactionHomeInWilderness"),
                 "CannotSetFactionHomeInWilderness", 
                 false
             );
@@ -62,7 +70,7 @@ public class SetHomeCommand extends SubCommand {
         this.faction.setFactionHome(player.getLocation());
         this.playerService.sendMessage(
             player, 
-            "&a" + this.getText("FactionHomeSet"),
+            "&a" + this.localeService.getText("FactionHomeSet"),
             "FactionHomeSet", 
             false
         );

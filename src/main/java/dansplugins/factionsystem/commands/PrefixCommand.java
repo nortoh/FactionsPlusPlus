@@ -4,13 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,10 +17,19 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class PrefixCommand extends SubCommand {
 
-    public PrefixCommand() {
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+
+    @Inject
+    public PrefixCommand(PersistentData persistentData, PlayerService playerService, LocaleService localeService) {
         super();
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.localeService = localeService;
         this
             .setNames("prefix", LOCALE_PREFIX + "CmdPrefix")
             .requiresPermissions("mf.prefix")
@@ -43,7 +51,7 @@ public class PrefixCommand extends SubCommand {
         if (this.persistentData.isPrefixTaken(newPrefix)) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("PrefixTaken"),
+                "&c" + this.localeService.getText("PrefixTaken"),
                 "PrefixTaken",
                 false
             );
@@ -52,7 +60,7 @@ public class PrefixCommand extends SubCommand {
         this.faction.setPrefix(newPrefix);
         this.playerService.sendMessage(
             player,
-            "&c" + this.getText("PrefixSet"),
+            "&c" + this.localeService.getText("PrefixSet"),
             "PrefixSet",
             false
         );

@@ -8,11 +8,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -30,18 +27,34 @@ import java.util.Objects;
  */
 @Singleton
 public class VassalizeCommand extends SubCommand {
+
+    private final MessageService messageService;
+    private final PlayerService playerService;
     private final Logger logger;
+    private final LocaleService localeService;
+    private final PersistentData persistentData;
+
     
     @Inject
-    public VassalizeCommand(final Logger logger) {
+    public VassalizeCommand(
+        MessageService messageService,
+        PlayerService playerService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        Logger logger
+    ) {
         super();
+        this.messageService = messageService;
+        this.playerService =playerService;
+        this.localeService = localeService;
+        this.persistentData = persistentData;
+        this.logger = logger;
         this
             .setNames("vassalize", LOCALE_PREFIX + "CmdVassalize")
             .requiresPermissions("mf.vassalize")
             .isPlayerCommand()
             .requiresPlayerInFaction()
             .requiresFactionOwner();
-        this.logger = logger;
     }
 
     /**
@@ -56,17 +69,17 @@ public class VassalizeCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageVassalize"),
+                "&c" + this.localeService.getText("UsageVassalize"),
                 "UsageVassalize",
                 false
             );
             return;
         }
-        final Faction target = this.getFaction(String.join(" ", args));
+        final Faction target = this.persistentData.getFaction(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -76,7 +89,7 @@ public class VassalizeCommand extends SubCommand {
         if (this.faction.getName().equalsIgnoreCase(target.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotVassalizeSelf"),
+                "&c" + this.localeService.getText("CannotVassalizeSelf"),
                 "CannotVassalizeSelf",
                 false
             );
@@ -86,7 +99,7 @@ public class VassalizeCommand extends SubCommand {
         if (target.getName().equalsIgnoreCase(faction.getLiege())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotVassalizeLiege"),
+                "&c" + this.localeService.getText("CannotVassalizeLiege"),
                 "CannotVassalizeLiege",
                 false
             );
@@ -96,7 +109,7 @@ public class VassalizeCommand extends SubCommand {
         if (target.hasLiege()) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotVassalizeVassal"),
+                "&c" + this.localeService.getText("CannotVassalizeVassal"),
                 "CannotVassalizeVassal",
                 false
             );
@@ -114,7 +127,7 @@ public class VassalizeCommand extends SubCommand {
         // inform all players in that faction that they are trying to be vassalized
         this.messageFaction(
             target, 
-            this.translate("&a" + this.getText("AlertAttemptedVassalization", this.faction.getName(), this.faction.getName())),
+            this.translate("&a" + this.localeService.getText("AlertAttemptedVassalization", this.faction.getName(), this.faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedVassalization"))
                 .replace("#name#", this.faction.getName())
         );
@@ -122,7 +135,7 @@ public class VassalizeCommand extends SubCommand {
         // inform all players in players faction that a vassalization offer was sent
         this.messageFaction(
             this.faction,
-            this.translate("&a" + this.getText("AlertFactionAttemptedToVassalize", target.getName())),
+            this.translate("&a" + this.localeService.getText("AlertFactionAttemptedToVassalize", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionAttemptedToVassalize"))
                 .replace("#name#", target.getName())
         );

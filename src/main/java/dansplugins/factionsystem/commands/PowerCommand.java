@@ -4,12 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -25,10 +25,26 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class PowerCommand extends SubCommand {
 
-    public PowerCommand() {
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+
+    @Inject
+    public PowerCommand(
+        MessageService messageService,
+        PersistentData persistentData,
+        PlayerService playerService,
+        LocaleService localeService
+    ) {
         super();
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.localeService = localeService;
         this
             .setNames("power", LOCALE_PREFIX + "CmdPower")
             .requiresPermissions("mf.power");
@@ -60,7 +76,7 @@ public class PowerCommand extends SubCommand {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
                     sender,
-                    this.getText("OnlyPlayersCanUseCommand"),
+                    this.localeService.getText("OnlyPlayersCanUseCommand"),
                     "OnlyPlayersCanUseCommand",
                     false
                 );
@@ -69,7 +85,7 @@ public class PowerCommand extends SubCommand {
             record = this.persistentData.getPlayersPowerRecord(((Player) sender).getUniqueId());
             this.playerService.sendMessage(
                 sender,
-                "&b" + this.getText("AlertCurrentPowerLevel", record.getPower(), record.maxPower()),
+                "&b" + this.localeService.getText("AlertCurrentPowerLevel", record.getPower(), record.maxPower()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCurrentPowerLevel"))
                     .replace("#power#", String.valueOf(record.getPower()))
                     .replace("#max#", String.valueOf(record.maxPower())),
@@ -82,7 +98,7 @@ public class PowerCommand extends SubCommand {
         if (target == null) {
             this.playerService.sendMessage(
                 sender,
-                "&c" + this.getText("PlayerNotFound"),
+                "&c" + this.localeService.getText("PlayerNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                 true
             );
@@ -91,7 +107,7 @@ public class PowerCommand extends SubCommand {
         record = this.persistentData.getPlayersPowerRecord(target);
         this.playerService.sendMessage(
             sender, 
-            "&b" + this.getText("CurrentPowerLevel", args[0], record.getPower(), record.maxPower()),
+            "&b" + this.localeService.getText("CurrentPowerLevel", args[0], record.getPower(), record.maxPower()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("CurrentPowerLevel"))
                 .replace("#power#", String.valueOf(record.getPower()))
                 .replace("#max#", String.valueOf(record.maxPower()))

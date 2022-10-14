@@ -9,13 +9,6 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -29,10 +22,10 @@ public class VersionCommand extends SubCommand {
     @Inject
     public VersionCommand(final MedievalFactions medievalFactions) {
         super();
+        this.medievalFactions = medievalFactions;
         this
             .setNames("version", LOCALE_PREFIX + "CmdVersion")
             .requiresPermissions("mf.version");
-        this.medievalFactions = medievalFactions;
     }
 
     /**

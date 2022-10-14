@@ -4,13 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarEndEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -26,10 +26,26 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class MakePeaceCommand extends SubCommand {
 
-    public MakePeaceCommand() {
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+
+    @Inject
+    public MakePeaceCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService,
+        PersistentData persistentData
+    ) {
         super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
         this
             .setNames("makepeace", "mp", LOCALE_PREFIX + "CmdMakePeace")
             .requiresPermissions("mf.makepeace")
@@ -50,17 +66,17 @@ public class MakePeaceCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageMakePeace"),
+                "&c" + this.localeService.getText("UsageMakePeace"),
                 "UsageMakePeace",
                 false
             );
             return;
         }
-        final Faction target = this.getFaction(String.join(" ", args));
+        final Faction target = this.persistentData.getFaction(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -69,7 +85,7 @@ public class MakePeaceCommand extends SubCommand {
         if (target == this.faction) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotMakePeaceWithSelf"),
+                "&c" + this.localeService.getText("CannotMakePeaceWithSelf"),
                 "CannotMakePeaceWithSelf",
                 false
             );
@@ -78,7 +94,7 @@ public class MakePeaceCommand extends SubCommand {
         if (this.faction.isTruceRequested(target.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertAlreadyRequestedPeace"),
+                "&c" + this.localeService.getText("AlertAlreadyRequestedPeace"),
                 "AlertAlreadyRequestedPeace",
                 false
             );
@@ -87,7 +103,7 @@ public class MakePeaceCommand extends SubCommand {
         if (!this.faction.isEnemy(target.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotEnemy"),
+                "&c" + this.localeService.getText("FactionNotEnemy"),
                 "FactionNotEnemy",
                 false
             );
@@ -96,13 +112,13 @@ public class MakePeaceCommand extends SubCommand {
         this.faction.requestTruce(target.getName());
         this.playerService.sendMessage(
             player,
-            "&a" + this.getText("AttemptedPeace", target.getName()),
+            "&a" + this.localeService.getText("AttemptedPeace", target.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AttemptedPeace")).replace("#name#", target.getName()),
             true
         );
         this.messageFaction(
             target,
-            this.translate("&a" + this.getText("HasAttemptedToMakePeaceWith", this.faction.getName(), target.getName())),
+            this.translate("&a" + this.localeService.getText("HasAttemptedToMakePeaceWith", this.faction.getName(), target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasAttemptedToMakePeaceWith"))
                 .replace("#f1#", this.faction.getName())
                 .replace("#f2#", target.getName())
@@ -123,7 +139,7 @@ public class MakePeaceCommand extends SubCommand {
 
                 // Notify
                 this.messageServer(
-                    "&a" + this.getText("AlertNowAtPeaceWith", this.faction.getName(), target.getName()),
+                    "&a" + this.localeService.getText("AlertNowAtPeaceWith", this.faction.getName(), target.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAtPeaceWith"))
                         .replace("#p1#", this.faction.getName())
                         .replace("#p2#", target.getName())

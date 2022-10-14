@@ -4,12 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -28,10 +27,23 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class TransferCommand extends SubCommand {
 
-    public TransferCommand() {
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
+
+    @Inject
+    public TransferCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService
+    ) {
         super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.messageService = messageService;
         this
             .setNames("transfer", LOCALE_PREFIX + "CmdTransfer")
             .requiresPermissions("mf.transfer")
@@ -52,7 +64,7 @@ public class TransferCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageTransfer"),
+                "&c" + this.localeService.getText("UsageTransfer"),
                 "UsageTransfer",
                 false
             );
@@ -63,7 +75,7 @@ public class TransferCommand extends SubCommand {
         if (targetUUID == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("PlayerNotFound"),
+                "&c" + this.localeService.getText("PlayerNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                 true
             );
@@ -75,7 +87,7 @@ public class TransferCommand extends SubCommand {
             if (target == null) {
                 this.playerService.sendMessage(
                     player, 
-                    "&c" + this.getText("PlayerNotFound"),
+                    "&c" + this.localeService.getText("PlayerNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                     true
                 );
@@ -85,7 +97,7 @@ public class TransferCommand extends SubCommand {
         if (!this.faction.isMember(targetUUID)) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("PlayerIsNotInYourFaction"),
+                "&c" + this.localeService.getText("PlayerIsNotInYourFaction"),
                 "PlayerIsNotInYourFaction",
                 false
             );
@@ -94,7 +106,7 @@ public class TransferCommand extends SubCommand {
         if (targetUUID.equals(player.getUniqueId())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotTransferToSelf"),
+                "&c" + this.localeService.getText("CannotTransferToSelf"),
                 "CannotTransferToSelf",
                 false
             );
@@ -107,14 +119,14 @@ public class TransferCommand extends SubCommand {
         this.faction.setOwner(targetUUID);
         this.playerService.sendMessage(
             player,
-            "&b" + this.getText("OwnerShipTransferredTo", args[0]),
+            "&b" + this.localeService.getText("OwnerShipTransferredTo", args[0]),
             Objects.requireNonNull(this.messageService.getLanguage().getString("OwnerShipTransferredTo")).replace("#name#", args[0]),
             true
         );
         if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
             this.playerService.sendMessage(
                 target.getPlayer(),
-                "&a" + this.getText("OwnershipTransferred", this.faction.getName()),
+                "&a" + this.localeService.getText("OwnershipTransferred", this.faction.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("'OwnershipTransferred")).replace("#name#", this.faction.getName()),
                 true
             );

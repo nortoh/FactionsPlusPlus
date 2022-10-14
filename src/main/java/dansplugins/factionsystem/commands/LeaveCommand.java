@@ -9,10 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionLeaveEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -28,19 +25,34 @@ import java.util.Objects;
  */
 @Singleton
 public class LeaveCommand extends SubCommand {
+    private final MessageService messageService;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DisbandCommand disbandCommand;
 
     @Inject
-    public LeaveCommand(final Logger logger, final DisbandCommand disbandCommand) {
+    public LeaveCommand(
+        MessageService messageService,
+        PlayerService playerService,
+        LocaleService localeService,
+        EphemeralData ephemeralData,
+        Logger logger,
+        DisbandCommand disbandCommand
+    ) {
         super();
+        this.messageService = messageService;
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.ephemeralData = ephemeralData;
+        this.logger = logger;
+        this.disbandCommand = disbandCommand;
         this
             .setNames("leave", LOCALE_PREFIX + "CmdLeave")
             .requiresPermissions("mf.leave")
             .isPlayerCommand()
             .requiresPlayerInFaction();
-        this.logger = logger;
-        this.disbandCommand = disbandCommand;
     }
 
     /**
@@ -69,7 +81,7 @@ public class LeaveCommand extends SubCommand {
         this.faction.removeMember(player.getUniqueId());
         this.playerService.sendMessage(
             player, 
-            "&b" + this.getText("AlertLeftFaction"),
+            "&b" + this.localeService.getText("AlertLeftFaction"),
             "AlertLeftFaction", 
             false
         );

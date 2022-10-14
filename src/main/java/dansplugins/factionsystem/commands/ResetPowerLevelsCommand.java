@@ -4,24 +4,29 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class ResetPowerLevelsCommand extends SubCommand {
 
-    public ResetPowerLevelsCommand() {
+    private final LocaleService localeService;
+    private final PersistentData persistentData;
+
+    @Inject
+    public ResetPowerLevelsCommand(LocaleService localeService, PersistentData persistentData) {
         super();
+        this.localeService = localeService;
+        this.persistentData = persistentData;
         this
             .setNames("resetpowerlevels", "rpl", LOCALE_PREFIX + "CmdResetPowerLevels")
             .requiresPermissions("mf.resetpowerlevels", "mf.admin");
@@ -49,7 +54,7 @@ public class ResetPowerLevelsCommand extends SubCommand {
     @Override
     public void execute(CommandSender sender, String[] args, String key) {
         sender.sendMessage(this.translate("&aPower Levels Resetting..."));
-        System.out.println(this.getText("ResettingIndividualPowerRecords"));
+        System.out.println(this.localeService.getText("ResettingIndividualPowerRecords"));
         this.persistentData.resetPowerLevels();
     }
 }

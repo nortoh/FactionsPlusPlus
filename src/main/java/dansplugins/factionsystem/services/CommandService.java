@@ -87,8 +87,8 @@ public class CommandService implements TabCompleter {
                 this.medievalFactions.getInjector().getInstance(InvokeCommand.class),
                 this.medievalFactions.getInjector().getInstance(JoinCommand.class),
                 this.medievalFactions.getInjector().getInstance(KickCommand.class),
-                this.medievalFactions.getInjector().getInstance(LawsCommand.class)
-                /*this.medievalFactions.getInjector().getInstance(LeaveCommand.class),
+                this.medievalFactions.getInjector().getInstance(LawsCommand.class),
+                this.medievalFactions.getInjector().getInstance(LeaveCommand.class),
                 this.medievalFactions.getInjector().getInstance(ListCommand.class),
                 this.medievalFactions.getInjector().getInstance(LockCommand.class),
                 this.medievalFactions.getInjector().getInstance(MakePeaceCommand.class),
@@ -110,7 +110,7 @@ public class CommandService implements TabCompleter {
                 this.medievalFactions.getInjector().getInstance(VersionCommand.class),
                 this.medievalFactions.getInjector().getInstance(WhoCommand.class),
                 this.medievalFactions.getInjector().getInstance(MapCommand.class),
-                this.medievalFactions.getInjector().getInstance(StatsCommand.class)*/
+                this.medievalFactions.getInjector().getInstance(StatsCommand.class)
         ));
     }
 

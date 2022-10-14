@@ -4,11 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -25,10 +25,26 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class MembersCommand extends SubCommand {
 
-    public MembersCommand() {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
+    private final ConfigService configService;
+
+    @Inject
+    public MembersCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        ConfigService configService
+    ) {
         super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
+        this.configService = configService;
         this
             .setNames("members", LOCALE_PREFIX + "CmdMembers")
             .requiresPermissions("mf.members");
@@ -60,7 +76,7 @@ public class MembersCommand extends SubCommand {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
                     sender,
-                    this.getText("OnlyPlayersCanUseCommand"),
+                    this.localeService.getText("OnlyPlayersCanUseCommand"),
                     "OnlyPlayersCanUseCommand",
                     false
                 );
@@ -70,7 +86,7 @@ public class MembersCommand extends SubCommand {
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender, 
-                    this.getText("AlertMustBeInFactionToUseCommand"),
+                    this.localeService.getText("AlertMustBeInFactionToUseCommand"),
                     "AlertMustBeInFactionToUseCommand",
                     false
                 );
@@ -81,7 +97,7 @@ public class MembersCommand extends SubCommand {
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender,
-                    "&c" + this.getText("FactionNameNotRecognized"),
+                    "&c" + this.localeService.getText("FactionNameNotRecognized"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                     true
                 );
@@ -90,7 +106,7 @@ public class MembersCommand extends SubCommand {
         }
         // send Faction Members
         if (!this.configService.getBoolean("useNewLanguageFile")) {
-            sender.sendMessage(this.translate("&b----------\n" + getText("MembersOf", faction.getName())));
+            sender.sendMessage(this.translate("&b----------\n" + this.localeService.getText("MembersOf", faction.getName())));
             sender.sendMessage(this.translate("&b----------\n"));
             faction.getMemberList().stream()
                     .map(Bukkit::getOfflinePlayer)

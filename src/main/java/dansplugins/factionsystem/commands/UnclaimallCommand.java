@@ -4,12 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -23,10 +24,29 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class UnclaimallCommand extends SubCommand {
 
-    public UnclaimallCommand() {
+    private PersistentData persistentData;
+    private LocaleService localeService;
+    private PlayerService playerService;
+    private MessageService messageService;
+    private DynmapIntegrator dynmapIntegrator;
+
+    @Inject
+    public UnclaimallCommand(
+        PersistentData persistentData,
+        LocaleService localeService,
+        PlayerService playerService,
+        MessageService messageService,
+        DynmapIntegrator dynmapIntegrator
+    ) {
         super();
+        this.persistentData = persistentData;
+        this.localeService = localeService;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.dynmapIntegrator = dynmapIntegrator;
         this
             .setNames("unclaimall", "ua", LOCALE_PREFIX + "CmdUnclaimall");
     }
@@ -58,7 +78,7 @@ public class UnclaimallCommand extends SubCommand {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
                     sender, 
-                    this.getText("OnlyPlayersCanUseCommand"),
+                    this.localeService.getText("OnlyPlayersCanUseCommand"),
                     "OnlyPlayersCanUseCommand", 
                     false
                 );
@@ -69,7 +89,7 @@ public class UnclaimallCommand extends SubCommand {
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender, 
-                    "&c" + this.getText("AlertMustBeInFactionToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand"),
                     "AlertMustBeInFactionToUseCommand", 
                     false
                 );
@@ -78,7 +98,7 @@ public class UnclaimallCommand extends SubCommand {
             if (!faction.isOwner(((Player) sender).getUniqueId())) {
                 this.playerService.sendMessage(
                     sender, 
-                    "&c" + this.getText("AlertMustBeOwnerToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeOwnerToUseCommand"),
                     "AlertMustBeOwnerToUseCommand", 
                     false
                 );
@@ -86,11 +106,11 @@ public class UnclaimallCommand extends SubCommand {
             }
         } else {
             if (!(this.checkPermissions(sender, "mf.unclaimall.others", "mf.admin"))) return;
-            faction = this.getFaction(String.join(" ", args));
+            faction = this.persistentData.getFaction(String.join(" ", args));
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender, 
-                    "&c" + this.getText("FactionNotFound"),
+                    "&c" + this.localeService.getText("FactionNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)), 
                     true
                 );
@@ -101,16 +121,16 @@ public class UnclaimallCommand extends SubCommand {
         faction.setFactionHome(null);
         this.messageFaction(
             faction, 
-            this.translate("&c" + this.getText("AlertFactionHomeRemoved")),
+            this.translate("&c" + this.localeService.getText("AlertFactionHomeRemoved")),
             this.messageService.getLanguage().getString("AlertFactionHomeRemoved")
         );
 
         // remove claimed chunks
-        this.chunkDataAccessor.removeAllClaimedChunks(faction.getName());
+        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getName());
         this.dynmapIntegrator.updateClaims();
         this.playerService.sendMessage(
             sender, 
-            "&a" + this.getText("AllLandUnclaimedFrom", faction.getName()),
+            "&a" + this.localeService.getText("AllLandUnclaimedFrom", faction.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AllLandUnclaimedFrom")).replace("#name#", faction.getName()), 
             false
         );

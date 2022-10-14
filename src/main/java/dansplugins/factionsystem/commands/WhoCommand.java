@@ -8,11 +8,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -31,16 +28,30 @@ import java.util.UUID;
  */
 @Singleton
 public class WhoCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
     private final Messenger messenger;
 
     @Inject
-    public WhoCommand(final Messenger messenger) {
+    public WhoCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService,
+        PersistentData persistentData,
+        Messenger messenger
+    ) {
         super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.messenger = messenger;
         this
             .setNames("who", LOCALE_PREFIX + "CmdWho")
             .requiresPermissions("mf.who")
             .isPlayerCommand();
-        this.messenger = messenger;
     }
 
     /**
@@ -53,7 +64,7 @@ public class WhoCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.getText("UsageWho"), "UsageWho", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageWho"), "UsageWho", false);
             return;
         }
         UUIDChecker uuidChecker = new UUIDChecker();
@@ -69,14 +80,14 @@ public class WhoCommand extends SubCommand {
         }
         final Faction temp = this.playerService.getPlayerFaction(targetUUID);
         if (temp == null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("PlayerIsNotInAFaction")
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("PlayerIsNotInAFaction")
                     , "PlayerIsNotInAFaction", false);
             return;
         }
         this.messenger.sendFactionInfo(
             player, 
             temp,
-            this.chunkDataAccessor.getChunksClaimedByFaction(temp.getName())
+            this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())
         );
     }
 
