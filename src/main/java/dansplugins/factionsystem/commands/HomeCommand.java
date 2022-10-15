@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.ClaimedChunk;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -25,13 +26,20 @@ public class HomeCommand extends SubCommand {
     private final Scheduler scheduler;
     private final LocaleService localeService;
     private final PlayerService playerService;
+    private final PersistentData persistentData;
 
     @Inject
-    public HomeCommand(PlayerService playerService, LocaleService localeService, Scheduler scheduler) {
+    public HomeCommand(
+        PlayerService playerService,
+        LocaleService localeService, 
+        PersistentData persistentData,
+        Scheduler scheduler
+    ) {
         super();
         this.playerService = playerService;
         this.localeService = localeService;
         this.scheduler = scheduler;
+        this.persistentData = persistentData;
         this
             .setNames("home", LOCALE_PREFIX + "CmdHome")
             .requiresPermissions("mf.home")
@@ -58,7 +66,7 @@ public class HomeCommand extends SubCommand {
             return;
         }
         final Chunk home_chunk;
-        if (!this.chunkDataAccessor.isClaimed(home_chunk = this.faction.getFactionHome().getChunk())) {
+        if (!this.persistentData.getChunkDataAccessor().isClaimed(home_chunk = this.faction.getFactionHome().getChunk())) {
             this.playerService.sendMessage(
                 player, 
                 "&c" + this.localeService.getText("HomeIsInUnclaimedChunk"),
@@ -67,7 +75,7 @@ public class HomeCommand extends SubCommand {
             );
             return;
         }
-        ClaimedChunk chunk = this.chunkDataAccessor.getClaimedChunk(home_chunk);
+        ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(home_chunk);
         if (chunk == null || chunk.getHolder() == null) {
             this.playerService.sendMessage(
                 player, "&c" + this.localeService.getText("HomeIsInUnclaimedChunk"),

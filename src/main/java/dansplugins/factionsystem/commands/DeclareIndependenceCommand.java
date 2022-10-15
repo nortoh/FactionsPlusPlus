@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
@@ -30,14 +31,22 @@ public class DeclareIndependenceCommand extends SubCommand {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final ConfigService configService;
+    private final PersistentData persistentData;
 
     @Inject
-    public DeclareIndependenceCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, ConfigService configService) {
+    public DeclareIndependenceCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService,
+        ConfigService configService,
+        PersistentData persistentData
+    ) {
         super();
         this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this.configService = configService;
+        this.persistentData = persistentData;
         this
             .setNames("declareindependence", "di", LOCALE_PREFIX + "CmdDeclareIndependence")
             .requiresPermissions("mf.declareindependence")
@@ -60,11 +69,11 @@ public class DeclareIndependenceCommand extends SubCommand {
             return;
         }
 
-        final Faction liege = this.getFaction(this.faction.getLiege());
+        final Faction liege = this.persistentData.getFaction(this.faction.getLiege());
         if (liege == null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + getText("FactionNotFound"), 
+                "&c" + this.localeService.getText("FactionNotFound"), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
                     .replace("#faction#", String.join(" ", args)), true
             );

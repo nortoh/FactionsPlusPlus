@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.services.LocaleService;
+import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,13 +26,20 @@ public class CheckClaimCommand extends SubCommand {
     private final PersistentData persistentData;
     private final PlayerService playerService;
     private final LocaleService localeService;
+    private final MessageService messageService;
 
     @Inject
-    public CheckClaimCommand(PlayerService playerService, PersistentData persistentData, LocaleService localeService) {
+    public CheckClaimCommand(
+        PlayerService playerService,
+        PersistentData persistentData,
+        LocaleService localeService,
+        MessageService messageService
+    ) {
         super();
         this.localeService = localeService;
         this.persistentData = persistentData;
         this.playerService = playerService;
+        this.messageService = messageService;
         this
             .setNames("checkclaim", "cc", LOCALE_PREFIX + "CmdCheckClaim")
             .requiresPermissions("mf.checkclaim")

@@ -97,7 +97,7 @@ public class DeclareWarCommand extends SubCommand {
 
         String factionName = doubleQuoteArgs.get(0);
 
-        final Faction opponent = this.getFaction(factionName);
+        final Faction opponent = this.persistentData.getFaction(factionName);
         if (opponent == null) {
             this.playerService.sendMessage(
                 player, 
@@ -140,7 +140,7 @@ public class DeclareWarCommand extends SubCommand {
             }
 
             if (!this.faction.getLiege().equalsIgnoreCase(opponent.getLiege())) {
-                final Faction enemyLiege = getFaction(opponent.getLiege());
+                final Faction enemyLiege = this.persistentData.getFaction(opponent.getLiege());
                 if (enemyLiege.calculateCumulativePowerLevelWithoutVassalContribution() <
                         enemyLiege.getMaximumCumulativePowerLevel() / 2) {
                     this.playerService.sendMessage(

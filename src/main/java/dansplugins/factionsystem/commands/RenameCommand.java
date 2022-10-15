@@ -88,7 +88,7 @@ public class RenameCommand extends SubCommand {
             return;
         }
         final String oldName = this.faction.getName();
-        if (this.getFaction(newName) != null) {
+        if (this.persistentData.getFaction(newName) != null) {
             this.playerService.sendMessage(
                 player, 
                 "&c" + this.localeService.getText("FactionAlreadyExists"),

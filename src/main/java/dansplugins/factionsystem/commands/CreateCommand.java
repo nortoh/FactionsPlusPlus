@@ -124,7 +124,7 @@ public class CreateCommand extends SubCommand {
             this.persistentData.addFaction(playerFaction);
             this.playerService.sendMessage(
                 player, 
-                "&a" + getText("FactionCreated"),
+                "&a" + this.localeService.getText("FactionCreated"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionCreated"))
                     .replace("#name#", factionName), true
             );

@@ -64,7 +64,7 @@ public class BreakAllianceCommand extends SubCommand {
             return;
         }
 
-        final Faction otherFaction = this.getFaction(String.join(" ", args));
+        final Faction otherFaction = this.persistentData.getFaction(String.join(" ", args));
         if (otherFaction == null) {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))

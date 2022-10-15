@@ -13,6 +13,7 @@ import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.Duel.DuelState;
 import dansplugins.factionsystem.services.MessageService;
+import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -33,15 +34,24 @@ public class DuelCommand extends SubCommand {
     private final MessageService messageService;
     private final MedievalFactions medievalFactions;
     private final LocaleService localeService;
+    private final ConfigService configService;
 
     @Inject
-    public DuelCommand(EphemeralData ephemeralData, LocaleService localeService, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions) {
+    public DuelCommand(
+        ConfigService configService,
+        EphemeralData ephemeralData,
+        LocaleService localeService,
+        PlayerService playerService,
+        MessageService messageService,
+        MedievalFactions medievalFactions
+    ) {
         super();
         this.ephemeralData = ephemeralData;
         this.playerService = playerService;
         this.messageService = messageService;
         this.medievalFactions = medievalFactions;
         this.localeService = localeService;
+        this.configService = configService;
         this
             .setNames("duel", "dl", LOCALE_PREFIX + "CmdDuel")
             .requiresPermissions("mf.duel")
@@ -129,7 +139,7 @@ public class DuelCommand extends SubCommand {
             duel.acceptDuel();
         } else if (this.safeEquals(args[0], this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdDuelCancel"), this.messageService.getLanguage().getString("Alias.CmdDuelCancel")), "cancel")) {
             if (!isDuelling(player)) {
-                playerService.sendMessage(player, "&c" + getText("AlertNoPendingChallenges"), "AlertNoPendingChallenges", false);
+                playerService.sendMessage(player, "&c" + this.localeService.getText("AlertNoPendingChallenges"), "AlertNoPendingChallenges", false);
                 return;
             }
             final Duel duel = getDuel(player);

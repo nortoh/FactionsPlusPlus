@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -33,13 +34,20 @@ public class PromoteCommand extends SubCommand {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final PlayerService playerService;
+    private final PersistentData persistentData;
 
     @Inject
-    public PromoteCommand(MessageService messageService, LocaleService localeService, PlayerService playerService) {
+    public PromoteCommand(
+        MessageService messageService,
+        LocaleService localeService,
+        PlayerService playerService,
+        PersistentData persistentData
+    ) {
         super();
         this.messageService = messageService;
         this.localeService = localeService;
         this.playerService = playerService;
+        this.persistentData = persistentData;
         this
             .setNames("promote", LOCALE_PREFIX + "CmdPromote")
             .requiresPermissions("mf.promote")

@@ -59,7 +59,7 @@ public class EditLawCommand extends SubCommand {
         if (lawToEdit < 0 || lawToEdit >= this.faction.getLaws().size()) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageEditLaw"),
+                "&c" + this.localeService.getText("UsageEditLaw"),
                 "UsageEditLaw",
                 false
             );
@@ -71,7 +71,7 @@ public class EditLawCommand extends SubCommand {
         if (this.faction.editLaw(lawToEdit, editedLaw)) {
             this.playerService.sendMessage(
                 player,
-                "&a" + this.getText("LawEdited"),
+                "&a" + this.localeService.getText("LawEdited"),
                 "LawEdited",
                 false
             );

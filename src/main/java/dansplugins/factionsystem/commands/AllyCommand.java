@@ -68,7 +68,7 @@ public class AllyCommand extends SubCommand {
         }
 
         // retrieve the Faction from the given arguments
-        final Faction otherFaction = this.getFaction(String.join(" ", args));
+        final Faction otherFaction = this.persistentData.getFaction(String.join(" ", args));
 
         // the faction needs to exist to ally
         if (otherFaction == null) {
@@ -104,7 +104,7 @@ public class AllyCommand extends SubCommand {
 
         this.messageFaction(
                 this.faction,
-                this.translate("&a" + getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
+                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
                         .replace("#faction_a#", this.faction.getName())
                         .replace("#faction_b#", otherFaction.getName())
@@ -112,7 +112,7 @@ public class AllyCommand extends SubCommand {
 
         this.messageFaction(
                 otherFaction,
-                this.translate("&a" + getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
+                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
                         .replace("#faction_a#", this.faction.getName())
                         .replace("#faction_b#", otherFaction.getName())
@@ -126,7 +126,7 @@ public class AllyCommand extends SubCommand {
             // message player's faction
             this.messageFaction(
                 this.faction, 
-                this.translate("&a" + getText("AlertNowAlliedWith", otherFaction.getName())), 
+                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", otherFaction.getName())), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", otherFaction.getName())
             );
 

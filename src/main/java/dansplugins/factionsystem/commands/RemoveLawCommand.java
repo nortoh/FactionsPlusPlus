@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -26,12 +27,18 @@ public class RemoveLawCommand extends SubCommand {
 
     private final PlayerService playerService;
     private final LocaleService localeService;
+    private final PersistentData persistentData;
 
     @Inject
-    public RemoveLawCommand(PlayerService playerService, LocaleService localeService) {
+    public RemoveLawCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        PersistentData persistentData
+    ) {
         super();
         this.playerService = playerService;
         this.localeService = localeService;
+        this.persistentData = persistentData;
         this
             .setNames("removelaw", LOCALE_PREFIX + "CmdRemoveLaw")
             .requiresPermissions("mf.removelaw")

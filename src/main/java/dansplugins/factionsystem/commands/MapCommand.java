@@ -66,8 +66,8 @@ public class MapCommand extends SubCommand {
             final StringBuilder line = new StringBuilder();
             for (int x = topLeftX; x <= bottomRightX; x++) {
                 Chunk tmp = center.getWorld().getChunkAt(x, z);
-                if (this.chunkDataAccessor.isClaimed(tmp)) {
-                    ClaimedChunk chunk = this.chunkDataAccessor.getClaimedChunk(tmp);
+                if (this.persistentData.getChunkDataAccessor().isClaimed(tmp)) {
+                    ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(tmp);
                     printedHolders.put(chunk.getHolder(), printedHolders.getOrDefault(chunk.getHolder(), 0) + 1);
                     int index = this.getIndex(chunk.getHolder(), printedHolders);
                     char map_key = index == -1 ? '§' : map_keys[index];

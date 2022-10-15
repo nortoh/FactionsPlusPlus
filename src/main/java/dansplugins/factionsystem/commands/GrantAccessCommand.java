@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -29,13 +30,20 @@ public class GrantAccessCommand extends SubCommand {
     private final LocaleService localeService;
     private final MessageService messageService;
     private final PlayerService playerService;
+    private final EphemeralData ephemeralData;
 
     @Inject
-    public GrantAccessCommand(LocaleService localeService, MessageService messageService, PlayerService playerService) {
+    public GrantAccessCommand(
+        LocaleService localeService,
+        MessageService messageService,
+        PlayerService playerService,
+        EphemeralData ephemeralData
+    ) {
         super();
         this.localeService = localeService;
         this.messageService = messageService;
         this.playerService = playerService;
+        this.ephemeralData = ephemeralData;
         this
             .setNames("grantaccess", "ga", LOCALE_PREFIX + "CmdGrantAccess")
             .isPlayerCommand();

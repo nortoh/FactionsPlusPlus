@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionKickEvent;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.LocaleService;
@@ -35,6 +36,7 @@ public class KickCommand extends SubCommand {
     private final MessageService messageService;
     private final PlayerService playerService;
     private final LocaleService localeService;
+    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final Logger logger;
 
@@ -44,6 +46,7 @@ public class KickCommand extends SubCommand {
         PlayerService playerService,
         LocaleService localeService,
         EphemeralData ephemeralData,
+        PersistentData persistentData,
         Logger logger
     ) {
         super();
@@ -51,6 +54,7 @@ public class KickCommand extends SubCommand {
         this.playerService = playerService;
         this.localeService = localeService;
         this.ephemeralData = ephemeralData;
+        this.persistentData = persistentData;
         this.logger = logger;
         this
             .setNames("kick", LOCALE_PREFIX + "CmdKick")

@@ -76,7 +76,7 @@ public class CommandService implements TabCompleter {
                 this.medievalFactions.getInjector().getInstance(DuelCommand.class),
                 this.medievalFactions.getInjector().getInstance(EditLawCommand.class),
                 this.medievalFactions.getInjector().getInstance(FlagsCommand.class),
-                //this.medievalFactions.getInjector().getInstance(ForceCommand.class),
+                this.medievalFactions.getInjector().getInstance(ForceCommand.class),
                 this.medievalFactions.getInjector().getInstance(GateCommand.class),
                 this.medievalFactions.getInjector().getInstance(GrantAccessCommand.class),
                 this.medievalFactions.getInjector().getInstance(GrantIndependenceCommand.class),

@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -33,17 +34,20 @@ public class TransferCommand extends SubCommand {
     private final PlayerService playerService;
     private final LocaleService localeService;
     private final MessageService messageService;
+    private final PersistentData persistentData;
 
     @Inject
     public TransferCommand(
         PlayerService playerService,
         LocaleService localeService,
-        MessageService messageService
+        MessageService messageService,
+        PersistentData persistentData
     ) {
         super();
         this.playerService = playerService;
         this.localeService = localeService;
         this.messageService = messageService;
+        this.persistentData = persistentData;
         this
             .setNames("transfer", LOCALE_PREFIX + "CmdTransfer")
             .requiresPermissions("mf.transfer")

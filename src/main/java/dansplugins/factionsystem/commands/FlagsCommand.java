@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -27,13 +28,20 @@ public class FlagsCommand extends SubCommand {
     private final PlayerService playerService;
     private final MessageService messageService;
     private final LocaleService localeService;
+    private final PersistentData persistentData;
 
     @Inject
-    public FlagsCommand(PlayerService playerService, MessageService messageService, LocaleService localeService) {
+    public FlagsCommand(
+        PersistentData persistentData,
+        PlayerService playerService, 
+        MessageService messageService,
+        LocaleService localeService
+    ) {
         super();
         this.playerService = playerService;
         this.messageService = messageService;
         this.localeService = localeService;
+        this.persistentData = persistentData;
         this
             .setNames("flags", LOCALE_PREFIX + "CmdFlags")
             .requiresPermissions("mf.flags")

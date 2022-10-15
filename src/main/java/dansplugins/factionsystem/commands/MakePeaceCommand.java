@@ -152,7 +152,7 @@ public class MakePeaceCommand extends SubCommand {
             for (String vassalName : target.getVassals()) {
                 this.faction.removeEnemy(vassalName);
 
-                Faction vassal = this.getFaction(vassalName);
+                Faction vassal = this.persistentData.getFaction(vassalName);
                 vassal.removeEnemy(this.faction.getName());
             }
         }

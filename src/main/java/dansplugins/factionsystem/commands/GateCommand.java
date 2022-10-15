@@ -9,8 +9,11 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.EphemeralData;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.objects.domain.Gate;
+import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -33,14 +36,28 @@ public class GateCommand extends SubCommand {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
+    private final EphemeralData ephemeralData;
+    private final PersistentData persistentData;
+    private final ConfigService configService;
 
     @Inject
-    public GateCommand(PlayerService playerService, MessageService messageService, LocaleService localeService, MedievalFactions medievalFactions) {
+    public GateCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        EphemeralData ephemeralData,
+        ConfigService configService,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions
+    ) {
         super();
         this.playerService = playerService;
         this.messageService = messageService;
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
+        this.configService = configService;
+        this.ephemeralData = ephemeralData;
+        this.persistentData = persistentData;
         this
             .setNames("gate", "gt", LOCALE_PREFIX + "CmdGate")
             .requiresPermissions("mf.gate")
@@ -143,8 +160,8 @@ public class GateCommand extends SubCommand {
             }
             return;
         }
-        final boolean remove = this.safeEquals(args[0], "remove", this.playerService.decideWhichMessageToUse(getText("CmdGateRemove"), this.messageService.getLanguage().getString("Alias.CmdGateRemove")));
-        final boolean rename = this.safeEquals(args[0], "name", this.playerService.decideWhichMessageToUse(getText("CmdGateName"), this.messageService.getLanguage().getString("Alias.CmdGateName")));
+        final boolean remove = this.safeEquals(args[0], "remove", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateRemove"), this.messageService.getLanguage().getString("Alias.CmdGateRemove")));
+        final boolean rename = this.safeEquals(args[0], "name", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateName"), this.messageService.getLanguage().getString("Alias.CmdGateName")));
         if (rename || remove) {
             final Block targetBlock = player.getTargetBlock(null, 16);
             if (targetBlock.getType().equals(Material.AIR)) {

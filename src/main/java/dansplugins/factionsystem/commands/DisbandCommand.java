@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionDisbandEvent;
 import dansplugins.factionsystem.integrators.DynmapIntegrator;
@@ -36,6 +37,7 @@ public class DisbandCommand extends SubCommand {
     private final MessageService messageService;
     private final ConfigService configService;
     private final PersistentData persistentData;
+    private final EphemeralData ephemeralData;
     private final DynmapIntegrator dynmapIntegrator;
     private final Logger logger;
     private final LocaleService localeService;
@@ -48,7 +50,8 @@ public class DisbandCommand extends SubCommand {
         Logger logger,
         LocaleService localeService,
         PersistentData persistentData,
-        DynmapIntegrator dynmapIntegrator
+        DynmapIntegrator dynmapIntegrator,
+        EphemeralData ephemeralData
     ) {
         super();
         this.localeService = localeService;
@@ -58,6 +61,7 @@ public class DisbandCommand extends SubCommand {
         this.logger = logger;
         this.persistentData = persistentData;
         this.dynmapIntegrator = dynmapIntegrator;
+        this.ephemeralData = ephemeralData;
         this
             .setNames("disband", LOCALE_PREFIX + "CmdDisband");
     }

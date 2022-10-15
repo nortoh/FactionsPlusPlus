@@ -11,6 +11,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -34,10 +35,18 @@ public class InvokeCommand extends SubCommand {
     private final LocaleService localeService;
     private final MessageService messageService;
     private final PlayerService playerService;
+    private final ConfigService configService;
 
     @Inject
-    public InvokeCommand(PersistentData persistentData, LocaleService localeService, MessageService messageService, PlayerService playerService) {
+    public InvokeCommand(
+        ConfigService configService,
+        PersistentData persistentData,
+        LocaleService localeService,
+        MessageService messageService,
+        PlayerService playerService
+    ) {
         super();
+        this.configService = configService;
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.messageService = messageService;

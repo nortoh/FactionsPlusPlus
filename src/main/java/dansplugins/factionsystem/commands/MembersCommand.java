@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -32,19 +33,22 @@ public class MembersCommand extends SubCommand {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final ConfigService configService;
+    private final PersistentData persistentData;
 
     @Inject
     public MembersCommand(
         PlayerService playerService,
         MessageService messageService,
         LocaleService localeService,
-        ConfigService configService
+        ConfigService configService,
+        PersistentData persistentData
     ) {
         super();
         this.playerService = playerService;
         this.messageService = messageService;
         this.localeService = localeService;
         this.configService = configService;
+        this.persistentData = persistentData;
         this
             .setNames("members", LOCALE_PREFIX + "CmdMembers")
             .requiresPermissions("mf.members");
@@ -93,7 +97,7 @@ public class MembersCommand extends SubCommand {
                 return;
             }
         } else {
-            faction = this.getFaction(String.join(" ", args));
+            faction = this.persistentData.getFaction(String.join(" ", args));
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender,

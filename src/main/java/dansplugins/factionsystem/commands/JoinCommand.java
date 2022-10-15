@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.LocaleService;
@@ -31,12 +32,20 @@ public class JoinCommand extends SubCommand {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final Logger logger;
+    private final PersistentData persistentData;
 
     @Inject
-    public JoinCommand(PlayerService playerService, MessageService messageService, LocaleService localeService, Logger logger) {
+    public JoinCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        Logger logger
+    ) {
         this.playerService = playerService;
         this.messageService = messageService;
         this.localeService = localeService;
+        this.persistentData = persistentData;
         this.logger = logger;
         this
             .setNames("join", LOCALE_PREFIX + "CmdJoin")
@@ -71,7 +80,7 @@ public class JoinCommand extends SubCommand {
             );
             return;
         }
-        final Faction target = this.getFaction(String.join(" ", args));
+        final Faction target = this.persistentData.getFaction(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,

@@ -33,14 +33,6 @@ import java.util.UUID;
  */
 public abstract class SubCommand implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
-    protected MessageService messageService;
-    protected PlayerService playerService;
-    protected LocaleService localeService;
-    protected ConfigService configService;
-    protected PersistentData persistentData;
-    protected EphemeralData ephemeralData;
-    protected PersistentData.ChunkDataAccessor chunkDataAccessor;
-    protected DynmapIntegrator dynmapIntegrator;
     private boolean playerCommand;
     private boolean requiresFaction;
     private boolean requiresOfficer;
@@ -195,28 +187,6 @@ public abstract class SubCommand implements ColorTranslator {
         return hasPermission;
     }
 
-    /**
-     * Method to obtain text from a key.
-     *
-     * @param key of the message in LocaleManager.
-     * @return String message
-     */
-    protected String getText(String key) {
-        String text = this.localeService.getText(key);
-        return text.replace("%d", "%s");
-    }
-
-    /**
-     * Method to obtain text from a key with replacements.
-     *
-     * @param key          to obtain.
-     * @param replacements to replace within the message using {@link String#format(String, Object...)}.
-     * @return String message
-     */
-    protected String getText(String key, Object... replacements) {
-        return String.format(this.getText(key), replacements);
-    }
-
     /** 
      * Method to retrieve the list of command names for this command.
      */
@@ -229,19 +199,6 @@ public abstract class SubCommand implements ColorTranslator {
     */
     public String getPrimaryCommandName() {
         return this.names[0];
-    }
-
-    /**
-     * Method to obtain a Faction by name.
-     * <p>
-     * This is a passthrough function.
-     * </p>
-     *
-     * @param name of the desired Faction.
-     * @return {@link Faction}
-     */
-    protected Faction getFaction(String name) {
-        return this.persistentData.getFaction(name);
     }
 
     /**
@@ -295,15 +252,6 @@ public abstract class SubCommand implements ColorTranslator {
      */
     protected boolean safeEquals(String what, String... goals) {
         return Arrays.stream(goals).anyMatch(goal -> goal.equalsIgnoreCase(what));
-    }
-
-    /**
-     * Method to obtain the Config.yml for Medieval Factions.
-     *
-     * @return {@link FileConfiguration}
-     */
-    protected FileConfiguration getConfig() {
-        return this.configService.getConfig();
     }
 
     @Override

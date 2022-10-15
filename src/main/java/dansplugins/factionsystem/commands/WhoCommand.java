@@ -72,7 +72,7 @@ public class WhoCommand extends SubCommand {
         if (targetUUID == null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this. getText("PlayerNotFound"), 
+                "&c" + this.localeService.getText("PlayerNotFound"), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]), 
                 true
             );
