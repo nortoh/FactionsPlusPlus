@@ -110,7 +110,7 @@ public class PersistentData {
         return localStorageService;
     }
 
-    public FactionFactory geFactionFactory() {
+    public FactionFactory getFactionFactory() {
         return factionFactory;
     }
 
