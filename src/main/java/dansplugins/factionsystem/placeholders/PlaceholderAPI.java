@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.placeholders;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.ClaimedChunk;
@@ -19,11 +22,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+@Singleton
 public class PlaceholderAPI extends PlaceholderExpansion {
     private final MedievalFactions medievalFactions;
     private final PersistentData persistentData;
     private final ConfigService configService;
 
+    @Inject
     public PlaceholderAPI(MedievalFactions medievalFactions, PersistentData persistentData, ConfigService configService) {
         this.medievalFactions = medievalFactions;
         this.persistentData = persistentData;

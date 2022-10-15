@@ -7,20 +7,14 @@ package dansplugins.factionsystem;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import dansplugins.factionsystem.commands.abs.TabCompleterBase;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.di.PluginModule;
 import dansplugins.factionsystem.eventhandlers.*;
 import dansplugins.factionsystem.externalapi.MedievalFactionsAPI;
 import dansplugins.factionsystem.factories.WarFactory;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.placeholders.PlaceholderAPI;
 import dansplugins.factionsystem.services.*;
 import dansplugins.factionsystem.utils.Logger;
-import dansplugins.factionsystem.utils.PlayerTeleporter;
-import dansplugins.factionsystem.utils.RelationChecker;
-import dansplugins.factionsystem.utils.TerritoryOwnerNotifier;
-import dansplugins.factionsystem.utils.extended.Messenger;
 import dansplugins.factionsystem.utils.extended.Scheduler;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -44,22 +38,12 @@ public class MedievalFactions extends PonderBukkitPlugin {
     private final String pluginVersion = "v" + getDescription().getVersion();
     @Inject private ActionBarService actionBarService;
     @Inject private ConfigService configService;
-    @Inject private EphemeralData ephemeralData;
     @Inject private Logger logger;
-    @Inject private PlayerTeleporter playerTeleporter;
-    @Inject private TerritoryOwnerNotifier territoryOwnerNotifier;
     @Inject private MessageService messageService;
-    @Inject private PlayerService playerService;
-    @Inject private Messenger messenger;
     @Inject private PersistentData persistentData;
-    @Inject private WarFactory warFactory;
-    @Inject private RelationChecker relationChecker;
-    @Inject private GateService gateService;
-    @Inject private LockService lockService;
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;
     @Inject private LocaleService localeService;
-    @Inject private DynmapIntegrationService dynmapService;
 
     private Injector injector;
 
@@ -77,12 +61,12 @@ public class MedievalFactions extends PonderBukkitPlugin {
     @Override
     public void onEnable() {
         this.injector = (new PluginModule(this)).createInjector();
-        initializeConfig();
-        load();
-        scheduleRecurringTasks();
-        registerEventHandlers();
-        handleIntegrations();
-        makeSureEveryPlayerExperiencesPowerDecay();
+        this.initializeConfig();
+        this.load();
+        this.scheduleRecurringTasks();
+        this.registerEventHandlers();
+        this.handleIntegrations();
+        this.makeSureEveryPlayerExperiencesPowerDecay();
         this.commandService.registerCommands();
         getCommand("mf").setTabCompleter(commandService);
     }
@@ -92,8 +76,8 @@ public class MedievalFactions extends PonderBukkitPlugin {
      */
     @Override
     public void onDisable() {
-        persistentData.getLocalStorageService().save();
-        messageService.saveLanguage();
+        this.persistentData.getLocalStorageService().save();
+        this.messageService.saveLanguage();
     }
 
     /**
@@ -139,7 +123,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
      * @return A reference to the external API.
      */
     public MedievalFactionsAPI getAPI() {
-        return new MedievalFactionsAPI(this, persistentData, ephemeralData, configService);
+        return (MedievalFactionsAPI)this.getInjector().getInstance(MedievalFactionsAPI.class);
     }
 
     /**
@@ -159,16 +143,16 @@ public class MedievalFactions extends PonderBukkitPlugin {
      * Creates or loads the config, depending on the situation.
      */
     private void initializeConfig() {
-        if (configFileExists()) {
-            performCompatibilityChecks();
+        if (this.configFileExists()) {
+            this.performCompatibilityChecks();
         } else {
-            configService.saveConfigDefaults();
+            this.configService.saveConfigDefaults();
         }
     }
 
     private void performCompatibilityChecks() {
-        if (isVersionMismatched()) {
-            configService.handleVersionMismatch();
+        if (this.isVersionMismatched()) {
+            this.configService.handleVersionMismatch();
         }
         reloadConfig();
     }
@@ -181,8 +165,8 @@ public class MedievalFactions extends PonderBukkitPlugin {
      * Loads stored data into Persistent Data.
      */
     private void load() {
-        localeService.loadStrings();
-        persistentData.getLocalStorageService().load();
+        this.localeService.loadStrings();
+        this.persistentData.getLocalStorageService().load();
     }
 
     /**
@@ -222,9 +206,8 @@ public class MedievalFactions extends PonderBukkitPlugin {
      * Takes care of integrations for other plugins and tools.
      */
     private void handleIntegrations() {
-        handlebStatsIntegration();
-        handleDynmapIntegration();
-        handlePlaceholdersIntegration();
+        this.handlebStatsIntegration();
+        this.handlePlaceholdersIntegration();
     }
 
     private void handlebStatsIntegration() {
@@ -234,21 +217,10 @@ public class MedievalFactions extends PonderBukkitPlugin {
         }
     }
 
-    private void handleDynmapIntegration() {
-        logger.debug("Handling dynmap integration...");
-        if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
-            logger.debug("Found dynmap! Scheduling claims update and updating claims.");
-            this.dynmapService.getDynmapIntegrator().scheduleClaimsUpdate(600);
-            this.dynmapService.updateClaimsIfAble();
-        }
-        else {
-            logger.debug("Dynmap not found! Claims update will not be scheduled.");
-        }
-    }
-
     private void handlePlaceholdersIntegration() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new PlaceholderAPI(this, persistentData, configService).register();
+            PlaceholderAPI api = this.getInjector().getInstance(PlaceholderAPI.class);
+            api.register();
         }
     }
 }

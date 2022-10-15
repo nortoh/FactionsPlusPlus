@@ -16,6 +16,8 @@ public class DynmapIntegrationService {
     public DynmapIntegrationService(MedievalFactions plugin) {
         if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
             this.dynmapIntegrator = plugin.getInjector().getInstance(DynmapIntegrator.class);
+            this.dynmapIntegrator.scheduleClaimsUpdate(600);
+            this.dynmapIntegrator.updateClaims();
         } else {
             this.dynmapIntegrator = null;
         }

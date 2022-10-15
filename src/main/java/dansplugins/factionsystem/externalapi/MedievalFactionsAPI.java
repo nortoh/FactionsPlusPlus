@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.externalapi;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -19,6 +22,7 @@ import java.util.UUID;
  * @author Daniel McCoy Stephenson
  * @brief This class gives developers access to the external API for Medieval Factions.
  */
+@Singleton
 public class MedievalFactionsAPI {
     private final MedievalFactions medievalFactions;
     private final PersistentData persistentData;
@@ -27,6 +31,7 @@ public class MedievalFactionsAPI {
 
     private final String APIVersion = "v1.0.0"; // every time the external API is altered, this should be incremented
 
+    @Inject
     public MedievalFactionsAPI(MedievalFactions medievalFactions, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
         this.medievalFactions = medievalFactions;
         this.persistentData = persistentData;
