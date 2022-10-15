@@ -207,7 +207,7 @@ CanOnlyCreateGatesInClaimedTerritory: "&cYou can only create gates in claimed te
 AlertMustBeMemberToCreateGate: "&cYou must be a member of this faction to create a gate."
 AlertMustBeOwnerOrOfficerToCreateGate: "&cYou must be a faction owner or officer to create a gate."
 Point1PlacementSuccessful: "&aCreating Gate 1/4: Point 1 placed successfully."
-Point2PlacedSuccessfully: "&aCreating Gate 2/4: Point 2 placed successfully."
+Point2PlacementSuccessful: "&aCreating Gate 2/4: Point 2 placed successfully."
 Point4TriggeredSuccessfully: "&aCreating Gate 4/4: Trigger successfully linked."
 ClickToPlaceSecondCorner: "&aClick to place the second corner..."
 MaterialsMismatch1: "&cError placing point 1: Materials mismatch."

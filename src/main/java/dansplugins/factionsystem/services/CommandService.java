@@ -216,6 +216,7 @@ public class CommandService implements TabCompleter {
             SubCommand subCommand = this.findSubCommandByName(args[0]);
             if (subCommand == null) {
                 this.playerService.sendMessage(sender, ChatColor.RED + this.localeService.get("CommandNotRecognized"), "CommandNotRecognized", false);
+                return false;
             }
             String[] arguments = new String[args.length - 1]; // Take first argument out of Array.
             System.arraycopy(args, 1, arguments, 0, arguments.length);

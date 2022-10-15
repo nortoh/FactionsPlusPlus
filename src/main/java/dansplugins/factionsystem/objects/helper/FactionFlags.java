@@ -19,6 +19,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * @author Daniel McCoy Stephenson
  * In order to add a new faction flag to this class, the following methods need to be altered:
@@ -34,9 +36,13 @@ public class FactionFlags {
     private final PlayerService playerService;
 
     private final ArrayList<String> flagNames = new ArrayList<>();
+    @Expose
     private HashMap<String, Integer> integerValues = new HashMap<>();
+    @Expose
     private HashMap<String, Boolean> booleanValues = new HashMap<>();
+    @Expose
     private HashMap<String, Double> doubleValues = new HashMap<>();
+    @Expose
     private HashMap<String, String> stringValues = new HashMap<>();
 
     @Inject

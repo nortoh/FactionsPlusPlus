@@ -11,6 +11,7 @@ import com.google.inject.Inject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.factories.FactionFlagFactory;
@@ -21,6 +22,8 @@ import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
+import dansplugins.factionsystem.jsonadapters.LocationAdapter;
+import dansplugins.factionsystem.jsonadapters.ArrayListGateAdapter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
@@ -31,6 +34,10 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -43,13 +50,23 @@ public class Faction extends Nation implements Feudal, Savable {
     private final MedievalFactions medievalFactions;
     private final PlayerService playerService;
 
+    @Expose
+    @JsonAdapter(ArrayListGateAdapter.class)
     private final ArrayList<Gate> gates = new ArrayList<>();
+    @Expose
     private final FactionFlags flags;
     private final ArrayList<String> attemptedVassalizations = new ArrayList<>();
+    @Expose
     private ArrayList<String> vassals = new ArrayList<>();
+    @Expose
     private String liege = "none";
+    @Expose
     private String prefix = "none";
+    @Expose
+    @JsonAdapter(LocationAdapter.class)
+    @SerializedName("location")
     private Location factionHome = null;
+    @Expose
     private int bonusPower = 0;
     private boolean autoclaim = false;
 
@@ -412,9 +429,19 @@ public class Faction extends Nation implements Feudal, Savable {
         return vassals;
     }
 
+    public JsonElement toJsonTree() {
+        return new GsonBuilder()
+            .excludeFieldsWithoutExposeAnnotation()
+            .serializeNulls()
+            .create()
+            .toJsonTree(this);
+    }
+
     @Override
     public Map<String, String> save() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create();
+        this.medievalFactions.getLogger().info("saving");
+        System.out.println(gson.toJson(this));
         Map<String, String> saveMap = new HashMap<>();
 
         saveMap.put("members", gson.toJson(members));
@@ -426,7 +453,7 @@ public class Faction extends Nation implements Feudal, Savable {
         saveMap.put("vassals", gson.toJson(vassals));
         saveMap.put("description", gson.toJson(description));
         saveMap.put("owner", gson.toJson(owner));
-        saveMap.put("location", gson.toJson(saveLocation(gson)));
+        saveMap.put("location", gson.toJson(this.factionHome));
         saveMap.put("liege", gson.toJson(liege));
         saveMap.put("prefix", gson.toJson(prefix));
         saveMap.put("bonusPower", gson.toJson(bonusPower));
@@ -450,10 +477,10 @@ public class Faction extends Nation implements Feudal, Savable {
         Map<String, String> saveMap = new HashMap<>();
 
         if (factionHome != null && factionHome.getWorld() != null) {
-            saveMap.put("worldName", gson.toJson(factionHome.getWorld().getName()));
-            saveMap.put("x", gson.toJson(factionHome.getX()));
-            saveMap.put("y", gson.toJson(factionHome.getY()));
-            saveMap.put("z", gson.toJson(factionHome.getZ()));
+            /*saveMap.put("worldName", factionHome.getWorld().getName());
+            saveMap.put("x", factionHome.getX());
+            saveMap.put("y", factionHome.getY());
+            saveMap.put("z", factionHome.getZ());*/
         }
 
         return saveMap;

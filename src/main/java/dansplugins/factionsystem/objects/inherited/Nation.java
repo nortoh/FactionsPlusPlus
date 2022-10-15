@@ -9,15 +9,21 @@ import dansplugins.factionsystem.objects.inherited.specification.Lawful;
 
 import java.util.ArrayList;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+
 /**
  * @author Daniel McCoy Stephenson
  */
 public class Nation extends Group implements Diplomatic, Lawful {
+    @Expose
     protected ArrayList<String> allyFactions = new ArrayList<>();
+    
     protected ArrayList<String> attemptedAlliances = new ArrayList<>();
+    @Expose
     protected ArrayList<String> enemyFactions = new ArrayList<>();
     protected ArrayList<String> attemptedTruces = new ArrayList<>();
-
+    @Expose
     protected ArrayList<String> laws = new ArrayList<>();
 
     @Override

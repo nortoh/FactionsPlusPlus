@@ -19,6 +19,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+
+import dansplugins.factionsystem.jsonadapters.GateCoordAdapter;
+import com.google.gson.JsonElement;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+
 /**
  * @author Caibinus
  * @author Daniel McCoy Stephenson
@@ -28,14 +34,25 @@ public class Gate {
     private final ConfigService configService;
 
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
+    @Expose
     private String name = "gateName";
+    @Expose
     private boolean open = false;
+    @Expose
     private boolean vertical = true;
+    @Expose
+    @JsonAdapter(GateCoordAdapter.class)
     private GateCoord coord1 = null;
+    @Expose
+    @JsonAdapter(GateCoordAdapter.class)
     private GateCoord coord2 = null;
+    @Expose
+    @JsonAdapter(GateCoordAdapter.class)
     private GateCoord trigger = null;
+    @Expose
     private Material material = Material.IRON_BARS;
     private World _world = null;
+    @Expose
     private String world = "";
     private GateStatus gateStatus = GateStatus.READY;
 
@@ -86,6 +103,10 @@ public class Gate {
     public void setWorld(String worldName) {
         world = worldName;
         _world = null;
+    }
+
+    public JsonElement toJson() {
+        return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create().toJsonTree(this);
     }
 
     public Map<String, String> save() {

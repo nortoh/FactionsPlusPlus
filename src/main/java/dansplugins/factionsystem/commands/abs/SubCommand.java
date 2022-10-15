@@ -171,6 +171,7 @@ public abstract class SubCommand implements ColorTranslator {
      * @return {@code true} if they do.
      */
     public boolean checkPermissions(CommandSender sender, String... permissions) {
+        if (permissions.length == 0) return true;
         boolean hasPermission = false;
         List<String> missingPermissions = new ArrayList<String>();
         for (String perm : permissions) {

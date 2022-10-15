@@ -454,7 +454,7 @@ PluginEnabling	TestPluginEnabling
 PluginLoading	TestPluginLoading
 PluginSaving	TestPluginSaving
 Point1PlacementSuccessful	TestPoint1PlacementSuccessful
-Point2PlacedSuccessfully	TestPoint2PlacedSuccessfully
+Point2PlacementSuccessful	TestPoint2PlacedSuccessfully
 Population	TestPopulation
 PowerHasDecayed	TestPowerHasDecayed
 PowerLevel	TestPowerLevel
