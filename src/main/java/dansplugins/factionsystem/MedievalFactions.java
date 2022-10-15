@@ -59,6 +59,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;
     @Inject private LocaleService localeService;
+    @Inject private DynmapIntegrationService dynmapService;
 
     private Injector injector;
 
@@ -205,15 +206,15 @@ public class MedievalFactions extends PonderBukkitPlugin {
 
     private ArrayList<Listener> initializeListeners() {
         return new ArrayList<>(Arrays.asList(
-                new ChatHandler(persistentData, configService, ephemeralData, messenger),
-                new DamageHandler(logger, persistentData, ephemeralData, localeService, configService, relationChecker),
-                new DeathHandler(configService, persistentData, localeService),
-                new EffectHandler(ephemeralData, this, relationChecker),
-                new InteractionHandler(persistentData, persistentData.getInteractionAccessChecker(), localeService, persistentData.getBlockChecker(), this, lockService, ephemeralData, gateService, playerService, messageService),
-                new JoinHandler(persistentData, localeService, configService, logger, messenger, territoryOwnerNotifier),
-                //new MoveHandler(persistentData, territoryOwnerNotifier, localeService, this, persistentData.getDynmapIntegrator(), playerService),
-                new QuitHandler(ephemeralData, persistentData, actionBarService),
-                new SpawnHandler(configService, persistentData)
+                this.getInjector().getInstance(ChatHandler.class),
+                this.getInjector().getInstance(DamageHandler.class),
+                this.getInjector().getInstance(DeathHandler.class),
+                this.getInjector().getInstance(EffectHandler.class),
+                this.getInjector().getInstance(InteractionHandler.class),
+                this.getInjector().getInstance(JoinHandler.class),
+                this.getInjector().getInstance(MoveHandler.class),
+                this.getInjector().getInstance(QuitHandler.class),
+                this.getInjector().getInstance(SpawnHandler.class)
         ));
     }
 
@@ -237,8 +238,8 @@ public class MedievalFactions extends PonderBukkitPlugin {
         logger.debug("Handling dynmap integration...");
         if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
             logger.debug("Found dynmap! Scheduling claims update and updating claims.");
-            persistentData.getDynmapIntegrator().scheduleClaimsUpdate(600); // Check once every 30 seconds for updates.
-            persistentData.getDynmapIntegrator().updateClaims();
+            this.dynmapService.getDynmapIntegrator().scheduleClaimsUpdate(600);
+            this.dynmapService.updateClaimsIfAble();
         }
         else {
             logger.debug("Dynmap not found! Claims update will not be scheduled.");

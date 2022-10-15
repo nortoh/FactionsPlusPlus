@@ -1,5 +1,8 @@
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.services.ConfigService;
@@ -10,11 +13,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
+@Singleton
 public class DeathHandler implements Listener {
     private final ConfigService configService;
     private final PersistentData persistentData;
     private final LocaleService localeService;
 
+    @Inject
     public DeathHandler(ConfigService configService, PersistentData persistentData, LocaleService localeServiceService) {
         this.configService = configService;
         this.persistentData = persistentData;

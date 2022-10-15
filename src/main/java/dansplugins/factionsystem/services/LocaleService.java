@@ -53,7 +53,7 @@ public class LocaleService {
 
     public String getText(String key) {
         if (!keys.contains(key)) return String.format("[key '%s' not found]", key);
-        return strings.get(key);
+        return strings.get(key).replace("%d", "s");
     }
 
     /**

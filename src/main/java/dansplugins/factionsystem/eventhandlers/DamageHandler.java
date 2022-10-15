@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.Duel;
@@ -23,6 +26,7 @@ import org.bukkit.projectiles.ProjectileSource;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class DamageHandler implements Listener {
     private final Logger logger;
     private final PersistentData persistentData;
@@ -31,6 +35,7 @@ public class DamageHandler implements Listener {
     private final ConfigService configService;
     private final RelationChecker relationChecker;
 
+    @Inject
     public DamageHandler(Logger logger, PersistentData persistentData, EphemeralData ephemeralData, LocaleService localeService, ConfigService configService, RelationChecker relationChecker) {
         this.logger = logger;
         this.persistentData = persistentData;

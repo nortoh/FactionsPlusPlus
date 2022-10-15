@@ -1,5 +1,8 @@
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.utils.RelationChecker;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Singleton
 public class EffectHandler implements Listener {
     private final EphemeralData ephemeralData;
     private final MedievalFactions medievalFactions;
@@ -38,6 +42,7 @@ public class EffectHandler implements Listener {
     );
     private final List<PotionType> BAD_POTION_TYPES = new ArrayList<>();
 
+    @Inject
     public EffectHandler(EphemeralData ephemeralData, MedievalFactions medievalFactions, RelationChecker relationChecker) {
         this.ephemeralData = ephemeralData;
         this.medievalFactions = medievalFactions;

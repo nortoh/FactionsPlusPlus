@@ -11,9 +11,9 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionDisbandEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -38,7 +38,7 @@ public class DisbandCommand extends SubCommand {
     private final ConfigService configService;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
-    private final DynmapIntegrator dynmapIntegrator;
+    private final DynmapIntegrationService dynmapService;
     private final Logger logger;
     private final LocaleService localeService;
 
@@ -50,7 +50,7 @@ public class DisbandCommand extends SubCommand {
         Logger logger,
         LocaleService localeService,
         PersistentData persistentData,
-        DynmapIntegrator dynmapIntegrator,
+        DynmapIntegrationService dynmapService,
         EphemeralData ephemeralData
     ) {
         super();
@@ -60,7 +60,7 @@ public class DisbandCommand extends SubCommand {
         this.configService = configService;
         this.logger = logger;
         this.persistentData = persistentData;
-        this.dynmapIntegrator = dynmapIntegrator;
+        this.dynmapService = dynmapService;
         this.ephemeralData = ephemeralData;
         this
             .setNames("disband", LOCALE_PREFIX + "CmdDisband");
@@ -160,7 +160,7 @@ public class DisbandCommand extends SubCommand {
 
         // remove claimed land objects associated with this faction
         this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(nameOfFactionToRemove);
-        this.dynmapIntegrator.updateClaims();
+        this.dynmapService.updateClaimsIfAble();
 
         // remove locks associated with this faction
         this.persistentData.removeAllLocks(this.persistentData.getFactionByIndex(i).getName());

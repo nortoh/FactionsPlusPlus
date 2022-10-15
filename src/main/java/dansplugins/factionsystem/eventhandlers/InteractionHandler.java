@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
@@ -40,6 +43,7 @@ import java.util.Objects;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class InteractionHandler implements Listener {
     private final PersistentData persistentData;
     private final InteractionAccessChecker interactionAccessChecker;
@@ -52,6 +56,7 @@ public class InteractionHandler implements Listener {
     private final EphemeralData ephemeralData;
     private final GateService gateService;
 
+    @Inject
     public InteractionHandler(PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, MedievalFactions medievalFactions, LockService lockService, EphemeralData ephemeralData, GateService gateService, PlayerService playerService, MessageService messageService) {
         this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;

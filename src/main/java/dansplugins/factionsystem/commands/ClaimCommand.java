@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
@@ -24,15 +24,15 @@ public class ClaimCommand extends SubCommand {
     private final PlayerService playerService;
     private final LocaleService localeService;
     private final PersistentData persistentData;
-    private final DynmapIntegrator dynmapIntegrator;
+    private final DynmapIntegrationService dynmapService;
 
     @Inject
-    public ClaimCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData, DynmapIntegrator dynmapIntegrator) {
+    public ClaimCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData, DynmapIntegrationService dynmapService) {
         super();
         this.localeService = localeService;
         this.playerService = playerService;
         this.persistentData = persistentData;
-        this.dynmapIntegrator = dynmapIntegrator;
+        this.dynmapService = dynmapService;
         this
             .setNames("claim", LOCALE_PREFIX + "CmdClaim")
             .isPlayerCommand()
@@ -67,7 +67,7 @@ public class ClaimCommand extends SubCommand {
         } else {
             this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), this.faction);
         }
-        this.dynmapIntegrator.updateClaims();
+        this.dynmapService.updateClaimsIfAble();
     }
 
     /**

@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
 import dansplugins.factionsystem.objects.domain.ActivityRecord;
@@ -25,6 +28,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class JoinHandler implements Listener {
     private final PersistentData persistentData;
     private final LocaleService localeService;
@@ -33,6 +37,7 @@ public class JoinHandler implements Listener {
     private final Messenger messenger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
 
+    @Inject
     public JoinHandler(PersistentData persistentData, LocaleService localeService, ConfigService configService, Logger logger, Messenger messenger, TerritoryOwnerNotifier territoryOwnerNotifier) {
         this.persistentData = persistentData;
         this.localeService = localeService;

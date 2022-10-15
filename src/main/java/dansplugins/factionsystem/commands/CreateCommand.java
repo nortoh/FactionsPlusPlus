@@ -13,7 +13,6 @@ import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionCreateEvent;
 import dansplugins.factionsystem.factories.FactionFactory;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -39,7 +38,6 @@ public class CreateCommand extends SubCommand {
     private final Logger logger;
     private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
-    private final DynmapIntegrator dynmapIntegrator;
     private final FactionFactory factionFactory;
 
     @Inject
@@ -51,7 +49,6 @@ public class CreateCommand extends SubCommand {
         Logger logger,
         LocaleService localeService,
         MedievalFactions medievalFactions,
-        DynmapIntegrator dynmapIntegrator,
         FactionFactory factionFactory
     ) {
         super();
@@ -62,7 +59,6 @@ public class CreateCommand extends SubCommand {
         this.logger = logger;
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
-        this.dynmapIntegrator = dynmapIntegrator;
         this.factionFactory = factionFactory;
         this
             .setNames("create", LOCALE_PREFIX + "CmdCreate")

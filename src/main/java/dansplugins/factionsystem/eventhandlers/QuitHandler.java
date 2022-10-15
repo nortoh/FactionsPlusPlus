@@ -1,5 +1,8 @@
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.ActivityRecord;
@@ -10,11 +13,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.time.ZonedDateTime;
 
+@Singleton
 public class QuitHandler implements Listener {
     private final EphemeralData ephemeralData;
     private final PersistentData persistentData;
     private final ActionBarService actionBarService;
 
+    @Inject
     public QuitHandler(EphemeralData ephemeralData, PersistentData persistentData, ActionBarService actionBarService) {
         this.ephemeralData = ephemeralData;
         this.persistentData = persistentData;

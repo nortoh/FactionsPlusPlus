@@ -14,7 +14,6 @@ import com.google.gson.reflect.TypeToken;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.factories.FactionFlagFactory;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.helper.FactionFlags;
 import dansplugins.factionsystem.objects.inherited.Nation;
 import dansplugins.factionsystem.objects.inherited.specification.Feudal;
@@ -39,7 +38,6 @@ import static org.bukkit.Bukkit.getServer;
 public class Faction extends Nation implements Feudal, Savable {
     private final ConfigService configService;
     private final LocaleService localeService;
-    private final DynmapIntegrator dynmapIntegrator;
     private final Logger logger;
     private final PersistentData persistentData;
     private final MedievalFactions medievalFactions;
@@ -61,7 +59,6 @@ public class Faction extends Nation implements Feudal, Savable {
         @Assisted UUID creator,
         ConfigService configService,
         LocaleService localeService,
-        DynmapIntegrator dynmapIntegrator,
         Logger logger,
         PersistentData persistentData,
         MedievalFactions medievalFactions,
@@ -70,7 +67,6 @@ public class Faction extends Nation implements Feudal, Savable {
     ) {
         this.configService = configService;
         this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
         this.logger = logger;
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
@@ -87,7 +83,6 @@ public class Faction extends Nation implements Feudal, Savable {
         @Assisted Map<String, String> data,
         ConfigService configService,
         LocaleService localeService,
-        DynmapIntegrator dynmapIntegrator,
         Logger logger,
         PersistentData persistentData,
         MedievalFactions medievalFactions,
@@ -96,7 +91,6 @@ public class Faction extends Nation implements Feudal, Savable {
     ) {
         this.configService = configService;
         this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
         this.logger = logger;
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
@@ -110,7 +104,6 @@ public class Faction extends Nation implements Feudal, Savable {
         @Assisted String initialName,
         ConfigService configService,
         LocaleService localeService,
-        DynmapIntegrator dynmapIntegrator,
         Logger logger,
         PersistentData persistentData,
         MedievalFactions medievalFactions,
@@ -119,7 +112,6 @@ public class Faction extends Nation implements Feudal, Savable {
     ) {
         this.configService = configService;
         this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
         this.logger = logger;
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;

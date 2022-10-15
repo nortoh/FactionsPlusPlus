@@ -9,8 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -31,7 +31,7 @@ public class UnclaimallCommand extends SubCommand {
     private LocaleService localeService;
     private PlayerService playerService;
     private MessageService messageService;
-    private DynmapIntegrator dynmapIntegrator;
+    private DynmapIntegrationService dynmapService;
 
     @Inject
     public UnclaimallCommand(
@@ -39,14 +39,14 @@ public class UnclaimallCommand extends SubCommand {
         LocaleService localeService,
         PlayerService playerService,
         MessageService messageService,
-        DynmapIntegrator dynmapIntegrator
+        DynmapIntegrationService dynmapService
     ) {
         super();
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
-        this.dynmapIntegrator = dynmapIntegrator;
+        this.dynmapService = dynmapService;
         this
             .setNames("unclaimall", "ua", LOCALE_PREFIX + "CmdUnclaimall");
     }
@@ -127,7 +127,7 @@ public class UnclaimallCommand extends SubCommand {
 
         // remove claimed chunks
         this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getName());
-        this.dynmapIntegrator.updateClaims();
+        this.dynmapService.updateClaimsIfAble();
         this.playerService.sendMessage(
             sender, 
             "&a" + this.localeService.getText("AllLandUnclaimedFrom", faction.getName()),

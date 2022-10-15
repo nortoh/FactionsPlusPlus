@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
@@ -25,7 +25,7 @@ import java.util.Objects;
 public class UnclaimCommand extends SubCommand {
 
     private final EphemeralData ephemeralData;
-    private final DynmapIntegrator dynmapIntegrator;
+    private final DynmapIntegrationService dynmapService;
     private final PersistentData persistentData;
     private final PlayerService playerService;
     private final MessageService messageService;
@@ -33,7 +33,7 @@ public class UnclaimCommand extends SubCommand {
     @Inject
     public UnclaimCommand(
         EphemeralData ephemeralData,
-        DynmapIntegrator dynmapIntegrator,
+        DynmapIntegrationService dynmapService,
         PersistentData persistentData,
         PlayerService playerService,
         MessageService messageService
@@ -41,7 +41,7 @@ public class UnclaimCommand extends SubCommand {
         super();
         this.ephemeralData = ephemeralData;
         this.persistentData = persistentData;
-        this.dynmapIntegrator = dynmapIntegrator;
+        this.dynmapService = dynmapService;
         this.playerService = playerService;
         this.messageService = messageService;
         this
@@ -75,7 +75,7 @@ public class UnclaimCommand extends SubCommand {
         }
         if (args.length == 0) {
             this.persistentData.getChunkDataAccessor().removeChunkAtPlayerLocation(player, this.faction);
-            this.dynmapIntegrator.updateClaims();
+            this.dynmapService.updateClaimsIfAble();
             this.playerService.sendMessage(
                 player, 
                 "&a" + "Unclaimed your current claim.",

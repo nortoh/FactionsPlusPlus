@@ -4,6 +4,9 @@
  */
 package dansplugins.factionsystem.utils;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.ClaimedChunk;
@@ -14,16 +17,20 @@ import org.bukkit.entity.Player;
 
 import static org.bukkit.Material.LADDER;
 
+import javax.inject.Provider;
+
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class InteractionAccessChecker {
-    private final PersistentData persistentData;
+    private final Provider<PersistentData> persistentData;
     private final ConfigService configService;
     private final EphemeralData ephemeralData;
     private final Logger logger;
 
-    public InteractionAccessChecker(PersistentData persistentData, ConfigService configService, EphemeralData ephemeralData, Logger logger) {
+    @Inject
+    public InteractionAccessChecker(Provider<PersistentData> persistentData, ConfigService configService, EphemeralData ephemeralData, Logger logger) {
         this.persistentData = persistentData;
         this.configService = configService;
         this.ephemeralData = ephemeralData;
@@ -43,7 +50,7 @@ public class InteractionAccessChecker {
             return false;
         }
 
-        Faction playersFaction = persistentData.getPlayersFaction(player.getUniqueId());
+        Faction playersFaction = this.persistentData.get().getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {
             return true;
         }
@@ -68,9 +75,9 @@ public class InteractionAccessChecker {
             return true;
         }
 
-        final Faction chunkHolder = persistentData.getFaction(chunk.getHolder());
+        final Faction chunkHolder = this.persistentData.get().getFaction(chunk.getHolder());
 
-        boolean inVassalageTree = persistentData.isPlayerInFactionInVassalageTree(player, chunkHolder);
+        boolean inVassalageTree = this.persistentData.get().isPlayerInFactionInVassalageTree(player, chunkHolder);
         boolean isAlly = playersFaction.isAlly(chunk.getHolder());
         boolean allyInteractionAllowed = (boolean) chunkHolder.getFlags().getFlag("alliesCanInteractWithLand");
         boolean vassalageTreeInteractionAllowed = (boolean) chunkHolder.getFlags().getFlag("vassalageTreeCanInteractWithLand");
@@ -88,7 +95,7 @@ public class InteractionAccessChecker {
     }
 
     public boolean isPlayerAttemptingToPlaceLadderInEnemyTerritoryAndIsThisAllowed(Block blockPlaced, Player player, ClaimedChunk claimedChunk) {
-        Faction playersFaction = persistentData.getPlayersFaction(player.getUniqueId());
+        Faction playersFaction = this.persistentData.get().getPlayersFaction(player.getUniqueId());
 
         if (playersFaction == null) {
             return false;

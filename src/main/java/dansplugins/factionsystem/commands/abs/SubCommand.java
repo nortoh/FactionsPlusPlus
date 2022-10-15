@@ -7,18 +7,11 @@ package dansplugins.factionsystem.commands.abs;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
@@ -33,6 +26,7 @@ import java.util.UUID;
  */
 public abstract class SubCommand implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
+    protected PlayerService playerService; // remove later, just makes the compiler happy for now.
     private boolean playerCommand;
     private boolean requiresFaction;
     private boolean requiresOfficer;
