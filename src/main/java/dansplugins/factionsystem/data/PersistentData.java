@@ -16,7 +16,15 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.events.FactionClaimEvent;
 import dansplugins.factionsystem.events.FactionUnclaimEvent;
 import dansplugins.factionsystem.factories.FactionFactory;
-import dansplugins.factionsystem.objects.domain.*;
+import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.objects.domain.LockedBlock;
+import dansplugins.factionsystem.objects.domain.ActivityRecord;
+import dansplugins.factionsystem.objects.domain.Duel;
+import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.objects.domain.War;
+import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -56,9 +64,8 @@ public class PersistentData {
     private final Messenger messenger;
     private final EphemeralData ephemeralData;
     private final Logger logger;
-    private final FactionFactory factionFactory;
+    private final FactionRepository factionRepository;
     private final InteractionAccessChecker interactionAccessChecker;
-    private final ArrayList<Faction> factions = new ArrayList<>();
     private final ArrayList<ClaimedChunk> claimedChunks = new ArrayList<>();
     private final ArrayList<PowerRecord> powerRecords = new ArrayList<>();
     private final ArrayList<ActivityRecord> activityRecords = new ArrayList<>();
@@ -80,9 +87,9 @@ public class PersistentData {
         Logger logger,
         EphemeralData ephemeralData,
         BlockChecker blockChecker,
-        FactionFactory factionFactory,
         DynmapIntegrationService dynmapService,
-        InteractionAccessChecker interactionAccessChecker
+        InteractionAccessChecker interactionAccessChecker,
+        FactionRepository factionRepository
     ) {
         this.localeService = localeService;
         this.configService = configService;
@@ -92,10 +99,10 @@ public class PersistentData {
         this.messenger = messenger;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
-        this.factionFactory = factionFactory;
         this.dynmapService = dynmapService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.blockChecker = blockChecker;
+        this.factionRepository = factionRepository;
     }
 
     public BlockChecker getBlockChecker() {
@@ -110,10 +117,6 @@ public class PersistentData {
         return localStorageService;
     }
 
-    public FactionFactory getFactionFactory() {
-        return factionFactory;
-    }
-
     /**
      * Method to get a Faction by its name.
      * <p>
@@ -125,7 +128,7 @@ public class PersistentData {
      * @see #getFaction(String, boolean, boolean)
      */
     public Faction getFaction(String name) {
-        return getFaction(name, false, false);
+        return this.factionRepository.get(name);
     }
 
     /**
@@ -159,17 +162,11 @@ public class PersistentData {
      * @see #getFactionByPrefix(String)
      */
     public Faction getFaction(String text, boolean checkPrefix, boolean onlyCheckPrefix) {
-        for (Faction faction : factions) {
-            if ((!onlyCheckPrefix && faction.getName().equalsIgnoreCase(text)) ||
-                    (faction.getPrefix().equalsIgnoreCase(text) && checkPrefix)) {
-                return faction;
-            }
-        }
-        return null;
+        return this.factionRepository.get(text);
     }
 
     public Faction getPlayersFaction(UUID playerUUID) {
-        for (Faction faction : factions) {
+        for (Faction faction : this.factionRepository.all()) {
             if (faction.isMember(playerUUID)) {
                 return faction;
             }
@@ -224,7 +221,7 @@ public class PersistentData {
                 // record number of factions
                 numFactionsFound = foundFactions.size();
 
-                Faction liege = getFaction(current.getLiege());
+                Faction liege = this.factionRepository.get(current.getLiege());
                 if (liege != null) {
                     if (!containsFactionByName(toAdd, liege) && !containsFactionByName(foundFactions, liege)) {
                         toAdd.add(liege);
@@ -232,7 +229,7 @@ public class PersistentData {
                     }
 
                     for (String vassalName : liege.getVassals()) {
-                        Faction vassal = getFaction(vassalName);
+                        Faction vassal = this.factionRepository.get(vassalName);
                         if (!containsFactionByName(toAdd, vassal) && !containsFactionByName(foundFactions, vassal)) {
                             toAdd.add(vassal);
                             numFactionsFound++;
@@ -241,7 +238,7 @@ public class PersistentData {
                 }
 
                 for (String vassalName : current.getVassals()) {
-                    Faction vassal = getFaction(vassalName);
+                    Faction vassal = this.factionRepository.get(vassalName);
                     if (!containsFactionByName(toAdd, vassal) && !containsFactionByName(foundFactions, vassal)) {
                         toAdd.add(vassal);
                         numFactionsFound++;
@@ -268,7 +265,7 @@ public class PersistentData {
     }
 
     public boolean isInFaction(UUID playerUUID) {
-        for (Faction faction : factions) {
+        for (Faction faction : this.factionRepository.all()) {
             if (faction.isMember(playerUUID)) {
                 return true;
             }
@@ -290,7 +287,7 @@ public class PersistentData {
     }
 
     public boolean isGateBlock(Block targetBlock) {
-        for (Faction faction : factions) {
+        for (Faction faction : this.factionRepository.all()) {
             for (Gate gate : faction.getGates()) {
                 if (gate.hasBlock(targetBlock)) {
                     return true;
@@ -337,9 +334,10 @@ public class PersistentData {
     }
 
     public Faction getRandomFaction() {
-        Random generator = new Random();
+        /*Random generator = new Random();
         int randomIndex = generator.nextInt(factions.size());
-        return factions.get(randomIndex);
+        return factions.get(randomIndex);*/
+        return null;
     }
 
     public void addWar(War war) {
@@ -347,23 +345,25 @@ public class PersistentData {
     }
 
     public void addFaction(Faction faction) {
-        factions.add(faction);
+        //factions.add(faction);
     }
 
     public int getFactionIndexOf(Faction faction) {
-        return factions.indexOf(faction);
+        //return factions.indexOf(faction);
+        return 0;
     }
 
     public Faction getFactionByIndex(int i) {
-        return factions.get(i);
+        //return factions.get(i);
+        return null;
     }
 
     public void removeFactionByIndex(int i) {
-        factions.remove(i);
+        //factions.remove(i);
     }
 
     public void removePoliticalTiesToFaction(String factionName) {
-        for (Faction faction : factions) {
+        for (Faction faction : this.factionRepository.all()) {
 
             // remove records of alliances/wars associated with this faction
             if (faction.isAlly(factionName)) {
@@ -421,7 +421,7 @@ public class PersistentData {
     }
 
     public int getNumFactions() {
-        return factions.size();
+        return this.factionRepository.all().size();
     }
 
     public int getNumPlayers() {
@@ -430,7 +430,8 @@ public class PersistentData {
 
     public void updateFactionReferencesDueToNameChange(String oldName, String newName) {
         // Change Ally/Enemy/Vassal/Liege references
-        factions.forEach(fac -> fac.updateData(oldName, newName));
+        // TODO: reimplement, we should consider assigning UUIDs to factions that don't change to avoid this...
+        //this.factionRepository.all().forEach(fac -> fac.updateData(oldName, newName));
 
         // Change Claims
         claimedChunks.stream().filter(cc -> cc.getHolder().equalsIgnoreCase(oldName))
@@ -442,18 +443,18 @@ public class PersistentData {
     }
 
     public long removeLiegeAndVassalReferencesToFaction(String factionName) {
-        long changes = factions.stream()
+        long changes = this.factionRepository.all().stream()
                 .filter(f -> f.isLiege(factionName) || f.isVassal(factionName))
                 .count(); // Count changes
 
-        factions.stream().filter(f -> f.isLiege(factionName)).forEach(f -> f.setLiege("none"));
-        factions.stream().filter(f -> f.isVassal(factionName)).forEach(Faction::clearVassals);
+        this.factionRepository.all().stream().filter(f -> f.isLiege(factionName)).forEach(f -> f.setLiege("none"));
+        this.factionRepository.all().stream().filter(f -> f.isVassal(factionName)).forEach(Faction::clearVassals);
 
         return changes;
     }
 
     public boolean isBlockInGate(Block block, Player player) {
-        for (Faction faction : factions) {
+        for (Faction faction : this.factionRepository.all()) {
             for (Gate gate : faction.getGates()) {
                 if (gate.hasBlock(block)) {
                     playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("BlockIsPartOfGateMustRemoveGate"), gate.getName())
@@ -495,14 +496,14 @@ public class PersistentData {
 
     public void disbandAllZeroPowerFactions() {
         ArrayList<String> factionsToDisband = new ArrayList<>();
-        for (Faction faction : factions) {
+        for (Faction faction : this.factionRepository.all()) {
             if (faction.getCumulativePowerLevel() == 0) {
                 factionsToDisband.add(faction.getName());
             }
         }
 
         for (String factionName : factionsToDisband) {
-            messenger.sendAllPlayersInFactionMessage(getFaction(factionName), playerService.decideWhichMessageToUse(ChatColor.RED + localeService.get("AlertDisbandmentDueToZeroPower"), messageService.getLanguage().getString("AlertDisbandmentDueToZeroPower")));
+            messenger.sendAllPlayersInFactionMessage(this.factionRepository.get(factionName), playerService.decideWhichMessageToUse(ChatColor.RED + localeService.get("AlertDisbandmentDueToZeroPower"), messageService.getLanguage().getString("AlertDisbandmentDueToZeroPower")));
             removeFaction(factionName);
             System.out.printf((localeService.get("DisbandmentDueToZeroPower")) + "%n", factionName);
         }
@@ -510,7 +511,7 @@ public class PersistentData {
 
     private void removeFaction(String name) {
 
-        Faction factionToRemove = getFaction(name);
+        Faction factionToRemove = this.factionRepository.get(name);
 
         if (factionToRemove != null) {
             // remove claimed land objects associated with this faction
@@ -550,19 +551,19 @@ public class PersistentData {
     }
 
     public List<SortableFaction> getSortedListOfFactions() {
-        return factions.stream()
+        return this.factionRepository.all().stream()
                 .map(fac -> new SortableFaction(fac, fac.getCumulativePowerLevel()))
                 .sorted() // Sort the Factions by Power.
                 .collect(Collectors.toList());
     }
 
     public Gate getGate(Block targetBlock) {
-        return factions.stream().flatMap(faction -> faction.getGates().stream())
+        return this.factionRepository.all().stream().flatMap(faction -> faction.getGates().stream())
                 .filter(gate -> gate.hasBlock(targetBlock)).findFirst().orElse(null);
     }
 
     public Faction getGateFaction(Gate gate) {
-        return factions.stream()
+        return this.factionRepository.all().stream()
                 .filter(faction -> faction.getGates().contains(gate)).findFirst().orElse(null);
     }
 
@@ -576,11 +577,11 @@ public class PersistentData {
     }
 
     public boolean isPrefixTaken(String newPrefix) {
-        return factions.stream().map(Faction::getPrefix).anyMatch(prefix -> prefix.equalsIgnoreCase(newPrefix));
+        return this.factionRepository.all().stream().map(Faction::getPrefix).anyMatch(prefix -> prefix.equalsIgnoreCase(newPrefix));
     }
 
     public ArrayList<Faction> getFactions() {
-        return factions;
+        return this.factionRepository.all();
     }
 
     public ArrayList<PowerRecord> getPlayerPowerRecords() {
@@ -1373,14 +1374,7 @@ public class PersistentData {
         }
 
         private void saveFactions() {
-            List<JsonElement> factionsToSave = new ArrayList<>();
-            for (Faction faction : factions) {
-                factionsToSave.add(faction.toJsonTree());
-            }
-
-            File file = new File(FILE_PATH + FACTIONS_FILE_NAME);
-            System.out.println(factionsToSave);
-            writeOutFiles(file, factionsToSave);
+            factionRepository.persist();
         }
 
         private void saveClaimedChunks() {
@@ -1449,14 +1443,7 @@ public class PersistentData {
         }
 
         private void loadFactions() {
-            factions.clear();
-
-            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + FACTIONS_FILE_NAME);
-
-            for (Map<String, String> factionData : data) {
-                Faction newFaction = persistentData.getFactionFactory().create(factionData);
-                factions.add(newFaction);
-            }
+            factionRepository.load();
         }
 
         private void loadClaimedChunks() {

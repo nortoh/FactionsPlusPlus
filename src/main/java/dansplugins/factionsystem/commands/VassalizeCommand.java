@@ -9,7 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -33,6 +34,7 @@ public class VassalizeCommand extends SubCommand {
     private final Logger logger;
     private final LocaleService localeService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     
     @Inject
@@ -41,7 +43,8 @@ public class VassalizeCommand extends SubCommand {
         PlayerService playerService,
         LocaleService localeService,
         PersistentData persistentData,
-        Logger logger
+        Logger logger,
+        FactionRepository factionRepository
     ) {
         super();
         this.messageService = messageService;
@@ -49,6 +52,7 @@ public class VassalizeCommand extends SubCommand {
         this.localeService = localeService;
         this.persistentData = persistentData;
         this.logger = logger;
+        this.factionRepository = factionRepository;
         this
             .setNames("vassalize", LOCALE_PREFIX + "CmdVassalize")
             .requiresPermissions("mf.vassalize")
@@ -75,7 +79,7 @@ public class VassalizeCommand extends SubCommand {
             );
             return;
         }
-        final Faction target = this.persistentData.getFaction(String.join(" ", args));
+        final Faction target = this.factionRepository.get(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,

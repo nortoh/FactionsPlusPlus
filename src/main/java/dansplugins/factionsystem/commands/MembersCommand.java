@@ -10,7 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -34,6 +35,7 @@ public class MembersCommand extends SubCommand {
     private final LocaleService localeService;
     private final ConfigService configService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     @Inject
     public MembersCommand(
@@ -41,7 +43,8 @@ public class MembersCommand extends SubCommand {
         MessageService messageService,
         LocaleService localeService,
         ConfigService configService,
-        PersistentData persistentData
+        PersistentData persistentData,
+        FactionRepository factionRepository
     ) {
         super();
         this.playerService = playerService;
@@ -49,6 +52,7 @@ public class MembersCommand extends SubCommand {
         this.localeService = localeService;
         this.configService = configService;
         this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this
             .setNames("members", LOCALE_PREFIX + "CmdMembers")
             .requiresPermissions("mf.members");
@@ -97,7 +101,7 @@ public class MembersCommand extends SubCommand {
                 return;
             }
         } else {
-            faction = this.persistentData.getFaction(String.join(" ", args));
+            faction = this.factionRepository.get(String.join(" ", args));
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender,

@@ -7,7 +7,7 @@ package dansplugins.factionsystem.data;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.objects.domain.Duel;
-import dansplugins.factionsystem.objects.domain.Gate;
+import dansplugins.factionsystem.models.Gate;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Player;
 import preponderous.ponder.misc.Pair;

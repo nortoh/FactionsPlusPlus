@@ -10,7 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.annotations.PostConstruct;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -31,17 +32,25 @@ public class AllyCommand extends SubCommand {
     protected final PlayerService playerService;
     protected final PersistentData persistentData;
     protected final LocaleService localeService;
+    protected final FactionRepository factionRepository;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public AllyCommand(MessageService messageService, PlayerService playerService, LocaleService localeService, PersistentData persistentData) {
+    public AllyCommand(
+        MessageService messageService,
+        PlayerService playerService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        FactionRepository factionRepository
+    ) {
         super();
         this.messageService = messageService;
         this.playerService = playerService;
         this.persistentData = persistentData;
         this.localeService = localeService;
+        this.factionRepository = factionRepository;
         this
             .setNames("ally", LOCALE_PREFIX + "CmdAlly")
             .requiresPermissions("mf.ally")
@@ -65,7 +74,7 @@ public class AllyCommand extends SubCommand {
         }
 
         // retrieve the Faction from the given arguments
-        final Faction otherFaction = this.persistentData.getFaction(String.join(" ", args));
+        final Faction otherFaction = this.factionRepository.get(String.join(" ", args));
 
         // the faction needs to exist to ally
         if (otherFaction == null) {
@@ -159,7 +168,8 @@ public class AllyCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
-        final List<String> factionsAllowedtoAlly = new ArrayList<>();
+        // TODO: reimp
+        /*final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> playerAllies = playerFaction.getAllies();
@@ -169,7 +179,7 @@ public class AllyCommand extends SubCommand {
                 }
             }
             return TabCompleteTools.filterStartingWith(args[0], factionsAllowedtoAlly);
-        }
+        }*/
         return null;
     }
 }

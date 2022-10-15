@@ -161,6 +161,10 @@ public class MedievalFactions extends PonderBukkitPlugin {
         return new File("./plugins/MedievalFactions/config.yml").exists();
     }
 
+    public String getStoragePath() {
+        return getDataFolder().getAbsolutePath();
+    }
+
     /**
      * Loads stored data into Persistent Data.
      */

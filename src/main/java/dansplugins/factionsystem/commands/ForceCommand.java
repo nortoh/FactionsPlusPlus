@@ -13,8 +13,9 @@ import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.*;
 import dansplugins.factionsystem.factories.FactionFactory;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -44,6 +45,7 @@ public class ForceCommand extends SubCommand {
     private final MessageService messageService;
     private final EphemeralData ephemeralData;
     private final PlayerService playerService;
+    private final FactionRepository factionRepository;
 
     private final String[] commands = new String[]{
             "Save", "Load", "Peace", "Demote", "Join", "Kick", "Power", "Renounce", "Transfer", "RemoveVassal", "Rename", "BonusPower", "Unlock", "Create", "Claim", "Flag"
@@ -62,7 +64,8 @@ public class ForceCommand extends SubCommand {
         FactionFactory factionFactory,
         MedievalFactions medievalFactions,
         Logger logger,
-        PlayerService playerService
+        PlayerService playerService,
+        FactionRepository factionRepository
     ) {
         super();
         this.persistentData = persistentData;
@@ -73,6 +76,7 @@ public class ForceCommand extends SubCommand {
         this.logger = logger;
         this.factionFactory = factionFactory;
         this.playerService = playerService;
+        this.factionRepository = factionRepository;
         this
             .setNames("force", LOCALE_PREFIX + "CmdForce");
         // Register sub-commands.
@@ -163,8 +167,8 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
             return;
         }
-        final Faction former = this.persistentData.getFaction(doubleQuoteArgs.get(0));
-        final Faction latter = this.persistentData.getFaction(doubleQuoteArgs.get(1));
+        final Faction former = this.factionRepository.get(doubleQuoteArgs.get(0));
+        final Faction latter = this.factionRepository.get(doubleQuoteArgs.get(1));
         if (former == null || latter == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("DesignatedFactionNotFound")));
             return;
@@ -229,7 +233,7 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
             return;
         }
-        final Faction faction = this.persistentData.getFaction(doubleQuoteArgs.get(1));
+        final Faction faction = this.factionRepository.get(doubleQuoteArgs.get(1));
         if (faction == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
             return;
@@ -358,7 +362,7 @@ public class ForceCommand extends SubCommand {
             return;
         }
         final String factionName = doubleQuoteArgs.get(0);
-        final Faction faction = this.persistentData.getFaction(factionName);
+        final Faction faction = this.factionRepository.get(factionName);
         if (faction == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
             return;
@@ -392,7 +396,7 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
             return;
         }
-        final Faction faction = this.persistentData.getFaction(doubleQuoteArgs.get(0));
+        final Faction faction = this.factionRepository.get(doubleQuoteArgs.get(0));
         if (faction == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
             return;
@@ -438,8 +442,8 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
             return;
         }
-        final Faction liege = this.persistentData.getFaction(doubleQuoteArgs.get(0));
-        final Faction vassal = this.persistentData.getFaction(doubleQuoteArgs.get(1));
+        final Faction liege = this.factionRepository.get(doubleQuoteArgs.get(0));
+        final Faction vassal = this.factionRepository.get(doubleQuoteArgs.get(1));
         if (liege != null && vassal != null) {
             // remove vassal from liege
             if (liege.isVassal(vassal.getName())) liege.removeVassal(vassal.getName());
@@ -465,7 +469,7 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
             return;
         }
-        Faction faction = this.persistentData.getFaction(doubleQuoteArgs.get(0));
+        Faction faction = this.factionRepository.get(doubleQuoteArgs.get(0));
         if (faction == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
             return;
@@ -515,7 +519,7 @@ public class ForceCommand extends SubCommand {
         }
 
         // get faction
-        Faction faction = this.persistentData.getFaction(singleQuoteArgs.get(0));
+        Faction faction = this.factionRepository.get(singleQuoteArgs.get(0));
         if (faction == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
             return;
@@ -596,12 +600,13 @@ public class ForceCommand extends SubCommand {
 
         String newFactionName = doubleQuoteArgs.get(0);
 
-        if (this.persistentData.getFaction(newFactionName) != null) {
+        if (this.factionRepository.get(newFactionName) != null) {
             player.sendMessage(this.translate("&c" + this.localeService.getText("FactionAlreadyExists")));
             return;
         }
 
-        this.faction = this.factionFactory.create(newFactionName);
+        this.faction = new Faction(newFactionName);
+        this.factionRepository.create(this.faction);
         FactionCreateEvent createEvent = new FactionCreateEvent(this.faction, player);
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {
@@ -636,7 +641,7 @@ public class ForceCommand extends SubCommand {
 
         String factionName = argumentsInsideDoubleQuotes.get(0);
 
-        Faction faction = this.persistentData.getFaction(factionName);
+        Faction faction = this.factionRepository.get(factionName);
 
         if (faction == null) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
@@ -671,7 +676,7 @@ public class ForceCommand extends SubCommand {
             player.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
             return;
         }
-        Faction faction = this.persistentData.getFaction(argumentsInsideDoubleQuotes.get(0));
+        Faction faction = this.factionRepository.get(argumentsInsideDoubleQuotes.get(0));
         if (faction == null) {
             player.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
             return;

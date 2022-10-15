@@ -74,7 +74,8 @@ public class UnclaimCommand extends SubCommand {
             }
         }
         if (args.length == 0) {
-            this.persistentData.getChunkDataAccessor().removeChunkAtPlayerLocation(player, this.faction);
+            // TODO: reimp 
+            //this.persistentData.getChunkDataAccessor().removeChunkAtPlayerLocation(player, this.faction);
             this.dynmapService.updateClaimsIfAble();
             this.playerService.sendMessage(
                 player, 
@@ -88,7 +89,8 @@ public class UnclaimCommand extends SubCommand {
         if (radius <= 0) {
             radius = 1;
         }
-        this.persistentData.getChunkDataAccessor().radiusUnclaimAtLocation(radius, player, this.faction);
+        // TODO: reimp
+        //this.persistentData.getChunkDataAccessor().radiusUnclaimAtLocation(radius, player, this.faction);
         this.playerService.sendMessage(
             player, 
             "Unclaimed radius of " + radius + " claims around you!",

@@ -7,6 +7,7 @@ package dansplugins.factionsystem.objects.domain;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import preponderous.ponder.misc.abs.Savable;
+import dansplugins.factionsystem.models.Faction;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

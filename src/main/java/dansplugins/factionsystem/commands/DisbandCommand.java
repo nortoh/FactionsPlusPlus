@@ -11,7 +11,8 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionDisbandEvent;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -41,6 +42,7 @@ public class DisbandCommand extends SubCommand {
     private final DynmapIntegrationService dynmapService;
     private final Logger logger;
     private final LocaleService localeService;
+    private final FactionRepository factionRepository;
 
     @Inject
     public DisbandCommand(
@@ -51,7 +53,8 @@ public class DisbandCommand extends SubCommand {
         LocaleService localeService,
         PersistentData persistentData,
         DynmapIntegrationService dynmapService,
-        EphemeralData ephemeralData
+        EphemeralData ephemeralData,
+        FactionRepository factionRepository
     ) {
         super();
         this.localeService = localeService;
@@ -62,6 +65,7 @@ public class DisbandCommand extends SubCommand {
         this.persistentData = persistentData;
         this.dynmapService = dynmapService;
         this.ephemeralData = ephemeralData;
+        this.factionRepository = factionRepository;
         this
             .setNames("disband", LOCALE_PREFIX + "CmdDisband");
     }
@@ -112,7 +116,7 @@ public class DisbandCommand extends SubCommand {
             }
         } else {
             if (!this.checkPermissions(sender, "mf.disband.others", "mf.admin")) return;
-            disband = this.persistentData.getFaction(String.join(" ", args));
+            disband = this.factionRepository.get(String.join(" ", args));
             self = false;
         }
         if (disband == null) {
@@ -146,6 +150,8 @@ public class DisbandCommand extends SubCommand {
 
     private void removeFaction(int i, OfflinePlayer disbandingPlayer) {
 
+        // TODO: reimp with FactionRepo
+        /*
         Faction disbandingThisFaction = this.persistentData.getFactionByIndex(i);
         String nameOfFactionToRemove = disbandingThisFaction.getName();
         FactionDisbandEvent event = new FactionDisbandEvent(
@@ -167,7 +173,7 @@ public class DisbandCommand extends SubCommand {
 
         this.persistentData.removePoliticalTiesToFaction(nameOfFactionToRemove);
 
-        this.persistentData.removeFactionByIndex(i);
+        this.persistentData.removeFactionByIndex(i);*/
     }
 
     /**

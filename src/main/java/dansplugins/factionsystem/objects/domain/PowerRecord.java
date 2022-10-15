@@ -10,6 +10,7 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.inherited.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import preponderous.ponder.misc.abs.Savable;
+import dansplugins.factionsystem.models.Faction;
 
 import java.util.HashMap;
 import java.util.Map;

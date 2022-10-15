@@ -9,8 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;

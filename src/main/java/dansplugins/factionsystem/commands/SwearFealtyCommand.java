@@ -9,7 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -30,19 +31,22 @@ public class SwearFealtyCommand extends SubCommand {
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final PlayerService playerService;
+    private final FactionRepository factionRepository;
 
     @Inject
     public SwearFealtyCommand(
         LocaleService localeService,
         MessageService messageService,
         PersistentData persistentData,
-        PlayerService playerService
+        PlayerService playerService,
+        FactionRepository factionRepository
     ) {
         super();
         this.localeService = localeService;
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.playerService = playerService;
+        this.factionRepository = factionRepository;
         this
             .setNames("swearfealty", "sf", LOCALE_PREFIX + "CmdSwearFealty")
             .requiresPermissions("mf.swearfealty")
@@ -69,7 +73,7 @@ public class SwearFealtyCommand extends SubCommand {
             );
             return;
         }
-        final Faction target = this.persistentData.getFaction(String.join(" ", args));
+        final Faction target = this.factionRepository.get(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,

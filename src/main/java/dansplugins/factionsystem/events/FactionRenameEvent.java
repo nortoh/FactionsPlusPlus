@@ -5,7 +5,7 @@
 package dansplugins.factionsystem.events;
 
 import dansplugins.factionsystem.events.abs.FactionEvent;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import org.bukkit.event.Cancellable;
 
 /**

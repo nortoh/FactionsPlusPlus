@@ -9,8 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;

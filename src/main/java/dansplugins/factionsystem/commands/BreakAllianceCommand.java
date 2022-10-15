@@ -9,7 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -31,17 +32,19 @@ public class BreakAllianceCommand extends SubCommand {
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final LocaleService localeService;
+    private final FactionRepository factionRepository;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public BreakAllianceCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData, LocaleService localeService) {
+    public BreakAllianceCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData, LocaleService localeService, FactionRepository factionRepository) {
         super();
         this.playerService = playerService;
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.localeService = localeService;
+        this.factionRepository = factionRepository;
         this
             .setNames("breakalliance", "ba", LOCALE_PREFIX + "CmdBreakAlliance")
             .requiresPermissions("mf.breakalliance")
@@ -64,7 +67,7 @@ public class BreakAllianceCommand extends SubCommand {
             return;
         }
 
-        final Faction otherFaction = this.persistentData.getFaction(String.join(" ", args));
+        final Faction otherFaction = this.factionRepository.get(String.join(" ", args));
         if (otherFaction == null) {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
@@ -120,12 +123,14 @@ public class BreakAllianceCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
+        // TODO: reimp
+        /*
         final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> playerAllies = playerFaction.getAllies();
             return TabCompleteTools.filterStartingWith(args[0], playerAllies);
-        }
+        } */
         return null;
     }
 }

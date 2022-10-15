@@ -7,7 +7,7 @@ package dansplugins.factionsystem.utils;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.ActionBarService;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;

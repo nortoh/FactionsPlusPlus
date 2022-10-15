@@ -10,7 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarEndEvent;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -33,19 +34,22 @@ public class MakePeaceCommand extends SubCommand {
     private final LocaleService localeService;
     private final MessageService messageService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     @Inject
     public MakePeaceCommand(
         PlayerService playerService,
         LocaleService localeService,
         MessageService messageService,
-        PersistentData persistentData
+        PersistentData persistentData,
+        FactionRepository factionRepository
     ) {
         super();
         this.playerService = playerService;
         this.localeService = localeService;
         this.messageService = messageService;
         this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this
             .setNames("makepeace", "mp", LOCALE_PREFIX + "CmdMakePeace")
             .requiresPermissions("mf.makepeace")
@@ -72,7 +76,7 @@ public class MakePeaceCommand extends SubCommand {
             );
             return;
         }
-        final Faction target = this.persistentData.getFaction(String.join(" ", args));
+        final Faction target = this.factionRepository.get(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,
@@ -152,7 +156,7 @@ public class MakePeaceCommand extends SubCommand {
             for (String vassalName : target.getVassals()) {
                 this.faction.removeEnemy(vassalName);
 
-                Faction vassal = this.persistentData.getFaction(vassalName);
+                Faction vassal = this.factionRepository.get(vassalName);
                 vassal.removeEnemy(this.faction.getName());
             }
         }
@@ -178,11 +182,13 @@ public class MakePeaceCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
+        // TODO: reimp
+        /*
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> factionEnemies = playerFaction.getEnemyFactions();
             return TabCompleteTools.filterStartingWith(args[0], factionEnemies);
-        }
+        } */
         return null;
     }
 }

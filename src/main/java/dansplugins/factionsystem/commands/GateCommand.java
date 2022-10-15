@@ -11,8 +11,8 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.objects.domain.Gate;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -247,7 +247,7 @@ public class GateCommand extends SubCommand {
     }
 
     private void startCreatingGate(Player player, String name) {
-        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(name, medievalFactions, configService));
+        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(name));
     }
 
     /**

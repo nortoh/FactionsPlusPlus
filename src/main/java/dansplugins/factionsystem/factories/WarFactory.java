@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.War;
 
 /**

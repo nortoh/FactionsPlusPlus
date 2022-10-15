@@ -13,7 +13,8 @@ import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionCreateEvent;
 import dansplugins.factionsystem.factories.FactionFactory;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -38,7 +39,7 @@ public class CreateCommand extends SubCommand {
     private final Logger logger;
     private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
-    private final FactionFactory factionFactory;
+    private final FactionRepository factionRepository;
 
     @Inject
     public CreateCommand(
@@ -49,7 +50,7 @@ public class CreateCommand extends SubCommand {
         Logger logger,
         LocaleService localeService,
         MedievalFactions medievalFactions,
-        FactionFactory factionFactory
+        FactionRepository factionRepository
     ) {
         super();
         this.playerService = playerService;
@@ -59,7 +60,7 @@ public class CreateCommand extends SubCommand {
         this.logger = logger;
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
-        this.factionFactory = factionFactory;
+        this.factionRepository = factionRepository;
         this
             .setNames("create", LOCALE_PREFIX + "CmdCreate")
             .requiresPermissions("mf.create")
@@ -102,7 +103,7 @@ public class CreateCommand extends SubCommand {
             return;
         }
 
-        if (this.persistentData.getFaction(factionName) != null) {
+        if (this.factionRepository.get(factionName) != null) {
             this.playerService.sendMessage(
                 player, 
                 "&c" + this.localeService.getText("FactionAlreadyExists"),
@@ -112,12 +113,12 @@ public class CreateCommand extends SubCommand {
             return;
         }
 
-        playerFaction = this.factionFactory.create(factionName, player.getUniqueId());
+        playerFaction = new Faction(factionName, player.getUniqueId());
         playerFaction.addMember(player.getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, player);
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {
-            this.persistentData.addFaction(playerFaction);
+            this.factionRepository.create(playerFaction);
             this.playerService.sendMessage(
                 player, 
                 "&a" + this.localeService.getText("FactionCreated"),

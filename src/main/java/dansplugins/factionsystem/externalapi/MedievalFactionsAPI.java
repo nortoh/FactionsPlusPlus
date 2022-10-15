@@ -10,7 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import org.bukkit.Chunk;
@@ -28,15 +29,17 @@ public class MedievalFactionsAPI {
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final ConfigService configService;
+    private final FactionRepository factionRepository;
 
     private final String APIVersion = "v1.0.0"; // every time the external API is altered, this should be incremented
 
     @Inject
-    public MedievalFactionsAPI(MedievalFactions medievalFactions, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
+    public MedievalFactionsAPI(FactionRepository factionRepository, MedievalFactions medievalFactions, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
         this.medievalFactions = medievalFactions;
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.configService = configService;
+        this.factionRepository = factionRepository;
     }
 
     public String getAPIVersion() {
@@ -48,7 +51,7 @@ public class MedievalFactionsAPI {
     }
 
     public MF_Faction getFaction(String factionName) {
-        Faction faction = persistentData.getFaction(factionName);
+        Faction faction = this.factionRepository.get(factionName);
         if (faction == null) {
             return null;
         }
@@ -56,7 +59,7 @@ public class MedievalFactionsAPI {
     }
 
     public MF_Faction getFaction(Player player) {
-        Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
+        Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
         if (faction == null) {
             return null;
         }
@@ -64,7 +67,7 @@ public class MedievalFactionsAPI {
     }
 
     public MF_Faction getFaction(UUID playerUUID) {
-        Faction faction = persistentData.getPlayersFaction(playerUUID);
+        Faction faction = this.persistentData.getPlayersFaction(playerUUID);
         if (faction == null) {
             return null;
         }

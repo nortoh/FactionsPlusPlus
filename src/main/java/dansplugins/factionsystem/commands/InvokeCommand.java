@@ -10,7 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -36,6 +37,7 @@ public class InvokeCommand extends SubCommand {
     private final MessageService messageService;
     private final PlayerService playerService;
     private final ConfigService configService;
+    private final FactionRepository factionRepository;
 
     @Inject
     public InvokeCommand(
@@ -43,7 +45,8 @@ public class InvokeCommand extends SubCommand {
         PersistentData persistentData,
         LocaleService localeService,
         MessageService messageService,
-        PlayerService playerService
+        PlayerService playerService,
+        FactionRepository factionRepository
     ) {
         super();
         this.configService = configService;
@@ -51,6 +54,7 @@ public class InvokeCommand extends SubCommand {
         this.localeService = localeService;
         this.messageService = messageService;
         this.playerService = playerService;
+        this.factionRepository = factionRepository;
         this
             .setNames("invoke", LOCALE_PREFIX + "CmdInvoke")
             .requiresPermissions("mf.invoke")
@@ -80,8 +84,8 @@ public class InvokeCommand extends SubCommand {
             player.sendMessage(ChatColor.RED + "Arguments must be designated in between double quotes.");
             return;
         }
-        final Faction invokee = this.persistentData.getFaction(argumentsInsideDoubleQuotes.get(0));
-        final Faction warringFaction = this.persistentData.getFaction(argumentsInsideDoubleQuotes.get(1));
+        final Faction invokee = this.factionRepository.get(argumentsInsideDoubleQuotes.get(0));
+        final Faction warringFaction = this.factionRepository.get(argumentsInsideDoubleQuotes.get(1));
         if (invokee == null || warringFaction == null) {
             this.playerService.sendMessage(
                 player,

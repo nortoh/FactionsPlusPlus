@@ -12,6 +12,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.factories.FactionFlagFactory;
@@ -139,51 +141,16 @@ public class Faction extends Nation implements Feudal, Savable {
         flags.initializeFlagValues();
     }
 
-    public int getTotalGates() {
-        return gates.size();
-    }
 
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public void setPrefix(String newPrefix) {
-        prefix = newPrefix;
-    }
-
-    public Location getFactionHome() {
-        return factionHome;
-    }
-
-    public void setFactionHome(Location l) {
-        factionHome = l;
-    }
-
-    public FactionFlags getFlags() {
-        return flags;
-    }
-
-    public int getBonusPower() {
-        return bonusPower;
-    }
-
+    // IMPLEMENT THIS LOGIC IN FACTIONSERVICE
     public void setBonusPower(int i) {
         if (!configService.getBoolean("bonusPowerEnabled") || !((boolean) getFlags().getFlag("acceptBonusPower"))) {
             return;
         }
-        bonusPower = i;
-    }
-
-    public void toggleAutoClaim() {
-        autoclaim = !autoclaim;
-    }
-
-    public boolean getAutoClaimStatus() {
-        return autoclaim;
     }
 
     public String getTopLiege() {
-        Faction topLiege = persistentData.getFaction(liege);
+        /*Faction topLiege = persistentData.getFaction(liege);
         String liegeName = liege;
         while (topLiege != null) {
             topLiege = persistentData.getFaction(topLiege.getLiege());
@@ -191,7 +158,8 @@ public class Faction extends Nation implements Feudal, Savable {
                 liegeName = topLiege.getName();
             }
         }
-        return liegeName;
+        return liegeName;*/
+        return null;
     }
 
     public int calculateCumulativePowerLevelWithoutVassalContribution() {
@@ -207,7 +175,7 @@ public class Faction extends Nation implements Feudal, Savable {
     }
 
     public int calculateCumulativePowerLevelWithVassalContribution() {
-        int vassalContribution = 0;
+        /*int vassalContribution = 0;
         double percentage = configService.getDouble("vassalContributionPercentageMultiplier");
         for (String factionName : vassals) {
             Faction vassalFaction = persistentData.getFaction(factionName);
@@ -215,7 +183,8 @@ public class Faction extends Nation implements Feudal, Savable {
                 vassalContribution += vassalFaction.getCumulativePowerLevel() * percentage;
             }
         }
-        return calculateCumulativePowerLevelWithoutVassalContribution() + vassalContribution;
+        return calculateCumulativePowerLevelWithoutVassalContribution() + vassalContribution;*/
+        return 0;
     }
 
     public int getCumulativePowerLevel() {
@@ -280,73 +249,7 @@ public class Faction extends Nation implements Feudal, Savable {
         }
     }
 
-    public void addGate(Gate gate) {
-        gates.add(gate);
-    }
-
-    public void removeGate(Gate gate) {
-        gates.remove(gate);
-    }
-
-    public ArrayList<Gate> getGates() {
-        return gates;
-    }
-
-    public boolean hasGateTrigger(Block block) {
-        for (Gate g : gates) {
-            if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equalsIgnoreCase(block.getWorld().getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public ArrayList<Gate> getGatesForTrigger(Block block) {
-        ArrayList<Gate> gateList = new ArrayList<>();
-        for (Gate g : gates) {
-            if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equalsIgnoreCase(block.getWorld().getName())) {
-                gateList.add(g);
-            }
-        }
-        return gateList;
-    }
-
-    public boolean isVassal(String faction) {
-        return (containsIgnoreCase(vassals, faction));
-    }
-
-    public boolean isLiege() {
-        return vassals.size() > 0;
-    }
-
-    public String getLiege() {
-        return liege;
-    }
-
-    public void setLiege(String newLiege) {
-        liege = newLiege;
-    }
-
-    public boolean hasLiege() {
-        return !liege.equalsIgnoreCase("none");
-    }
-
-    public boolean isLiege(String faction) {
-        return liege.equalsIgnoreCase(faction);
-    }
-
-    public void addVassal(String name) {
-        if (!containsIgnoreCase(vassals, name)) {
-            vassals.add(name);
-        }
-    }
-
-    public void removeVassal(String name) {
-        removeIfContainsIgnoreCase(vassals, name);
-    }
-
+    // IMPLEMENT THIS LOGIC IN FACTION SERVICE
     public boolean addOfficer(UUID newOfficer) {
         if (officers.size() < calculateMaxOfficers() && !officers.contains(newOfficer)) {
             officers.add(newOfficer);
@@ -372,31 +275,6 @@ public class Faction extends Nation implements Feudal, Savable {
     }
 
 
-    public String getVassalsSeparatedByCommas() {
-        StringBuilder toReturn = new StringBuilder();
-        for (int i = 0; i < vassals.size(); i++) {
-            toReturn.append(vassals.get(i));
-            if (i != vassals.size() - 1) {
-                toReturn.append(", ");
-            }
-        }
-        return toReturn.toString();
-    }
-
-    public void addAttemptedVassalization(String factionName) {
-        if (!containsIgnoreCase(attemptedVassalizations, factionName)) {
-            attemptedVassalizations.add(factionName);
-        }
-    }
-
-    public boolean hasBeenOfferedVassalization(String factionName) {
-        return containsIgnoreCase(attemptedVassalizations, factionName);
-    }
-
-    public void removeAttemptedVassalization(String factionName) {
-        removeIfContainsIgnoreCase(attemptedVassalizations, factionName);
-    }
-
     private boolean containsIgnoreCase(ArrayList<String> list, String str) {
         for (String string : list) {
             if (string.equalsIgnoreCase(str)) {
@@ -417,25 +295,6 @@ public class Faction extends Nation implements Feudal, Savable {
         list.remove(toRemove);
     }
 
-    public void clearVassals() {
-        vassals.clear();
-    }
-
-    public int getNumVassals() {
-        return vassals.size();
-    }
-
-    public ArrayList<String> getVassals() {
-        return vassals;
-    }
-
-    public JsonElement toJsonTree() {
-        return new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .serializeNulls()
-            .create()
-            .toJsonTree(this);
-    }
 
     @Override
     public Map<String, String> save() {
@@ -558,4 +417,36 @@ public class Faction extends Nation implements Feudal, Savable {
         }
         return null;
     }
+
+    // Make the compiler happy
+    public String getPrefix() { return this.prefix; }
+    public void setPrefix(String s) { this.prefix = s; }
+    public boolean hasGateTrigger(Block b) { return false; }
+    public boolean isLiege() { return false; }
+    public boolean isLiege(String string) { return false; }
+    public FactionFlags getFlags() { return this.flags; }
+    public String getLiege() { return this.liege; }
+    public boolean hasLiege() { return false; }
+    public void addVassal(String string) { }
+    public void setLiege(String string) { }
+    public ArrayList<Gate> getGates() { return this.gates; }
+    public void removeGate(Gate gate) { }
+    public boolean isVassal(String string) { return false; }
+    public void clearVassals() { }
+    public Location getFactionHome() { return this.factionHome; }
+    public int getNumVassals() { return 0; }
+    public int getTotalGates() { return 0; }
+    public int getBonusPower() { return 0; }
+    public void toggleAutoClaim() { }
+    public void removeVassal(String string) { }
+    public boolean hasBeenOfferedVassalization(String s) { return false; }
+    public void removeAttemptedVassalization(String s) { }
+    public ArrayList<String> getVassals() { return this.vassals; }
+    public void addGate(Gate g) { }
+    public String getVassalsSeparatedByCommas() { return ""; }
+    public JsonElement toJsonTree() { return new JsonObject(); }
+    public void addAttemptedVassalization(String s) { }
+    public void setFactionHome(Location l) { }
+    public ArrayList<Gate> getGatesForTrigger(Block b) { return new ArrayList<Gate>(); }
+    public boolean getAutoClaimStatus() { return false; }
 }

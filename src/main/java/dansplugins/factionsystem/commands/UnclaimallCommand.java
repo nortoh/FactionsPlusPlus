@@ -9,7 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -32,6 +33,7 @@ public class UnclaimallCommand extends SubCommand {
     private PlayerService playerService;
     private MessageService messageService;
     private DynmapIntegrationService dynmapService;
+    private FactionRepository factionRepository;
 
     @Inject
     public UnclaimallCommand(
@@ -39,7 +41,8 @@ public class UnclaimallCommand extends SubCommand {
         LocaleService localeService,
         PlayerService playerService,
         MessageService messageService,
-        DynmapIntegrationService dynmapService
+        DynmapIntegrationService dynmapService,
+        FactionRepository factionRepository
     ) {
         super();
         this.persistentData = persistentData;
@@ -47,6 +50,7 @@ public class UnclaimallCommand extends SubCommand {
         this.playerService = playerService;
         this.messageService = messageService;
         this.dynmapService = dynmapService;
+        this.factionRepository = factionRepository;
         this
             .setNames("unclaimall", "ua", LOCALE_PREFIX + "CmdUnclaimall");
     }
@@ -106,7 +110,7 @@ public class UnclaimallCommand extends SubCommand {
             }
         } else {
             if (!(this.checkPermissions(sender, "mf.unclaimall.others", "mf.admin"))) return;
-            faction = this.persistentData.getFaction(String.join(" ", args));
+            faction = this.factionRepository.get(String.join(" ", args));
             if (faction == null) {
                 this.playerService.sendMessage(
                     sender, 

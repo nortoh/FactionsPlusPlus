@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
+import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;

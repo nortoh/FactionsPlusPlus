@@ -11,7 +11,8 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.factories.WarFactory;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -38,6 +39,7 @@ public class DeclareWarCommand extends SubCommand {
     private final PersistentData persistentData;
     private final LocaleService localeService;
     private final WarFactory warFactory;
+    private final FactionRepository factionRepository;
 
     @Inject
     public DeclareWarCommand(
@@ -46,7 +48,8 @@ public class DeclareWarCommand extends SubCommand {
         PlayerService playerService,
         MessageService messageService,
         PersistentData persistentData,
-        WarFactory warFactory
+        WarFactory warFactory,
+        FactionRepository factionRepository
     ) {
         super();
         this.localeService = localeService;
@@ -55,6 +58,7 @@ public class DeclareWarCommand extends SubCommand {
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.warFactory = warFactory;
+        this.factionRepository = factionRepository;
         this
             .setNames("declarewar", "dw", LOCALE_PREFIX + "CmdDeclareWar")
             .requiresPermissions("mf.declarewar")
@@ -97,7 +101,7 @@ public class DeclareWarCommand extends SubCommand {
 
         String factionName = doubleQuoteArgs.get(0);
 
-        final Faction opponent = this.persistentData.getFaction(factionName);
+        final Faction opponent = this.factionRepository.get(factionName);
         if (opponent == null) {
             this.playerService.sendMessage(
                 player, 

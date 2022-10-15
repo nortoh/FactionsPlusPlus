@@ -9,7 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -31,19 +32,22 @@ public class LawsCommand extends SubCommand {
     private final PlayerService playerService;
     private final MessageService messageService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     @Inject
     public LawsCommand(
         LocaleService localeService,
         PlayerService playerService,
         MessageService messageService,
-        PersistentData persistentData
+        PersistentData persistentData,
+        FactionRepository factionRepository
     ) {
         super();
         this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this
             .setNames("laws", LOCALE_PREFIX + "CmdLaws")
             .requiresPermissions("mf.laws")
@@ -81,7 +85,7 @@ public class LawsCommand extends SubCommand {
                 return;
             }
         } else {
-            target = this.persistentData.getFaction(String.join(" ", args));
+            target = this.factionRepository.get(String.join(" ", args));
             if (target == null) {
                 this.playerService.sendMessage(
                     player,

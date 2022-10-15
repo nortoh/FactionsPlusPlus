@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.*;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.Gate;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.RelationChecker;

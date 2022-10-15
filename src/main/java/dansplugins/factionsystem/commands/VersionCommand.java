@@ -6,6 +6,7 @@ package dansplugins.factionsystem.commands;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
@@ -17,12 +18,12 @@ import org.bukkit.entity.Player;
  */
 @Singleton
 public class VersionCommand extends SubCommand {
-    private final MedievalFactions medievalFactions;
+    private final String pluginVerson;
 
     @Inject
-    public VersionCommand(final MedievalFactions medievalFactions) {
+    public VersionCommand(@Named("pluginVersion") String pluginVersion) {
         super();
-        this.medievalFactions = medievalFactions;
+        this.pluginVerson = pluginVersion;
         this
             .setNames("version", LOCALE_PREFIX + "CmdVersion")
             .requiresPermissions("mf.version");
@@ -49,6 +50,6 @@ public class VersionCommand extends SubCommand {
      */
     @Override
     public void execute(CommandSender sender, String[] args, String key) {
-        sender.sendMessage(this.translate("&bMedieval-Factions-" + this.medievalFactions.getVersion()));
+        sender.sendMessage(this.translate("&bMedieval-Factions-" + this.pluginVerson));
     }
 }

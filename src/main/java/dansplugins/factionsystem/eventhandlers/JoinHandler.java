@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
 import dansplugins.factionsystem.objects.domain.ActivityRecord;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;

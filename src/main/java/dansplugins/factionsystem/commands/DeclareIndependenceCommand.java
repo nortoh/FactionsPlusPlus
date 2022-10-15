@@ -10,7 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -32,6 +33,7 @@ public class DeclareIndependenceCommand extends SubCommand {
     private final LocaleService localeService;
     private final ConfigService configService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     @Inject
     public DeclareIndependenceCommand(
@@ -39,7 +41,8 @@ public class DeclareIndependenceCommand extends SubCommand {
         LocaleService localeService,
         MessageService messageService,
         ConfigService configService,
-        PersistentData persistentData
+        PersistentData persistentData,
+        FactionRepository factionRepository
     ) {
         super();
         this.localeService = localeService;
@@ -47,6 +50,7 @@ public class DeclareIndependenceCommand extends SubCommand {
         this.messageService = messageService;
         this.configService = configService;
         this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this
             .setNames("declareindependence", "di", LOCALE_PREFIX + "CmdDeclareIndependence")
             .requiresPermissions("mf.declareindependence")
@@ -69,7 +73,7 @@ public class DeclareIndependenceCommand extends SubCommand {
             return;
         }
 
-        final Faction liege = this.persistentData.getFaction(this.faction.getLiege());
+        final Faction liege = this.factionRepository.get(this.faction.getLiege());
         if (liege == null) {
             this.playerService.sendMessage(
                 player, 

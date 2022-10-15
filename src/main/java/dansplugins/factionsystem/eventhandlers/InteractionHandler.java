@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
+import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.objects.domain.LockedBlock;
 import dansplugins.factionsystem.services.*;
 import dansplugins.factionsystem.utils.InteractionAccessChecker;

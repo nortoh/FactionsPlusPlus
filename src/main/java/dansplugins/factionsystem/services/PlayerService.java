@@ -4,7 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -24,6 +25,7 @@ public class PlayerService {
     @Inject private ConfigService configService;
     @Inject private MessageService messageService;
     @Inject private PersistentData persistentData;
+    @Inject private FactionRepository factionRepository;
 
     /**
      * Decide which message to send to the player.
@@ -102,7 +104,9 @@ public class PlayerService {
      */
     @SuppressWarnings("deprecation")
     public Faction getPlayerFaction(Object object) {
-        if (object instanceof OfflinePlayer) {
+        return null;
+        // TODO: reimplement using FactionRepository
+        /*if (object instanceof OfflinePlayer) {
             return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
         } else if (object instanceof UUID) {
             return this.persistentData.getPlayersFaction((UUID) object);
@@ -116,6 +120,6 @@ public class PlayerService {
                 }
             }
         }
-        throw new IllegalArgumentException(object + " cannot be transferred into a Player");
+        throw new IllegalArgumentException(object + " cannot be transferred into a Player");*/
     }
 }

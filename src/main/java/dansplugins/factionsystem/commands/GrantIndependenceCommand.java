@@ -9,7 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -30,14 +31,22 @@ public class GrantIndependenceCommand extends SubCommand {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     @Inject
-    public GrantIndependenceCommand(PlayerService playerService, MessageService messageService, LocaleService localeService, PersistentData persistentData) {
+    public GrantIndependenceCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        FactionRepository factionRepository
+    ) {
         super();
         this.playerService = playerService;
         this.messageService = messageService;
         this.localeService = localeService;
         this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this
             .setNames("grantindependence", "gi", LOCALE_PREFIX + "CmdGrantIndependence")
             .requiresPermissions("mf.grantindependence")
@@ -61,7 +70,7 @@ public class GrantIndependenceCommand extends SubCommand {
             );
             return;
         }
-        final Faction target = this.persistentData.getFaction(String.join(" ", args));
+        final Faction target = this.factionRepository.get(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,

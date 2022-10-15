@@ -7,7 +7,7 @@ package dansplugins.factionsystem.commands.abs;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;

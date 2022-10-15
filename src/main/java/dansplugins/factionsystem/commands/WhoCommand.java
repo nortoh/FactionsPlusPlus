@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -84,11 +84,12 @@ public class WhoCommand extends SubCommand {
                     , "PlayerIsNotInAFaction", false);
             return;
         }
-        this.messenger.sendFactionInfo(
+        // TODO: reimp
+        /*this.messenger.sendFactionInfo(
             player, 
             temp,
             this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())
-        );
+        );*/
     }
 
     /**

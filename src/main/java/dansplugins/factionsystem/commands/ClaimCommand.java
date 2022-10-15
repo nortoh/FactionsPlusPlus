@@ -62,10 +62,12 @@ public class ClaimCommand extends SubCommand {
             if (depth <= 0) {
                 this.playerService.sendMessage(player, "&a" + this.localeService.getText("UsageClaimRadius"), "UsageClaimRadius", false);
             } else {
-                this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
+                // TODO: reimp
+                //this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
             }
         } else {
-            this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), this.faction);
+            // TODO: reimp
+            //this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), this.faction);
         }
         this.dynmapService.updateClaimsIfAble();
     }

@@ -5,6 +5,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
@@ -31,6 +32,13 @@ public class PluginModule extends AbstractModule implements TypeListener {
         bind(MedievalFactions.class).toInstance(medievalFactions);
         install(new FactoryModuleBuilder().build(FactionFactory.class));
         install(new FactoryModuleBuilder().build(FactionFlagFactory.class));
+        bind(String.class)
+            .annotatedWith(Names.named("dataFolder"))
+            .toInstance(this.medievalFactions.getStoragePath());
+        bind(String.class)
+            .annotatedWith(Names.named("pluginVersion"))
+            .toInstance(this.medievalFactions.getVersion());
+
     }
 
     @Override
