@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import dansplugins.factionsystem.MedievalFactions;
@@ -1372,12 +1373,13 @@ public class PersistentData {
         }
 
         private void saveFactions() {
-            List<Map<String, String>> factionsToSave = new ArrayList<>();
+            List<JsonElement> factionsToSave = new ArrayList<>();
             for (Faction faction : factions) {
-                factionsToSave.add(faction.save());
+                factionsToSave.add(faction.toJsonTree());
             }
 
             File file = new File(FILE_PATH + FACTIONS_FILE_NAME);
+            System.out.println(factionsToSave);
             writeOutFiles(file, factionsToSave);
         }
 
@@ -1431,11 +1433,15 @@ public class PersistentData {
 //            writeOutFiles(file, warsToSave);
         }
 
-        private void writeOutFiles(File file, List<Map<String, String>> saveData) {
+        private void writeOutFiles(File file, List saveData) {
+            this.writeOutFiles(file, gson.toJson(saveData));
+        }
+
+        private void writeOutFiles(File file, String saveData) {
             try {
                 file.createNewFile();
                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-                outputStreamWriter.write(gson.toJson(saveData));
+                outputStreamWriter.write(saveData);
                 outputStreamWriter.close();
             } catch (IOException e) {
                 System.out.println("ERROR: " + e);
@@ -1448,7 +1454,7 @@ public class PersistentData {
             ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + FACTIONS_FILE_NAME);
 
             for (Map<String, String> factionData : data) {
-                Faction newFaction = persistentData.geFactionFactory().create(factionData);
+                Faction newFaction = persistentData.getFactionFactory().create(factionData);
                 factions.add(newFaction);
             }
         }
