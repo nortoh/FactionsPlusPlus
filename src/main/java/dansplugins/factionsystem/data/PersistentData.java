@@ -17,13 +17,14 @@ import dansplugins.factionsystem.events.FactionClaimEvent;
 import dansplugins.factionsystem.events.FactionUnclaimEvent;
 import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.models.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.LockedBlock;
-import dansplugins.factionsystem.objects.domain.ActivityRecord;
+import dansplugins.factionsystem.models.LockedBlock;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.objects.domain.Duel;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.objects.domain.War;
 import dansplugins.factionsystem.repositories.ClaimedChunkRepository;
 import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.repositories.LockedBlockRepository;
+import dansplugins.factionsystem.repositories.PlayerRecordRepository;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
@@ -67,9 +68,9 @@ public class PersistentData {
     private final Logger logger;
     private final FactionRepository factionRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
+    private final LockedBlockRepository lockedBlockRepository;
+    private final PlayerRecordRepository playerRecordRepository;
     private final InteractionAccessChecker interactionAccessChecker;
-    private final ArrayList<PowerRecord> powerRecords = new ArrayList<>();
-    private final ArrayList<ActivityRecord> activityRecords = new ArrayList<>();
     private final ArrayList<LockedBlock> lockedBlocks = new ArrayList<>();
     private final ChunkDataAccessor chunkDataAccessor = new ChunkDataAccessor();
     private final LocalStorageService localStorageService = new LocalStorageService(this);
@@ -91,7 +92,9 @@ public class PersistentData {
         DynmapIntegrationService dynmapService,
         InteractionAccessChecker interactionAccessChecker,
         FactionRepository factionRepository,
-        ClaimedChunkRepository claimedChunkRepository
+        ClaimedChunkRepository claimedChunkRepository,
+        LockedBlockRepository lockedBlockRepository,
+        PlayerRecordRepository playerRecordRepository
     ) {
         this.localeService = localeService;
         this.configService = configService;
@@ -106,6 +109,8 @@ public class PersistentData {
         this.blockChecker = blockChecker;
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
+        this.lockedBlockRepository = lockedBlockRepository;
+        this.playerRecordRepository = playerRecordRepository;
     }
 
     public BlockChecker getBlockChecker() {
@@ -177,22 +182,8 @@ public class PersistentData {
         return null;
     }
 
-    public PowerRecord getPlayersPowerRecord(UUID playerUUID) {
-        for (PowerRecord record : powerRecords) {
-            if (record.getPlayerUUID().equals(playerUUID)) {
-                return record;
-            }
-        }
-        return null;
-    }
-
-    public ActivityRecord getPlayerActivityRecord(UUID uuid) {
-        for (ActivityRecord record : activityRecords) {
-            if (record.getPlayerUUID().equals(uuid)) {
-                return record;
-            }
-        }
-        return null;
+    public PlayerRecord getPlayerRecord(UUID playerUUID) {
+        return this.playerRecordRepository.get(playerUUID);
     }
 
     public LockedBlock getLockedBlock(Block block) {
@@ -200,12 +191,7 @@ public class PersistentData {
     }
 
     private LockedBlock getLockedBlock(int x, int y, int z, String world) {
-        for (LockedBlock block : lockedBlocks) {
-            if (block.getX() == x && block.getY() == y && block.getZ() == z && block.getWorld().equalsIgnoreCase(world)) {
-                return block;
-            }
-        }
-        return null;
+        return this.lockedBlockRepository.get(x, y, z, world);
     }
 
     public ArrayList<Faction> getFactionsInVassalageTree(Faction initialFaction) {
@@ -281,10 +267,9 @@ public class PersistentData {
     }
 
     private boolean isBlockLocked(int x, int y, int z, String world) {
-        for (LockedBlock block : lockedBlocks) {
-            if (block.getX() == x && block.getY() == y && block.getZ() == z && block.getWorld().equalsIgnoreCase(world)) {
-                return true;
-            }
+        LockedBlock block = this.lockedBlockRepository.get(x, y, z, world);
+        if (block != null) {
+            return true;
         }
         return false;
     }
@@ -311,7 +296,7 @@ public class PersistentData {
     }
 
     public void removeAllLocks(String factionName) {
-        Iterator<LockedBlock> itr = lockedBlocks.iterator();
+        Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
 
         while (itr.hasNext()) {
             LockedBlock currentBlock = itr.next();
@@ -327,15 +312,16 @@ public class PersistentData {
 
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
         for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-            ActivityRecord record = getPlayerActivityRecord(player.getUniqueId());
+            PlayerRecord record = this.getPlayerRecord(player.getUniqueId());
             if (record == null) {
-                ActivityRecord newRecord = new ActivityRecord(player.getUniqueId(), configService, 1);
+                PlayerRecord newRecord = new PlayerRecord(player.getUniqueId(), 1);
                 newRecord.setLastLogout(ZonedDateTime.now());
-                activityRecords.add(newRecord);
+                this.playerRecordRepository.create(newRecord);
             }
         }
     }
 
+    // TODO: implement this in FactionService
     public Faction getRandomFaction() {
         /*Random generator = new Random();
         int randomIndex = generator.nextInt(factions.size());
@@ -397,28 +383,17 @@ public class PersistentData {
         return output;
     }
 
-    public void addActivityRecord(ActivityRecord newRecord) {
-        activityRecords.add(newRecord);
-    }
-
-    public void addPowerRecord(PowerRecord newRecord) {
-        powerRecords.add(newRecord);
-    }
-
-    public boolean hasPowerRecord(UUID playerUUID) {
-        for (PowerRecord record : powerRecords) {
-            if (record.getPlayerUUID().equals(playerUUID)) {
-                return true;
-            }
+    public void addPlayerRecord(PlayerRecord record) {
+        if (this.hasPlayerRecord(record.getPlayerUUID())) {
+            return;
         }
-        return false;
+        this.playerRecordRepository.create(record);
     }
 
-    public boolean hasActivityRecord(UUID playerUUID) {
-        for (ActivityRecord record : activityRecords) {
-            if (record.getPlayerUUID().equals(playerUUID)) {
-                return true;
-            }
+    public boolean hasPlayerRecord(UUID playerUUID) {
+        PlayerRecord record = this.playerRecordRepository.get(playerUUID);
+        if (record != null) {
+            return true;
         }
         return false;
     }
@@ -428,7 +403,7 @@ public class PersistentData {
     }
 
     public int getNumPlayers() {
-        return powerRecords.size();
+        return this.playerRecordRepository.all().size();
     }
 
     public void updateFactionReferencesDueToNameChange(String oldName, String newName) {
@@ -441,7 +416,7 @@ public class PersistentData {
                 .forEach(cc -> cc.setHolder(newName));
 
         // Locked Blocks
-        lockedBlocks.stream().filter(lb -> lb.getFactionName().equalsIgnoreCase(oldName))
+        this.lockedBlockRepository.all().stream().filter(lb -> lb.getFactionName().equalsIgnoreCase(oldName))
                 .forEach(lb -> lb.setFaction(newName));
     }
 
@@ -470,31 +445,33 @@ public class PersistentData {
     }
 
     public void addLockedBlock(LockedBlock newLockedBlock) {
-        lockedBlocks.add(newLockedBlock);
+        this.lockedBlockRepository.create(newLockedBlock);
     }
 
     public void resetPowerLevels() {
-        final int initialPowerLevel = configService.getInt("initialPowerLevel");
-        powerRecords.forEach(record -> record.setPower(initialPowerLevel));
+        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
+        this.playerRecordRepository.all().forEach(record -> record.setPower(initialPowerLevel));
     }
 
     public void initiatePowerIncreaseForAllPlayers() {
-        for (PowerRecord powerRecord : powerRecords) {
+        for (PlayerRecord record : this.playerRecordRepository.all()) {
             try {
-                initiatePowerIncrease(powerRecord);
+                initiatePowerIncrease(record);
             } catch (Exception ignored) {
 
             }
         }
     }
 
-    private void initiatePowerIncrease(PowerRecord powerRecord) {
+    private void initiatePowerIncrease(PlayerRecord record) {
+        // TODO: reimplement
+        /*
         if (powerRecord.getPower() < powerRecord.maxPower() && Objects.requireNonNull(getServer().getPlayer(powerRecord.getPlayerUUID())).isOnline()) {
             powerRecord.increasePower();
             playerService.sendMessage(getServer().getPlayer(powerRecord.getPlayerUUID()), ChatColor.GREEN + String.format(localeService.get("AlertPowerLevelIncreasedBy"), configService.getInt("powerIncreaseAmount"))
                     , Objects.requireNonNull(messageService.getLanguage().getString("AlertPowerLevelIncreasedBy"))
                             .replace("#amount#", String.valueOf(configService.getInt("powerIncreaseAmount"))), true);
-        }
+        }*/
     }
 
     public void disbandAllZeroPowerFactions() {
@@ -539,16 +516,15 @@ public class PersistentData {
     }
 
     public void decreasePowerForInactivePlayers() {
-        for (ActivityRecord record : activityRecords) {
+        for (PlayerRecord record : this.playerRecordRepository.all()) {
             Player player = getServer().getPlayer(record.getPlayerUUID());
             boolean isOnline = false;
             if (player != null) {
                 isOnline = player.isOnline();
             }
-            if (!isOnline && configService.getBoolean("powerDecreases") && record.getMinutesSinceLastLogout() > configService.getInt("minutesBeforePowerDecrease")) {
+            if (!isOnline && this.configService.getBoolean("powerDecreases") && record.getMinutesSinceLastLogout() > configService.getInt("minutesBeforePowerDecrease")) {
                 record.incrementPowerLost();
-                PowerRecord power = getPlayersPowerRecord(record.getPlayerUUID());
-                power.decreasePower();
+                record.decreasePower();
             }
         }
     }
@@ -571,11 +547,9 @@ public class PersistentData {
     }
 
     public void removeLockedBlock(Block block) {
-        for (LockedBlock b : lockedBlocks) {
-            if (b.getX() == block.getX() && b.getY() == block.getY() && b.getZ() == block.getZ() && block.getWorld().getName().equalsIgnoreCase(b.getWorld())) {
-                lockedBlocks.remove(b);
-                return;
-            }
+        LockedBlock b = this.lockedBlockRepository.get(block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
+        if (b != null) {
+            this.lockedBlockRepository.delete(b);
         }
     }
 
@@ -587,8 +561,8 @@ public class PersistentData {
         return this.factionRepository.all();
     }
 
-    public ArrayList<PowerRecord> getPlayerPowerRecords() {
-        return powerRecords;
+    public ArrayList<PlayerRecord> getPlayerRecords() {
+        return this.playerRecordRepository.all();
     }
 
     public InteractionAccessChecker getInteractionAccessChecker() {
@@ -1024,7 +998,7 @@ public class PersistentData {
                 // CONQUERABLE
 
                 // remove locks on this chunk
-                lockedBlocks.removeIf(block -> chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunk.getChunk().getX() &&
+                lockedBlockRepository.all().removeIf(block -> chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunk.getChunk().getX() &&
                         chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunk.getChunk().getZ());
 
                 FactionClaimEvent claimEvent = new FactionClaimEvent(claimantsFaction, claimant, chunk.getChunk());
@@ -1148,7 +1122,7 @@ public class PersistentData {
             }
 
             // remove locks on this chunk
-            lockedBlocks.removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
+            lockedBlockRepository.all().removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
                     chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunkToRemove.getChunk().getZ() &&
                     block.getWorld().equalsIgnoreCase(chunkToRemove.getWorldName()));
 
@@ -1352,8 +1326,7 @@ public class PersistentData {
         public void save() {
             saveFactions();
             saveClaimedChunks();
-            savePlayerPowerRecords();
-            savePlayerActivityRecords();
+            savePlayerRecords();
             saveLockedBlocks();
             saveWars();
             if (configService.hasBeenAltered()) {
@@ -1364,8 +1337,7 @@ public class PersistentData {
         public void load() {
             loadFactions();
             loadClaimedChunks();
-            loadPlayerPowerRecords();
-            loadPlayerActivityRecords();
+            loadPlayerRecords();
             loadLockedBlocks();
             loadWars();
         }
@@ -1378,34 +1350,12 @@ public class PersistentData {
             claimedChunkRepository.persist();
         }
 
-        private void savePlayerPowerRecords() {
-            List<Map<String, String>> powerRecordsToSave = new ArrayList<>();
-            for (PowerRecord record : powerRecords) {
-                powerRecordsToSave.add(record.save());
-            }
-
-            File file = new File(FILE_PATH + PLAYERPOWER_FILE_NAME);
-            writeOutFiles(file, powerRecordsToSave);
-        }
-
-        private void savePlayerActivityRecords() {
-            List<Map<String, String>> activityRecordsToSave = new ArrayList<>();
-            for (ActivityRecord record : activityRecords) {
-                activityRecordsToSave.add(record.save());
-
-                File file = new File(FILE_PATH + PLAYERACTIVITY_FILE_NAME);
-                writeOutFiles(file, activityRecordsToSave);
-            }
+        private void savePlayerRecords() {
+            playerRecordRepository.persist();
         }
 
         private void saveLockedBlocks() {
-            List<Map<String, String>> lockedBlocksToSave = new ArrayList<>();
-            for (LockedBlock block : lockedBlocks) {
-                lockedBlocksToSave.add(block.save());
-            }
-
-            File file = new File(FILE_PATH + LOCKED_BLOCKS_FILE_NAME);
-            writeOutFiles(file, lockedBlocksToSave);
+            lockedBlockRepository.persist();
         }
 
         private void saveWars() {
@@ -1441,37 +1391,12 @@ public class PersistentData {
             claimedChunkRepository.load();
         }
 
-        private void loadPlayerPowerRecords() {
-            powerRecords.clear();
-
-            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + PLAYERPOWER_FILE_NAME);
-
-            for (Map<String, String> powerRecord : data) {
-                PowerRecord player = new PowerRecord(powerRecord, configService, persistentData);
-                powerRecords.add(player);
-            }
-        }
-
-        private void loadPlayerActivityRecords() {
-            activityRecords.clear();
-
-            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + PLAYERACTIVITY_FILE_NAME);
-
-            for (Map<String, String> powerRecord : data) {
-                ActivityRecord player = new ActivityRecord(powerRecord, configService);
-                activityRecords.add(player);
-            }
+        private void loadPlayerRecords() {
+            playerRecordRepository.load();
         }
 
         private void loadLockedBlocks() {
-            lockedBlocks.clear();
-
-            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + LOCKED_BLOCKS_FILE_NAME);
-
-            for (Map<String, String> lockedBlockData : data) {
-                LockedBlock lockedBlock = new LockedBlock(lockedBlockData);
-                lockedBlocks.add(lockedBlock);
-            }
+            lockedBlockRepository.load();
         }
 
         private void loadWars() {

@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DeathService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -45,14 +45,16 @@ public class DeathHandler implements Listener {
             return;
         }
         Player killer = player.getKiller();
-        if (killer == null) return;
-
-        PowerRecord record = persistentData.getPlayersPowerRecord(killer.getUniqueId());
-        if (record == null) return;
-
+        if (killer == null) {
+            return;
+        }
+        PlayerRecord record = this.persistentData.getPlayerRecord(killer.getUniqueId());
+        if (record == null) {
+            return;
+        }
         record.grantPowerDueToKill();
         killer.sendMessage(ChatColor.GREEN + localeService.get("PowerLevelHasIncreased"));
-        event.getDrops().add(this.deathService.getHead(killer, player));
+        event.getDrops().add(this.deathService.getHead(player));
     }
 
     private boolean wasPlayersCauseOfDeathAnotherPlayerKillingThem(Player player) {
@@ -60,8 +62,8 @@ public class DeathHandler implements Listener {
     }
 
     private void decreaseDyingPlayersPower(Player player) {
-        PowerRecord playersPowerRecord = persistentData.getPlayersPowerRecord(player.getUniqueId());
-        double powerLost = playersPowerRecord.revokePowerDueToDeath();
+        PlayerRecord playerRecord = this.persistentData.getPlayerRecord(player.getUniqueId());
+        double powerLost = playerRecord.revokePowerDueToDeath();
         if (powerLost != 0) {
             player.sendMessage(ChatColor.RED + "You lost " + powerLost + " power.");
         }

@@ -1,79 +1,62 @@
-/*
-  Copyright (c) 2022 Daniel McCoy Stephenson
-  GPL3 License
- */
-package dansplugins.factionsystem.objects.domain;
+package dansplugins.factionsystem.models;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import dansplugins.factionsystem.objects.inherited.PlayerRecord;
-import dansplugins.factionsystem.services.ConfigService;
-import preponderous.ponder.misc.abs.Savable;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Daniel McCoy Stephenson
- */
-public class ActivityRecord extends PlayerRecord implements Savable {
-    private final ConfigService configService;
+import dansplugins.factionsystem.jsonadapters.ZonedDateTimeAdapter;
 
+public class PlayerStats {
+    @Expose
     private int logins = 0;
+    @Expose
     private int powerLost = 0;
+    @Expose
+    @JsonAdapter(ZonedDateTimeAdapter.class)
     private ZonedDateTime lastLogout = ZonedDateTime.now();
 
-    public ActivityRecord(UUID uuid, ConfigService configService, int logins) {
-        this.configService = configService;
-        playerUUID = uuid;
-        this.logins = logins;
-        this.powerLost = 0;
-    }
-
-    public ActivityRecord(Map<String, String> data, ConfigService configService) {
-        this.configService = configService;
-        this.load(data);
+    public PlayerStats(int initialLogins) {
+        this.logins = initialLogins;
     }
 
     public int getPowerLost() {
-        return powerLost;
+        return this.powerLost;
     }
 
     public void setPowerLost(int power) {
         powerLost = power;
     }
 
+    // TODO: reimplement in Player Service
     public void incrementPowerLost() {
-        powerLost += configService.getInt("powerDecreaseAmount");
+        // powerLost += configService.getInt("powerDecreaseAmount");
     }
 
     public ZonedDateTime getLastLogout() {
-        return lastLogout;
+        return this.lastLogout;
     }
 
     public void setLastLogout(ZonedDateTime date) {
-        lastLogout = date;
+        this.lastLogout = date;
     }
 
     public void incrementLogins() {
-        logins++;
+        this.logins++;
     }
 
     public int getLogins() {
-        return logins;
+        return this.logins;
     }
 
     public int getMinutesSinceLastLogout() {
-        if (lastLogout == null) {
+        if (this.lastLogout == null) {
             return 0;
         }
         ZonedDateTime now = ZonedDateTime.now();
-        Duration duration = Duration.between(lastLogout, now);
+        Duration duration = Duration.between(this.lastLogout, now);
         double totalSeconds = duration.getSeconds();
         return (int) totalSeconds / 60;
     }
@@ -88,11 +71,11 @@ public class ActivityRecord extends PlayerRecord implements Savable {
      * @author Callum
      */
     public String getActiveSessionLength() {
-        if (lastLogout == null) {
+        if (this.lastLogout == null) {
             return "00:00:00";
         }
         final ZonedDateTime now = ZonedDateTime.now();
-        final Duration duration = Duration.between(lastLogout, now);
+        final Duration duration = Duration.between(this.lastLogout, now);
         long totalSeconds = duration.getSeconds();
         final long days = TimeUnit.SECONDS.toDays(totalSeconds);
         totalSeconds -= TimeUnit.DAYS.toSeconds(days); // Remove Days from Total.
@@ -106,9 +89,9 @@ public class ActivityRecord extends PlayerRecord implements Savable {
     }
 
     public String getTimeSinceLastLogout() {
-        if (lastLogout != null) {
+        if (this.lastLogout != null) {
             ZonedDateTime now = ZonedDateTime.now();
-            Duration duration = Duration.between(lastLogout, now);
+            Duration duration = Duration.between(this.lastLogout, now);
             double totalSeconds = duration.getSeconds();
             int minutes = (int) totalSeconds / 60;
             int hours = minutes / 60;
@@ -118,28 +101,6 @@ public class ActivityRecord extends PlayerRecord implements Savable {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public Map<String, String> save() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        Map<String, String> saveMap = new HashMap<>();
-        saveMap.put("playerUUID", gson.toJson(playerUUID.toString()));
-        saveMap.put("logins", gson.toJson(logins));
-        saveMap.put("lastLogout", gson.toJson(lastLogout.toString()));
-        saveMap.put("powerLost", gson.toJson(powerLost));
-
-        return saveMap;
-    }
-
-    @Override
-    public void load(Map<String, String> data) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        playerUUID = UUID.fromString(gson.fromJson(data.get("playerUUID"), String.class));
-        logins = gson.fromJson(data.get("logins"), Integer.TYPE);
-        lastLogout = ZonedDateTime.parse(gson.fromJson(data.get("lastLogout"), String.class), DateTimeFormatter.ISO_ZONED_DATE_TIME);
-        powerLost = gson.fromJson(data.get("powerLost"), Integer.TYPE);
     }
 
     /**

@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -71,7 +71,7 @@ public class PowerCommand extends SubCommand {
      */
     @Override
     public void execute(CommandSender sender, String[] args, String key) {
-        final PowerRecord record;
+        final PlayerRecord record;
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
@@ -82,7 +82,7 @@ public class PowerCommand extends SubCommand {
                 );
                 return;
             }
-            record = this.persistentData.getPlayersPowerRecord(((Player) sender).getUniqueId());
+            record = this.persistentData.getPlayerRecord(((Player) sender).getUniqueId());
             this.playerService.sendMessage(
                 sender,
                 "&b" + this.localeService.getText("AlertCurrentPowerLevel", record.getPower(), record.maxPower()),
@@ -104,7 +104,7 @@ public class PowerCommand extends SubCommand {
             );
             return;
         }
-        record = this.persistentData.getPlayersPowerRecord(target);
+        record = this.persistentData.getPlayerRecord(target);
         this.playerService.sendMessage(
             sender, 
             "&b" + this.localeService.getText("CurrentPowerLevel", args[0], record.getPower(), record.maxPower()),

@@ -11,8 +11,8 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
@@ -87,11 +87,11 @@ public class MedievalFactionsAPI {
     }
 
     public double getPower(Player player) {
-        return persistentData.getPlayersPowerRecord(player.getUniqueId()).getPower();
+        return this.persistentData.getPlayerRecord(player.getUniqueId()).getPower();
     }
 
     public double getPower(UUID playerUUID) {
-        return persistentData.getPlayersPowerRecord(playerUUID).getPower();
+        return this.persistentData.getPlayerRecord(playerUUID).getPower();
     }
 
     public void forcePlayerToLeaveFactionChat(UUID uuid) {
@@ -99,20 +99,20 @@ public class MedievalFactionsAPI {
     }
 
     public void increasePower(Player player, int amount) {
-        PowerRecord powerRecord = persistentData.getPlayersPowerRecord(player.getUniqueId());
-        double originalPower = powerRecord.getPower();
+        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        double originalPower = record.getPower();
         double newPower = originalPower + amount;
-        powerRecord.setPower(newPower);
+        record.setPower(newPower);
     }
 
     public void decreasePower(Player player, int amount) {
-        PowerRecord powerRecord = persistentData.getPlayersPowerRecord(player.getUniqueId());
-        double originalPower = powerRecord.getPower();
+        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        double originalPower = record.getPower();
         double newPower = originalPower - amount;
         if (newPower >= 0) {
-            powerRecord.setPower(originalPower - amount);
+            record.setPower(originalPower - amount);
         } else {
-            powerRecord.setPower(0);
+            record.setPower(0);
         }
     }
 }
