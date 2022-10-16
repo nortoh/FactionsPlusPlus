@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 public abstract class SubCommand implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
-    protected PlayerService playerService; // remove later, just makes the compiler happy for now.
+    @Inject protected PlayerService playerService; // remove later, just makes the compiler happy for now.
     private boolean playerCommand;
     private boolean requiresFaction;
     private boolean requiresOfficer;
@@ -38,7 +38,7 @@ public abstract class SubCommand implements ColorTranslator {
     public SubCommand() {
         this.requiredPermissions = new String[]{};
     }
-    
+
     public void setUserFaction(Faction faction) {
         this.faction = faction;
     }
@@ -92,7 +92,7 @@ public abstract class SubCommand implements ColorTranslator {
     public boolean shouldRequirePlayerInFaction() {
         return this.requiresFaction;
     }
-    
+
     /**
      * Method to execute the command for a player.
      *
@@ -182,7 +182,7 @@ public abstract class SubCommand implements ColorTranslator {
         return hasPermission;
     }
 
-    /** 
+    /**
      * Method to retrieve the list of command names for this command.
      */
     public String[] getCommandNames() {

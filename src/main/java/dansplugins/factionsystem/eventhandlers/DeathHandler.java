@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DeathService;
 import dansplugins.factionsystem.services.LocaleService;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -18,12 +19,19 @@ public class DeathHandler implements Listener {
     private final ConfigService configService;
     private final PersistentData persistentData;
     private final LocaleService localeService;
+    private final DeathService deathService;
 
     @Inject
-    public DeathHandler(ConfigService configService, PersistentData persistentData, LocaleService localeServiceService) {
+    public DeathHandler(
+        ConfigService configService,
+        PersistentData persistentData,
+        LocaleService localeServiceService,
+        DeathService deathService
+    ) {
         this.configService = configService;
         this.persistentData = persistentData;
         this.localeService = localeServiceService;
+        this.deathService = deathService;
     }
 
     @EventHandler()
@@ -33,19 +41,18 @@ public class DeathHandler implements Listener {
         if (configService.getBoolean("playersLosePowerOnDeath")) {
             decreaseDyingPlayersPower(player);
         }
-        if (!wasPlayersCauseOfDeathAnotherPlayerKillingThem(player)) {
+        if (! wasPlayersCauseOfDeathAnotherPlayerKillingThem(player)) {
             return;
         }
         Player killer = player.getKiller();
-        if (killer == null) {
-            return;
-        }
+        if (killer == null) return;
+
         PowerRecord record = persistentData.getPlayersPowerRecord(killer.getUniqueId());
-        if (record == null) {
-            return;
-        }
+        if (record == null) return;
+
         record.grantPowerDueToKill();
         killer.sendMessage(ChatColor.GREEN + localeService.get("PowerLevelHasIncreased"));
+        event.getDrops().add(this.deathService.getHead(killer, player));
     }
 
     private boolean wasPlayersCauseOfDeathAnotherPlayerKillingThem(Player player) {

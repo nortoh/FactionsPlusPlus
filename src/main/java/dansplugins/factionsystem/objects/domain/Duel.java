@@ -6,6 +6,8 @@ package dansplugins.factionsystem.objects.domain;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
+import dansplugins.factionsystem.services.DeathService;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,6 +28,7 @@ import java.util.Objects;
 public class Duel {
     private final MedievalFactions medievalFactions;
     private final EphemeralData ephemeralData;
+    private final DeathService deathService;
 
     private final Player _challenged;
     private final Player _challenger;
@@ -40,9 +43,17 @@ public class Duel {
     private int repeatingTaskId = 0;
     private double timeDecrementAmount = 0;
 
-    public Duel(MedievalFactions medievalFactions, EphemeralData ephemeralData, Player challenger, Player challenged, int limit) {
+    public Duel(
+        MedievalFactions medievalFactions,
+        EphemeralData ephemeralData,
+        DeathService deathService,
+        Player challenger,
+        Player challenged,
+        int limit
+    ) {
         this.medievalFactions = medievalFactions;
         this.ephemeralData = ephemeralData;
+        this.deathService = deathService;
         _challenger = challenger;
         challengerHealth = challenger.getHealth();
         _challenged = challenged;
@@ -165,22 +176,6 @@ public class Duel {
         }, 20, 20);
     }
 
-    private ItemStack getHead(Player player) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
-        SkullMeta skull = (SkullMeta) item.getItemMeta();
-        if (skull == null) {
-            return null;
-        }
-        skull.setDisplayName(player.getName() + "'s head.");
-        OfflinePlayer offlinePlayer = getLoser();
-        skull.setOwningPlayer(offlinePlayer);
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add("Lost in a duel against " + Objects.requireNonNull(getWinner().getPlayer()).getName() + ".");
-        skull.setLore(lore);
-        item.setItemMeta(skull);
-        return item;
-    }
-
     public void finishDuel(boolean tied) {
         _challenger.setHealth(challengerHealth);
         _challenged.setHealth(challengedHealth);
@@ -198,9 +193,9 @@ public class Duel {
                 }
             }
             if (getWinner().getInventory().firstEmpty() > -1) {
-                getWinner().getInventory().addItem(getHead(getLoser()));
+                getWinner().getInventory().addItem(this.deathService.getHead(getLoser()));
             } else {
-                getWinner().getWorld().dropItemNaturally(getWinner().getLocation(), Objects.requireNonNull(getHead(getLoser())));
+                getWinner().getWorld().dropItemNaturally(getWinner().getLocation(), Objects.requireNonNull(this.deathService.getHead(getLoser())));
             }
         } else {
             for (Player other : medievalFactions.getServer().getOnlinePlayers()) {

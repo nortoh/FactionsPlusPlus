@@ -14,6 +14,7 @@ import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.Duel.DuelState;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DeathService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -35,6 +36,7 @@ public class DuelCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
     private final LocaleService localeService;
     private final ConfigService configService;
+    private final DeathService deathService;
 
     @Inject
     public DuelCommand(
@@ -43,7 +45,8 @@ public class DuelCommand extends SubCommand {
         LocaleService localeService,
         PlayerService playerService,
         MessageService messageService,
-        MedievalFactions medievalFactions
+        MedievalFactions medievalFactions,
+        DeathService deathService
     ) {
         super();
         this.ephemeralData = ephemeralData;
@@ -52,6 +55,7 @@ public class DuelCommand extends SubCommand {
         this.medievalFactions = medievalFactions;
         this.localeService = localeService;
         this.configService = configService;
+        this.deathService = deathService;
         this
             .setNames("duel", "dl", LOCALE_PREFIX + "CmdDuel")
             .requiresPermissions("mf.duel")
@@ -191,17 +195,17 @@ public class DuelCommand extends SubCommand {
 
     private void inviteDuel(Player player, Player target, int limit) {
         this.playerService.sendMessage(
-            target, 
+            target,
             "&a" + this.localeService.getText("AlertChallengedToDuelPlusHowTo", player.getName()),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertChallengedToDuelPlusHowTo")).replace("#name#", player.getName()), 
+            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertChallengedToDuelPlusHowTo")).replace("#name#", player.getName()),
             true
         );
-        this.ephemeralData.getDuelingPlayers().add(new Duel(this.medievalFactions, this.ephemeralData, player, target, limit));
+        this.ephemeralData.getDuelingPlayers().add(new Duel(this.medievalFactions, this.ephemeralData, this.deathService, player, target, limit));
     }
 
     /**
      * Method to handle tab completion.
-     * 
+     *
      * @param player who sent the command.
      * @param args   of the command.
      */
