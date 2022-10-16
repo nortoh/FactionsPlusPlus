@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.LockedBlock;
+import dansplugins.factionsystem.models.LockedBlock;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;

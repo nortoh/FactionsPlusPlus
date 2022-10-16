@@ -17,13 +17,14 @@ import dansplugins.factionsystem.events.FactionClaimEvent;
 import dansplugins.factionsystem.events.FactionUnclaimEvent;
 import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.models.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.LockedBlock;
+import dansplugins.factionsystem.models.LockedBlock;
 import dansplugins.factionsystem.objects.domain.ActivityRecord;
 import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.objects.domain.War;
 import dansplugins.factionsystem.repositories.ClaimedChunkRepository;
 import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.repositories.LockedBlockRepository;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
@@ -67,6 +68,7 @@ public class PersistentData {
     private final Logger logger;
     private final FactionRepository factionRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
+    private final LockedBlockRepository lockedBlockRepository;
     private final InteractionAccessChecker interactionAccessChecker;
     private final ArrayList<PowerRecord> powerRecords = new ArrayList<>();
     private final ArrayList<ActivityRecord> activityRecords = new ArrayList<>();
@@ -91,7 +93,8 @@ public class PersistentData {
         DynmapIntegrationService dynmapService,
         InteractionAccessChecker interactionAccessChecker,
         FactionRepository factionRepository,
-        ClaimedChunkRepository claimedChunkRepository
+        ClaimedChunkRepository claimedChunkRepository,
+        LockedBlockRepository lockedBlockRepository
     ) {
         this.localeService = localeService;
         this.configService = configService;
@@ -106,6 +109,7 @@ public class PersistentData {
         this.blockChecker = blockChecker;
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
+        this.lockedBlockRepository = lockedBlockRepository;
     }
 
     public BlockChecker getBlockChecker() {
@@ -200,12 +204,7 @@ public class PersistentData {
     }
 
     private LockedBlock getLockedBlock(int x, int y, int z, String world) {
-        for (LockedBlock block : lockedBlocks) {
-            if (block.getX() == x && block.getY() == y && block.getZ() == z && block.getWorld().equalsIgnoreCase(world)) {
-                return block;
-            }
-        }
-        return null;
+        return this.lockedBlockRepository.get(x, y, z, world);
     }
 
     public ArrayList<Faction> getFactionsInVassalageTree(Faction initialFaction) {
@@ -281,10 +280,9 @@ public class PersistentData {
     }
 
     private boolean isBlockLocked(int x, int y, int z, String world) {
-        for (LockedBlock block : lockedBlocks) {
-            if (block.getX() == x && block.getY() == y && block.getZ() == z && block.getWorld().equalsIgnoreCase(world)) {
-                return true;
-            }
+        LockedBlock block = this.lockedBlockRepository.get(x, y, z, world);
+        if (block != null) {
+            return true;
         }
         return false;
     }
@@ -311,7 +309,7 @@ public class PersistentData {
     }
 
     public void removeAllLocks(String factionName) {
-        Iterator<LockedBlock> itr = lockedBlocks.iterator();
+        Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
 
         while (itr.hasNext()) {
             LockedBlock currentBlock = itr.next();
@@ -441,7 +439,7 @@ public class PersistentData {
                 .forEach(cc -> cc.setHolder(newName));
 
         // Locked Blocks
-        lockedBlocks.stream().filter(lb -> lb.getFactionName().equalsIgnoreCase(oldName))
+        this.lockedBlockRepository.all().stream().filter(lb -> lb.getFactionName().equalsIgnoreCase(oldName))
                 .forEach(lb -> lb.setFaction(newName));
     }
 
@@ -470,7 +468,7 @@ public class PersistentData {
     }
 
     public void addLockedBlock(LockedBlock newLockedBlock) {
-        lockedBlocks.add(newLockedBlock);
+        this.lockedBlockRepository.create(newLockedBlock);
     }
 
     public void resetPowerLevels() {
@@ -571,11 +569,9 @@ public class PersistentData {
     }
 
     public void removeLockedBlock(Block block) {
-        for (LockedBlock b : lockedBlocks) {
-            if (b.getX() == block.getX() && b.getY() == block.getY() && b.getZ() == block.getZ() && block.getWorld().getName().equalsIgnoreCase(b.getWorld())) {
-                lockedBlocks.remove(b);
-                return;
-            }
+        LockedBlock b = this.lockedBlockRepository.get(block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
+        if (b != null) {
+            this.lockedBlockRepository.delete(b);
         }
     }
 
@@ -1024,7 +1020,7 @@ public class PersistentData {
                 // CONQUERABLE
 
                 // remove locks on this chunk
-                lockedBlocks.removeIf(block -> chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunk.getChunk().getX() &&
+                lockedBlockRepository.all().removeIf(block -> chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunk.getChunk().getX() &&
                         chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunk.getChunk().getZ());
 
                 FactionClaimEvent claimEvent = new FactionClaimEvent(claimantsFaction, claimant, chunk.getChunk());
@@ -1148,7 +1144,7 @@ public class PersistentData {
             }
 
             // remove locks on this chunk
-            lockedBlocks.removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
+            lockedBlockRepository.all().removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
                     chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunkToRemove.getChunk().getZ() &&
                     block.getWorld().equalsIgnoreCase(chunkToRemove.getWorldName()));
 
@@ -1399,13 +1395,7 @@ public class PersistentData {
         }
 
         private void saveLockedBlocks() {
-            List<Map<String, String>> lockedBlocksToSave = new ArrayList<>();
-            for (LockedBlock block : lockedBlocks) {
-                lockedBlocksToSave.add(block.save());
-            }
-
-            File file = new File(FILE_PATH + LOCKED_BLOCKS_FILE_NAME);
-            writeOutFiles(file, lockedBlocksToSave);
+            lockedBlockRepository.persist();
         }
 
         private void saveWars() {
@@ -1464,14 +1454,7 @@ public class PersistentData {
         }
 
         private void loadLockedBlocks() {
-            lockedBlocks.clear();
-
-            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + LOCKED_BLOCKS_FILE_NAME);
-
-            for (Map<String, String> lockedBlockData : data) {
-                LockedBlock lockedBlock = new LockedBlock(lockedBlockData);
-                lockedBlocks.add(lockedBlock);
-            }
+            lockedBlockRepository.load();
         }
 
         private void loadWars() {
