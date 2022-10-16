@@ -11,7 +11,7 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
@@ -142,15 +142,15 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_player_power")) {
             // The player-specific power which counts toward their Faction's power.
-            return String.valueOf(persistentData.getPlayersPowerRecord(player.getUniqueId()).getPower());
+            return String.valueOf(persistentData.getPlayerRecord(player.getUniqueId()).getPower());
         }
         if (id.equalsIgnoreCase("faction_player_max_power")) {
             // The player-specific max_power which is their total contribute-able power toward their Faction's power.
-            return String.valueOf(persistentData.getPlayersPowerRecord(player.getUniqueId()).maxPower());
+            return String.valueOf(persistentData.getPlayerRecord(player.getUniqueId()).maxPower());
         }
         if (id.equalsIgnoreCase("faction_player_power_full")) {
             // The formatted version of the 'power' and 'max_power' placeholders, 10/10 for example.
-            final PowerRecord playersPowerRecord = persistentData.getPlayersPowerRecord(player.getUniqueId());
+            final PlayerRecord playersPowerRecord = persistentData.getPlayerRecord(player.getUniqueId());
             return playersPowerRecord.getPower() + "/" + playersPowerRecord.maxPower();
         }
 
@@ -175,11 +175,11 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("player_total_logins")) {
             // The total amount of times a Player has logged in.
-            return String.valueOf(persistentData.getPlayerActivityRecord(player.getUniqueId()).getLogins());
+            return String.valueOf(persistentData.getPlayerRecord(player.getUniqueId()).getLogins());
         }
         if (id.equalsIgnoreCase("player_session_length")) {
             // The total time since their current login. (Days:Hours:Minutes:Seconds) or (Hours:Minutes:Seconds).
-            return persistentData.getPlayerActivityRecord(player.getUniqueId()).getActiveSessionLength();
+            return persistentData.getPlayerRecord(player.getUniqueId()).getActiveSessionLength();
         }
         if (id.equalsIgnoreCase("faction_at_location")) {
             // The Faction at the Player's current location. (Wilderness if nothing).

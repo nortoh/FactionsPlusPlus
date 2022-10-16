@@ -14,7 +14,7 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.*;
 import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -346,7 +346,7 @@ public class ForceCommand extends SubCommand {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("DesiredPowerMustBeANumber")));
             return;
         }
-        final PowerRecord record = this.persistentData.getPlayersPowerRecord(playerUUID);
+        final PlayerRecord record = this.persistentData.getPlayerRecord(playerUUID);
         record.setPower(desiredPower); // Set power :)
         sender.sendMessage(this.translate("&a" + this.localeService.getText("PowerLevelHasBeenSetTo", desiredPower)));
     }

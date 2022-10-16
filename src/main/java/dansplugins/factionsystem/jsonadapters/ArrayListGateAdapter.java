@@ -1,6 +1,6 @@
 package dansplugins.factionsystem.jsonadapters;
 
-import dansplugins.factionsystem.objects.domain.Gate;
+import dansplugins.factionsystem.models.Gate;
 
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonDeserializer;

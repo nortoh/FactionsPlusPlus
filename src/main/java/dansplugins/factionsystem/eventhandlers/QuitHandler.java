@@ -5,7 +5,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ActivityRecord;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ActionBarService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,7 +34,7 @@ public class QuitHandler implements Listener {
         ephemeralData.getPlayersCheckingAccess().remove(event.getPlayer().getUniqueId());
         ephemeralData.getPlayersRevokingAccess().remove(event.getPlayer().getUniqueId());
 
-        ActivityRecord record = persistentData.getPlayerActivityRecord(event.getPlayer().getUniqueId());
+        PlayerRecord record = this.persistentData.getPlayerRecord(event.getPlayer().getUniqueId());
         if (record != null) {
             record.setLastLogout(ZonedDateTime.now());
         }

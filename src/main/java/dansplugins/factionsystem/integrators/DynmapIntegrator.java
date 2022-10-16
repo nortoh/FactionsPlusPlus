@@ -7,7 +7,7 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.objects.helper.ChunkFlags;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.utils.Logger;
@@ -482,11 +482,11 @@ public class DynmapIntegrator {
             Set<String> plids = new HashSet<>();
             Faction f = this.persistentData.getFaction(holder);
             if (f != null) {
-                for (PowerRecord powerRecord : this.persistentData.getPlayerPowerRecords()) {
-                    Faction pf = this.persistentData.getPlayersFaction(powerRecord.getPlayerUUID());
+                for (PlayerRecord record : this.persistentData.getPlayerRecords()) {
+                    Faction pf = this.persistentData.getPlayersFaction(record.getPlayerUUID());
                     if (pf != null && pf.getName().equalsIgnoreCase(holder)) {
                         UUIDChecker uuidChecker = new UUIDChecker();
-                        plids.add(uuidChecker.findPlayerNameBasedOnUUID(powerRecord.getPlayerUUID()));
+                        plids.add(uuidChecker.findPlayerNameBasedOnUUID(record.getPlayerUUID()));
                     }
                 }
             }

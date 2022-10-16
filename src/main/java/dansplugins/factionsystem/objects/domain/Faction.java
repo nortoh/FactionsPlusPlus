@@ -18,14 +18,14 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.factories.FactionFlagFactory;
 import dansplugins.factionsystem.objects.helper.FactionFlags;
-import dansplugins.factionsystem.objects.inherited.Nation;
-import dansplugins.factionsystem.objects.inherited.specification.Feudal;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.jsonadapters.LocationAdapter;
 import dansplugins.factionsystem.jsonadapters.ArrayListGateAdapter;
+import dansplugins.factionsystem.models.Nation;
+import dansplugins.factionsystem.models.Gate;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
@@ -44,7 +44,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class Faction extends Nation implements Feudal, Savable {
+public class Faction extends Nation {
     private final ConfigService configService;
     private final LocaleService localeService;
     private final Logger logger;
@@ -115,7 +115,6 @@ public class Faction extends Nation implements Feudal, Savable {
         this.medievalFactions = medievalFactions;
         this.playerService = playerService;
         flags = factionFlagFactory.create();
-        this.load(data);
     }
 
     @AssistedInject
@@ -166,7 +165,7 @@ public class Faction extends Nation implements Feudal, Savable {
         int powerLevel = 0;
         for (UUID playerUUID : members) {
             try {
-                powerLevel += persistentData.getPlayersPowerRecord(playerUUID).getPower();
+                powerLevel += this.persistentData.getPlayerRecord(playerUUID).getPower();
             } catch (Exception e) {
                 System.out.println(localeService.get("ErrorPlayerPowerRecordForUUIDNotFound"));
             }
@@ -203,7 +202,7 @@ public class Faction extends Nation implements Feudal, Savable {
 
         for (UUID playerUUID : members) {
             try {
-                maxPower += persistentData.getPlayersPowerRecord(playerUUID).maxPower();
+                maxPower += this.persistentData.getPlayerRecord(playerUUID).maxPower();
             } catch (Exception e) {
                 System.out.println(localeService.get("ErrorPlayerPowerRecordForUUIDNotFound"));
             }
@@ -293,129 +292,6 @@ public class Faction extends Nation implements Feudal, Savable {
             }
         }
         list.remove(toRemove);
-    }
-
-
-    @Override
-    public Map<String, String> save() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create();
-        this.medievalFactions.getLogger().info("saving");
-        System.out.println(gson.toJson(this));
-        Map<String, String> saveMap = new HashMap<>();
-
-        saveMap.put("members", gson.toJson(members));
-        saveMap.put("enemyFactions", gson.toJson(enemyFactions));
-        saveMap.put("officers", gson.toJson(officers));
-        saveMap.put("allyFactions", gson.toJson(allyFactions));
-        saveMap.put("laws", gson.toJson(laws));
-        saveMap.put("name", gson.toJson(name));
-        saveMap.put("vassals", gson.toJson(vassals));
-        saveMap.put("description", gson.toJson(description));
-        saveMap.put("owner", gson.toJson(owner));
-        saveMap.put("location", gson.toJson(this.factionHome));
-        saveMap.put("liege", gson.toJson(liege));
-        saveMap.put("prefix", gson.toJson(prefix));
-        saveMap.put("bonusPower", gson.toJson(bonusPower));
-
-        ArrayList<String> gateList = new ArrayList<>();
-        for (Gate gate : gates) {
-            Map<String, String> map = gate.save();
-            gateList.add(gson.toJson(map));
-        }
-        saveMap.put("factionGates", gson.toJson(gateList));
-
-        saveMap.put("integerFlagValues", gson.toJson(flags.getIntegerValues()));
-        saveMap.put("booleanFlagValues", gson.toJson(flags.getBooleanValues()));
-        saveMap.put("doubleFlagValues", gson.toJson(flags.getDoubleValues()));
-        saveMap.put("stringFlagValues", gson.toJson(flags.getStringValues()));
-
-        return saveMap;
-    }
-
-    private Map<String, String> saveLocation(Gson gson) {
-        Map<String, String> saveMap = new HashMap<>();
-
-        if (factionHome != null && factionHome.getWorld() != null) {
-            /*saveMap.put("worldName", factionHome.getWorld().getName());
-            saveMap.put("x", factionHome.getX());
-            saveMap.put("y", factionHome.getY());
-            saveMap.put("z", factionHome.getZ());*/
-        }
-
-        return saveMap;
-    }
-
-    @Override
-    public void load(Map<String, String> data) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        Type arrayListTypeString = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        Type arrayListTypeUUID = new TypeToken<ArrayList<UUID>>() {
-        }.getType();
-        Type stringToIntegerMapType = new TypeToken<HashMap<String, Integer>>() {
-        }.getType();
-        Type stringToBooleanMapType = new TypeToken<HashMap<String, Boolean>>() {
-        }.getType();
-        Type stringToDoubleMapType = new TypeToken<HashMap<String, Double>>() {
-        }.getType();
-        Type stringToStringMapType = new TypeToken<HashMap<String, String>>() {
-        }.getType();
-
-        members = gson.fromJson(data.get("members"), arrayListTypeUUID);
-        enemyFactions = gson.fromJson(data.get("enemyFactions"), arrayListTypeString);
-        officers = gson.fromJson(data.get("officers"), arrayListTypeUUID);
-        allyFactions = gson.fromJson(data.get("allyFactions"), arrayListTypeString);
-        laws = gson.fromJson(data.get("laws"), arrayListTypeString);
-        name = gson.fromJson(data.get("name"), String.class);
-        description = gson.fromJson(data.get("description"), String.class);
-        owner = UUID.fromString(gson.fromJson(data.get("owner"), String.class));
-        factionHome = loadLocation(gson.fromJson(data.get("location"), stringToStringMapType), gson);
-        liege = gson.fromJson(data.getOrDefault("liege", "none"), String.class);
-        vassals = gson.fromJson(data.getOrDefault("vassals", "[]"), arrayListTypeString);
-        prefix = loadPrefixOrDefault(gson, data, getName());
-        bonusPower = gson.fromJson(data.getOrDefault("bonusPower", "0"), Integer.TYPE);
-
-        ArrayList<String> gateList = gson.fromJson(data.get("factionGates"), arrayListTypeString);
-        if (gateList != null) {
-            for (String item : gateList) {
-                Gate gate = new Gate(medievalFactions, configService);
-                gate.load(item);
-                gates.add(gate);
-            }
-        } else {
-            System.out.println(localeService.get("MissingFactionGatesJSONCollection"));
-        }
-
-        flags.setIntegerValues(gson.fromJson(data.getOrDefault("integerFlagValues", "[]"), stringToIntegerMapType));
-        flags.setBooleanValues(gson.fromJson(data.getOrDefault("booleanFlagValues", "[]"), stringToBooleanMapType));
-        flags.setDoubleValues(gson.fromJson(data.getOrDefault("doubleFlagValues", "[]"), stringToDoubleMapType));
-        flags.setStringValues(gson.fromJson(data.getOrDefault("stringFlagValues", "[]"), stringToStringMapType));
-
-        flags.loadMissingFlagsIfNecessary();
-
-        if (!configService.getBoolean("bonusPowerEnabled") || !((boolean) getFlags().getFlag("acceptBonusPower"))) {
-            bonusPower = 0;
-        }
-    }
-
-    private String loadPrefixOrDefault(Gson gson, Map<String, String> data, String def) {
-        try {
-            return gson.fromJson(data.getOrDefault("prefix", def), String.class);
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    private Location loadLocation(HashMap<String, String> data, Gson gson) {
-        if (data.size() != 0) {
-            World world = getServer().createWorld(new WorldCreator(gson.fromJson(data.get("worldName"), String.class)));
-            double x = gson.fromJson(data.get("x"), Double.TYPE);
-            double y = gson.fromJson(data.get("y"), Double.TYPE);
-            double z = gson.fromJson(data.get("z"), Double.TYPE);
-            return new Location(world, x, y, z);
-        }
-        return null;
     }
 
     // Make the compiler happy
