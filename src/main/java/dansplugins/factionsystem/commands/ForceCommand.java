@@ -16,6 +16,7 @@ import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -46,6 +47,7 @@ public class ForceCommand extends SubCommand {
     private final EphemeralData ephemeralData;
     private final PlayerService playerService;
     private final FactionRepository factionRepository;
+    private final FactionService factionService;
 
     private final String[] commands = new String[]{
             "Save", "Load", "Peace", "Demote", "Join", "Kick", "Power", "Renounce", "Transfer", "RemoveVassal", "Rename", "BonusPower", "Unlock", "Create", "Claim", "Flag"
@@ -65,7 +67,8 @@ public class ForceCommand extends SubCommand {
         MedievalFactions medievalFactions,
         Logger logger,
         PlayerService playerService,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        FactionService factionService
     ) {
         super();
         this.persistentData = persistentData;
@@ -77,6 +80,7 @@ public class ForceCommand extends SubCommand {
         this.factionFactory = factionFactory;
         this.playerService = playerService;
         this.factionRepository = factionRepository;
+        this.factionService = factionService;
         this
             .setNames("force", LOCALE_PREFIX + "CmdForce");
         // Register sub-commands.
@@ -533,7 +537,7 @@ public class ForceCommand extends SubCommand {
         }
 
         // set bonus power
-        faction.setBonusPower(bonusPower);
+        this.factionService.setBonusPower(faction, bonusPower);
 
         // inform sender
         sender.sendMessage(this.translate("&a" + this.localeService.getText("Done")));

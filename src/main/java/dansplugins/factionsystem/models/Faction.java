@@ -27,7 +27,6 @@ public class Faction extends Nation implements Feudal {
     private final ArrayList<Gate> gates = new ArrayList<>();
     @Expose
     private final FactionFlags flags;
-    private final ArrayList<String> attemptedVassalizations = new ArrayList<>();
     @Expose
     private ArrayList<String> vassals = new ArrayList<>();
     @Expose
@@ -40,18 +39,22 @@ public class Faction extends Nation implements Feudal {
     private Location factionHome = null;
     @Expose
     private int bonusPower = 0;
+
     private boolean autoclaim = false;
+    private final ArrayList<String> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
     public Faction(String factionName, UUID owner) {
         this.name = factionName;
         this.owner = owner;
         this.flags = new FactionFlags();
+        this.flags.initializeFlagValues();
     }
 
     public Faction(String factionName) {
         this.name = factionName;
         this.flags = new FactionFlags();
+        this.flags.initializeFlagValues();
     }
 
     // Flags
@@ -243,11 +246,11 @@ public class Faction extends Nation implements Feudal {
     // Power
     // TODO: implement, probably in a service
     public int getCumulativePowerLevel() {
-        return 0;
+        return 9999;
     }
 
     public int getMaximumCumulativePowerLevel() {
-        return 0;
+        return 9999;
     }
 
     public boolean isWeakened() {
@@ -255,11 +258,11 @@ public class Faction extends Nation implements Feudal {
     }
 
     public int calculateCumulativePowerLevelWithVassalContribution() {
-        return 0;
+        return 9999;
     }
 
     public int calculateCumulativePowerLevelWithoutVassalContribution() {
-        return 0;
+        return 9999;
     }
 
     // Chunks

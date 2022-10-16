@@ -22,6 +22,7 @@ import dansplugins.factionsystem.objects.domain.ActivityRecord;
 import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.PowerRecord;
 import dansplugins.factionsystem.objects.domain.War;
+import dansplugins.factionsystem.repositories.ClaimedChunkRepository;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
@@ -65,8 +66,8 @@ public class PersistentData {
     private final EphemeralData ephemeralData;
     private final Logger logger;
     private final FactionRepository factionRepository;
+    private final ClaimedChunkRepository claimedChunkRepository;
     private final InteractionAccessChecker interactionAccessChecker;
-    private final ArrayList<ClaimedChunk> claimedChunks = new ArrayList<>();
     private final ArrayList<PowerRecord> powerRecords = new ArrayList<>();
     private final ArrayList<ActivityRecord> activityRecords = new ArrayList<>();
     private final ArrayList<LockedBlock> lockedBlocks = new ArrayList<>();
@@ -89,7 +90,8 @@ public class PersistentData {
         BlockChecker blockChecker,
         DynmapIntegrationService dynmapService,
         InteractionAccessChecker interactionAccessChecker,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        ClaimedChunkRepository claimedChunkRepository
     ) {
         this.localeService = localeService;
         this.configService = configService;
@@ -103,6 +105,7 @@ public class PersistentData {
         this.interactionAccessChecker = interactionAccessChecker;
         this.blockChecker = blockChecker;
         this.factionRepository = factionRepository;
+        this.claimedChunkRepository = claimedChunkRepository;
     }
 
     public BlockChecker getBlockChecker() {
@@ -386,7 +389,7 @@ public class PersistentData {
 
     public List<ClaimedChunk> getChunksClaimedByFaction(String factionName) {
         List<ClaimedChunk> output = new ArrayList<>();
-        for (ClaimedChunk chunk : claimedChunks) {
+        for (ClaimedChunk chunk : this.claimedChunkRepository.all()) {
             if (chunk.getHolder().equalsIgnoreCase(factionName)) {
                 output.add(chunk);
             }
@@ -434,7 +437,7 @@ public class PersistentData {
         //this.factionRepository.all().forEach(fac -> fac.updateData(oldName, newName));
 
         // Change Claims
-        claimedChunks.stream().filter(cc -> cc.getHolder().equalsIgnoreCase(oldName))
+        this.claimedChunkRepository.all().stream().filter(cc -> cc.getHolder().equalsIgnoreCase(oldName))
                 .forEach(cc -> cc.setHolder(newName));
 
         // Locked Blocks
@@ -797,7 +800,7 @@ public class PersistentData {
          */
         public int getChunksClaimedByFaction(String factionName) {
             int counter = 0;
-            for (ClaimedChunk chunk : claimedChunks) {
+            for (ClaimedChunk chunk : claimedChunkRepository.all()) {
                 if (chunk.getHolder().equalsIgnoreCase(factionName)) {
                     counter++;
                 }
@@ -812,7 +815,7 @@ public class PersistentData {
          * @return A boolean indicating if the chunk is claimed.
          */
         public boolean isClaimed(Chunk chunk) {
-            for (ClaimedChunk claimedChunk : claimedChunks) {
+            for (ClaimedChunk claimedChunk : claimedChunkRepository.all()) {
                 if (claimedChunk.getCoordinates()[0] == chunk.getX() && claimedChunk.getCoordinates()[1] == chunk.getZ() && claimedChunk.getWorldName().equalsIgnoreCase(chunk.getWorld().getName())) {
                     return true;
                 }
@@ -826,7 +829,7 @@ public class PersistentData {
          * @param factionName The name of the faction we are removing all claimed chunks from.
          */
         public void removeAllClaimedChunks(String factionName) {
-            Iterator<ClaimedChunk> itr = claimedChunks.iterator();
+            Iterator<ClaimedChunk> itr = claimedChunkRepository.all().iterator();
 
             while (itr.hasNext()) {
                 ClaimedChunk currentChunk = itr.next();
@@ -954,12 +957,7 @@ public class PersistentData {
          * @return The claimed chunk at the given location. A value of null indicates that the chunk is not claimed.
          */
         private ClaimedChunk getClaimedChunk(int x, int z, String world) {
-            for (ClaimedChunk claimedChunk : claimedChunks) {
-                if (claimedChunk.getCoordinates()[0] == x && claimedChunk.getCoordinates()[1] == z && claimedChunk.getWorldName().equalsIgnoreCase(world)) {
-                    return claimedChunk;
-                }
-            }
-            return null;
+            return claimedChunkRepository.get(x, z, world);
         }
 
         private Set<Chunk> obtainChunks(Chunk initial, int radius) {
@@ -1032,7 +1030,7 @@ public class PersistentData {
                 FactionClaimEvent claimEvent = new FactionClaimEvent(claimantsFaction, claimant, chunk.getChunk());
                 Bukkit.getPluginManager().callEvent(claimEvent);
                 if (!claimEvent.isCancelled()) {
-                    claimedChunks.remove(chunk);
+                    claimedChunkRepository.delete(chunk);
 
                     Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
@@ -1066,8 +1064,7 @@ public class PersistentData {
         private void addClaimedChunk(Chunk chunk, Faction faction, World world) {
             ClaimedChunk newChunk = new ClaimedChunk(chunk);
             newChunk.setHolder(faction.getName());
-            newChunk.setWorld(world.getName());
-            claimedChunks.add(newChunk);
+            claimedChunkRepository.create(newChunk);            
         }
 
         /**
@@ -1102,7 +1099,7 @@ public class PersistentData {
          * @return The claimed chunk if the chunk is claimed, and null if it is not.
          */
         private ClaimedChunk isChunkClaimed(double x, double y, String world) {
-            for (ClaimedChunk chunk : claimedChunks) {
+            for (ClaimedChunk chunk : claimedChunkRepository.all()) {
                 if (x == chunk.getCoordinates()[0] && y == chunk.getCoordinates()[1] && world.equalsIgnoreCase(chunk.getWorldName())) {
                     return chunk;
                 }
@@ -1165,7 +1162,7 @@ public class PersistentData {
                 }
             }
 
-            claimedChunks.remove(chunkToRemove);
+            claimedChunkRepository.delete(chunkToRemove);
         }
 
         /**
@@ -1378,13 +1375,7 @@ public class PersistentData {
         }
 
         private void saveClaimedChunks() {
-            List<Map<String, String>> claimedChunksToSave = new ArrayList<>();
-            for (ClaimedChunk chunk : claimedChunks) {
-                claimedChunksToSave.add(chunk.save());
-            }
-
-            File file = new File(FILE_PATH + CHUNKS_FILE_NAME);
-            writeOutFiles(file, claimedChunksToSave);
+            claimedChunkRepository.persist();
         }
 
         private void savePlayerPowerRecords() {
@@ -1447,14 +1438,7 @@ public class PersistentData {
         }
 
         private void loadClaimedChunks() {
-            claimedChunks.clear();
-
-            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + CHUNKS_FILE_NAME);
-
-            for (Map<String, String> chunkData : data) {
-                ClaimedChunk chunk = new ClaimedChunk(chunkData);
-                claimedChunks.add(chunk);
-            }
+            claimedChunkRepository.load();
         }
 
         private void loadPlayerPowerRecords() {

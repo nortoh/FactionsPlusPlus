@@ -104,9 +104,8 @@ public class PlayerService {
      */
     @SuppressWarnings("deprecation")
     public Faction getPlayerFaction(Object object) {
-        return null;
         // TODO: reimplement using FactionRepository
-        /*if (object instanceof OfflinePlayer) {
+        if (object instanceof OfflinePlayer) {
             return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
         } else if (object instanceof UUID) {
             return this.persistentData.getPlayersFaction((UUID) object);
@@ -120,6 +119,6 @@ public class PlayerService {
                 }
             }
         }
-        throw new IllegalArgumentException(object + " cannot be transferred into a Player");*/
+        throw new IllegalArgumentException(object + " cannot be transferred into a Player");
     }
 }

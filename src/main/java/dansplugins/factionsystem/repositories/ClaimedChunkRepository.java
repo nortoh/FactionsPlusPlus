@@ -23,74 +23,68 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.ClaimedChunk;
 
 @Singleton
-public class FactionRepository {
-    private final ArrayList<Faction> factionStore = new ArrayList<>();
+public class ClaimedChunkRepository {
+    private final ArrayList<ClaimedChunk> claimedChunksStore = new ArrayList<>();
     private final String dataPath;
-    private final static String FILE_NAME = "factions.json";
+    private final static String FILE_NAME = "claimedchunks.json";
 
     @Inject
-    public FactionRepository(@Named("dataFolder") String dataPath) {
+    public ClaimedChunkRepository(@Named("dataFolder") String dataPath) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
     }
 
-    // Load factions
+    // Load claimed chunks
     public void load() {
-        this.factionStore.clear();
+        this.claimedChunksStore.clear();
         try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .serializeNulls()
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            Faction[] jsonFactions = gson.fromJson(reader, Faction[].class);
-            for (Faction faction : jsonFactions) faction.getFlags().loadMissingFlagsIfNecessary();
-            this.factionStore.addAll(Arrays.asList(jsonFactions));
+            this.claimedChunksStore.addAll(Arrays.asList(gson.fromJson(reader, ClaimedChunk[].class)));
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
     }
 
-    // Save a faction after creating
-    public void create(Faction faction) {
-        this.factionStore.add(faction);
+    // Save a claimed chunk
+    public void create(ClaimedChunk chunk) {
+        this.claimedChunksStore.add(chunk);
     }
 
-    // Delete a faction
-    public void delete(Faction faction) {
-        this.factionStore.remove(faction);
-    }
-    public void delete(String factionName) {
-        this.delete(this.get(factionName));
+    // Delete a claimed chunk
+    public void delete(ClaimedChunk chunk) {
+        this.claimedChunksStore.remove(chunk);
     }
 
-    // Retrieve a faction by prefix
-    public Faction getByPrefix(String prefix) {
-        return null;
-    }
-
-    // Retrieve a faction by name
-    public Faction get(String factionName) {
-        for (Faction faction : this.factionStore) {
-            if (faction.getName().equalsIgnoreCase(factionName)) {
-                return faction;
+    // Retrieve a claimed chunk by location
+    public ClaimedChunk get(double x, double z, String world) {
+        for (ClaimedChunk claimedChunk : this.claimedChunksStore) {
+            if (
+                claimedChunk.getCoordinates()[0] == x
+                && claimedChunk.getCoordinates()[1] == z
+                && claimedChunk.getWorldName().equalsIgnoreCase(world)
+            ) {
+                return claimedChunk;
             }
         }
         return null;
     }
 
-    // Retrieve all factions
-    public ArrayList<Faction> all() {
-        return this.factionStore;
+    // Retrieve all claimed chunks
+    public ArrayList<ClaimedChunk> all() {
+        return this.claimedChunksStore;
     }
 
     // Write to file
     public void persist() {
-        List<JsonElement> factionsToSave = new ArrayList<>();
-        for (Faction faction : this.factionStore) {
-            factionsToSave.add(faction.toJsonTree());
+        List<JsonElement> chunksToSave = new ArrayList<>();
+        for (ClaimedChunk chunk : this.claimedChunksStore) {
+            chunksToSave.add(chunk.toJsonTree());
         }
         File file = new File(this.dataPath);
         try {
@@ -100,7 +94,7 @@ public class FactionRepository {
                 .create();
             file.createNewFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(factionsToSave));
+            outputStreamWriter.write(gson.toJson(chunksToSave));
             outputStreamWriter.close();
         } catch (IOException e) {
             // TODO: log here

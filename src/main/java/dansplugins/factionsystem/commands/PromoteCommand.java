@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -35,19 +36,22 @@ public class PromoteCommand extends SubCommand {
     private final LocaleService localeService;
     private final PlayerService playerService;
     private final PersistentData persistentData;
+    private final FactionService factionService;
 
     @Inject
     public PromoteCommand(
         MessageService messageService,
         LocaleService localeService,
         PlayerService playerService,
-        PersistentData persistentData
+        PersistentData persistentData,
+        FactionService factionService
     ) {
         super();
         this.messageService = messageService;
         this.localeService = localeService;
         this.playerService = playerService;
         this.persistentData = persistentData;
+        this.factionService = factionService;
         this
             .setNames("promote", LOCALE_PREFIX + "CmdPromote")
             .requiresPermissions("mf.promote")
@@ -125,7 +129,9 @@ public class PromoteCommand extends SubCommand {
             );
             return;
         }
-        if (this.faction.addOfficer(targetUUID)) {
+        int maxOfficers = this.factionService.calculateMaxOfficers(this.faction);
+        if (this.faction.getOfficerList().size() <= maxOfficers) {
+            this.faction.addOfficer(targetUUID);
             this.playerService.sendMessage(
                 player,
                 "&a" + this.localeService.getText("PlayerPromoted"),
@@ -143,7 +149,7 @@ public class PromoteCommand extends SubCommand {
         } else {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.localeService.getText("PlayerCantBePromotedBecauseOfLimit", this.faction.calculateMaxOfficers()),
+                "&c" + this.localeService.getText("PlayerCantBePromotedBecauseOfLimit", maxOfficers),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerCantBePromotedBecauseOfLimit")).replace("#number#", String.valueOf(this.faction.calculateMaxOfficers())), 
                 true
             );
