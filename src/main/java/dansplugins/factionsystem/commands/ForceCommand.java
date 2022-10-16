@@ -12,7 +12,6 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.*;
-import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.repositories.FactionRepository;
@@ -40,7 +39,6 @@ import java.util.*;
 public class ForceCommand extends SubCommand {
     private final MedievalFactions medievalFactions;
     private final Logger logger;
-    private final FactionFactory factionFactory;
     private final PersistentData persistentData;
     private final LocaleService localeService;
     private final MessageService messageService;
@@ -63,7 +61,6 @@ public class ForceCommand extends SubCommand {
         LocaleService localeService,
         MessageService messageService,
         EphemeralData ephemeralData,
-        FactionFactory factionFactory,
         MedievalFactions medievalFactions,
         Logger logger,
         PlayerService playerService,
@@ -77,7 +74,6 @@ public class ForceCommand extends SubCommand {
         this.ephemeralData = ephemeralData;
         this.medievalFactions = medievalFactions;
         this.logger = logger;
-        this.factionFactory = factionFactory;
         this.playerService = playerService;
         this.factionRepository = factionRepository;
         this.factionService = factionService;

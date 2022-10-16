@@ -13,6 +13,8 @@ import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DataService;
+import dansplugins.factionsystem.services.FactionService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -27,12 +29,22 @@ public class PlaceholderAPI extends PlaceholderExpansion {
     private final MedievalFactions medievalFactions;
     private final PersistentData persistentData;
     private final ConfigService configService;
+    private final FactionService factionService;
+    private final DataService dataService;
 
     @Inject
-    public PlaceholderAPI(MedievalFactions medievalFactions, PersistentData persistentData, ConfigService configService) {
+    public PlaceholderAPI(
+        MedievalFactions medievalFactions,
+        PersistentData persistentData,
+        ConfigService configService,
+        FactionService factionService,
+        DataService dataService
+    ) {
         this.medievalFactions = medievalFactions;
         this.persistentData = persistentData;
         this.configService = configService;
+        this.factionService = factionService;
+        this.dataService = dataService;
     }
 
     @Override
@@ -84,11 +96,11 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_total_claimed_chunks")) {
             // The total chunks claimed for the Faction that the Player is in.
-            return String.valueOf(faction.getClaimedChunks().size());
+            return String.valueOf(this.dataService.getClaimedChunksForFaction(faction).size());
         }
         if (id.equalsIgnoreCase("faction_cumulative_power")) {
             // The cumulative power (power+bonus_power) for the Faction that the Player is in.
-            return String.valueOf(faction.getCumulativePowerLevel());
+            return String.valueOf(this.factionService.getCumulativePowerLevel(faction));
         }
         if (id.equalsIgnoreCase("faction_bonus_power")) {
             // The bonus power for the Faction that the Player is in.
@@ -96,7 +108,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_power")) {
             // The power (cumulative-bonus_power) for the Faction that the Player is in.
-            return String.valueOf(faction.getCumulativePowerLevel() - faction.getBonusPower());
+            return String.valueOf(this.factionService.getCumulativePowerLevel(faction) - faction.getBonusPower());
         }
         if (id.equalsIgnoreCase("faction_ally_count")) {
             // The total amount of Allies the Faction has that the Player is in.

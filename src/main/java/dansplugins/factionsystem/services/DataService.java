@@ -1,5 +1,7 @@
 package dansplugins.factionsystem.services;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.google.inject.Inject;
@@ -66,5 +68,15 @@ public class DataService {
 
     public PlayerRecord getPlayerRecord(UUID playerUUID) {
         return this.playerRecordRepository.get(playerUUID);
+    }
+
+    public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
+        List<ClaimedChunk> chunks = new ArrayList<>();
+        for (ClaimedChunk chunk : this.claimedChunkRepository.all()) {
+            if (chunk.getHolder().equalsIgnoreCase(faction.getName())) {
+                chunks.add(chunk);
+            }
+        }
+        return chunks;
     }
 }

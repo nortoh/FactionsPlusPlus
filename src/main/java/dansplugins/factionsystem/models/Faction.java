@@ -21,6 +21,8 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 
+
+// TODO: updateDate function to handle renames
 public class Faction extends Nation implements Feudal {
     @Expose
     @JsonAdapter(ArrayListGateAdapter.class)
@@ -117,11 +119,6 @@ public class Faction extends Nation implements Feudal {
 
     public boolean isLiege(String faction) {
         return this.liege.equalsIgnoreCase(faction);
-    }
-
-    // TODO: implement, probably in a service
-    public String getTopLiege() {
-        return null;
     }
 
     // Gates
@@ -241,39 +238,5 @@ public class Faction extends Nation implements Feudal {
             }
         }
         list.remove(toRemove);
-    }
-
-    // Power
-    // TODO: implement, probably in a service
-    public int getCumulativePowerLevel() {
-        return 9999;
-    }
-
-    public int getMaximumCumulativePowerLevel() {
-        return 9999;
-    }
-
-    public boolean isWeakened() {
-        return false;
-    }
-
-    public int calculateCumulativePowerLevelWithVassalContribution() {
-        return 9999;
-    }
-
-    public int calculateCumulativePowerLevelWithoutVassalContribution() {
-        return 9999;
-    }
-
-    // Chunks
-    // TODO: implement, probably in a service
-    public List<ClaimedChunk> getClaimedChunks() {
-        return new ArrayList<>();
-    }
-
-    // Officers
-    // TODO: implement, probably in a service
-    public int calculateMaxOfficers() {
-        return 5;
     }
 }

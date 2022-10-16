@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.services.DataService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -32,7 +32,7 @@ public class InfoCommand extends SubCommand {
     private final MessageService messageService;
     private final Messenger messenger;
     private final PersistentData persistentData;
-    private final FactionRepository factionRepository;
+    private final DataService dataService;
 
     @Inject
     public InfoCommand(
@@ -41,7 +41,7 @@ public class InfoCommand extends SubCommand {
         MessageService messageService,
         Messenger messenger,
         PersistentData persistentData,
-        FactionRepository factionRepository
+        DataService dataService
     ) {
         super();
         this.playerService = playerService;
@@ -49,7 +49,7 @@ public class InfoCommand extends SubCommand {
         this.messageService = messageService;
         this.messenger = messenger;
         this.persistentData = persistentData;
-        this.factionRepository = factionRepository;
+        this.dataService = dataService;
         this
             .setNames("info", LOCALE_PREFIX + "CmdInfo");
     }
@@ -97,7 +97,7 @@ public class InfoCommand extends SubCommand {
                 return;
             }
         } else {
-            target = this.factionRepository.get(String.join(" ", args));
+            target = this.dataService.getFaction(String.join(" ", args));
             if (target == null) {
                 this.playerService.sendMessage(
                     sender,
@@ -108,7 +108,7 @@ public class InfoCommand extends SubCommand {
                 return;
             }
         }
-        this.messenger.sendFactionInfo(sender, target, target.getClaimedChunks().size());
+        this.messenger.sendFactionInfo(sender, target, this.dataService.getClaimedChunksForFaction(target).size());
     }
 
     /**
