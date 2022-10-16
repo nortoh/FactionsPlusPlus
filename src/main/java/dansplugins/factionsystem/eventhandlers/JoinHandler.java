@@ -4,11 +4,13 @@
  */
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
-import dansplugins.factionsystem.objects.domain.ActivityRecord;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.utils.Logger;
@@ -25,6 +27,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class JoinHandler implements Listener {
     private final PersistentData persistentData;
     private final LocaleService localeService;
@@ -33,6 +36,7 @@ public class JoinHandler implements Listener {
     private final Messenger messenger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
 
+    @Inject
     public JoinHandler(PersistentData persistentData, LocaleService localeService, ConfigService configService, Logger logger, Messenger messenger, TerritoryOwnerNotifier territoryOwnerNotifier) {
         this.persistentData = persistentData;
         this.localeService = localeService;
@@ -46,9 +50,9 @@ public class JoinHandler implements Listener {
     public void handle(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (dataExistsForPlayer(player)) {
-            ActivityRecord activityRecord = persistentData.getPlayerActivityRecord(player.getUniqueId());
-            activityRecord.incrementLogins();
-            handlePowerDecay(activityRecord, player, event);
+            PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+            record.incrementLogins();
+            handlePowerDecay(record, player, event);
         } else {
             createRecordsForPlayer(player);
             handleRandomFactionAssignmentIfNecessary(player);
@@ -58,24 +62,24 @@ public class JoinHandler implements Listener {
         informPlayerIfTheirFactionIsWeakened(player);
     }
 
-    private void handlePowerDecay(ActivityRecord activityRecord, Player player, PlayerJoinEvent event) {
+    private void handlePowerDecay(PlayerRecord record, Player player, PlayerJoinEvent event) {
         double newPower = getNewPower(player);
 
-        if (activityRecord.getLastLogout() != null && activityRecord.getMinutesSinceLastLogout() > 1) {
-            player.sendMessage(ChatColor.GREEN + String.format(localeService.get("WelcomeBackLastLogout"), event.getPlayer().getName(), activityRecord.getTimeSinceLastLogout()));
+        if (record.getLastLogout() != null && record.getMinutesSinceLastLogout() > 1) {
+            player.sendMessage(ChatColor.GREEN + String.format(localeService.get("WelcomeBackLastLogout"), event.getPlayer().getName(), record.getTimeSinceLastLogout()));
         }
 
-        if (activityRecord.getPowerLost() > 0) {
-            player.sendMessage(ChatColor.RED + String.format(localeService.get("PowerHasDecayed"), activityRecord.getPowerLost(), newPower));
+        if (record.getPowerLost() > 0) {
+            player.sendMessage(ChatColor.RED + String.format(localeService.get("PowerHasDecayed"), record.getPowerLost(), newPower));
         }
 
-        activityRecord.setPowerLost(0);
+        record.setPowerLost(0);
     }
 
     private double getNewPower(Player player) {
-        PowerRecord powerRecord = persistentData.getPlayersPowerRecord(player.getUniqueId());
+        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
 
-        double newPower = powerRecord.getPower();
+        double newPower = record.getPower();
         if (newPower < 0) {
             return 0;
         }
@@ -89,22 +93,12 @@ public class JoinHandler implements Listener {
     }
 
     private void createRecordsForPlayer(Player player) {
-        createPowerRecordForPlayer(player);
-        createActivityRecordForPlayer(player);
+        PlayerRecord record = new PlayerRecord(player.getUniqueId(), 1);
+        this.persistentData.addPlayerRecord(record);
     }
 
     private boolean dataExistsForPlayer(Player player) {
-        return persistentData.hasPowerRecord(player.getUniqueId()) && persistentData.hasActivityRecord(player.getUniqueId());
-    }
-
-    private void createActivityRecordForPlayer(Player player) {
-        ActivityRecord newRecord = new ActivityRecord(player.getUniqueId(), configService, 1);
-        persistentData.addActivityRecord(newRecord);
-    }
-
-    private void createPowerRecordForPlayer(Player player) {
-        PowerRecord newRecord = new PowerRecord(player.getUniqueId(), configService, persistentData, configService.getInt("initialPowerLevel"));
-        persistentData.addPowerRecord(newRecord);
+        return this.persistentData.hasPlayerRecord(player.getUniqueId());
     }
 
     private void assignPlayerToRandomFaction(Player player) {

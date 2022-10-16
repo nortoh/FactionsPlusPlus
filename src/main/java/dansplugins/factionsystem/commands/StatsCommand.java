@@ -4,13 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
-import dansplugins.factionsystem.MedievalFactions;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.ChatColor;
@@ -20,21 +19,33 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class StatsCommand extends SubCommand {
-    private MedievalFactions medievalFactions;
-    private PersistentData persistentData;
 
-    public StatsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService, MedievalFactions medievalFactions) {
-        super(new String[]{
-                "stats", LOCALE_PREFIX + "CmdStats"
-        }, false, false, false, false, new String[] {}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
-        this.medievalFactions = medievalFactions;
+    private final ConfigService configService;
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final MessageService messageService;
+
+    @Inject
+    public StatsCommand(
+        ConfigService configService,
+        PersistentData persistentData,
+        PlayerService playerService,
+        MessageService messageService
+    ) {
+        super();
+        this.configService = configService;
         this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this
+            .setNames("stats", LOCALE_PREFIX + "CmdStats");
     }
 
     @Override
     public void execute(Player player, String[] args, String key) {
-        execute((CommandSender) player, args, key);
+        this.execute((CommandSender) player, args, key);
     }
 
     @Override

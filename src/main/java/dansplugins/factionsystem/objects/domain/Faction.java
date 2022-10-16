@@ -4,19 +4,28 @@
  */
 package dansplugins.factionsystem.objects.domain;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.factories.FactionFlagFactory;
 import dansplugins.factionsystem.objects.helper.FactionFlags;
-import dansplugins.factionsystem.objects.inherited.Nation;
-import dansplugins.factionsystem.objects.inherited.specification.Feudal;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
+import dansplugins.factionsystem.jsonadapters.LocationAdapter;
+import dansplugins.factionsystem.jsonadapters.ArrayListGateAdapter;
+import dansplugins.factionsystem.models.Nation;
+import dansplugins.factionsystem.models.Gate;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
@@ -28,32 +37,55 @@ import java.util.*;
 
 import static org.bukkit.Bukkit.getServer;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
+
 /**
  * @author Daniel McCoy Stephenson
  */
-public class Faction extends Nation implements Feudal, Savable {
+public class Faction extends Nation {
     private final ConfigService configService;
     private final LocaleService localeService;
-    private final DynmapIntegrator dynmapIntegrator;
     private final Logger logger;
     private final PersistentData persistentData;
     private final MedievalFactions medievalFactions;
     private final PlayerService playerService;
 
+    @Expose
+    @JsonAdapter(ArrayListGateAdapter.class)
     private final ArrayList<Gate> gates = new ArrayList<>();
+    @Expose
     private final FactionFlags flags;
     private final ArrayList<String> attemptedVassalizations = new ArrayList<>();
+    @Expose
     private ArrayList<String> vassals = new ArrayList<>();
+    @Expose
     private String liege = "none";
+    @Expose
     private String prefix = "none";
+    @Expose
+    @JsonAdapter(LocationAdapter.class)
+    @SerializedName("location")
     private Location factionHome = null;
+    @Expose
     private int bonusPower = 0;
     private boolean autoclaim = false;
 
-    public Faction(String initialName, UUID creator, ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PersistentData persistentData, MedievalFactions medievalFactions, PlayerService playerService) {
+    @AssistedInject
+    public Faction(
+        @Assisted String initialName,
+        @Assisted UUID creator,
+        ConfigService configService,
+        LocaleService localeService,
+        Logger logger,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions,
+        PlayerService playerService,
+        FactionFlagFactory factionFlagFactory
+    ) {
         this.configService = configService;
         this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
         this.logger = logger;
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
@@ -61,81 +93,63 @@ public class Faction extends Nation implements Feudal, Savable {
         setName(initialName);
         setOwner(creator);
         prefix = initialName;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, this.playerService);
+        flags = factionFlagFactory.create();
         flags.initializeFlagValues();
     }
 
-    public Faction(ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PersistentData persistentData, MedievalFactions medievalFactions, PlayerService playerService, String initialName) {
+    @AssistedInject
+    public Faction(
+        @Assisted Map<String, String> data,
+        ConfigService configService,
+        LocaleService localeService,
+        Logger logger,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions,
+        PlayerService playerService,
+        FactionFlagFactory factionFlagFactory
+    ) {
         this.configService = configService;
         this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
+        this.logger = logger;
+        this.persistentData = persistentData;
+        this.medievalFactions = medievalFactions;
+        this.playerService = playerService;
+        flags = factionFlagFactory.create();
+    }
+
+    @AssistedInject
+    public Faction(
+        @Assisted String initialName,
+        ConfigService configService,
+        LocaleService localeService,
+        Logger logger,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions,
+        PlayerService playerService,
+        FactionFlagFactory factionFlagFactory
+    ) {
+        this.configService = configService;
+        this.localeService = localeService;
         this.logger = logger;
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
         this.playerService = playerService;
         setName(initialName);
         prefix = initialName;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, this.playerService);
+        flags = factionFlagFactory.create();
         flags.initializeFlagValues();
     }
 
-    public Faction(Map<String, String> data, ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PersistentData persistentData, MedievalFactions medievalFactions, PlayerService playerService) {
-        this.configService = configService;
-        this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
-        this.logger = logger;
-        this.persistentData = persistentData;
-        this.medievalFactions = medievalFactions;
-        this.playerService = playerService;
-        flags = new FactionFlags(configService, localeService, dynmapIntegrator, logger, this.playerService);
-        this.load(data);
-    }
 
-    public int getTotalGates() {
-        return gates.size();
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public void setPrefix(String newPrefix) {
-        prefix = newPrefix;
-    }
-
-    public Location getFactionHome() {
-        return factionHome;
-    }
-
-    public void setFactionHome(Location l) {
-        factionHome = l;
-    }
-
-    public FactionFlags getFlags() {
-        return flags;
-    }
-
-    public int getBonusPower() {
-        return bonusPower;
-    }
-
+    // IMPLEMENT THIS LOGIC IN FACTIONSERVICE
     public void setBonusPower(int i) {
         if (!configService.getBoolean("bonusPowerEnabled") || !((boolean) getFlags().getFlag("acceptBonusPower"))) {
             return;
         }
-        bonusPower = i;
-    }
-
-    public void toggleAutoClaim() {
-        autoclaim = !autoclaim;
-    }
-
-    public boolean getAutoClaimStatus() {
-        return autoclaim;
     }
 
     public String getTopLiege() {
-        Faction topLiege = persistentData.getFaction(liege);
+        /*Faction topLiege = persistentData.getFaction(liege);
         String liegeName = liege;
         while (topLiege != null) {
             topLiege = persistentData.getFaction(topLiege.getLiege());
@@ -143,14 +157,15 @@ public class Faction extends Nation implements Feudal, Savable {
                 liegeName = topLiege.getName();
             }
         }
-        return liegeName;
+        return liegeName;*/
+        return null;
     }
 
     public int calculateCumulativePowerLevelWithoutVassalContribution() {
         int powerLevel = 0;
         for (UUID playerUUID : members) {
             try {
-                powerLevel += persistentData.getPlayersPowerRecord(playerUUID).getPower();
+                powerLevel += this.persistentData.getPlayerRecord(playerUUID).getPower();
             } catch (Exception e) {
                 System.out.println(localeService.get("ErrorPlayerPowerRecordForUUIDNotFound"));
             }
@@ -159,7 +174,7 @@ public class Faction extends Nation implements Feudal, Savable {
     }
 
     public int calculateCumulativePowerLevelWithVassalContribution() {
-        int vassalContribution = 0;
+        /*int vassalContribution = 0;
         double percentage = configService.getDouble("vassalContributionPercentageMultiplier");
         for (String factionName : vassals) {
             Faction vassalFaction = persistentData.getFaction(factionName);
@@ -167,7 +182,8 @@ public class Faction extends Nation implements Feudal, Savable {
                 vassalContribution += vassalFaction.getCumulativePowerLevel() * percentage;
             }
         }
-        return calculateCumulativePowerLevelWithoutVassalContribution() + vassalContribution;
+        return calculateCumulativePowerLevelWithoutVassalContribution() + vassalContribution;*/
+        return 0;
     }
 
     public int getCumulativePowerLevel() {
@@ -186,7 +202,7 @@ public class Faction extends Nation implements Feudal, Savable {
 
         for (UUID playerUUID : members) {
             try {
-                maxPower += persistentData.getPlayersPowerRecord(playerUUID).maxPower();
+                maxPower += this.persistentData.getPlayerRecord(playerUUID).maxPower();
             } catch (Exception e) {
                 System.out.println(localeService.get("ErrorPlayerPowerRecordForUUIDNotFound"));
             }
@@ -232,73 +248,7 @@ public class Faction extends Nation implements Feudal, Savable {
         }
     }
 
-    public void addGate(Gate gate) {
-        gates.add(gate);
-    }
-
-    public void removeGate(Gate gate) {
-        gates.remove(gate);
-    }
-
-    public ArrayList<Gate> getGates() {
-        return gates;
-    }
-
-    public boolean hasGateTrigger(Block block) {
-        for (Gate g : gates) {
-            if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equalsIgnoreCase(block.getWorld().getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public ArrayList<Gate> getGatesForTrigger(Block block) {
-        ArrayList<Gate> gateList = new ArrayList<>();
-        for (Gate g : gates) {
-            if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equalsIgnoreCase(block.getWorld().getName())) {
-                gateList.add(g);
-            }
-        }
-        return gateList;
-    }
-
-    public boolean isVassal(String faction) {
-        return (containsIgnoreCase(vassals, faction));
-    }
-
-    public boolean isLiege() {
-        return vassals.size() > 0;
-    }
-
-    public String getLiege() {
-        return liege;
-    }
-
-    public void setLiege(String newLiege) {
-        liege = newLiege;
-    }
-
-    public boolean hasLiege() {
-        return !liege.equalsIgnoreCase("none");
-    }
-
-    public boolean isLiege(String faction) {
-        return liege.equalsIgnoreCase(faction);
-    }
-
-    public void addVassal(String name) {
-        if (!containsIgnoreCase(vassals, name)) {
-            vassals.add(name);
-        }
-    }
-
-    public void removeVassal(String name) {
-        removeIfContainsIgnoreCase(vassals, name);
-    }
-
+    // IMPLEMENT THIS LOGIC IN FACTION SERVICE
     public boolean addOfficer(UUID newOfficer) {
         if (officers.size() < calculateMaxOfficers() && !officers.contains(newOfficer)) {
             officers.add(newOfficer);
@@ -324,31 +274,6 @@ public class Faction extends Nation implements Feudal, Savable {
     }
 
 
-    public String getVassalsSeparatedByCommas() {
-        StringBuilder toReturn = new StringBuilder();
-        for (int i = 0; i < vassals.size(); i++) {
-            toReturn.append(vassals.get(i));
-            if (i != vassals.size() - 1) {
-                toReturn.append(", ");
-            }
-        }
-        return toReturn.toString();
-    }
-
-    public void addAttemptedVassalization(String factionName) {
-        if (!containsIgnoreCase(attemptedVassalizations, factionName)) {
-            attemptedVassalizations.add(factionName);
-        }
-    }
-
-    public boolean hasBeenOfferedVassalization(String factionName) {
-        return containsIgnoreCase(attemptedVassalizations, factionName);
-    }
-
-    public void removeAttemptedVassalization(String factionName) {
-        removeIfContainsIgnoreCase(attemptedVassalizations, factionName);
-    }
-
     private boolean containsIgnoreCase(ArrayList<String> list, String str) {
         for (String string : list) {
             if (string.equalsIgnoreCase(str)) {
@@ -369,135 +294,35 @@ public class Faction extends Nation implements Feudal, Savable {
         list.remove(toRemove);
     }
 
-    public void clearVassals() {
-        vassals.clear();
-    }
-
-    public int getNumVassals() {
-        return vassals.size();
-    }
-
-    public ArrayList<String> getVassals() {
-        return vassals;
-    }
-
-    @Override
-    public Map<String, String> save() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Map<String, String> saveMap = new HashMap<>();
-
-        saveMap.put("members", gson.toJson(members));
-        saveMap.put("enemyFactions", gson.toJson(enemyFactions));
-        saveMap.put("officers", gson.toJson(officers));
-        saveMap.put("allyFactions", gson.toJson(allyFactions));
-        saveMap.put("laws", gson.toJson(laws));
-        saveMap.put("name", gson.toJson(name));
-        saveMap.put("vassals", gson.toJson(vassals));
-        saveMap.put("description", gson.toJson(description));
-        saveMap.put("owner", gson.toJson(owner));
-        saveMap.put("location", gson.toJson(saveLocation(gson)));
-        saveMap.put("liege", gson.toJson(liege));
-        saveMap.put("prefix", gson.toJson(prefix));
-        saveMap.put("bonusPower", gson.toJson(bonusPower));
-
-        ArrayList<String> gateList = new ArrayList<>();
-        for (Gate gate : gates) {
-            Map<String, String> map = gate.save();
-            gateList.add(gson.toJson(map));
-        }
-        saveMap.put("factionGates", gson.toJson(gateList));
-
-        saveMap.put("integerFlagValues", gson.toJson(flags.getIntegerValues()));
-        saveMap.put("booleanFlagValues", gson.toJson(flags.getBooleanValues()));
-        saveMap.put("doubleFlagValues", gson.toJson(flags.getDoubleValues()));
-        saveMap.put("stringFlagValues", gson.toJson(flags.getStringValues()));
-
-        return saveMap;
-    }
-
-    private Map<String, String> saveLocation(Gson gson) {
-        Map<String, String> saveMap = new HashMap<>();
-
-        if (factionHome != null && factionHome.getWorld() != null) {
-            saveMap.put("worldName", gson.toJson(factionHome.getWorld().getName()));
-            saveMap.put("x", gson.toJson(factionHome.getX()));
-            saveMap.put("y", gson.toJson(factionHome.getY()));
-            saveMap.put("z", gson.toJson(factionHome.getZ()));
-        }
-
-        return saveMap;
-    }
-
-    @Override
-    public void load(Map<String, String> data) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        Type arrayListTypeString = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        Type arrayListTypeUUID = new TypeToken<ArrayList<UUID>>() {
-        }.getType();
-        Type stringToIntegerMapType = new TypeToken<HashMap<String, Integer>>() {
-        }.getType();
-        Type stringToBooleanMapType = new TypeToken<HashMap<String, Boolean>>() {
-        }.getType();
-        Type stringToDoubleMapType = new TypeToken<HashMap<String, Double>>() {
-        }.getType();
-        Type stringToStringMapType = new TypeToken<HashMap<String, String>>() {
-        }.getType();
-
-        members = gson.fromJson(data.get("members"), arrayListTypeUUID);
-        enemyFactions = gson.fromJson(data.get("enemyFactions"), arrayListTypeString);
-        officers = gson.fromJson(data.get("officers"), arrayListTypeUUID);
-        allyFactions = gson.fromJson(data.get("allyFactions"), arrayListTypeString);
-        laws = gson.fromJson(data.get("laws"), arrayListTypeString);
-        name = gson.fromJson(data.get("name"), String.class);
-        description = gson.fromJson(data.get("description"), String.class);
-        owner = UUID.fromString(gson.fromJson(data.get("owner"), String.class));
-        factionHome = loadLocation(gson.fromJson(data.get("location"), stringToStringMapType), gson);
-        liege = gson.fromJson(data.getOrDefault("liege", "none"), String.class);
-        vassals = gson.fromJson(data.getOrDefault("vassals", "[]"), arrayListTypeString);
-        prefix = loadPrefixOrDefault(gson, data, getName());
-        bonusPower = gson.fromJson(data.getOrDefault("bonusPower", "0"), Integer.TYPE);
-
-        ArrayList<String> gateList = gson.fromJson(data.get("factionGates"), arrayListTypeString);
-        if (gateList != null) {
-            for (String item : gateList) {
-                Gate gate = new Gate(medievalFactions, configService);
-                gate.load(item);
-                gates.add(gate);
-            }
-        } else {
-            System.out.println(localeService.get("MissingFactionGatesJSONCollection"));
-        }
-
-        flags.setIntegerValues(gson.fromJson(data.getOrDefault("integerFlagValues", "[]"), stringToIntegerMapType));
-        flags.setBooleanValues(gson.fromJson(data.getOrDefault("booleanFlagValues", "[]"), stringToBooleanMapType));
-        flags.setDoubleValues(gson.fromJson(data.getOrDefault("doubleFlagValues", "[]"), stringToDoubleMapType));
-        flags.setStringValues(gson.fromJson(data.getOrDefault("stringFlagValues", "[]"), stringToStringMapType));
-
-        flags.loadMissingFlagsIfNecessary();
-
-        if (!configService.getBoolean("bonusPowerEnabled") || !((boolean) getFlags().getFlag("acceptBonusPower"))) {
-            bonusPower = 0;
-        }
-    }
-
-    private String loadPrefixOrDefault(Gson gson, Map<String, String> data, String def) {
-        try {
-            return gson.fromJson(data.getOrDefault("prefix", def), String.class);
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    private Location loadLocation(HashMap<String, String> data, Gson gson) {
-        if (data.size() != 0) {
-            World world = getServer().createWorld(new WorldCreator(gson.fromJson(data.get("worldName"), String.class)));
-            double x = gson.fromJson(data.get("x"), Double.TYPE);
-            double y = gson.fromJson(data.get("y"), Double.TYPE);
-            double z = gson.fromJson(data.get("z"), Double.TYPE);
-            return new Location(world, x, y, z);
-        }
-        return null;
-    }
+    // Make the compiler happy
+    public String getPrefix() { return this.prefix; }
+    public void setPrefix(String s) { this.prefix = s; }
+    public boolean hasGateTrigger(Block b) { return false; }
+    public boolean isLiege() { return false; }
+    public boolean isLiege(String string) { return false; }
+    public FactionFlags getFlags() { return this.flags; }
+    public String getLiege() { return this.liege; }
+    public boolean hasLiege() { return false; }
+    public void addVassal(String string) { }
+    public void setLiege(String string) { }
+    public ArrayList<Gate> getGates() { return this.gates; }
+    public void removeGate(Gate gate) { }
+    public boolean isVassal(String string) { return false; }
+    public void clearVassals() { }
+    public Location getFactionHome() { return this.factionHome; }
+    public int getNumVassals() { return 0; }
+    public int getTotalGates() { return 0; }
+    public int getBonusPower() { return 0; }
+    public void toggleAutoClaim() { }
+    public void removeVassal(String string) { }
+    public boolean hasBeenOfferedVassalization(String s) { return false; }
+    public void removeAttemptedVassalization(String s) { }
+    public ArrayList<String> getVassals() { return this.vassals; }
+    public void addGate(Gate g) { }
+    public String getVassalsSeparatedByCommas() { return ""; }
+    public JsonElement toJsonTree() { return new JsonObject(); }
+    public void addAttemptedVassalization(String s) { }
+    public void setFactionHome(Location l) { }
+    public ArrayList<Gate> getGatesForTrigger(Block b) { return new ArrayList<Gate>(); }
+    public boolean getAutoClaimStatus() { return false; }
 }

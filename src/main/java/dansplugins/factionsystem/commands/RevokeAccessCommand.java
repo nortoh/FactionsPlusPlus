@@ -4,11 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -24,12 +24,30 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class RevokeAccessCommand extends SubCommand {
 
-    public RevokeAccessCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "revokeaccess", "ra", LOCALE_PREFIX + "CmdRevokeAccess"
-        }, true, new String[] {"mf.revokeaccess"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final LocaleService localeService;
+    private final PlayerService playerService;
+    private final EphemeralData ephemeralData;
+    private final MessageService messageService;
+
+    @Inject
+    public RevokeAccessCommand(
+        LocaleService localeService,
+        PlayerService playerService,
+        EphemeralData ephemeralData,
+        MessageService messageService
+    ) {
+        super();
+        this.localeService = localeService;
+        this.playerService = playerService;
+        this.ephemeralData = ephemeralData;
+        this.messageService = messageService;
+        this
+            .setNames("revokeaccess", "ra", LOCALE_PREFIX + "CmdRevokeAccess")
+            .requiresPermissions("mf.revokeaccess")
+            .isPlayerCommand();
     }
 
     /**
@@ -44,7 +62,7 @@ public class RevokeAccessCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageRevokeAccess"),
+                "&c" + this.localeService.getText("UsageRevokeAccess"),
                 "UsageRevokeAccess",
                 false
             );
@@ -54,7 +72,7 @@ public class RevokeAccessCommand extends SubCommand {
             this.ephemeralData.getPlayersRevokingAccess().remove(player.getUniqueId());
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("Cancelled"),
+                "&c" + this.localeService.getText("Cancelled"),
                 "Cancelled",
                 false
             );
@@ -63,7 +81,7 @@ public class RevokeAccessCommand extends SubCommand {
         if (this.ephemeralData.getPlayersRevokingAccess().containsKey(player.getUniqueId())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlreadyEnteredRevokeAccess"),
+                "&c" + this.localeService.getText("AlreadyEnteredRevokeAccess"),
                 "AlreadyEnteredRevokeAccess",
                 false
             );
@@ -74,7 +92,7 @@ public class RevokeAccessCommand extends SubCommand {
         if (targetUUID == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("PlayerNotFound"),
+                "&c" + this.localeService.getText("PlayerNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                 true
             );
@@ -83,7 +101,7 @@ public class RevokeAccessCommand extends SubCommand {
         if (targetUUID == player.getUniqueId()) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotRevokeAccessFromSelf"),
+                "&c" + this.localeService.getText("CannotRevokeAccessFromSelf"),
                 "CannotRevokeAccessFromSelf",
                 false
             );
@@ -94,7 +112,7 @@ public class RevokeAccessCommand extends SubCommand {
         );
         this.playerService.sendMessage(
             player,
-            "&a" + this.getText("RightClickRevokeAccess"),
+            "&a" + this.localeService.getText("RightClickRevokeAccess"),
             "RightClickRevokeAccess",
             false)
         ;

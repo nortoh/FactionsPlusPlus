@@ -1,11 +1,16 @@
 package dansplugins.factionsystem.utils;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+@Singleton
 public class PlayerTeleporter {
     private final Logger logger;
 
+    @Inject
     public PlayerTeleporter(Logger logger) {
         this.logger = logger;
     }

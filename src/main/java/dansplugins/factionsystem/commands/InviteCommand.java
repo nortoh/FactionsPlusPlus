@@ -4,12 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -30,14 +30,33 @@ import static org.bukkit.Bukkit.getServer;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class InviteCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
+    private final PersistentData persistentData;
     private final MedievalFactions medievalFactions;
 
-    public InviteCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "invite", LOCALE_PREFIX + "CmdInvite"
-        }, true, true, new String[] {"mf.invite"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public InviteCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions
+    ) {
+        super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
+        this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
+        this
+            .setNames("invite", LOCALE_PREFIX + "CmdInvite")
+            .requiresPermissions("mf.invite")
+            .requiresPlayerInFaction()
+            .isPlayerCommand();
     }
 
     /**
@@ -50,7 +69,7 @@ public class InviteCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            player.sendMessage(this.translate("&c" + this.getText("UsageInvite")));
+            player.sendMessage(this.translate("&c" + this.localeService.getText("UsageInvite")));
             return;
         }
         if ((boolean) this.faction.getFlags().getFlag("mustBeOfficerToInviteOthers")) {
@@ -58,7 +77,7 @@ public class InviteCommand extends SubCommand {
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
                 this.playerService.sendMessage(
                     player, 
-                    "&c" + this.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
                     "AlertMustBeOwnerOrOfficerToUseCommand", 
                     false
                 );
@@ -70,7 +89,7 @@ public class InviteCommand extends SubCommand {
         if (playerUUID == null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("PlayerNotFound"),
+                "&c" + this.localeService.getText("PlayerNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                 true
             );
@@ -82,7 +101,7 @@ public class InviteCommand extends SubCommand {
             if (target == null) {
                 this.playerService.sendMessage(
                     player, 
-                    "&c" + this.getText("PlayerNotFound"),
+                    "&c" + this.localeService.getText("PlayerNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                     true
                 );
@@ -92,7 +111,7 @@ public class InviteCommand extends SubCommand {
         if (this.persistentData.isInFaction(playerUUID)) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("PlayerAlreadyInFaction"),
+                "&c" + this.localeService.getText("PlayerAlreadyInFaction"),
                 "PlayerAlreadyInFaction", 
                 false
             );
@@ -103,7 +122,7 @@ public class InviteCommand extends SubCommand {
         if (target.isOnline() && target.getPlayer() != null) {
             this.playerService.sendMessage(
                     target.getPlayer(),
-                    "&a" + this.getText("AlertBeenInvited", this.faction.getName(), this.faction.getName()),
+                    "&a" + this.localeService.getText("AlertBeenInvited", this.faction.getName(), this.faction.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("AlertBeenInvited")).replace("#name#", this.faction.getName()),
                     true
             );
@@ -117,7 +136,7 @@ public class InviteCommand extends SubCommand {
             if (tmp.isOnline() && tmp.getPlayer() != null) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("InvitationExpired", this.faction.getName()),
+                    "&c" + this.localeService.getText("InvitationExpired", this.faction.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("InvitationExpired")).replace("#name#", this.faction.getName()),
                     true
                 );

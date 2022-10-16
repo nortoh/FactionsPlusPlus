@@ -4,14 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,15 +21,20 @@ import java.util.stream.IntStream;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class HelpCommand extends SubCommand {
     private static final int LAST_PAGE = 7;
     private final HashMap<Integer, List<String>> helpPages = new HashMap<>();
 
-    public HelpCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "help", LOCALE_PREFIX + "CmdHelp"
-        }, false, new String[] {"mf.help"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final LocaleService localeService;
 
+    @Inject
+    public HelpCommand(LocaleService localeService) {
+        super();
+        this.localeService = localeService;
+        this
+            .setNames("help", LOCALE_PREFIX + "CmdHelp")
+            .requiresPermissions("mf.help");
         // there should be 9 commands per page
         this.helpPages.put(1, Arrays.asList("Help", "List", "Info", "Members", "Join", "Leave", "Create", "Invite", "Desc"));
         this.helpPages.put(2, Arrays.asList("FlagsShow", "FlagsSet", "Kick", "Transfer", "Disband", "DeclareWar", "MakePeace", "Invoke", "Claim"));
@@ -71,8 +73,8 @@ public class HelpCommand extends SubCommand {
         if (page <= 0) {
             page = 1; // Lower Limit to 0
         }
-        sender.sendMessage(this.translate("&b&l" + this.getText("CommandsPage" + page, LAST_PAGE)));
-        this.helpPages.get(page).forEach(line -> sender.sendMessage(this.translate("&b" + this.getText("Help" + line))));
+        sender.sendMessage(this.translate("&b&l" + this.localeService.getText("CommandsPage" + page, LAST_PAGE)));
+        this.helpPages.get(page).forEach(line -> sender.sendMessage(this.translate("&b" + this.localeService.getText("Help" + line))));
     }
 
     /**

@@ -4,11 +4,14 @@
  */
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.LockedBlock;
+import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.models.LockedBlock;
 import dansplugins.factionsystem.services.*;
 import dansplugins.factionsystem.utils.InteractionAccessChecker;
 import dansplugins.factionsystem.utils.extended.BlockChecker;
@@ -40,6 +43,7 @@ import java.util.Objects;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class InteractionHandler implements Listener {
     private final PersistentData persistentData;
     private final InteractionAccessChecker interactionAccessChecker;
@@ -52,6 +56,7 @@ public class InteractionHandler implements Listener {
     private final EphemeralData ephemeralData;
     private final GateService gateService;
 
+    @Inject
     public InteractionHandler(PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, MedievalFactions medievalFactions, LockService lockService, EphemeralData ephemeralData, GateService gateService, PlayerService playerService, MessageService messageService) {
         this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;

@@ -4,13 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionRenameEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -25,16 +25,37 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class RenameCommand extends SubCommand {
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
     private final MedievalFactions medievalFactions;
     private final Logger logger;
 
-    public RenameCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "rename"
-        }, true, true, false, true, new String[] {"mf.rename"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public RenameCommand(
+        PersistentData persistentData,
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService,
+        MedievalFactions medievalFactions,
+        Logger logger
+    ) {
+        super();
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.messageService = messageService;
         this.medievalFactions = medievalFactions;
         this.logger = logger;
+        this
+            .setNames("rename")
+            .requiresPermissions("mf.rename")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**
@@ -49,7 +70,7 @@ public class RenameCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageRename"),
+                "&c" + this.localeService.getText("UsageRename"),
                 "UsageRename",
                 false
             );
@@ -60,17 +81,17 @@ public class RenameCommand extends SubCommand {
         if (newName.length() > config.getInt("factionMaxNameLength")) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNameTooLong"),
+                "&c" + this.localeService.getText("FactionNameTooLong"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNameTooLong")).replace("#name#", newName),
                 true
             );
             return;
         }
         final String oldName = this.faction.getName();
-        if (this.getFaction(newName) != null) {
+        if (this.persistentData.getFaction(newName) != null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionAlreadyExists"),
+                "&c" + this.localeService.getText("FactionAlreadyExists"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionAlreadyExists")).replace("#name#", newName),
                 true
             );
@@ -87,7 +108,7 @@ public class RenameCommand extends SubCommand {
         this.faction.setName(newName);
         this.playerService.sendMessage(
             player,
-            "&a" + this.getText("FactionNameChanged"),
+            "&a" + this.localeService.getText("FactionNameChanged"),
             "FactionNameChanged",
             false
         );

@@ -4,9 +4,12 @@
  */
 package dansplugins.factionsystem.utils.extended;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -25,26 +28,16 @@ import java.util.Random;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class Scheduler {
-    private final Logger logger;
-    private final LocaleService localeService;
-    private final MedievalFactions medievalFactions;
-    private final PersistentData persistentData;
-    private final ConfigService configService;
-    private final PlayerTeleporter playerTeleporter;
-    private final PlayerService playerService;
-    private final MessageService messageService;
-
-    public Scheduler(Logger logger, LocaleService localeService, MedievalFactions medievalFactions, PersistentData persistentData, ConfigService configService, PlayerTeleporter playerTeleporter, PlayerService playerService, MessageService messageService) {
-        this.logger = logger;
-        this.localeService = localeService;
-        this.medievalFactions = medievalFactions;
-        this.persistentData = persistentData;
-        this.configService = configService;
-        this.playerTeleporter = playerTeleporter;
-        this.playerService = playerService;
-        this.messageService = messageService;
-    }
+    @Inject private Logger logger;
+    @Inject private LocaleService localeService;
+    @Inject private MedievalFactions medievalFactions;
+    @Inject private PersistentData persistentData;
+    @Inject private ConfigService configService;
+    @Inject private PlayerTeleporter playerTeleporter;
+    @Inject private PlayerService playerService;
+    @Inject private MessageService messageService;
 
     public void scheduleAutosave() {
         logger.debug(localeService.get("SchedulingHourlyAutoSave"));
@@ -109,7 +102,7 @@ public class Scheduler {
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {
-        final int teleport_delay = configService.getInt("teleportDelay");
+        int teleport_delay = configService.getInt("teleportDelay");
         playerService.sendMessage(player, ChatColor.AQUA + "Teleporting in " + teleport_delay + " seconds..."
                 , Objects.requireNonNull(messageService.getLanguage().getString("Teleport")).replace("#time#", String.valueOf(teleport_delay)), true);
         DelayedTeleportTask delayedTeleportTask = new DelayedTeleportTask(player, destinationLocation);
@@ -123,9 +116,9 @@ public class Scheduler {
     }
 
     private class DelayedTeleportTask extends BukkitRunnable {
-        private final Player player;
-        private final Location initialLocation;
-        private final Location destinationLocation;
+        private Player player;
+        private Location initialLocation;
+        private Location destinationLocation;
 
         public DelayedTeleportTask(Player player, Location destinationLocation) {
             this.player = player;

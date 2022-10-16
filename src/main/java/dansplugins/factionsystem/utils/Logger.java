@@ -6,6 +6,9 @@ package dansplugins.factionsystem.utils;
 
 import dansplugins.factionsystem.MedievalFactions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,12 +20,11 @@ import java.util.logging.Level;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class Logger {
-    private final MedievalFactions medievalFactions;
+    @Inject private MedievalFactions medievalFactions;
 
-    public Logger(MedievalFactions medievalFactions) {
-        this.medievalFactions = medievalFactions;
-    }
+    public Logger() { }
 
     /**
      * Log a debug message to the debug log file if the debug flag is enabled.
@@ -30,7 +32,7 @@ public class Logger {
      * @param message The message to log.
      */
     public void debug(String message) {
-        if (medievalFactions.isDebugEnabled()) {
+        if (this.medievalFactions.isDebugEnabled()) {
             logToFile(message, "log.debug.txt");
         }
     }

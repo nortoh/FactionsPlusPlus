@@ -4,11 +4,11 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -20,12 +20,30 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class CheckClaimCommand extends SubCommand {
 
-    public CheckClaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "checkclaim", "cc", LOCALE_PREFIX + "CmdCheckClaim"
-        }, true, new String[] {"mf.checkclaim"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
+
+    @Inject
+    public CheckClaimCommand(
+        PlayerService playerService,
+        PersistentData persistentData,
+        LocaleService localeService,
+        MessageService messageService
+    ) {
+        super();
+        this.localeService = localeService;
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this
+            .setNames("checkclaim", "cc", LOCALE_PREFIX + "CmdCheckClaim")
+            .requiresPermissions("mf.checkclaim")
+            .isPlayerCommand();
     }
 
     /**
@@ -37,12 +55,12 @@ public class CheckClaimCommand extends SubCommand {
      */
     @Override
     public void execute(Player player, String[] args, String key) {
-        final String result = this.chunkDataAccessor.checkOwnershipAtPlayerLocation(player);
+        final String result = this.persistentData.getChunkDataAccessor().checkOwnershipAtPlayerLocation(player);
 
         if (result.equals("unclaimed")) {
-            this.playerService.sendMessage(player, "&a" + this.getText("LandIsUnclaimed"), "LandIsUnclaimed", false);
+            this.playerService.sendMessage(player, "&a" + this.localeService.getText("LandIsUnclaimed"), "LandIsUnclaimed", false);
         } else {
-            this.playerService.sendMessage(player, "&c" + this.getText("LandClaimedBy"), Objects.requireNonNull(this.messageService.getLanguage().getString("LandClaimedBy"))
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("LandClaimedBy"), Objects.requireNonNull(this.messageService.getLanguage().getString("LandClaimedBy"))
                     .replace("#player#", result), true);
         }
     }

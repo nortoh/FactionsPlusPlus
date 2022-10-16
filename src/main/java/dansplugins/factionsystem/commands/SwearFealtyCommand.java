@@ -4,12 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -23,12 +24,35 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class SwearFealtyCommand extends SubCommand {
 
-    public SwearFealtyCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "swearfealty", LOCALE_PREFIX + "CmdSwearFealty", "sf"
-        }, true, true, false, true, new String[] {"mf.swearfealty"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    private final LocaleService localeService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final FactionRepository factionRepository;
+
+    @Inject
+    public SwearFealtyCommand(
+        LocaleService localeService,
+        MessageService messageService,
+        PersistentData persistentData,
+        PlayerService playerService,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.localeService = localeService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("swearfealty", "sf", LOCALE_PREFIX + "CmdSwearFealty")
+            .requiresPermissions("mf.swearfealty")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**
@@ -43,17 +67,17 @@ public class SwearFealtyCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageSwearFealty"),
+                "&c" + this.localeService.getText("UsageSwearFealty"),
                 "UsageSwearFealty",
                 false
             );
             return;
         }
-        final Faction target = this.getFaction(String.join(" ", args));
+        final Faction target = this.factionRepository.get(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -62,7 +86,7 @@ public class SwearFealtyCommand extends SubCommand {
         if (!target.hasBeenOfferedVassalization(faction.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertNotOfferedVassalizationBy"),
+                "&c" + this.localeService.getText("AlertNotOfferedVassalizationBy"),
                 "AlertNotOfferedVassalizationBy",
                 false
             );
@@ -78,7 +102,7 @@ public class SwearFealtyCommand extends SubCommand {
         // inform target faction that they have a new vassal
         this.messageFaction(
             target,
-            this.translate("&a" + this.getText("AlertFactionHasNewVassal", faction.getName())),
+            this.translate("&a" + this.localeService.getText("AlertFactionHasNewVassal", faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasNewVassal"))
                 .replace("#name#", faction.getName())
         );
@@ -86,7 +110,7 @@ public class SwearFealtyCommand extends SubCommand {
         // inform players faction that they have a new liege
         this.messageFaction(
             faction,
-            this.translate("&a" + this.getText("AlertFactionHasBeenVassalized", target.getName())),
+            this.translate("&a" + this.localeService.getText("AlertFactionHasBeenVassalized", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasBeenVassalized"))
                 .replace("#name#", target.getName())
         );

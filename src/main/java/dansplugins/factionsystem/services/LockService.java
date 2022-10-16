@@ -4,10 +4,13 @@
  */
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.LockedBlock;
+import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.models.LockedBlock;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -24,6 +27,7 @@ import java.util.UUID;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class LockService {
     private final PersistentData persistentData;
     private final LocaleService localeService;
@@ -32,6 +36,7 @@ public class LockService {
     private final MessageService messageService;
     private final EphemeralData ephemeralData;
 
+    @Inject
     public LockService(PersistentData persistentData, LocaleService localeService, BlockChecker blockChecker, PlayerService playerService, MessageService messageService, EphemeralData ephemeralData) {
         this.persistentData = persistentData;
         this.localeService = localeService;

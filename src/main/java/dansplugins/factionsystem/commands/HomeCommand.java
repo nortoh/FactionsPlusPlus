@@ -4,12 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -21,14 +21,30 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class HomeCommand extends SubCommand {
     private final Scheduler scheduler;
+    private final LocaleService localeService;
+    private final PlayerService playerService;
+    private final PersistentData persistentData;
 
-    public HomeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Scheduler scheduler, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "home", LOCALE_PREFIX + "CmdHome"
-        }, true, true, new String[] {"mf.home"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public HomeCommand(
+        PlayerService playerService,
+        LocaleService localeService, 
+        PersistentData persistentData,
+        Scheduler scheduler
+    ) {
+        super();
+        this.playerService = playerService;
+        this.localeService = localeService;
         this.scheduler = scheduler;
+        this.persistentData = persistentData;
+        this
+            .setNames("home", LOCALE_PREFIX + "CmdHome")
+            .requiresPermissions("mf.home")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
@@ -43,26 +59,26 @@ public class HomeCommand extends SubCommand {
         if (this.faction.getFactionHome() == null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionHomeNotSetYet"),
+                "&c" + this.localeService.getText("FactionHomeNotSetYet"),
                 "FactionHomeNotSetYet", 
                 false
             );
             return;
         }
         final Chunk home_chunk;
-        if (!this.chunkDataAccessor.isClaimed(home_chunk = this.faction.getFactionHome().getChunk())) {
+        if (!this.persistentData.getChunkDataAccessor().isClaimed(home_chunk = this.faction.getFactionHome().getChunk())) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("HomeIsInUnclaimedChunk"),
+                "&c" + this.localeService.getText("HomeIsInUnclaimedChunk"),
                 "HomeIsInUnclaimedChunk", 
                 false
             );
             return;
         }
-        ClaimedChunk chunk = this.chunkDataAccessor.getClaimedChunk(home_chunk);
+        ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(home_chunk);
         if (chunk == null || chunk.getHolder() == null) {
             this.playerService.sendMessage(
-                player, "&c" + this.getText("HomeIsInUnclaimedChunk"),
+                player, "&c" + this.localeService.getText("HomeIsInUnclaimedChunk"),
                 "HomeIsInUnclaimedChunk", 
                 false
             );
@@ -71,7 +87,7 @@ public class HomeCommand extends SubCommand {
         if (!chunk.getHolder().equalsIgnoreCase(this.faction.getName())) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("HomeClaimedByAnotherFaction"),
+                "&c" + this.localeService.getText("HomeClaimedByAnotherFaction"),
                 "HomeClaimedByAnotherFaction", 
                 false
             );

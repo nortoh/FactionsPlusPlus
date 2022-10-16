@@ -4,13 +4,14 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -26,14 +27,34 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class JoinCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
     private final Logger logger;
+    private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
-    public JoinCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "join", LOCALE_PREFIX + "CmdJoin"
-        }, true, new String[] {"mf.join"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public JoinCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        Logger logger,
+        FactionRepository factionRepository
+    ) {
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
+        this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this.logger = logger;
+        this
+            .setNames("join", LOCALE_PREFIX + "CmdJoin")
+            .requiresPermissions("mf.join")
+            .isPlayerCommand();
     }
 
     /**
@@ -48,7 +69,7 @@ public class JoinCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageJoin"),
+                "&c" + this.localeService.getText("UsageJoin"),
                 "UsageJoin",
                 false
             );
@@ -57,17 +78,17 @@ public class JoinCommand extends SubCommand {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("AlertAlreadyInFaction"),
+                "&c" + this.localeService.getText("AlertAlreadyInFaction"),
                 "AlertAlreadyInFaction",
                 false
             );
             return;
         }
-        final Faction target = this.getFaction(String.join(" ", args));
+        final Faction target = this.factionRepository.get(String.join(" ", args));
         if (target == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                 true
             );
@@ -90,14 +111,14 @@ public class JoinCommand extends SubCommand {
         }
         this.messageFaction(
             target,
-            "&a" + this.getText("HasJoined", player.getName(), target.getName()),
+            "&a" + this.localeService.getText("HasJoined", player.getName(), target.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasJoined"))
                 .replace("#name#", player.getName())
                 .replace("#faction#", target.getName())
         );
         target.addMember(player.getUniqueId());
         target.uninvite(player.getUniqueId());
-        player.sendMessage(this.translate("&a" + this.getText("AlertJoinedFaction")));
+        player.sendMessage(this.translate("&a" + this.localeService.getText("AlertJoinedFaction")));
     }
 
     /**

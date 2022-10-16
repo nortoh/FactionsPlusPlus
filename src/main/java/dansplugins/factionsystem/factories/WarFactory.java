@@ -4,16 +4,21 @@
  */
 package dansplugins.factionsystem.factories;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.objects.domain.War;
 
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class WarFactory {
     private final PersistentData persistentData;
 
+    @Inject
     public WarFactory(PersistentData persistentData) {
         this.persistentData = persistentData;
     }

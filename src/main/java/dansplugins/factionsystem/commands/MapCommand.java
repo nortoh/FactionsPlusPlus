@@ -4,17 +4,14 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.FontMetrics;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.ClaimedChunk;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.models.Faction;
 import org.bukkit.Chunk;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,13 +23,20 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class MapCommand extends SubCommand {
     private final char[] map_keys = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789abcdeghjmnopqrsuvwxyz?".toCharArray();
 
-    public MapCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "map", "showmap", "displaymap"
-        }, true, new String[] {"mf.map"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final PersistentData persistentData;
+
+    @Inject
+    public MapCommand(PersistentData persistentData) {
+        super();
+        this.persistentData = persistentData;
+        this
+            .setNames("map", "showmap", "displaymap")
+            .requiresPermissions("mf.map")
+            .isPlayerCommand();
     }
 
     /**
@@ -62,8 +66,8 @@ public class MapCommand extends SubCommand {
             final StringBuilder line = new StringBuilder();
             for (int x = topLeftX; x <= bottomRightX; x++) {
                 Chunk tmp = center.getWorld().getChunkAt(x, z);
-                if (this.chunkDataAccessor.isClaimed(tmp)) {
-                    ClaimedChunk chunk = this.chunkDataAccessor.getClaimedChunk(tmp);
+                if (this.persistentData.getChunkDataAccessor().isClaimed(tmp)) {
+                    ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(tmp);
                     printedHolders.put(chunk.getHolder(), printedHolders.getOrDefault(chunk.getHolder(), 0) + 1);
                     int index = this.getIndex(chunk.getHolder(), printedHolders);
                     char map_key = index == -1 ? '§' : map_keys[index];

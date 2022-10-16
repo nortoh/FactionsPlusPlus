@@ -4,12 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -24,12 +25,33 @@ import java.util.stream.IntStream;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class LawsCommand extends SubCommand {
 
-    public LawsCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "laws", LOCALE_PREFIX + "CmdLaws"
-        }, true, new String[] {"mf.laws"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final LocaleService localeService;
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
+
+    @Inject
+    public LawsCommand(
+        LocaleService localeService,
+        PlayerService playerService,
+        MessageService messageService,
+        PersistentData persistentData,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.localeService = localeService;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("laws", LOCALE_PREFIX + "CmdLaws")
+            .requiresPermissions("mf.laws")
+            .isPlayerCommand();
     }
 
     /**
@@ -43,11 +65,11 @@ public class LawsCommand extends SubCommand {
     public void execute(Player player, String[] args, String key) {
         final Faction target;
         if (args.length == 0) {
-            target = this.getPlayerFaction(player);
+            target = this.playerService.getPlayerFaction(player);
             if (target == null) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertMustBeInFactionToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand"),
                     "AlertMustBeInFactionToUseCommand",
                     false
                 );
@@ -56,18 +78,18 @@ public class LawsCommand extends SubCommand {
             if (target.getNumLaws() == 0) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertNoLaws"),
+                    "&c" + this.localeService.getText("AlertNoLaws"),
                     "AlertNoLaws",
                     false
                 );
                 return;
             }
         } else {
-            target = this.getFaction(String.join(" ", args));
+            target = this.factionRepository.get(String.join(" ", args));
             if (target == null) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("FactionNotFound"),
+                    "&c" + this.localeService.getText("FactionNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                     true
                 );
@@ -76,7 +98,7 @@ public class LawsCommand extends SubCommand {
             if (target.getNumLaws() == 0) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("FactionDoesNotHaveLaws"),
+                    "&c" + this.localeService.getText("FactionDoesNotHaveLaws"),
                     "FactionDoesNotHaveLaws",
                     false
                 );
@@ -85,7 +107,7 @@ public class LawsCommand extends SubCommand {
         }
         this.playerService.sendMessage(
             player,
-            "&b" + this.getText("LawsTitle", target.getName()),
+            "&b" + this.localeService.getText("LawsTitle", target.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("LawsTitle")).replace("#name#", target.getName()),
             true
         );

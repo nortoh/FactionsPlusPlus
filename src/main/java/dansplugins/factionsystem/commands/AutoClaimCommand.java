@@ -4,29 +4,38 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.services.LocaleService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class AutoClaimCommand extends SubCommand {
+
+    private final PlayerService playerService;
+    private final LocaleService localeService;
 
     /**
      * Constructor to initialise a Command.
      */
-    public AutoClaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "autoclaim", "AC", LOCALE_PREFIX + "CmdAutoClaim"
-        }, true, true, false, true, new String[] {"mf.autoclaim"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public AutoClaimCommand(PlayerService playerService, LocaleService localeService) {
+        super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this
+            .setNames("autoclaim", "AC", LOCALE_PREFIX + "CmdAutoClaim")
+            .requiresPermissions("mf.autoclaim")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**
@@ -39,7 +48,7 @@ public class AutoClaimCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         this.faction.toggleAutoClaim();
-        this.playerService.sendMessage(player, "&b" + getText("AutoclaimToggled"), "AutoclaimToggled", false);
+        this.playerService.sendMessage(player, "&b" + this.localeService.getText("AutoclaimToggled"), "AutoclaimToggled", false);
     }
 
     /**

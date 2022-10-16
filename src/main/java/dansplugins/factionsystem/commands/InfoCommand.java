@@ -4,12 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -24,14 +25,33 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class InfoCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
     private final Messenger messenger;
+    private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
-    public InfoCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Messenger messenger, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "info", LOCALE_PREFIX + "CmdInfo"
-        }, false, new String[] {"mf.info"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public InfoCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService,
+        Messenger messenger,
+        PersistentData persistentData,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.messageService = messageService;
         this.messenger = messenger;
+        this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("info", LOCALE_PREFIX + "CmdInfo");
     }
 
     /**
@@ -60,28 +80,28 @@ public class InfoCommand extends SubCommand {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
                     sender,
-                    this.getText("OnlyPlayersCanUseCommand"),
+                    this.localeService.getText("OnlyPlayersCanUseCommand"),
                     "OnlyPlayersCanUseCommand",
                     false
                 );
                 return;
             }
-            target = this.getPlayerFaction(sender);
+            target = this.playerService.getPlayerFaction(sender);
             if (target == null) {
                 this.playerService.sendMessage(
                     sender,
-                    "&c" + this.getText("AlertMustBeInFactionToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand"),
                     "AlertMustBeInFactionToUseCommand",
                     false
                 );
                 return;
             }
         } else {
-            target = getFaction(String.join(" ", args));
+            target = this.factionRepository.get(String.join(" ", args));
             if (target == null) {
                 this.playerService.sendMessage(
                     sender,
-                    "&c" + this.getText("FactionNotFound"),
+                    "&c" + this.localeService.getText("FactionNotFound"),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
                     true
                 );

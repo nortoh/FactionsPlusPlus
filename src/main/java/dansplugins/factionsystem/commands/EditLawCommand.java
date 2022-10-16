@@ -4,12 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -23,12 +23,27 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class EditLawCommand extends SubCommand {
 
-    public EditLawCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "editlaw", "el", LOCALE_PREFIX + "CmdEditLaw"
-        }, true, true, false, true, new String[] {"mf.editlaw"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+    private final LocaleService localeService;
+
+    @Inject
+    public EditLawCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, PersistentData persistentData) {
+        super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.localeService = localeService;
+        this
+            .setNames("editlaw", "el", LOCALE_PREFIX + "CmdEditLaw")
+            .requiresPermissions("mf.editlaw")
+            .requiresPlayerInFaction()
+            .requiresFactionOwner()
+            .isPlayerCommand();
     }
 
     /**
@@ -44,7 +59,7 @@ public class EditLawCommand extends SubCommand {
         if (lawToEdit < 0 || lawToEdit >= this.faction.getLaws().size()) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("UsageEditLaw"),
+                "&c" + this.localeService.getText("UsageEditLaw"),
                 "UsageEditLaw",
                 false
             );
@@ -56,7 +71,7 @@ public class EditLawCommand extends SubCommand {
         if (this.faction.editLaw(lawToEdit, editedLaw)) {
             this.playerService.sendMessage(
                 player,
-                "&a" + this.getText("LawEdited"),
+                "&a" + this.localeService.getText("LawEdited"),
                 "LawEdited",
                 false
             );

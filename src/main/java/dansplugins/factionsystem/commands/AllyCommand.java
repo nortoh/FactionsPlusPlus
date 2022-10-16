@@ -4,12 +4,14 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import dansplugins.factionsystem.annotations.PostConstruct;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -24,15 +26,37 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class AllyCommand extends SubCommand {
+    protected final MessageService messageService;
+    protected final PlayerService playerService;
+    protected final PersistentData persistentData;
+    protected final LocaleService localeService;
+    protected final FactionRepository factionRepository;
 
     /**
      * Constructor to initialise a Command.
      */
-    public AllyCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "ally", LOCALE_PREFIX + "CmdAlly"
-        }, true, true, true, false, new String[] {"mf.ally"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public AllyCommand(
+        MessageService messageService,
+        PlayerService playerService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.messageService = messageService;
+        this.playerService = playerService;
+        this.persistentData = persistentData;
+        this.localeService = localeService;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("ally", LOCALE_PREFIX + "CmdAlly")
+            .requiresPermissions("mf.ally")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOfficer();
     }
 
     /**
@@ -45,29 +69,29 @@ public class AllyCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + getText("UsageAlly"), "UsageAlly", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageAlly"), "UsageAlly", false);
             return;
         }
 
         // retrieve the Faction from the given arguments
-        final Faction otherFaction = this.getFaction(String.join(" ", args));
+        final Faction otherFaction = this.factionRepository.get(String.join(" ", args));
 
         // the faction needs to exist to ally
         if (otherFaction == null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("FactionNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
                     .replace("#faction#", String.join(" ", args)), true);
             return;
         }
 
         // the faction can't be itself
         if (otherFaction == this.faction) {
-            this.playerService.sendMessage(player, "&c" + this.getText("CannotAllyWithSelf"), "CannotAllyWithSelf", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("CannotAllyWithSelf"), "CannotAllyWithSelf", false);
             return;
         }
 
         // no need to allow them to ally if they're already allies
         if (this.faction.isAlly(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&c" + this.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
             return;
         }
 
@@ -77,7 +101,7 @@ public class AllyCommand extends SubCommand {
         }
 
         if (this.faction.isRequestedAlly(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&c" + this.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
             return;
         }
 
@@ -86,7 +110,7 @@ public class AllyCommand extends SubCommand {
 
         this.messageFaction(
                 this.faction,
-                this.translate("&a" + getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
+                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
                         .replace("#faction_a#", this.faction.getName())
                         .replace("#faction_b#", otherFaction.getName())
@@ -94,7 +118,7 @@ public class AllyCommand extends SubCommand {
 
         this.messageFaction(
                 otherFaction,
-                this.translate("&a" + getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
+                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
                         .replace("#faction_a#", this.faction.getName())
                         .replace("#faction_b#", otherFaction.getName())
@@ -108,14 +132,14 @@ public class AllyCommand extends SubCommand {
             // message player's faction
             this.messageFaction(
                 this.faction, 
-                this.translate("&a" + getText("AlertNowAlliedWith", otherFaction.getName())), 
+                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", otherFaction.getName())), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", otherFaction.getName())
             );
 
             // message target faction
             this.messageFaction(
                 otherFaction, 
-                this.translate("&a" + this.getText("AlertNowAlliedWith", this.faction.getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", this.faction.getName())
+                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", this.faction.getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", this.faction.getName())
             );
 
             // remove alliance requests
@@ -144,7 +168,8 @@ public class AllyCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
-        final List<String> factionsAllowedtoAlly = new ArrayList<>();
+        // TODO: reimp
+        /*final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> playerAllies = playerFaction.getAllies();
@@ -154,7 +179,7 @@ public class AllyCommand extends SubCommand {
                 }
             }
             return TabCompleteTools.filterStartingWith(args[0], factionsAllowedtoAlly);
-        }
+        }*/
         return null;
     }
 }

@@ -4,9 +4,12 @@
  */
 package dansplugins.factionsystem.eventhandlers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.utils.extended.Messenger;
 import org.bukkit.ChatColor;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class ChatHandler implements Listener {
     private final PersistentData persistentData;
     private final ConfigService configService;
@@ -31,6 +35,7 @@ public class ChatHandler implements Listener {
     private String prefix;
     private String message;
 
+    @Inject
     public ChatHandler(PersistentData persistentData, ConfigService configService, EphemeralData ephemeralData, Messenger messenger) {
         this.persistentData = persistentData;
         this.configService = configService;

@@ -4,14 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -22,12 +21,22 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class ListCommand extends SubCommand {
 
-    public ListCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "list", LOCALE_PREFIX + "CmdList"
-        }, false, new String[] {"mf.list"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final PersistentData persistentData;
+
+    @Inject
+    public ListCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData) {
+        super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.persistentData = persistentData;
+        this
+            .setNames("list", LOCALE_PREFIX + "CmdList")
+            .requiresPermissions("mf.list");
     }
 
     /**
@@ -54,7 +63,7 @@ public class ListCommand extends SubCommand {
         if (this.persistentData.getNumFactions() == 0) {
             this.playerService.sendMessage(
                 sender, 
-                "&b" + this.getText("CurrentlyNoFactions"),
+                "&b" + this.localeService.getText("CurrentlyNoFactions"),
                 "CurrentlyNoFactions", 
                 false
             );
@@ -62,7 +71,7 @@ public class ListCommand extends SubCommand {
         }
         this.playerService.sendMessage(
             sender, 
-            "&b&l" + this.getText("FactionsTitle"),
+            "&b&l" + this.localeService.getText("FactionsTitle"),
             "FactionsTitle", 
             false
         );
@@ -73,7 +82,7 @@ public class ListCommand extends SubCommand {
             final Faction temp = sortableFaction.getFaction();
             sender.sendMessage(ChatColor.AQUA + String.format("%-25s %10s %10s %10s", temp.getName(), "P: " +
                     temp.getCumulativePowerLevel(), "M: " + temp.getPopulation(), "L: " +
-                    this.chunkDataAccessor.getChunksClaimedByFaction(temp.getName())));
+                    this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())));
         }
     }
 }

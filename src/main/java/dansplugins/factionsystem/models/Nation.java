@@ -2,22 +2,26 @@
   Copyright (c) 2022 Daniel McCoy Stephenson
   GPL3 License
  */
-package dansplugins.factionsystem.objects.inherited;
+package dansplugins.factionsystem.models;
 
-import dansplugins.factionsystem.objects.inherited.specification.Diplomatic;
-import dansplugins.factionsystem.objects.inherited.specification.Lawful;
+import dansplugins.factionsystem.models.interfaces.Diplomatic;
+import dansplugins.factionsystem.models.interfaces.Lawful;
 
 import java.util.ArrayList;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * @author Daniel McCoy Stephenson
  */
 public class Nation extends Group implements Diplomatic, Lawful {
+    @Expose
     protected ArrayList<String> allyFactions = new ArrayList<>();
     protected ArrayList<String> attemptedAlliances = new ArrayList<>();
+    @Expose
     protected ArrayList<String> enemyFactions = new ArrayList<>();
     protected ArrayList<String> attemptedTruces = new ArrayList<>();
-
+    @Expose
     protected ArrayList<String> laws = new ArrayList<>();
 
     @Override

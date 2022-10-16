@@ -1,27 +1,31 @@
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
+
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Sends messages to players and the console.
  */
+@Singleton
 public class PlayerService {
-    private final ConfigService configService;
-    private final MessageService messageService;
-
-    /**
-     * Constructor for the PlayerService class.
-     * @param configService The ConfigService instance.
-     * @param messageService The MessageService instance.
-     */
-    public PlayerService(ConfigService configService, MessageService messageService) {
-        this.configService = configService;
-        this.messageService = messageService;
-    }
+    @Inject private ConfigService configService;
+    @Inject private MessageService messageService;
+    @Inject private PersistentData persistentData;
+    @Inject private FactionRepository factionRepository;
 
     /**
      * Decide which message to send to the player.
@@ -85,5 +89,36 @@ public class PlayerService {
      */
     public String colorize(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
+    }
+
+    /**
+     * Method to obtain a Player faction from an object.
+     * <p>
+     * This method can accept a UUID, Player, OfflinePlayer and a String (name or UUID).<br>
+     * If the type isn't found, an exception is thrown.
+     * </p>
+     *
+     * @param object to obtain the Player faction from.
+     * @return {@link Faction}
+     * @throws IllegalArgumentException when the object isn't compatible.
+     */
+    @SuppressWarnings("deprecation")
+    public Faction getPlayerFaction(Object object) {
+        // TODO: reimplement using FactionRepository
+        if (object instanceof OfflinePlayer) {
+            return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
+        } else if (object instanceof UUID) {
+            return this.persistentData.getPlayersFaction((UUID) object);
+        } else if (object instanceof String) {
+            try {
+                return this.persistentData.getPlayersFaction(UUID.fromString((String) object));
+            } catch (Exception e) {
+                OfflinePlayer player = Bukkit.getOfflinePlayer((String) object);
+                if (player.hasPlayedBefore()) {
+                    return this.persistentData.getPlayersFaction(player.getUniqueId());
+                }
+            }
+        }
+        throw new IllegalArgumentException(object + " cannot be transferred into a Player");
     }
 }

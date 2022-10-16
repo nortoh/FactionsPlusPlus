@@ -4,8 +4,10 @@
  */
 package dansplugins.factionsystem.objects.helper;
 
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import com.google.inject.Inject;
+
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.ColorConversion;
@@ -17,6 +19,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * @author Daniel McCoy Stephenson
  * In order to add a new faction flag to this class, the following methods need to be altered:
@@ -27,20 +31,25 @@ import java.util.HashMap;
 public class FactionFlags {
     private final ConfigService configService;
     private final LocaleService localeService;
-    private final DynmapIntegrator dynmapIntegrator;
+    private final DynmapIntegrationService dynmapService;
     private final Logger logger;
     private final PlayerService playerService;
 
     private final ArrayList<String> flagNames = new ArrayList<>();
+    @Expose
     private HashMap<String, Integer> integerValues = new HashMap<>();
+    @Expose
     private HashMap<String, Boolean> booleanValues = new HashMap<>();
+    @Expose
     private HashMap<String, Double> doubleValues = new HashMap<>();
+    @Expose
     private HashMap<String, String> stringValues = new HashMap<>();
 
-    public FactionFlags(ConfigService configService, LocaleService localeService, DynmapIntegrator dynmapIntegrator, Logger logger, PlayerService playerService) {
+    @Inject
+    public FactionFlags(ConfigService configService, LocaleService localeService, DynmapIntegrationService dynmapService, Logger logger, PlayerService playerService) {
         this.configService = configService;
         this.localeService = localeService;
-        this.dynmapIntegrator = dynmapIntegrator;
+        this.dynmapService = dynmapService;
         this.logger = logger;
         this.playerService = playerService;
         initializeFlagNames();
@@ -187,7 +196,7 @@ public class FactionFlags {
             }
 
             if (flag.equals("dynmapTerritoryColor")) {
-                dynmapIntegrator.updateClaims(); // update dynmap to reflect color change
+                this.dynmapService.updateClaimsIfAble(); // update dynmap to reflect color change
             }
         } else {
             player.sendMessage(ChatColor.RED + String.format(localeService.get("WasntFound"), flag));

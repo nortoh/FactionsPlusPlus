@@ -2,25 +2,38 @@
   Copyright (c) 2022 Daniel McCoy Stephenson
   GPL3 License
  */
-package dansplugins.factionsystem.objects.inherited;
+package dansplugins.factionsystem.models;
 
 import org.bukkit.entity.Player;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+import dansplugins.factionsystem.jsonadapters.UUIDAdapter;
+import dansplugins.factionsystem.jsonadapters.ArrayListUUIDAdapter;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
 import static org.bukkit.Bukkit.getServer;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+
 /**
  * @author Daniel McCoy Stephenson
  */
 public class Group {
     private final ArrayList<UUID> invited = new ArrayList<>();
+    @Expose
     protected String name = "defaultName";
+    @Expose
     protected String description = "defaultDescription";
+    @Expose
+    @JsonAdapter(UUIDAdapter.class)
     protected UUID owner = UUID.randomUUID();
+    @Expose
+    @JsonAdapter(ArrayListUUIDAdapter.class)
     protected ArrayList<UUID> members = new ArrayList<>();
+    @Expose
+    @JsonAdapter(ArrayListUUIDAdapter.class)
     protected ArrayList<UUID> officers = new ArrayList<>();
 
     public String getName() {

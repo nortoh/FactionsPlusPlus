@@ -4,12 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
@@ -20,12 +21,34 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class UnclaimCommand extends SubCommand {
 
-    public UnclaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "unclaim", LOCALE_PREFIX + "CmdUnclaim"
-        }, true, true, new String[] {"mf.unclaim"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final EphemeralData ephemeralData;
+    private final DynmapIntegrationService dynmapService;
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final MessageService messageService;
+
+    @Inject
+    public UnclaimCommand(
+        EphemeralData ephemeralData,
+        DynmapIntegrationService dynmapService,
+        PersistentData persistentData,
+        PlayerService playerService,
+        MessageService messageService
+    ) {
+        super();
+        this.ephemeralData = ephemeralData;
+        this.persistentData = persistentData;
+        this.dynmapService = dynmapService;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this
+            .setNames("unclaim", LOCALE_PREFIX + "CmdUnclaim")
+            .requiresPermissions("mf.unclaim")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
@@ -51,8 +74,9 @@ public class UnclaimCommand extends SubCommand {
             }
         }
         if (args.length == 0) {
-            this.chunkDataAccessor.removeChunkAtPlayerLocation(player, this.faction);
-            this.dynmapIntegrator.updateClaims();
+            // TODO: reimp 
+            //this.persistentData.getChunkDataAccessor().removeChunkAtPlayerLocation(player, this.faction);
+            this.dynmapService.updateClaimsIfAble();
             this.playerService.sendMessage(
                 player, 
                 "&a" + "Unclaimed your current claim.",
@@ -65,7 +89,8 @@ public class UnclaimCommand extends SubCommand {
         if (radius <= 0) {
             radius = 1;
         }
-        this.chunkDataAccessor.radiusUnclaimAtLocation(radius, player, this.faction);
+        // TODO: reimp
+        //this.persistentData.getChunkDataAccessor().radiusUnclaimAtLocation(radius, player, this.faction);
         this.playerService.sendMessage(
             player, 
             "Unclaimed radius of " + radius + " claims around you!",

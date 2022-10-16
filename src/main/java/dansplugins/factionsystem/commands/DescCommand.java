@@ -4,11 +4,10 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -20,12 +19,25 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DescCommand extends SubCommand {
 
-    public DescCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "description", "desc", LOCALE_PREFIX + "CmdDesc"
-        }, true, true, false, true, new String[] {"mf.desc"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
+
+    @Inject
+    public DescCommand(PlayerService playerService, LocaleService localeService, MessageService messageService) {
+        super();
+        this.localeService = localeService;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this
+            .setNames("description", "desc", LOCALE_PREFIX + "CmdDesc")
+            .requiresPermissions("mf.desc")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**
@@ -40,7 +52,7 @@ public class DescCommand extends SubCommand {
         if (args.length == 0) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("UsageDesc"),
+                "&c" + this.localeService.getText("UsageDesc"),
                 "UsageDesc", 
                 false
             );
@@ -50,7 +62,7 @@ public class DescCommand extends SubCommand {
         this.faction.setDescription(String.join(" ", args));
         this.playerService.sendMessage(
             player, 
-            "&c" + this.getText("DescriptionSet"),
+            "&c" + this.localeService.getText("DescriptionSet"),
             Objects.requireNonNull(this.messageService.getLanguage().getString("Description")).replace("#desc#", String.join(" ", args)), 
             true
         );

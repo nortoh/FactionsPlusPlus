@@ -4,15 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
-import dansplugins.factionsystem.utils.RelationChecker;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,11 +20,24 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class LockCommand extends SubCommand {
-    public LockCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, RelationChecker relationChecker, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "lock", LOCALE_PREFIX + "CmdLock"
-        }, true, true, new String[] {"mf.lock"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+
+    private final PlayerService playerService;
+    private final EphemeralData ephemeralData;
+    private final LocaleService localeService;
+
+    @Inject
+    public LockCommand(PlayerService playerService, EphemeralData ephemeralData, LocaleService localeService) {
+        super();
+        this.playerService = playerService;
+        this.ephemeralData = ephemeralData;
+        this.localeService = localeService;
+        this
+            .setNames("lock", LOCALE_PREFIX + "CmdLock")
+            .requiresPermissions("mf.lock")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
@@ -42,7 +53,7 @@ public class LockCommand extends SubCommand {
             if (this.ephemeralData.getLockingPlayers().remove(player.getUniqueId())) { // Remove them
                 this.playerService.sendMessage(
                     player, 
-                    "&c" + this.getText("LockingCancelled"),
+                    "&c" + this.localeService.getText("LockingCancelled"),
                     "LockingCancelled", 
                     false
                 );
@@ -53,7 +64,7 @@ public class LockCommand extends SubCommand {
         this.ephemeralData.getUnlockingPlayers().remove(player.getUniqueId());
         this.playerService.sendMessage(
             player, 
-            "&a" + this.getText("RightClickLock"),
+            "&a" + this.localeService.getText("RightClickLock"),
             "RightClickLock", 
             false
         );

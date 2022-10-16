@@ -4,12 +4,14 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -23,12 +25,38 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class DeclareIndependenceCommand extends SubCommand {
 
-    public DeclareIndependenceCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "declareindependence", "di", LOCALE_PREFIX + "CmdDeclareIndependence"
-        }, true, true, false, true, new String[] {"mf.declareindependence"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
+    private final ConfigService configService;
+    private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
+
+    @Inject
+    public DeclareIndependenceCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        MessageService messageService,
+        ConfigService configService,
+        PersistentData persistentData,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.localeService = localeService;
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.configService = configService;
+        this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("declareindependence", "di", LOCALE_PREFIX + "CmdDeclareIndependence")
+            .requiresPermissions("mf.declareindependence")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**
@@ -41,15 +69,15 @@ public class DeclareIndependenceCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         if (!(this.faction.hasLiege()) || this.faction.getLiege() == null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("NotAVassalOfAFaction"), "NotAVassalOfAFaction", false);
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("NotAVassalOfAFaction"), "NotAVassalOfAFaction", false);
             return;
         }
 
-        final Faction liege = this.getFaction(this.faction.getLiege());
+        final Faction liege = this.factionRepository.get(this.faction.getLiege());
         if (liege == null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + getText("FactionNotFound"), 
+                "&c" + this.localeService.getText("FactionNotFound"), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
                     .replace("#faction#", String.join(" ", args)), true
             );
@@ -77,7 +105,7 @@ public class DeclareIndependenceCommand extends SubCommand {
             }
         }
         this.messageServer(
-            "&c" + this.getText("HasDeclaredIndependence", this.faction.getName(), liege.getName()), 
+            "&c" + this.localeService.getText("HasDeclaredIndependence", this.faction.getName(), liege.getName()), 
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredIndependence"))
                 .replace("#faction_a#", this.faction.getName())
                 .replace("#faction_b#", liege.getName())

@@ -4,32 +4,36 @@
  */
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.*;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.factories.WarFactory;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
+import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.RelationChecker;
 import dansplugins.factionsystem.utils.extended.Messenger;
 import dansplugins.factionsystem.utils.extended.Scheduler;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+
 
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Daniel McCoy Stephenson
  */
+@Singleton
 public class CommandService implements TabCompleter {
     private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
@@ -38,68 +42,150 @@ public class CommandService implements TabCompleter {
     private final MessageService messageService;
     private final Set<SubCommand> subCommands = new HashSet<>();
 
-    public CommandService(LocaleService localeService, MedievalFactions medievalFactions, ConfigService configService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, WarFactory warFactory, Logger logger, Scheduler scheduler, Messenger messenger, RelationChecker relationChecker, PlayerService playerService, MessageService messageService) {
+    @Inject
+    public CommandService(LocaleService localeService, MedievalFactions medievalFactions, ConfigService configService, PlayerService playerService, MessageService messageService) {
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
         this.configService = configService;
         this.playerService = playerService;
         this.messageService = messageService;
-        subCommands.addAll(Arrays.asList(
-                new AddLawCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new AllyCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new AutoClaimCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new BreakAllianceCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new BypassCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new ChatCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new CheckAccessCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new CheckClaimCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new ClaimCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new ConfigCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, playerService, messageService),
-                new CreateCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, medievalFactions, playerService, messageService),
-                new DeclareIndependenceCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new DeclareWarCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, warFactory, playerService, messageService),
-                new DemoteCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new DescCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new DisbandCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, playerService, messageService, medievalFactions),
-                new DuelCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, playerService, messageService),
-                new EditLawCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new FlagsCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new ForceCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, logger, playerService, messageService),
-                new GateCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, playerService, messageService),
-                new GrantAccessCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new GrantIndependenceCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new HelpCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new HomeCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, scheduler, playerService, messageService),
-                new InfoCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, messenger, playerService, messageService),
-                new InviteCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, playerService, messageService),
-                new InvokeCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new JoinCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, playerService, messageService),
-                new KickCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, playerService, messageService),
-                new LawsCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new LeaveCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, new DisbandCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, playerService, messageService, medievalFactions), playerService, messageService),
-                new ListCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new LockCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, relationChecker, playerService, messageService),
-                new MakePeaceCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new MembersCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService, medievalFactions),
-                new PowerCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new PrefixCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new PromoteCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new RemoveLawCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new RenameCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, logger, playerService, messageService),
-                new ResetPowerLevelsCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new RevokeAccessCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new SetHomeCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new SwearFealtyCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new TransferCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new UnclaimallCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new UnclaimCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new UnlockCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, relationChecker, playerService, messageService),
-                new VassalizeCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, logger, playerService, messageService),
-                new VersionCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, medievalFactions, playerService, messageService),
-                new WhoCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, messenger, playerService, messageService),
-                new MapCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService),
-                new StatsCommand(localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService, medievalFactions)
+    }
+
+    public void registerCommands() {
+        this.subCommands.addAll(Arrays.asList(
+                this.registerCommand(AddLawCommand.class),
+                this.registerCommand(AllyCommand.class),
+                this.medievalFactions.getInjector().getInstance(AutoClaimCommand.class),
+                this.medievalFactions.getInjector().getInstance(BreakAllianceCommand.class),
+                this.medievalFactions.getInjector().getInstance(BypassCommand.class),
+                this.medievalFactions.getInjector().getInstance(ChatCommand.class),
+                this.medievalFactions.getInjector().getInstance(CheckAccessCommand.class),
+                this.medievalFactions.getInjector().getInstance(ClaimCommand.class),
+                this.medievalFactions.getInjector().getInstance(ConfigCommand.class),
+                this.medievalFactions.getInjector().getInstance(CreateCommand.class),
+                this.medievalFactions.getInjector().getInstance(DeclareIndependenceCommand.class),
+                this.medievalFactions.getInjector().getInstance(DeclareWarCommand.class),
+                this.medievalFactions.getInjector().getInstance(DemoteCommand.class),
+                this.medievalFactions.getInjector().getInstance(DescCommand.class),
+                this.medievalFactions.getInjector().getInstance(DisbandCommand.class),
+                this.medievalFactions.getInjector().getInstance(DuelCommand.class),
+                this.medievalFactions.getInjector().getInstance(EditLawCommand.class),
+                this.medievalFactions.getInjector().getInstance(FlagsCommand.class),
+                this.medievalFactions.getInjector().getInstance(ForceCommand.class),
+                this.medievalFactions.getInjector().getInstance(GateCommand.class),
+                this.medievalFactions.getInjector().getInstance(GrantAccessCommand.class),
+                this.medievalFactions.getInjector().getInstance(GrantIndependenceCommand.class),
+                this.medievalFactions.getInjector().getInstance(HelpCommand.class),
+                this.medievalFactions.getInjector().getInstance(HomeCommand.class),
+                this.medievalFactions.getInjector().getInstance(InfoCommand.class),
+                this.medievalFactions.getInjector().getInstance(InviteCommand.class),
+                this.medievalFactions.getInjector().getInstance(InvokeCommand.class),
+                this.medievalFactions.getInjector().getInstance(JoinCommand.class),
+                this.medievalFactions.getInjector().getInstance(KickCommand.class),
+                this.medievalFactions.getInjector().getInstance(LawsCommand.class),
+                this.medievalFactions.getInjector().getInstance(LeaveCommand.class),
+                this.medievalFactions.getInjector().getInstance(ListCommand.class),
+                this.medievalFactions.getInjector().getInstance(LockCommand.class),
+                this.medievalFactions.getInjector().getInstance(MakePeaceCommand.class),
+                this.medievalFactions.getInjector().getInstance(MembersCommand.class),
+                this.medievalFactions.getInjector().getInstance(PowerCommand.class),
+                this.medievalFactions.getInjector().getInstance(PrefixCommand.class),
+                this.medievalFactions.getInjector().getInstance(PromoteCommand.class),
+                this.medievalFactions.getInjector().getInstance(RemoveLawCommand.class),
+                this.medievalFactions.getInjector().getInstance(RenameCommand.class),
+                this.medievalFactions.getInjector().getInstance(ResetPowerLevelsCommand.class),
+                this.medievalFactions.getInjector().getInstance(RevokeAccessCommand.class),
+                this.medievalFactions.getInjector().getInstance(SetHomeCommand.class),
+                this.medievalFactions.getInjector().getInstance(SwearFealtyCommand.class),
+                this.medievalFactions.getInjector().getInstance(TransferCommand.class),
+                this.medievalFactions.getInjector().getInstance(UnclaimallCommand.class),
+                this.medievalFactions.getInjector().getInstance(UnclaimCommand.class),
+                this.medievalFactions.getInjector().getInstance(UnlockCommand.class),
+                this.medievalFactions.getInjector().getInstance(VassalizeCommand.class),
+                this.medievalFactions.getInjector().getInstance(VersionCommand.class),
+                this.medievalFactions.getInjector().getInstance(WhoCommand.class),
+                this.medievalFactions.getInjector().getInstance(MapCommand.class),
+                this.medievalFactions.getInjector().getInstance(StatsCommand.class)
         ));
+    }
+
+    public SubCommand registerCommand(Class commandClass) {
+        SubCommand command = (SubCommand)this.medievalFactions.getInjector().getInstance(commandClass);
+        this.loadCommandNames(command);
+        return command;
+    }
+
+    public void loadCommandNames(SubCommand command) {
+        String[] rawNames = command.getCommandNames();
+        for (int i = 0; i < rawNames.length; i++) {
+            String name = rawNames[i];
+            if (name.contains(SubCommand.LOCALE_PREFIX)) name = this.localeService.getText(name.replace(SubCommand.LOCALE_PREFIX, ""));
+            command.setName(i, name);
+        }
+    }
+
+    /**
+     * Method to be called by the command interpreter <em>only</em>.
+     * <p>
+     * This method uses the in-class variables to call a different method based on the parameters specified.
+     * <br>For example, if {@link SubCommand#playerCommand} is {@code true},
+     * <br>{@link SubCommand#execute(Player, String[], String)} is executed,
+     * <br>not {@link SubCommand#execute(CommandSender, String[], String)}.
+     * </p>
+     *
+     * @param sender who sent the command.
+     * @param args   of the command.
+     * @param key    of the sub-command.
+     */
+    public boolean performCommandChecks(SubCommand command, CommandSender sender, String[] args, String key) {
+        if (command.shouldBePlayerCommand()) {
+            if (!(sender instanceof Player)) { // Require a player for a player-only command.
+                sender.sendMessage(command.translate(this.getText("OnlyPlayersCanUseCommand")));
+                return false;
+            }
+            Player player = (Player) sender;
+            if (command.shouldRequirePlayerInFaction()) { // Find and check the status of a Faction.
+                Faction faction = this.playerService.getPlayerFaction(player);
+                if (faction == null) {
+                    player.sendMessage(command.translate("&c" + this.getText("AlertMustBeInFactionToUseCommand")));
+                    return false;
+                }
+                if (command.shouldRequireFactionOfficer()) { // If the command requires an Officer or higher, check for it.
+                    if (!(faction.isOwner(player.getUniqueId()) || faction.isOfficer(player.getUniqueId()))) {
+                        player.sendMessage(command.translate("&c" + this.getText("AlertMustBeOwnerOrOfficerToUseCommand")));
+                        return false;
+                    }
+                }
+                if (command.shouldRequireFactionOwner() && !faction.isOwner(player.getUniqueId())) { // If the command requires an owner only, check for it.
+                    player.sendMessage(command.translate("&c" + this.getText("AlertMustBeOwnerToUseCommand")));
+                    return false;
+                }
+                command.setUserFaction(faction);
+            }
+            if (!command.checkPermissions(sender, true)) {
+                // TODO: re-add missing permissions
+                this.playerService.sendMessage(
+                    sender,
+                    command.translate("&c" + this.getText("PermissionNeeded")), 
+                    Objects.requireNonNull(this.messageService.getLanguage().getString("PermissionNeeded"))
+                        .replace("#permission#", ""), 
+                    true
+                );
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Method to obtain text from a key.
+     *
+     * @param key of the message in LocaleManager.
+     * @return String message
+     */
+    protected String getText(String key) {
+        String text = this.localeService.getText(key);
+        return text.replace("%d", "%s");
     }
 
     public boolean interpretCommand(CommandSender sender, String label, String[] args) {
@@ -129,10 +215,17 @@ public class CommandService implements TabCompleter {
             SubCommand subCommand = this.findSubCommandByName(args[0]);
             if (subCommand == null) {
                 this.playerService.sendMessage(sender, ChatColor.RED + this.localeService.get("CommandNotRecognized"), "CommandNotRecognized", false);
+                return false;
             }
             String[] arguments = new String[args.length - 1]; // Take first argument out of Array.
             System.arraycopy(args, 1, arguments, 0, arguments.length);
-            subCommand.performCommand(sender, arguments, args[0]); // Execute!
+            if (this.performCommandChecks(subCommand, sender, arguments, args[0])) {
+                if (subCommand.shouldBePlayerCommand()) {
+                    subCommand.execute((Player) sender, arguments, args[0]);
+                } else {
+                    subCommand.execute(sender, arguments, args[0]);
+                }
+            }
             return true; // Return true as the command was found and run.
         }
         return false;

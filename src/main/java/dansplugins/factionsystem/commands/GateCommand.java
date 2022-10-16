@@ -4,13 +4,15 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
-import dansplugins.factionsystem.objects.domain.Gate;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -27,14 +29,40 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class GateCommand extends SubCommand {
-    private final MedievalFactions medievalFactions;
 
-    public GateCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "gate", "gt", LOCALE_PREFIX + "CmdGate"
-        }, true, true, new String[] {"mf.gate"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final PlayerService playerService;
+    private final MessageService messageService;
+    private final LocaleService localeService;
+    private final MedievalFactions medievalFactions;
+    private final EphemeralData ephemeralData;
+    private final PersistentData persistentData;
+    private final ConfigService configService;
+
+    @Inject
+    public GateCommand(
+        PlayerService playerService,
+        MessageService messageService,
+        LocaleService localeService,
+        EphemeralData ephemeralData,
+        ConfigService configService,
+        PersistentData persistentData,
+        MedievalFactions medievalFactions
+    ) {
+        super();
+        this.playerService = playerService;
+        this.messageService = messageService;
+        this.localeService = localeService;
         this.medievalFactions = medievalFactions;
+        this.configService = configService;
+        this.ephemeralData = ephemeralData;
+        this.persistentData = persistentData;
+        this
+            .setNames("gate", "gt", LOCALE_PREFIX + "CmdGate")
+            .requiresPermissions("mf.gate")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
@@ -48,35 +76,35 @@ public class GateCommand extends SubCommand {
     public void execute(Player player, String[] args, String key) {
         if (args.length == 0) {
             if (!this.configService.getBoolean("useNewLanguageFile")) {
-                player.sendMessage(this.translate("&b" + this.getText("SubCommands")));
-                player.sendMessage(this.translate("&b" + this.getText("HelpGateCreate")));
-                player.sendMessage(this.translate("&b" + this.getText("HelpGateName")));
-                player.sendMessage(this.translate("&b" + this.getText("HelpGateList")));
-                player.sendMessage(this.translate("&b" + this.getText("HelpGateRemove")));
-                player.sendMessage(this.translate("&b" + this.getText("HelpGateCancel")));
+                player.sendMessage(this.translate("&b" + this.localeService.getText("SubCommands")));
+                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateCreate")));
+                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateName")));
+                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateList")));
+                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateRemove")));
+                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateCancel")));
             } else {
                 this.playerService.sendMultipleMessages(player, this.messageService.getLanguage().getStringList("GateHelp"));
             }
             return;
         }
-        if (this.safeEquals(args[0], "cancel", this.playerService.decideWhichMessageToUse(this.getText("CmdGateCancel"), this.messageService.getLanguage().getString("Alias.CmdGateCancel")))) {
+        if (this.safeEquals(args[0], "cancel", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateCancel"), this.messageService.getLanguage().getString("Alias.CmdGateCancel")))) {
             // Cancel Logic
             if (this.ephemeralData.getCreatingGatePlayers().remove(player.getUniqueId()) != null) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("CreatingGateCancelled"),
+                    "&c" + this.localeService.getText("CreatingGateCancelled"),
                     "CreatingGateCancelled",
                     false
                 );
                 return;
             }
         }
-        if (this.safeEquals(args[0], "create", this.playerService.decideWhichMessageToUse(this.getText("CmdGateCreate"), this.messageService.getLanguage().getString("Alias.CmdGateCreate")))) {
+        if (this.safeEquals(args[0], "create", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateCreate"), this.messageService.getLanguage().getString("Alias.CmdGateCreate")))) {
             // Create Logic
             if (this.ephemeralData.getCreatingGatePlayers().containsKey(player.getUniqueId())) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertAlreadyCreatingGate"),
+                    "&c" + this.localeService.getText("AlertAlreadyCreatingGate"),
                     "AlertAlreadyCreatingGate",
                     false
                 );
@@ -85,7 +113,7 @@ public class GateCommand extends SubCommand {
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
                     "AlertMustBeOwnerOrOfficerToUseCommand",
                     false
                 );
@@ -102,13 +130,13 @@ public class GateCommand extends SubCommand {
             this.startCreatingGate(player, gateName);
             this.playerService.sendMessage(
                 player,
-                "&b" + this.getText("CreatingGateClickWithHoe"),
+                "&b" + this.localeService.getText("CreatingGateClickWithHoe"),
                 "CreatingGateClickWithHoe",
                 false
             );
             return;
         }
-        if (this.safeEquals(args[0], "list", this.playerService.decideWhichMessageToUse(this.getText("CmdGateList"), this.messageService.getLanguage().getString("Alias.CmdGateList")))) {
+        if (this.safeEquals(args[0], "list", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateList"), this.messageService.getLanguage().getString("Alias.CmdGateList")))) {
             // List logic
             if (this.faction.getGates().size() > 0) {
                 this.playerService.sendMessage(player, "&bFaction Gates", "FactionGate", false);
@@ -125,21 +153,21 @@ public class GateCommand extends SubCommand {
             } else {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertNoGatesDefined"),
+                    "&c" + this.localeService.getText("AlertNoGatesDefined"),
                     "AlertNoGatesDefined",
                     false
                 );
             }
             return;
         }
-        final boolean remove = this.safeEquals(args[0], "remove", this.playerService.decideWhichMessageToUse(getText("CmdGateRemove"), this.messageService.getLanguage().getString("Alias.CmdGateRemove")));
-        final boolean rename = this.safeEquals(args[0], "name", this.playerService.decideWhichMessageToUse(getText("CmdGateName"), this.messageService.getLanguage().getString("Alias.CmdGateName")));
+        final boolean remove = this.safeEquals(args[0], "remove", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateRemove"), this.messageService.getLanguage().getString("Alias.CmdGateRemove")));
+        final boolean rename = this.safeEquals(args[0], "name", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateName"), this.messageService.getLanguage().getString("Alias.CmdGateName")));
         if (rename || remove) {
             final Block targetBlock = player.getTargetBlock(null, 16);
             if (targetBlock.getType().equals(Material.AIR)) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("NoBlockDetectedToCheckForGate"),
+                    "&c" + this.localeService.getText("NoBlockDetectedToCheckForGate"),
                     "NoBlockDetectedToCheckForGate",
                     false
                 );
@@ -148,7 +176,7 @@ public class GateCommand extends SubCommand {
             if (!this.persistentData.isGateBlock(targetBlock)) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("TargetBlockNotPartOfGate"),
+                    "&c" + this.localeService.getText("TargetBlockNotPartOfGate"),
                     "TargetBlockNotPartOfGate",
                     false
                 );
@@ -158,7 +186,7 @@ public class GateCommand extends SubCommand {
             if (gate == null) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("TargetBlockNotPartOfGate"),
+                    "&c" + this.localeService.getText("TargetBlockNotPartOfGate"),
                     "TargetBlockNotPartOfGate",
                     false
                 );
@@ -168,7 +196,7 @@ public class GateCommand extends SubCommand {
             if (gateFaction == null) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("ErrorCouldNotFindGatesFaction", gate.getName()),
+                    "&c" + this.localeService.getText("ErrorCouldNotFindGatesFaction", gate.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("ErrorCouldNotFindGatesFaction")).replace("#name#", gate.getName()),
                     true
                 );
@@ -177,7 +205,7 @@ public class GateCommand extends SubCommand {
             if (!gateFaction.isOfficer(player.getUniqueId()) && !gateFaction.isOwner(player.getUniqueId())) {
                 this.playerService.sendMessage(
                     player,
-                    "&c" + this.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
+                    "&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
                     "AlertMustBeOwnerOrOfficerToUseCommand",
                     false
                 );
@@ -187,7 +215,7 @@ public class GateCommand extends SubCommand {
                 gateFaction.removeGate(gate);
                 this.playerService.sendMessage(
                     player,
-                    "&b" + this.getText("RemovedGate", gate.getName()),
+                    "&b" + this.localeService.getText("RemovedGate", gate.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("RemovedGate")).replace("#name#", gate.getName()),
                     true
                 );
@@ -198,7 +226,7 @@ public class GateCommand extends SubCommand {
                 gate.setName(String.join(" ", arguments));
                 this.playerService.sendMessage(
                     player,
-                    "&b" + this.getText("AlertChangedGateName", gate.getName()),
+                    "&b" + this.localeService.getText("AlertChangedGateName", gate.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("AlertChangedGateName")).replace("#name#", gate.getName()),
                     true
                 );
@@ -219,7 +247,7 @@ public class GateCommand extends SubCommand {
     }
 
     private void startCreatingGate(Player player, String name) {
-        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(name, medievalFactions, configService));
+        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(name));
     }
 
     /**

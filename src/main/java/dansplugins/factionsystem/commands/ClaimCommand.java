@@ -4,13 +4,13 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,12 +18,25 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class ClaimCommand extends SubCommand {
 
-    public ClaimCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "claim", LOCALE_PREFIX + "CmdClaim"
-        }, true, true, new String[] {}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final PersistentData persistentData;
+    private final DynmapIntegrationService dynmapService;
+
+    @Inject
+    public ClaimCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData, DynmapIntegrationService dynmapService) {
+        super();
+        this.localeService = localeService;
+        this.playerService = playerService;
+        this.persistentData = persistentData;
+        this.dynmapService = dynmapService;
+        this
+            .setNames("claim", LOCALE_PREFIX + "CmdClaim")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
@@ -38,7 +51,7 @@ public class ClaimCommand extends SubCommand {
         if ((boolean) this.faction.getFlags().getFlag("mustBeOfficerToManageLand")) {
             // officer or owner rank required
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
-                this.playerService.sendMessage(player, "&a" + this.getText("AlertMustBeOfficerOrOwnerToClaimLand"), "AlertMustBeOfficerOrOwnerToClaimLand", false);
+                this.playerService.sendMessage(player, "&a" + this.localeService.getText("AlertMustBeOfficerOrOwnerToClaimLand"), "AlertMustBeOfficerOrOwnerToClaimLand", false);
                 return;
             }
         }
@@ -47,14 +60,16 @@ public class ClaimCommand extends SubCommand {
             int depth = this.getIntSafe(args[0], -1);
 
             if (depth <= 0) {
-                this.playerService.sendMessage(player, "&a" + this.getText("UsageClaimRadius"), "UsageClaimRadius", false);
+                this.playerService.sendMessage(player, "&a" + this.localeService.getText("UsageClaimRadius"), "UsageClaimRadius", false);
             } else {
-                this.chunkDataAccessor.radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
+                // TODO: reimp
+                this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), this.faction);
             }
         } else {
-            this.chunkDataAccessor.claimChunkAtLocation(player, player.getLocation(), this.faction);
+            // TODO: reimp
+            this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), this.faction);
         }
-        this.dynmapIntegrator.updateClaims();
+        this.dynmapService.updateClaimsIfAble();
     }
 
     /**

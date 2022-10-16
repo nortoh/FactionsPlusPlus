@@ -2,13 +2,11 @@
   Copyright (c) 2022 Daniel McCoy Stephenson
   GPL3 License
  */
-package dansplugins.factionsystem.objects.domain;
+package dansplugins.factionsystem.models;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.objects.helper.GateCoord;
-import dansplugins.factionsystem.services.ConfigService;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -19,41 +17,50 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.bukkit.Bukkit.getServer;
+
+import dansplugins.factionsystem.jsonadapters.GateCoordAdapter;
+import com.google.gson.JsonElement;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+
 /**
  * @author Caibinus
  * @author Daniel McCoy Stephenson
  */
 public class Gate {
-    private final MedievalFactions medievalFactions;
-    private final ConfigService configService;
-
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
+    @Expose
     private String name = "gateName";
+    @Expose
     private boolean open = false;
+    @Expose
     private boolean vertical = true;
+    @Expose
+    @JsonAdapter(GateCoordAdapter.class)
     private GateCoord coord1 = null;
+    @Expose
+    @JsonAdapter(GateCoordAdapter.class)
     private GateCoord coord2 = null;
+    @Expose
+    @JsonAdapter(GateCoordAdapter.class)
     private GateCoord trigger = null;
+    @Expose
     private Material material = Material.IRON_BARS;
     private World _world = null;
+    @Expose
     private String world = "";
     private GateStatus gateStatus = GateStatus.READY;
 
-    public Gate(MedievalFactions medievalFactions, ConfigService configService) {
+    public Gate() { }
 
-        this.medievalFactions = medievalFactions;
-        this.configService = configService;
-    }
-
-    public Gate(String name, MedievalFactions medievalFactions, ConfigService configService) {
-        this.medievalFactions = medievalFactions;
-        this.configService = configService;
+    public Gate(String name) {
         setName(name);
     }
 
     public Gate load(String jsonData) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Gate newGate = new Gate(medievalFactions, configService);
+        Gate newGate = new Gate();
 
         try {
             Gate.GateJson data = gson.fromJson(jsonData, Gate.GateJson.class);
@@ -79,13 +86,17 @@ public class Gate {
         if (_world != null) {
             return _world;
         }
-        _world = medievalFactions.getServer().getWorld(world);
+        _world = getServer().getWorld(world);
         return _world;
     }
 
     public void setWorld(String worldName) {
         world = worldName;
         _world = null;
+    }
+
+    public JsonElement toJson() {
+        return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create().toJsonTree(this);
     }
 
     public Map<String, String> save() {
@@ -322,11 +333,13 @@ public class Gate {
             } else if (isParallelToZ()) {
                 area = getDimZ() * getDimY();
             }
-            if (area > configService.getInt("factionMaxGateArea")) {
+
+            // TODO: add this back in GateService
+            /*if (area > configService.getInt("factionMaxGateArea")) {
                 // Gate size exceeds config limit.
                 coord2 = null;
                 return ErrorCodeAddCoord.Oversized;
-            }
+            }*/
             if (!gateBlocksMatch(material)) {
                 coord2 = null;
                 return ErrorCodeAddCoord.MaterialMismatch;
@@ -411,6 +424,8 @@ public class Gate {
                 for (int y = bottomY; y <= topY; y++) {
                     c++;
                     final int blockY = y;
+                    // TODO: Reimplement without dep
+                    /* 
                     Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                         Block b;
 
@@ -422,15 +437,17 @@ public class Gate {
                                 getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
                             }
                         }
-                    }, c * 10L);
+                    }, c * 10L); */
                 }
+                // TODO: Reimplement without dep
+                /*
                 Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                     @Override
                     public void run() {
                         gateStatus = GateStatus.READY;
                         open = true;
                     }
-                }, (topY - bottomY + 2) * 10L);
+                }, (topY - bottomY + 2) * 10L); */
             } else if (isParallelToZ()) {
                 int topY = coord1.getY();
                 int _bottomY = coord2.getY();
@@ -453,6 +470,8 @@ public class Gate {
                 for (int y = bottomY; y <= topY; y++) {
                     c++;
                     final int blockY = y;
+                    // TODO: reimplement without dep
+                    /* 
                     Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                         Block b;
 
@@ -464,15 +483,17 @@ public class Gate {
                                 getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
                             }
                         }
-                    }, c * 10L);
+                    }, c * 10L); */
                 }
+                // TODO: reimp later without dep
+                /*
                 Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                     @Override
                     public void run() {
                         gateStatus = GateStatus.READY;
                         open = true;
                     }
-                }, (topY - bottomY + 2) * 10L);
+                }, (topY - bottomY + 2) * 10L); */
             }
         }
     }
@@ -509,6 +530,8 @@ public class Gate {
                 for (int y = topY; y >= bottomY; y--) {
                     c++;
                     final int blockY = y;
+                    // TODO: reimp without dep
+                    /*
                     Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                         Block b;
 
@@ -520,15 +543,17 @@ public class Gate {
                                 getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
                             }
                         }
-                    }, c * 10L);
+                    }, c * 10L); */
                 }
+                // TODO: reimp without dep
+                /*
                 Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                     @Override
                     public void run() {
                         gateStatus = GateStatus.READY;
                         open = false;
                     }
-                }, (topY - bottomY + 2) * 10L);
+                }, (topY - bottomY + 2) * 10L); */
             } else if (isParallelToZ()) {
                 int topY = coord1.getY();
                 int _bottomY = coord2.getY();
@@ -551,6 +576,8 @@ public class Gate {
                 for (int y = topY; y >= bottomY; y--) {
                     c++;
                     final int blockY = y;
+                    // TODO: reimp without dep
+                    /*
                     Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                         Block b;
 
@@ -563,15 +590,17 @@ public class Gate {
                                 getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
                             }
                         }
-                    }, c * 10L);
+                    }, c * 10L); */
                 }
+                // TODO: reimp without dep
+                /*
                 Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                     @Override
                     public void run() {
                         gateStatus = GateStatus.READY;
                         open = false;
                     }
-                }, (topY - bottomY + 2) * 10L);
+                }, (topY - bottomY + 2) * 10L); */
             }
         }
     }

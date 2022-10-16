@@ -4,12 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionLeaveEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -23,16 +23,36 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class LeaveCommand extends SubCommand {
+    private final MessageService messageService;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+    private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DisbandCommand disbandCommand;
 
-    public LeaveCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, DisbandCommand disbandCommand, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "leave", LOCALE_PREFIX + "CmdLeave"
-        }, true, true, false, false, new String[] {"mf.leave"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    @Inject
+    public LeaveCommand(
+        MessageService messageService,
+        PlayerService playerService,
+        LocaleService localeService,
+        EphemeralData ephemeralData,
+        Logger logger,
+        DisbandCommand disbandCommand
+    ) {
+        super();
+        this.messageService = messageService;
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.ephemeralData = ephemeralData;
         this.logger = logger;
         this.disbandCommand = disbandCommand;
+        this
+            .setNames("leave", LOCALE_PREFIX + "CmdLeave")
+            .requiresPermissions("mf.leave")
+            .isPlayerCommand()
+            .requiresPlayerInFaction();
     }
 
     /**
@@ -61,7 +81,7 @@ public class LeaveCommand extends SubCommand {
         this.faction.removeMember(player.getUniqueId());
         this.playerService.sendMessage(
             player, 
-            "&b" + this.getText("AlertLeftFaction"),
+            "&b" + this.localeService.getText("AlertLeftFaction"),
             "AlertLeftFaction", 
             false
         );

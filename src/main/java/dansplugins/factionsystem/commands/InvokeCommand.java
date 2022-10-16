@@ -4,12 +4,14 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -27,12 +29,38 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class InvokeCommand extends SubCommand {
 
-    public InvokeCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-            "invoke", LOCALE_PREFIX + "CmdInvoke"
-        }, true, true, false, true, new String[] {"mf.invoke"}, localeService, persistentData, ephemeralData, chunkDataAccessor, dynmapIntegrator, configService, playerService, messageService);
+    private final PersistentData persistentData;
+    private final LocaleService localeService;
+    private final MessageService messageService;
+    private final PlayerService playerService;
+    private final ConfigService configService;
+    private final FactionRepository factionRepository;
+
+    @Inject
+    public InvokeCommand(
+        ConfigService configService,
+        PersistentData persistentData,
+        LocaleService localeService,
+        MessageService messageService,
+        PlayerService playerService,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.configService = configService;
+        this.persistentData = persistentData;
+        this.localeService = localeService;
+        this.messageService = messageService;
+        this.playerService = playerService;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("invoke", LOCALE_PREFIX + "CmdInvoke")
+            .requiresPermissions("mf.invoke")
+            .isPlayerCommand()
+            .requiresPlayerInFaction()
+            .requiresFactionOwner();
     }
 
     /**
@@ -56,18 +84,18 @@ public class InvokeCommand extends SubCommand {
             player.sendMessage(ChatColor.RED + "Arguments must be designated in between double quotes.");
             return;
         }
-        final Faction invokee = this.getFaction(argumentsInsideDoubleQuotes.get(0));
-        final Faction warringFaction = this.getFaction(argumentsInsideDoubleQuotes.get(1));
+        final Faction invokee = this.factionRepository.get(argumentsInsideDoubleQuotes.get(0));
+        final Faction warringFaction = this.factionRepository.get(argumentsInsideDoubleQuotes.get(1));
         if (invokee == null || warringFaction == null) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", argumentsInsideDoubleQuotes.get(0)),
                 true
             );
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("FactionNotFound"),
+                "&c" + this.localeService.getText("FactionNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", argumentsInsideDoubleQuotes.get(1)),
                 true
             );
@@ -76,7 +104,7 @@ public class InvokeCommand extends SubCommand {
         if (!this.faction.isAlly(invokee.getName()) && !this.faction.isVassal(invokee.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("NotAnAllyOrVassal", invokee.getName()),
+                "&c" + this.localeService.getText("NotAnAllyOrVassal", invokee.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("NotAnAllyOrVassal")).replace("#name#", invokee.getName()),
                 true
             );
@@ -85,7 +113,7 @@ public class InvokeCommand extends SubCommand {
         if (!this.faction.isEnemy(warringFaction.getName())) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("NotAtWarWith", warringFaction.getName()),
+                "&c" + this.localeService.getText("NotAtWarWith", warringFaction.getName()),
                 messageService.getLanguage().getString("NotAtWarWith").replace("#name#", warringFaction.getName()),
                 true
             );
@@ -94,7 +122,7 @@ public class InvokeCommand extends SubCommand {
         if (this.configService.getBoolean("allowNeutrality") && ((boolean) invokee.getFlags().getFlag("neutral"))) {
             this.playerService.sendMessage(
                 player,
-                "&c" + this.getText("CannotBringNeutralFactionIntoWar"),
+                "&c" + this.localeService.getText("CannotBringNeutralFactionIntoWar"),
                 "CannotBringNeutralFactionIntoWar",
                 false
             );
@@ -108,7 +136,7 @@ public class InvokeCommand extends SubCommand {
 
             this.messageFaction(
                 invokee, // Message ally faction
-                "&c" + this.getText("AlertCalledToWar1", this.faction.getName(), warringFaction.getName()),
+                "&c" + this.localeService.getText("AlertCalledToWar1", this.faction.getName(), warringFaction.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar1"))
                     .replace("#f1#", this.faction.getName())
                     .replace("#f2#", warringFaction.getName())
@@ -116,7 +144,7 @@ public class InvokeCommand extends SubCommand {
 
             this.messageFaction(
                 warringFaction, // Message warring faction
-                "&c" + this.getText("AlertCalledToWar2", this.faction.getName(), invokee.getName()),
+                "&c" + this.localeService.getText("AlertCalledToWar2", this.faction.getName(), invokee.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar2"))
                     .replace("#f1#", faction.getName())
                     .replace("#f2#", invokee.getName())
@@ -124,7 +152,7 @@ public class InvokeCommand extends SubCommand {
 
             this.messageFaction(
                 this.faction, // Message player faction
-                "&a" + this.getText("AlertCalledToWar3", invokee.getName(), warringFaction.getName()),
+                "&a" + this.localeService.getText("AlertCalledToWar3", invokee.getName(), warringFaction.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar3"))
                     .replace("#f1#", this.faction.getName())
                     .replace("#f2#", warringFaction.getName())

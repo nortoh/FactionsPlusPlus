@@ -4,13 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,15 +17,26 @@ import org.bukkit.entity.Player;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class BypassCommand extends SubCommand {
+
+    private final EphemeralData ephemeralData;
+    private final LocaleService localeService;
+    private final PlayerService playerService;
 
     /**
      * Constructor to initialise a Command.
      */
-    public BypassCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "bypass", LOCALE_PREFIX + "CmdBypass"
-        }, true, new String[] {"mf.bypass", "mf.admin"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public BypassCommand(PlayerService playerService, LocaleService localeService, EphemeralData ephemeralData) {
+        super();
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this.ephemeralData = ephemeralData;
+        this
+            .setNames("bypass", LOCALE_PREFIX + "CmdBypass")
+            .requiresPermissions("mf.bypass", "mf.admin")
+            .isPlayerCommand();
     }
 
     /**
@@ -47,7 +57,7 @@ public class BypassCommand extends SubCommand {
         } else {
             this.ephemeralData.getAdminsBypassingProtections().add(player.getUniqueId());
         }
-        this.playerService.sendMessage(player, "&a" + this.getText(path), path, false);
+        this.playerService.sendMessage(player, "&a" + this.localeService.getText(path), path, false);
     }
 
     /**

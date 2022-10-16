@@ -4,6 +4,8 @@
  */
 package dansplugins.factionsystem.services;
 
+import com.google.inject.Singleton;
+
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -13,6 +15,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.HashMap;
 import java.util.Map;
 
+@Singleton
 public class ActionBarService {
     private final Map<Player, TextComponent> playerActionBarMessages = new HashMap<>();
 

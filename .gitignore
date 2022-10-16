@@ -1,5 +1,6 @@
 # User-specific stuff
 .idea/
+build_and_transfer.sh
 
 *.iml
 *.ipr
@@ -16,6 +17,9 @@ out/
 
 # BlueJ files
 *.ctxt
+
+#VSCode
+.vscode/
 
 # Package Files #
 *.jar

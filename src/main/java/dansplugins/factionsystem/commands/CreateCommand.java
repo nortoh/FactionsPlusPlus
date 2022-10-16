@@ -4,13 +4,17 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionCreateEvent;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.Faction;
+import dansplugins.factionsystem.factories.FactionFactory;
+import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -26,16 +30,41 @@ import java.util.Objects;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class CreateCommand extends SubCommand {
+    private final PlayerService playerService;
+    private final ConfigService configService;
+    private final MessageService messageService;
+    private final PersistentData persistentData;
     private final Logger logger;
+    private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
+    private final FactionRepository factionRepository;
 
-    public CreateCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, Logger logger, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "create", LOCALE_PREFIX + "CmdCreate"
-        }, true, new String[] {"mf.create"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public CreateCommand(
+        PlayerService playerService,
+        ConfigService configService,
+        MessageService messageService,
+        PersistentData persistentData,
+        Logger logger,
+        LocaleService localeService,
+        MedievalFactions medievalFactions,
+        FactionRepository factionRepository
+    ) {
+        super();
+        this.playerService = playerService;
+        this.configService = configService;
+        this.messageService = messageService;
+        this.persistentData = persistentData;
         this.logger = logger;
+        this.localeService = localeService;
         this.medievalFactions = medievalFactions;
+        this.factionRepository = factionRepository;
+        this
+            .setNames("create", LOCALE_PREFIX + "CmdCreate")
+            .requiresPermissions("mf.create")
+            .isPlayerCommand();
     }
 
     /**
@@ -47,15 +76,15 @@ public class CreateCommand extends SubCommand {
      */
     @Override
     public void execute(Player player, String[] args, String key) {
-        Faction playerFaction = getPlayerFaction(player);
+        Faction playerFaction = this.playerService.getPlayerFaction(player);
         if (playerFaction != null) {
-            this.playerService.sendMessage(player, "&c" + this.getText("AlreadyInFaction"),
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlreadyInFaction"),
                     "AlreadyInFaction", false);
             return;
         }
 
         if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.getText("UsageCreate"),
+            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageCreate"),
                     "UsageCreate", false);
             return;
         }
@@ -67,32 +96,32 @@ public class CreateCommand extends SubCommand {
         if (factionName.length() > config.getInt("factionMaxNameLength")) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionNameTooLong"),
+                "&c" + this.localeService.getText("FactionNameTooLong"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNameTooLong"))
                     .replace("#name#", factionName), true
             );
             return;
         }
 
-        if (this.persistentData.getFaction(factionName) != null) {
+        if (this.factionRepository.get(factionName) != null) {
             this.playerService.sendMessage(
                 player, 
-                "&c" + this.getText("FactionAlreadyExists"),
+                "&c" + this.localeService.getText("FactionAlreadyExists"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionAlreadyExists"))
                     .replace("#name#", factionName), true
             );
             return;
         }
 
-        playerFaction = new Faction(factionName, player.getUniqueId(), this.configService, this.localeService, this.dynmapIntegrator, this.logger, this.persistentData, this.medievalFactions, this.playerService);
+        playerFaction = new Faction(factionName, player.getUniqueId());
         playerFaction.addMember(player.getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, player);
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {
-            this.persistentData.addFaction(playerFaction);
+            this.factionRepository.create(playerFaction);
             this.playerService.sendMessage(
                 player, 
-                "&a" + getText("FactionCreated"),
+                "&a" + this.localeService.getText("FactionCreated"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionCreated"))
                     .replace("#name#", factionName), true
             );

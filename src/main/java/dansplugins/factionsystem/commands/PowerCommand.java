@@ -4,12 +4,12 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
-import dansplugins.factionsystem.objects.domain.PowerRecord;
-import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -25,12 +25,29 @@ import java.util.UUID;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class PowerCommand extends SubCommand {
 
-    public PowerCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "power", LOCALE_PREFIX + "CmdPower"
-        }, false, new String[] {"mf.power"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    private final MessageService messageService;
+    private final PersistentData persistentData;
+    private final PlayerService playerService;
+    private final LocaleService localeService;
+
+    @Inject
+    public PowerCommand(
+        MessageService messageService,
+        PersistentData persistentData,
+        PlayerService playerService,
+        LocaleService localeService
+    ) {
+        super();
+        this.messageService = messageService;
+        this.persistentData = persistentData;
+        this.playerService = playerService;
+        this.localeService = localeService;
+        this
+            .setNames("power", LOCALE_PREFIX + "CmdPower")
+            .requiresPermissions("mf.power");
     }
 
     /**
@@ -54,21 +71,21 @@ public class PowerCommand extends SubCommand {
      */
     @Override
     public void execute(CommandSender sender, String[] args, String key) {
-        final PowerRecord record;
+        final PlayerRecord record;
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
                     sender,
-                    this.getText("OnlyPlayersCanUseCommand"),
+                    this.localeService.getText("OnlyPlayersCanUseCommand"),
                     "OnlyPlayersCanUseCommand",
                     false
                 );
                 return;
             }
-            record = this.persistentData.getPlayersPowerRecord(((Player) sender).getUniqueId());
+            record = this.persistentData.getPlayerRecord(((Player) sender).getUniqueId());
             this.playerService.sendMessage(
                 sender,
-                "&b" + this.getText("AlertCurrentPowerLevel", record.getPower(), record.maxPower()),
+                "&b" + this.localeService.getText("AlertCurrentPowerLevel", record.getPower(), record.maxPower()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCurrentPowerLevel"))
                     .replace("#power#", String.valueOf(record.getPower()))
                     .replace("#max#", String.valueOf(record.maxPower())),
@@ -81,16 +98,16 @@ public class PowerCommand extends SubCommand {
         if (target == null) {
             this.playerService.sendMessage(
                 sender,
-                "&c" + this.getText("PlayerNotFound"),
+                "&c" + this.localeService.getText("PlayerNotFound"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
                 true
             );
             return;
         }
-        record = this.persistentData.getPlayersPowerRecord(target);
+        record = this.persistentData.getPlayerRecord(target);
         this.playerService.sendMessage(
             sender, 
-            "&b" + this.getText("CurrentPowerLevel", args[0], record.getPower(), record.maxPower()),
+            "&b" + this.localeService.getText("CurrentPowerLevel", args[0], record.getPower(), record.maxPower()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("CurrentPowerLevel"))
                 .replace("#power#", String.valueOf(record.getPower()))
                 .replace("#max#", String.valueOf(record.maxPower()))

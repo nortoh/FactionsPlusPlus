@@ -4,15 +4,14 @@
  */
 package dansplugins.factionsystem.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.integrators.DynmapIntegrator;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -23,14 +22,24 @@ import java.util.List;
 /**
  * @author Callum Johnson
  */
+@Singleton
 public class ConfigCommand extends SubCommand {
+
+    private final ConfigService configService;
+    private final LocaleService localeService;
+    private final MessageService messageService;
     private final MedievalFactions medievalFactions;
 
-    public ConfigCommand(LocaleService localeService, PersistentData persistentData, EphemeralData ephemeralData, PersistentData.ChunkDataAccessor chunkDataAccessor, DynmapIntegrator dynmapIntegrator, ConfigService configService, MedievalFactions medievalFactions, PlayerService playerService, MessageService messageService) {
-        super(new String[]{
-                "config", LOCALE_PREFIX + "CmdConfig"
-        }, false, new String[] {"mf.config", "mf.admin"}, persistentData, localeService, ephemeralData, configService, playerService, messageService, chunkDataAccessor, dynmapIntegrator);
+    @Inject
+    public ConfigCommand(ConfigService configService, LocaleService localeService, MessageService messageService, MedievalFactions medievalFactions) {
+        super();
+        this.configService = configService;
+        this.localeService = localeService;
+        this.messageService = messageService;
         this.medievalFactions = medievalFactions;
+        this
+            .setNames("config", LOCALE_PREFIX + "CmdConfig")
+            .requiresPermissions("mf.config", "mf.admin");
     }
 
     /**
@@ -59,20 +68,20 @@ public class ConfigCommand extends SubCommand {
             return;
         }
 
-        final boolean show = this.safeEquals(args[0], "get", "show", this.getText("CmdConfigShow"));
-        final boolean set = this.safeEquals(args[0], "set", this.getText("CmdConfigSet"));
+        final boolean show = this.safeEquals(args[0], "get", "show", this.localeService.getText("CmdConfigShow"));
+        final boolean set = this.safeEquals(args[0], "set", this.localeService.getText("CmdConfigSet"));
         final boolean reload = this.safeEquals(args[0], "reload", "CmdConfigReload");
 
         if (show) {
             if (args.length < 2) {
-                sender.sendMessage(this.translate("&c" + this.getText("UsageConfigShow")));
+                sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigShow")));
                 return;
             }
 
             int page = this.getIntSafe(args[1], -1);
 
             if (page == -1) {
-                sender.sendMessage(this.translate("&c" + this.getText("ArgumentMustBeNumber")));
+                sender.sendMessage(this.translate("&c" + this.localeService.getText("ArgumentMustBeNumber")));
                 return;
             }
 
@@ -84,11 +93,11 @@ public class ConfigCommand extends SubCommand {
                     this.configService.sendPageTwoOfConfigList(sender);
                     break;
                 default:
-                    sender.sendMessage(this.translate("&c" + this.getText("UsageConfigShow")));
+                    sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigShow")));
             }
         } else if (set) {
             if (args.length < 3) {
-                sender.sendMessage(this.translate("&c" + this.getText("UsageConfigSet")));
+                sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigSet")));
             } else {
                 this.configService.setConfigOption(args[1], args[2], sender);
             }
@@ -97,7 +106,7 @@ public class ConfigCommand extends SubCommand {
             this.messageService.reloadLanguage();
             sender.sendMessage(ChatColor.GREEN + "Config reloaded.");
         } else {
-            sender.sendMessage(this.translate("&c" + this.getText("ValidSubCommandsShowSet")));
+            sender.sendMessage(this.translate("&c" + this.localeService.getText("ValidSubCommandsShowSet")));
         }
     }
 
@@ -113,7 +122,7 @@ public class ConfigCommand extends SubCommand {
             return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
         } else if (args.length == 2) {
             if (args[0] == "show") return TabCompleteTools.completeMultipleOptions(args[1], "1", "2");
-            if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], configService.getStringConfigOptions());
+            if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
         }
         return null;
     }
