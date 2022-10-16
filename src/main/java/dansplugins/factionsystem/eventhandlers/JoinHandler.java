@@ -12,6 +12,7 @@ import dansplugins.factionsystem.events.FactionJoinEvent;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TerritoryOwnerNotifier;
@@ -35,15 +36,25 @@ public class JoinHandler implements Listener {
     private final Logger logger;
     private final Messenger messenger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
+    private final FactionService factionService;
 
     @Inject
-    public JoinHandler(PersistentData persistentData, LocaleService localeService, ConfigService configService, Logger logger, Messenger messenger, TerritoryOwnerNotifier territoryOwnerNotifier) {
+    public JoinHandler(
+        PersistentData persistentData,
+        LocaleService localeService,
+        ConfigService configService,
+        Logger logger,
+        Messenger messenger,
+        TerritoryOwnerNotifier territoryOwnerNotifier,
+        FactionService factionService
+    ) {
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.configService = configService;
         this.logger = logger;
         this.messenger = messenger;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
+        this.factionService = factionService;
     }
 
     @EventHandler()
@@ -143,7 +154,7 @@ public class JoinHandler implements Listener {
             return;
         }
 
-        if (playersFaction.isLiege() && playersFaction.isWeakened()) {
+        if (playersFaction.isLiege() && this.factionService.isWeakened(playersFaction)) {
             player.sendMessage(ChatColor.RED + localeService.get("AlertFactionIsWeakened"));
         }
     }

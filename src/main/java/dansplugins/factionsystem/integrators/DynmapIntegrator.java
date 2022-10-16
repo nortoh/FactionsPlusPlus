@@ -9,6 +9,8 @@ import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.objects.helper.ChunkFlags;
+import dansplugins.factionsystem.services.DataService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.utils.Logger;
 import org.bukkit.plugin.Plugin;
@@ -32,6 +34,8 @@ public class DynmapIntegrator {
     private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
     private final PersistentData persistentData;
+    private final FactionService factionService;
+    private final DataService dataService;
 
     // Claims/factions markers
     private final Map<String, AreaMarker> resAreas = new HashMap<>();
@@ -48,11 +52,20 @@ public class DynmapIntegrator {
     private MarkerSet realms;
 
     @Inject
-    public DynmapIntegrator(Logger logger, LocaleService localeService, MedievalFactions medievalFactions, PersistentData persistentData) {
+    public DynmapIntegrator(
+        Logger logger,
+        LocaleService localeService,
+        MedievalFactions medievalFactions,
+        PersistentData persistentData,
+        FactionService factionService,
+        DataService dataService
+    ) {
         this.logger = logger;
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
         this.persistentData = persistentData;
+        this.factionService = factionService;
+        this.dataService = dataService;
         PluginManager pm = getServer().getPluginManager();
 
         /* Get dynmap */
@@ -184,7 +197,7 @@ public class DynmapIntegrator {
         /* Loop through realms and build area markers coloured in the same colour
             as each faction's liege's colour. */
         for (Faction f : this.persistentData.getFactions()) {
-            String liegeName = f.getTopLiege();
+            String liegeName = this.factionService.getTopLiege(f);
             Faction liege = this.persistentData.getFaction(liegeName);
             String liegeColor;
             String popupText;
@@ -251,10 +264,10 @@ public class DynmapIntegrator {
         }
         message += "Allied With: " + f.getAlliesSeparatedByCommas() + "<br/>" +
                 "At War With: " + f.getEnemiesSeparatedByCommas() + "<br/>" +
-                "Power Level: " + f.getCumulativePowerLevel() + "<br/>" +
+                "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
                 this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(f.getName()),
-                f.getCumulativePowerLevel());
+                this.factionService.getCumulativePowerLevel(f));
         return message;
     }
 
@@ -264,7 +277,7 @@ public class DynmapIntegrator {
         int poly_index = 0; /* Index of polygon for given town */
 
         /* Handle areas */
-        List<ClaimedChunk> blocks = faction.getClaimedChunks();
+        List<ClaimedChunk> blocks = this.dataService.getClaimedChunksForFaction(faction);
         if (blocks.isEmpty())
             return;
         HashMap<String, ChunkFlags> blkmaps = new HashMap<>();

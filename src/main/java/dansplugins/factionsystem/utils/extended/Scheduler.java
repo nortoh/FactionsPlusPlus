@@ -11,6 +11,7 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -38,6 +39,7 @@ public class Scheduler {
     @Inject private PlayerTeleporter playerTeleporter;
     @Inject private PlayerService playerService;
     @Inject private MessageService messageService;
+    @Inject private FactionService factionService;
 
     public void scheduleAutosave() {
         logger.debug(localeService.get("SchedulingHourlyAutoSave"));
@@ -98,7 +100,7 @@ public class Scheduler {
     }
 
     private boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getName()) > faction.getCumulativePowerLevel());
+        return (persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getName()) > this.factionService.getCumulativePowerLevel(faction));
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {

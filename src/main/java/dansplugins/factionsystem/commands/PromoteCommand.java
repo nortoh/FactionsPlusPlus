@@ -150,7 +150,7 @@ public class PromoteCommand extends SubCommand {
             this.playerService.sendMessage(
                 player, 
                 "&c" + this.localeService.getText("PlayerCantBePromotedBecauseOfLimit", maxOfficers),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerCantBePromotedBecauseOfLimit")).replace("#number#", String.valueOf(this.faction.calculateMaxOfficers())), 
+                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerCantBePromotedBecauseOfLimit")).replace("#number#", String.valueOf(this.factionService.calculateMaxOfficers(faction))), 
                 true
             );
         }

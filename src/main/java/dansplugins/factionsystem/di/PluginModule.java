@@ -16,8 +16,6 @@ import java.util.Arrays;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.annotations.PostConstruct;
-import dansplugins.factionsystem.factories.FactionFactory;
-import dansplugins.factionsystem.factories.FactionFlagFactory;
 
 public class PluginModule extends AbstractModule implements TypeListener {
     private final MedievalFactions medievalFactions;
@@ -30,8 +28,6 @@ public class PluginModule extends AbstractModule implements TypeListener {
     protected void configure() {
         super.bindListener(Matchers.any(), this);
         bind(MedievalFactions.class).toInstance(medievalFactions);
-        install(new FactoryModuleBuilder().build(FactionFactory.class));
-        install(new FactoryModuleBuilder().build(FactionFlagFactory.class));
         bind(String.class)
             .annotatedWith(Names.named("dataFolder"))
             .toInstance(this.medievalFactions.getStoragePath());

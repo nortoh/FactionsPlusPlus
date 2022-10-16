@@ -12,6 +12,7 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TerritoryOwnerNotifier;
@@ -37,15 +38,25 @@ public class MoveHandler implements Listener {
     private final MedievalFactions medievalFactions;
     private final DynmapIntegrationService dynmapService;
     private final PlayerService playerService;
+    private final FactionService factionService;
 
     @Inject
-    public MoveHandler(PersistentData persistentData, TerritoryOwnerNotifier territoryOwnerNotifier, LocaleService localeService, MedievalFactions medievalFactions, DynmapIntegrationService dynmapService, PlayerService playerService) {
+    public MoveHandler(
+        PersistentData persistentData,
+        TerritoryOwnerNotifier territoryOwnerNotifier,
+        LocaleService localeService,
+        MedievalFactions medievalFactions,
+        DynmapIntegrationService dynmapService,
+        PlayerService playerService,
+        FactionService factionService
+    ) {
         this.persistentData = persistentData;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
         this.dynmapService = dynmapService;
         this.playerService = playerService;
+        this.factionService = factionService;
     }
 
     @EventHandler()
@@ -112,7 +123,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean notAtDemesneLimit(Faction faction) {
-        return persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getName()) < faction.getCumulativePowerLevel();
+        return persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getName()) < this.factionService.getCumulativePowerLevel(faction);
     }
 
     private void scheduleClaiming(Player player, Faction faction) {

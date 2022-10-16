@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.ChatColor;
@@ -27,13 +28,20 @@ public class ListCommand extends SubCommand {
     private final PlayerService playerService;
     private final LocaleService localeService;
     private final PersistentData persistentData;
+    private final FactionService factionService;
 
     @Inject
-    public ListCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData) {
+    public ListCommand(
+        PlayerService playerService,
+        LocaleService localeService,
+        PersistentData persistentData,
+        FactionService factionService
+    ) {
         super();
         this.playerService = playerService;
         this.localeService = localeService;
         this.persistentData = persistentData;
+        this.factionService = factionService;
         this
             .setNames("list", LOCALE_PREFIX + "CmdList")
             .requiresPermissions("mf.list");
@@ -81,7 +89,7 @@ public class ListCommand extends SubCommand {
         for (PersistentData.SortableFaction sortableFaction : sortedFactionList) {
             final Faction temp = sortableFaction.getFaction();
             sender.sendMessage(ChatColor.AQUA + String.format("%-25s %10s %10s %10s", temp.getName(), "P: " +
-                    temp.getCumulativePowerLevel(), "M: " + temp.getPopulation(), "L: " +
+                    this.factionService.getCumulativePowerLevel(temp), "M: " + temp.getPopulation(), "L: " +
                     this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())));
         }
     }

@@ -14,6 +14,7 @@ import dansplugins.factionsystem.factories.WarFactory;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -40,6 +41,7 @@ public class DeclareWarCommand extends SubCommand {
     private final LocaleService localeService;
     private final WarFactory warFactory;
     private final FactionRepository factionRepository;
+    private final FactionService factionService;
 
     @Inject
     public DeclareWarCommand(
@@ -49,7 +51,8 @@ public class DeclareWarCommand extends SubCommand {
         MessageService messageService,
         PersistentData persistentData,
         WarFactory warFactory,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        FactionService factionService
     ) {
         super();
         this.localeService = localeService;
@@ -59,6 +62,7 @@ public class DeclareWarCommand extends SubCommand {
         this.persistentData = persistentData;
         this.warFactory = warFactory;
         this.factionRepository = factionRepository;
+        this.factionService = factionService;
         this
             .setNames("declarewar", "dw", LOCALE_PREFIX + "CmdDeclareWar")
             .requiresPermissions("mf.declarewar")
@@ -144,9 +148,9 @@ public class DeclareWarCommand extends SubCommand {
             }
 
             if (!this.faction.getLiege().equalsIgnoreCase(opponent.getLiege())) {
-                final Faction enemyLiege = this.persistentData.getFaction(opponent.getLiege());
-                if (enemyLiege.calculateCumulativePowerLevelWithoutVassalContribution() <
-                        enemyLiege.getMaximumCumulativePowerLevel() / 2) {
+                final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
+                if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
+                        this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
                     this.playerService.sendMessage(
                         player,
                         "&c" + this.localeService.getText("CannotDeclareWarIfLiegeNotWeakened"),

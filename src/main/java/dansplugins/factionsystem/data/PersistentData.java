@@ -15,7 +15,6 @@ import com.google.gson.stream.JsonReader;
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.events.FactionClaimEvent;
 import dansplugins.factionsystem.events.FactionUnclaimEvent;
-import dansplugins.factionsystem.factories.FactionFactory;
 import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.LockedBlock;
 import dansplugins.factionsystem.models.PlayerRecord;
@@ -29,6 +28,7 @@ import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -78,6 +78,8 @@ public class PersistentData {
     private final DynmapIntegrationService dynmapService;
     private final BlockChecker blockChecker;
 
+    private final FactionService factionService;
+
     @Inject
     public PersistentData(
         LocaleService localeService,
@@ -94,7 +96,8 @@ public class PersistentData {
         FactionRepository factionRepository,
         ClaimedChunkRepository claimedChunkRepository,
         LockedBlockRepository lockedBlockRepository,
-        PlayerRecordRepository playerRecordRepository
+        PlayerRecordRepository playerRecordRepository,
+        FactionService factionService
     ) {
         this.localeService = localeService;
         this.configService = configService;
@@ -111,6 +114,7 @@ public class PersistentData {
         this.claimedChunkRepository = claimedChunkRepository;
         this.lockedBlockRepository = lockedBlockRepository;
         this.playerRecordRepository = playerRecordRepository;
+        this.factionService = factionService;
     }
 
     public BlockChecker getBlockChecker() {
@@ -477,7 +481,7 @@ public class PersistentData {
     public void disbandAllZeroPowerFactions() {
         ArrayList<String> factionsToDisband = new ArrayList<>();
         for (Faction faction : this.factionRepository.all()) {
-            if (faction.getCumulativePowerLevel() == 0) {
+            if (this.factionService.getCumulativePowerLevel(faction) == 0) {
                 factionsToDisband.add(faction.getName());
             }
         }
@@ -531,7 +535,7 @@ public class PersistentData {
 
     public List<SortableFaction> getSortedListOfFactions() {
         return this.factionRepository.all().stream()
-                .map(fac -> new SortableFaction(fac, fac.getCumulativePowerLevel()))
+                .map(fac -> new SortableFaction(fac, this.factionService.getCumulativePowerLevel(fac)))
                 .sorted() // Sort the Factions by Power.
                 .collect(Collectors.toList());
     }
@@ -824,7 +828,7 @@ public class PersistentData {
          * @return Whether the faction's claimed land exceeds their power.
          */
         public boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-            return (getChunksClaimedByFaction(faction.getName()) > faction.getCumulativePowerLevel());
+            return (getChunksClaimedByFaction(faction.getName()) > factionService.getCumulativePowerLevel(faction));
         }
 
         /**
@@ -949,7 +953,7 @@ public class PersistentData {
             // if demesne limit enabled
             if (configService.getBoolean("limitLand")) {
                 // if at demesne limit
-                if (!(getChunksClaimedByFaction(claimantsFaction.getName()) < claimantsFaction.getCumulativePowerLevel())) {
+                if (!(getChunksClaimedByFaction(claimantsFaction.getName()) < factionService.getCumulativePowerLevel(claimantsFaction))) {
                     playerService.sendMessage(claimant, ChatColor.RED + localeService.get("AlertReachedDemesne")
                             , "AlertReachedDemesne", false);
                     return;
@@ -985,7 +989,7 @@ public class PersistentData {
                     }
                 }
 
-                int targetFactionsCumulativePowerLevel = targetFaction.getCumulativePowerLevel();
+                int targetFactionsCumulativePowerLevel = factionService.getCumulativePowerLevel(targetFaction);
                 int chunksClaimedByTargetFaction = getChunksClaimedByFaction(targetFaction.getName());
 
                 // if target faction does not have more land than their demesne limit
@@ -1008,8 +1012,8 @@ public class PersistentData {
 
                     Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandConqueredFromAnotherFaction"), targetFaction.getName(), getChunksClaimedByFaction(claimantsFaction.getName()), claimantsFaction.getCumulativePowerLevel())
-                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandConqueredFromAnotherFaction")).replace("#name", targetFaction.getName()).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getName()))).replace("#max#", String.valueOf(claimantsFaction.getCumulativePowerLevel())), true);
+                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandConqueredFromAnotherFaction"), targetFaction.getName(), getChunksClaimedByFaction(claimantsFaction.getName()), factionService.getCumulativePowerLevel(claimantsFaction))
+                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandConqueredFromAnotherFaction")).replace("#name", targetFaction.getName()).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getName()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
 
                     messenger.sendAllPlayersInFactionMessage(targetFaction, playerService
                             .decideWhichMessageToUse(ChatColor.RED + String.format(localeService.get("AlertLandConqueredFromYourFaction"), claimantsFaction.getName())
@@ -1022,8 +1026,8 @@ public class PersistentData {
                 if (!claimEvent.isCancelled()) {
                     // chunk not already claimed
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandClaimed"), getChunksClaimedByFaction(claimantsFaction.getName()), claimantsFaction.getCumulativePowerLevel())
-                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandClaimed")).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getName()))).replace("#max#", String.valueOf(claimantsFaction.getCumulativePowerLevel())), true);
+                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandClaimed"), getChunksClaimedByFaction(claimantsFaction.getName()), factionService.getCumulativePowerLevel(claimantsFaction))
+                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandClaimed")).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getName()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
                 }
             }
         }
