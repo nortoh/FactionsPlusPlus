@@ -182,13 +182,11 @@ public class MakePeaceCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
-        // TODO: reimp
-        /*
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> factionEnemies = playerFaction.getEnemyFactions();
             return TabCompleteTools.filterStartingWith(args[0], factionEnemies);
-        } */
+        }
         return null;
     }
 }
