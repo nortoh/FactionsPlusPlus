@@ -197,8 +197,9 @@ public class DynmapIntegrator {
         /* Loop through realms and build area markers coloured in the same colour
             as each faction's liege's colour. */
         for (Faction f : this.persistentData.getFactions()) {
-            String liegeName = this.factionService.getTopLiege(f);
-            Faction liege = this.persistentData.getFaction(liegeName);
+            UUID liegeID = this.factionService.getTopLiege(f);
+            Faction liege = this.persistentData.getFactionByID(liegeID);
+            String liegeName = liege.getName();
             String liegeColor;
             String popupText;
             // If there's no liege, then f is the liege.
@@ -257,7 +258,7 @@ public class DynmapIntegrator {
                 "<div style='display: inline;' title='" + f.getMemberListSeparatedByCommas() + "'>Population: " + f.getMemberList().size() + "</div><br/>";
 
         if (f.hasLiege()) {
-            message += "Liege: " + f.getLiege() + "<br/>";
+            message += "Liege: " + this.dataService.getFactionByID(f.getLiege()).getName() + "<br/>";
         }
         if (f.isLiege()) {
             message += "Vassals: " + f.getVassalsSeparatedByCommas() + "<br/>";
@@ -266,7 +267,7 @@ public class DynmapIntegrator {
                 "At War With: " + f.getEnemiesSeparatedByCommas() + "<br/>" +
                 "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
-                this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(f.getName()),
+                this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(f.getID()),
                 this.factionService.getCumulativePowerLevel(f));
         return message;
     }

@@ -27,6 +27,7 @@ import preponderous.ponder.misc.ArgumentParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -126,7 +127,7 @@ public class DeclareWarCommand extends SubCommand {
             return;
         }
 
-        if (this.faction.isEnemy(opponent.getName())) {
+        if (this.faction.isEnemy(opponent.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("AlertAlreadyAtWarWith"),
@@ -137,7 +138,7 @@ public class DeclareWarCommand extends SubCommand {
         }
 
         if (this.faction.hasLiege() && opponent.hasLiege()) {
-            if (this.faction.isVassal(opponent.getName())) {
+            if (this.faction.isVassal(opponent.getID())) {
                 this.playerService.sendMessage(
                     player,
                     "&c" + this.localeService.getText("CannotDeclareWarOnVassal"),
@@ -147,8 +148,8 @@ public class DeclareWarCommand extends SubCommand {
                 return;
             }
 
-            if (!this.faction.getLiege().equalsIgnoreCase(opponent.getLiege())) {
-                final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
+            if (!this.faction.getLiege().equals(opponent.getLiege())) {
+                final Faction enemyLiege = this.factionRepository.getByID(opponent.getLiege());
                 if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
                         this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
                     this.playerService.sendMessage(
@@ -161,7 +162,7 @@ public class DeclareWarCommand extends SubCommand {
             }
         }
 
-        if (this.faction.isLiege(opponent.getName())) {
+        if (this.faction.isLiege(opponent.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotDeclareWarOnLiege"),
@@ -171,7 +172,7 @@ public class DeclareWarCommand extends SubCommand {
             return;
         }
 
-        if (this.faction.isAlly(opponent.getName())) {
+        if (this.faction.isAlly(opponent.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotDeclareWarOnAlly"),
@@ -205,8 +206,8 @@ public class DeclareWarCommand extends SubCommand {
         Bukkit.getPluginManager().callEvent(warStartEvent);
         if (!warStartEvent.isCancelled()) {
             // Make enemies.
-            this.faction.addEnemy(opponent.getName());
-            opponent.addEnemy(faction.getName());
+            this.faction.addEnemy(opponent.getID());
+            opponent.addEnemy(faction.getID());
             warFactory.createWar(this.faction, opponent);
             this.messageService.messageServer(
                 "&c" + this.localeService.getText("HasDeclaredWarAgainst", this.faction.getName(), opponent.getName()), 
@@ -241,11 +242,11 @@ public class DeclareWarCommand extends SubCommand {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             final List<String> factionsAllowedtoWar = new ArrayList<>();
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> playerEnemies = playerFaction.getEnemyFactions();
-            ArrayList<String> playerAllies = playerFaction.getAllies();
+            ArrayList<UUID> playerEnemies = playerFaction.getEnemyFactions();
+            ArrayList<UUID> playerAllies = playerFaction.getAllies();
             for(Faction faction : this.persistentData.getFactions()) {
                 // If the faction is not an ally and they are not already enemied to them
-                if(!playerAllies.contains(faction.getName()) && !playerEnemies.contains(faction.getName()) && !faction.getName().equalsIgnoreCase(playerFaction.getName())) {
+                if(!playerAllies.contains(faction.getID()) && !playerEnemies.contains(faction.getID()) && !faction.getID().equals(playerFaction.getID())) {
                     factionsAllowedtoWar.add(faction.getName());
                 }
             }

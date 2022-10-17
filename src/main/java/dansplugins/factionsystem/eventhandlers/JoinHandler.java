@@ -25,6 +25,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.UUID;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -138,8 +139,8 @@ public class JoinHandler implements Listener {
     private void setPlayerActionBarTerritoryInfo(Player player) {
         if (configService.getBoolean("territoryIndicatorActionbar")) {
             if (chunkIsClaimed(player)) {
-                String factionName = persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk()).getHolder();
-                Faction holder = persistentData.getFaction(factionName);
+                UUID factionUUID = persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk()).getHolder();
+                Faction holder = persistentData.getFactionByID(factionUUID);
                 territoryOwnerNotifier.sendPlayerTerritoryAlert(player, holder);
                 return;
             }

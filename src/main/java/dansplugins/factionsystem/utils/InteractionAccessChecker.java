@@ -59,7 +59,7 @@ public class InteractionAccessChecker {
     }
 
     private boolean isLandClaimedByPlayersFaction(Faction faction, ClaimedChunk claimedChunk) {
-        return faction.getName().equalsIgnoreCase(claimedChunk.getHolder());
+        return faction.getID().equals(claimedChunk.getHolder());
     }
 
     private boolean factionsProtectionsNotEnabled() {
@@ -75,7 +75,7 @@ public class InteractionAccessChecker {
             return true;
         }
 
-        final Faction chunkHolder = this.persistentData.get().getFaction(chunk.getHolder());
+        final Faction chunkHolder = this.persistentData.get().getFactionByID(chunk.getHolder());
 
         boolean inVassalageTree = this.persistentData.get().isPlayerInFactionInVassalageTree(player, chunkHolder);
         boolean isAlly = playersFaction.isAlly(chunk.getHolder());

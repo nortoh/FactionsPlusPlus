@@ -58,7 +58,7 @@ public class SetHomeCommand extends SubCommand {
             return;
         }
         ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk());
-        if (chunk == null || !chunk.getHolder().equalsIgnoreCase(this.faction.getName())) {
+        if (chunk == null || !chunk.getHolder().equals(this.faction.getID())) {
             this.playerService.sendMessage(
                 player, 
                 "&c" + this.localeService.getText("CannotSetFactionHomeInWilderness"),

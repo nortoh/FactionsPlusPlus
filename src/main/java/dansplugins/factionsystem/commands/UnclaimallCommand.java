@@ -139,7 +139,7 @@ public class UnclaimallCommand extends SubCommand {
         );
 
         // remove claimed chunks
-        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getName());
+        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());
         this.dynmapService.updateClaimsIfAble();
         this.playerService.sendMessage(
             sender, 
@@ -149,7 +149,7 @@ public class UnclaimallCommand extends SubCommand {
         );
 
         // remove locks associated with this faction
-        this.persistentData.removeAllLocks(faction.getName());
+        this.persistentData.removeAllLocks(faction.getID());
     }
 
     /**

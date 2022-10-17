@@ -174,8 +174,8 @@ public class ForceCommand extends SubCommand {
         FactionWarEndEvent warEndEvent = new FactionWarEndEvent(former, latter);
         Bukkit.getPluginManager().callEvent(warEndEvent);
         if (!warEndEvent.isCancelled()) {
-            if (former.isEnemy(latter.getName())) former.removeEnemy(latter.getName());
-            if (latter.isEnemy(former.getName())) latter.removeEnemy(former.getName());
+            if (former.isEnemy(latter.getID())) former.removeEnemy(latter.getID());
+            if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
 
             // announce peace to all players on server.
             this.messageService.messageServer(
@@ -361,10 +361,10 @@ public class ForceCommand extends SubCommand {
             return;
         }
 
-        long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(factionName);
+        long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(faction.getID());
 
-        if (!faction.getLiege().equalsIgnoreCase("none")) {
-            faction.setLiege("none");
+        if (faction.getLiege() != null) {
+            faction.setLiege(null);
             changes++;
         }
         if (faction.getNumVassals() != 0) {
@@ -437,9 +437,9 @@ public class ForceCommand extends SubCommand {
         final Faction vassal = this.factionRepository.get(doubleQuoteArgs.get(1));
         if (liege != null && vassal != null) {
             // remove vassal from liege
-            if (liege.isVassal(vassal.getName())) liege.removeVassal(vassal.getName());
+            if (liege.isVassal(vassal.getID())) liege.removeVassal(vassal.getID());
             // set liege to "none" for vassal (if faction exists)
-            if (vassal.isLiege(liege.getName())) vassal.setLiege("none");
+            if (vassal.isLiege(liege.getID())) vassal.setLiege(null);
         }
         sender.sendMessage(this.translate("&a" + this.localeService.getText("Done")));
     }
@@ -481,8 +481,6 @@ public class ForceCommand extends SubCommand {
         // change name
         faction.setName(newName);
         sender.sendMessage(this.translate("&a" + this.localeService.getText("FactionNameChanged")));
-
-        this.persistentData.updateFactionReferencesDueToNameChange(oldName, newName);
 
         // Prefix (if it was unset)
         if (faction.getPrefix().equalsIgnoreCase(oldName)) faction.setPrefix(newName);

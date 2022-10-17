@@ -1,6 +1,7 @@
 package dansplugins.factionsystem.models.interfaces;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * @author Daniel Stephenson
@@ -8,36 +9,36 @@ import java.util.ArrayList;
 public interface Feudal {
 
     // type
-    boolean isVassal(String name);
+    boolean isVassal(UUID uuid);
 
     boolean isLiege();
 
-    String getLiege();
+    UUID getLiege();
 
     // liege
-    void setLiege(String newLiege);
+    void setLiege(UUID uuid);
 
     boolean hasLiege();
 
-    boolean isLiege(String name);
+    boolean isLiege(UUID uuid);
 
     // vassalage
-    void addVassal(String name);
+    void addVassal(UUID uuid);
 
-    void removeVassal(String name);
+    void removeVassal(UUID uuid);
 
     void clearVassals();
 
     int getNumVassals();
 
-    ArrayList<String> getVassals();
+    ArrayList<UUID> getVassals();
 
     String getVassalsSeparatedByCommas();
 
-    void addAttemptedVassalization(String name);
+    void addAttemptedVassalization(UUID uuid);
 
-    boolean hasBeenOfferedVassalization(String name);
+    boolean hasBeenOfferedVassalization(UUID uuid);
 
-    void removeAttemptedVassalization(String name);
+    void removeAttemptedVassalization(UUID uuid);
 
 }

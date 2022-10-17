@@ -18,8 +18,10 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -80,12 +82,12 @@ public class GrantIndependenceCommand extends SubCommand {
             );
             return;
         }
-        if (!target.isLiege(this.faction.getName())) {
+        if (!target.isLiege(this.faction.getID())) {
             player.sendMessage(this.translate("&c" + this.localeService.getText("FactionIsNotVassal")));
             return;
         }
-        target.setLiege("none");
-        this.faction.removeVassal(target.getName());
+        target.setLiege(null);
+        this.faction.removeVassal(target.getID());
         // inform all players in that faction that they are now independent
         this.messageService.messageFaction(
             target,
@@ -124,7 +126,9 @@ public class GrantIndependenceCommand extends SubCommand {
     public List<String> handleTabComplete(Player player, String[] args) {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            return TabCompleteTools.filterStartingWith(args[0], playerFaction.getVassals());
+            ArrayList<String> vassalNames = new ArrayList<>();
+            for (UUID factionUUID : playerFaction.getVassals()) vassalNames.add(this.factionRepository.getByID(factionUUID).getName());
+            return TabCompleteTools.filterStartingWith(args[0], vassalNames);
         }
         return null;
     }

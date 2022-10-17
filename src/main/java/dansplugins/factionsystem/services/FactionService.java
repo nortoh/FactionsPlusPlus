@@ -59,8 +59,8 @@ public class FactionService {
     public int calculateCumulativePowerLevelWithVassalContribution(Faction faction) {
         int vassalContribution = 0;
         double percentage = this.configService.getDouble("vassalContributionPercentageMultiplier");
-        for (String factionName : faction.getVassals()) {
-            Faction vassalFaction = this.factionRepository.get(factionName);
+        for (UUID factionUUID : faction.getVassals()) {
+            Faction vassalFaction = this.factionRepository.getByID(factionUUID);
             if (vassalFaction != null) {
                 vassalContribution += this.getCumulativePowerLevel(vassalFaction) * percentage;
             }
@@ -96,17 +96,17 @@ public class FactionService {
         return this.calculateCumulativePowerLevelWithoutVassalContribution(faction) < (this.getMaximumCumulativePowerLevel(faction) / 2);
     }
 
-    public String getTopLiege(Faction faction) 
+    public UUID getTopLiege(Faction faction) 
     {
-        String liegeName = faction.getLiege();
-        Faction topLiege = this.factionRepository.get(liegeName);
+        UUID liegeUUID = faction.getLiege();
+        Faction topLiege = this.factionRepository.getByID(liegeUUID);
         while (topLiege != null) {
-            topLiege = this.factionRepository.get(topLiege.getLiege());
+            topLiege = this.factionRepository.getByID(liegeUUID);
             if (topLiege != null) {
-                liegeName = topLiege.getName();
+                liegeUUID = topLiege.getID();
             }
         }
-        return liegeName;
+        return liegeUUID;
     }
 
     public HashMap<String, FactionFlag> getDefaultFlags() {
