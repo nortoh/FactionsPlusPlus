@@ -7,6 +7,8 @@ package dansplugins.factionsystem.models;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dansplugins.factionsystem.objects.helper.GateCoord;
+import dansplugins.factionsystem.constants.GateStatus;
+import dansplugins.factionsystem.constants.ErrorCodeAddCoord;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -95,6 +97,46 @@ public class Gate {
         _world = null;
     }
 
+    public boolean isVertical() {
+        return this.vertical;
+    }
+
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
+    public Sound getSoundEffect() {
+        return this.soundEffect;
+    }
+
+    public void setStatus(GateStatus status) {
+        this.gateStatus = status;
+    }
+
+    public Material getMaterial() {
+        return this.material;
+    }
+
+    public void setCoord1(GateCoord coord) {
+        this.coord1 = coord;
+    }
+
+    public void setCoord2(GateCoord coord) {
+        this.coord2 = coord;
+    }
+
+    public void setTrigger(GateCoord coord) {
+        this.trigger = coord;
+    }
+
+    public void setMaterial(Material material) {
+        this.material = material;
+    }
+
+    public void setVertical(boolean vertical) {
+        this.vertical = vertical;
+    }
+    
     public JsonElement toJson() {
         return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create().toJsonTree(this);
     }
@@ -297,59 +339,6 @@ public class Gate {
         return true;
     }
 
-    public ErrorCodeAddCoord addCoord(Block clickedBlock) {
-        if (coord1 == null) {
-            setWorld(clickedBlock.getWorld().getName());
-            coord1 = new GateCoord(clickedBlock);
-            material = clickedBlock.getType();
-        } else if (coord2 == null) {
-            if (!coord1.getWorld().equalsIgnoreCase(clickedBlock.getWorld().getName())) {
-                return ErrorCodeAddCoord.WorldMismatch;
-            }
-            if (!clickedBlock.getType().equals(material)) {
-                return ErrorCodeAddCoord.MaterialMismatch;
-            }
-            // GetDim methods use coord2 object.
-            coord2 = new GateCoord(clickedBlock);
-            if (getDimX() > 1 && getDimY() > 1 && getDimZ() > 1) {
-                // No cuboids.
-                coord2 = null;
-                return ErrorCodeAddCoord.NoCuboids;
-            }
-            if (getDimY() <= 2) {
-                coord2 = null;
-                return ErrorCodeAddCoord.LessThanThreeHigh;
-            }
-
-            if (isParallelToX() && getDimY() > 1) {
-                vertical = true;
-            } else {
-                vertical = isParallelToZ() && getDimY() > 1;
-            }
-
-            int area = 0;
-            if (isParallelToX()) {
-                area = getDimX() * getDimY();
-            } else if (isParallelToZ()) {
-                area = getDimZ() * getDimY();
-            }
-
-            // TODO: add this back in GateService
-            /*if (area > configService.getInt("factionMaxGateArea")) {
-                // Gate size exceeds config limit.
-                coord2 = null;
-                return ErrorCodeAddCoord.Oversized;
-            }*/
-            if (!gateBlocksMatch(material)) {
-                coord2 = null;
-                return ErrorCodeAddCoord.MaterialMismatch;
-            }
-        } else {
-            trigger = new GateCoord(clickedBlock);
-        }
-        return ErrorCodeAddCoord.None;
-    }
-
     public int getDimX() {
         return getDimX(coord1, coord2);
     }
@@ -390,219 +379,6 @@ public class Gate {
             first = tmp;
         }
         return second.getZ() - first.getZ();
-    }
-
-    public void openGate() {
-        if (open || !gateStatus.equals(GateStatus.READY)) {
-            return;
-        }
-        open = true;
-        gateStatus = GateStatus.OPENING;
-
-        // For vertical we only need to iterate over x/y
-        if (vertical) {
-            if (isParallelToX()) {
-                int topY = coord1.getY();
-                int _bottomY = coord2.getY();
-                if (coord2.getY() > coord1.getY()) {
-                    topY = coord2.getY();
-                    _bottomY = coord1.getY();
-                }
-                final int bottomY = _bottomY;
-
-                int _leftX = coord1.getX();
-                int _rightX = coord2.getX();
-                if (coord2.getX() < coord1.getX()) {
-                    _leftX = coord2.getX();
-                    _rightX = coord1.getX();
-                }
-
-                final int leftX = _leftX;
-                final int rightX = _rightX;
-
-                int c = 0;
-                for (int y = bottomY; y <= topY; y++) {
-                    c++;
-                    final int blockY = y;
-                    // TODO: Reimplement without dep
-                    /* 
-                    Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                        Block b;
-
-                        @Override
-                        public void run() {
-                            for (int x = leftX; x <= rightX; x++) {
-                                b = getWorld().getBlockAt(x, blockY, coord1.getZ());
-                                b.setType(Material.AIR);
-                                getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
-                            }
-                        }
-                    }, c * 10L); */
-                }
-                // TODO: Reimplement without dep
-                /*
-                Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                    @Override
-                    public void run() {
-                        gateStatus = GateStatus.READY;
-                        open = true;
-                    }
-                }, (topY - bottomY + 2) * 10L); */
-            } else if (isParallelToZ()) {
-                int topY = coord1.getY();
-                int _bottomY = coord2.getY();
-                if (coord2.getY() > coord1.getY()) {
-                    topY = coord2.getY();
-                    _bottomY = coord1.getY();
-                }
-                final int bottomY = _bottomY;
-                int _leftZ = coord1.getZ();
-                int _rightZ = coord2.getZ();
-                if (coord2.getZ() < coord1.getZ()) {
-                    _leftZ = coord2.getZ();
-                    _rightZ = coord1.getZ();
-                }
-
-                final int leftZ = _leftZ;
-                final int rightZ = _rightZ;
-
-                int c = 0;
-                for (int y = bottomY; y <= topY; y++) {
-                    c++;
-                    final int blockY = y;
-                    // TODO: reimplement without dep
-                    /* 
-                    Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                        Block b;
-
-                        @Override
-                        public void run() {
-                            for (int z = leftZ; z <= rightZ; z++) {
-                                b = getWorld().getBlockAt(coord1.getX(), blockY, z);
-                                b.setType(Material.AIR);
-                                getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
-                            }
-                        }
-                    }, c * 10L); */
-                }
-                // TODO: reimp later without dep
-                /*
-                Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                    @Override
-                    public void run() {
-                        gateStatus = GateStatus.READY;
-                        open = true;
-                    }
-                }, (topY - bottomY + 2) * 10L); */
-            }
-        }
-    }
-
-    public void closeGate() {
-        if (!open || !gateStatus.equals(GateStatus.READY)) {
-            return;
-        }
-
-        open = false;
-        gateStatus = GateStatus.CLOSING;
-
-        // For vertical we only need to iterate over x/y
-        if (vertical) {
-            if (isParallelToX()) {
-                int topY = coord1.getY();
-                int _bottomY = coord2.getY();
-                if (coord2.getY() > coord1.getY()) {
-                    topY = coord2.getY();
-                    _bottomY = coord1.getY();
-                }
-                final int bottomY = _bottomY;
-                int _leftX = coord1.getX();
-                int _rightX = coord2.getX();
-                if (coord2.getX() < coord1.getX()) {
-                    _leftX = coord2.getX();
-                    _rightX = coord1.getX();
-                }
-
-                final int leftX = _leftX;
-                final int rightX = _rightX;
-
-                int c = 0;
-                for (int y = topY; y >= bottomY; y--) {
-                    c++;
-                    final int blockY = y;
-                    // TODO: reimp without dep
-                    /*
-                    Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                        Block b;
-
-                        @Override
-                        public void run() {
-                            for (int x = leftX; x <= rightX; x++) {
-                                b = getWorld().getBlockAt(x, blockY, coord1.getZ());
-                                b.setType(material);
-                                getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
-                            }
-                        }
-                    }, c * 10L); */
-                }
-                // TODO: reimp without dep
-                /*
-                Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                    @Override
-                    public void run() {
-                        gateStatus = GateStatus.READY;
-                        open = false;
-                    }
-                }, (topY - bottomY + 2) * 10L); */
-            } else if (isParallelToZ()) {
-                int topY = coord1.getY();
-                int _bottomY = coord2.getY();
-                if (coord2.getY() > coord1.getY()) {
-                    topY = coord2.getY();
-                    _bottomY = coord1.getY();
-                }
-                final int bottomY = _bottomY;
-                int _leftZ = coord1.getZ();
-                int _rightZ = coord2.getZ();
-
-                if (coord2.getZ() < coord1.getZ()) {
-                    _leftZ = coord2.getZ();
-                    _rightZ = coord1.getZ();
-                }
-                final int leftZ = _leftZ;
-                final int rightZ = _rightZ;
-
-                int c = 0;
-                for (int y = topY; y >= bottomY; y--) {
-                    c++;
-                    final int blockY = y;
-                    // TODO: reimp without dep
-                    /*
-                    Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                        Block b;
-
-                        @Override
-                        public void run() {
-                            for (int z = leftZ; z <= rightZ; z++) {
-                                b = getWorld().getBlockAt(coord1.getX(), blockY, z);
-                                b.setType(material);
-                                b.getState().update(true);
-                                getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
-                            }
-                        }
-                    }, c * 10L); */
-                }
-                // TODO: reimp without dep
-                /*
-                Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
-                    @Override
-                    public void run() {
-                        gateStatus = GateStatus.READY;
-                        open = false;
-                    }
-                }, (topY - bottomY + 2) * 10L); */
-            }
-        }
     }
 
     public void fillGate() {
@@ -718,10 +494,6 @@ public class Gate {
         return String.format("(%d, %d, %d to %d, %d, %d) Trigger (%d, %d, %d)", coord1.getX(), coord1.getY(), coord1.getZ(), coord2.getX(), coord2.getY(), coord2.getZ(),
                 trigger.getX(), trigger.getY(), trigger.getZ());
     }
-
-    public enum GateStatus {READY, OPENING, CLOSING}
-
-    public enum ErrorCodeAddCoord {None, WorldMismatch, MaterialMismatch, NoCuboids, Oversized, LessThanThreeHigh}
 
     @SuppressWarnings("unused")
     private static class GateJson {
