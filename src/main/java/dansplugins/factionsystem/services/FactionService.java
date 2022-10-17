@@ -13,16 +13,19 @@ public class FactionService {
     private final ConfigService configService;
     private final FactionRepository factionRepository;
     private final PlayerRecordRepository playerRecordRepository;
+    private final PlayerService playerService;
 
     @Inject
     public FactionService(
         ConfigService configService,
         FactionRepository factionRepository,
-        PlayerRecordRepository playerRecordRepository
+        PlayerRecordRepository playerRecordRepository,
+        PlayerService playerService
     ) {
         this.configService = configService;
         this.factionRepository = factionRepository;
         this.playerRecordRepository = playerRecordRepository;
+        this.playerService = playerService;
     }
 
     public void setBonusPower(Faction faction, int power) {
@@ -78,7 +81,7 @@ public class FactionService {
 
         for (UUID playerUUID : faction.getMemberList()) {
             try {
-                maxPower += this.playerRecordRepository.get(playerUUID).maxPower();
+                maxPower += this.playerService.getMaxPower(playerUUID);
             } catch (Exception e) {
                 // TODO: log this?
             }

@@ -318,7 +318,7 @@ public class PersistentData {
         for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
             PlayerRecord record = this.getPlayerRecord(player.getUniqueId());
             if (record == null) {
-                PlayerRecord newRecord = new PlayerRecord(player.getUniqueId(), 1);
+                PlayerRecord newRecord = new PlayerRecord(player.getUniqueId(), 1, this.configService.getInt("initialPowerLevel"));
                 newRecord.setLastLogout(ZonedDateTime.now());
                 this.playerRecordRepository.create(newRecord);
             }
@@ -468,14 +468,13 @@ public class PersistentData {
     }
 
     private void initiatePowerIncrease(PlayerRecord record) {
-        // TODO: reimplement
-        /*
-        if (powerRecord.getPower() < powerRecord.maxPower() && Objects.requireNonNull(getServer().getPlayer(powerRecord.getPlayerUUID())).isOnline()) {
-            powerRecord.increasePower();
-            playerService.sendMessage(getServer().getPlayer(powerRecord.getPlayerUUID()), ChatColor.GREEN + String.format(localeService.get("AlertPowerLevelIncreasedBy"), configService.getInt("powerIncreaseAmount"))
-                    , Objects.requireNonNull(messageService.getLanguage().getString("AlertPowerLevelIncreasedBy"))
-                            .replace("#amount#", String.valueOf(configService.getInt("powerIncreaseAmount"))), true);
-        }*/
+        double maxPower = this.playerService.getMaxPower(record.getPlayerUUID());
+        if (record.getPower() < maxPower && Objects.requireNonNull(getServer().getPlayer(record.getPlayerUUID())).isOnline()) {
+            this.playerService.increasePower(record.getPlayerUUID());
+            playerService.sendMessage(getServer().getPlayer(record.getPlayerUUID()), ChatColor.GREEN + String.format(this.localeService.get("AlertPowerLevelIncreasedBy"), this.configService.getInt("powerIncreaseAmount"))
+                    , Objects.requireNonNull(this.messageService.getLanguage().getString("AlertPowerLevelIncreasedBy"))
+                            .replace("#amount#", String.valueOf(this.configService.getInt("powerIncreaseAmount"))), true);
+        }
     }
 
     public void disbandAllZeroPowerFactions() {
@@ -528,7 +527,7 @@ public class PersistentData {
             }
             if (!isOnline && this.configService.getBoolean("powerDecreases") && record.getMinutesSinceLastLogout() > configService.getInt("minutesBeforePowerDecrease")) {
                 record.incrementPowerLost();
-                record.decreasePower();
+                this.playerService.decreasePower(record.getPlayerUUID());
             }
         }
     }

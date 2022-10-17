@@ -24,9 +24,10 @@ public class PlayerRecord {
     @Expose
     private double powerLevel = 0;
 
-    public PlayerRecord(UUID playerUUID, int initialLogins) {
+    public PlayerRecord(UUID playerUUID, int initialLogins, double initialPowerLevel) {
         this.playerUUID = playerUUID;
         this.stats = new PlayerStats(initialLogins);
+        this.powerLevel = initialPowerLevel;
     }
 
     public UUID getPlayerUUID() {
@@ -77,58 +78,6 @@ public class PlayerRecord {
 
     public String getTimeSinceLastLogout() {
         return this.stats.getTimeSinceLastLogout();
-    }
-
-    // reimplement in PlayerService
-    public double maxPower() {
-        return 0;
-        /*
-        if (isPlayerAFactionOwner(playerUUID)) {
-            return (int) (configService.getDouble("initialMaxPowerLevel") * configService.getDouble("factionOwnerMultiplier"));
-        }
-
-        if (isPlayerAFactionOfficer(playerUUID)) {
-            return (int) (configService.getDouble("initialMaxPowerLevel") * configService.getDouble("factionOfficerMultiplier"));
-        }
-
-        return configService.getInt("initialMaxPowerLevel");
-        */
-    }
-    public void decreasePower() {
-        /*
-        if (powerLevel > 0) {
-            powerLevel -= configService.getInt("powerDecreaseAmount");
-            if (powerLevel < 0) {
-                powerLevel = 0;
-            }
-        }
-        */
-    }
-    public void increasePower() {
-        /*
-        if (powerLevel < maxPower()) {
-            powerLevel += configService.getInt("powerIncreaseAmount");
-            if (powerLevel > maxPower()) {
-                powerLevel = maxPower();
-            }
-        }
-        */
-    }
-
-    public double revokePowerDueToDeath() {
-        return 0;
-        /*
-        double powerLost = configService.getDouble("powerLostOnDeath");
-        powerLevel = Math.max(powerLevel - powerLost, 0);
-        return powerLost;
-        */
-    }
-
-    public void grantPowerDueToKill() {
-        /*
-        double powerGained = configService.getDouble("powerGainedOnKill");
-        powerLevel = Math.min(powerLevel + powerGained, maxPower());
-        */
     }
 
     public void incrementPowerLost() {
