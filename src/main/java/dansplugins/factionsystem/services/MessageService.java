@@ -175,4 +175,8 @@ public class MessageService implements ColorTranslator {
         );
     }
 
+    public void sendOnlyPlayersCanUseThisCommandMessage(CommandSender sender) {
+        sender.sendMessage(this.translate(this.localeService.getText("OnlyPlayersCanUseCommand")));
+    }
+
 }

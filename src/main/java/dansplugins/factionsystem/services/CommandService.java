@@ -65,9 +65,9 @@ public class CommandService implements TabCompleter {
     public void registerCommands() {
         this.registerCommand(AddLawCommand.class);
         this.registerCommand(CreateCommand.class);
+        this.registerCommand(AutoClaimCommand.class);
         this.subCommands.addAll(Arrays.asList(
                 //this.registerCommand(AllyCommand.class),
-                this.medievalFactions.getInjector().getInstance(AutoClaimCommand.class),
                 this.medievalFactions.getInjector().getInstance(BreakAllianceCommand.class),
                 this.medievalFactions.getInjector().getInstance(BypassCommand.class),
                 this.medievalFactions.getInjector().getInstance(ChatCommand.class),
@@ -216,7 +216,10 @@ public class CommandService implements TabCompleter {
 
         // Check if we require a player context (i.e. not the console)
         if (command.shouldRequirePlayerExecution()) {
-            if (!(sender instanceof Player)) return false;
+            if (!(sender instanceof Player)) {
+                this.messageService.sendOnlyPlayersCanUseThisCommandMessage(sender);
+                return false;
+            }
         }
 
         // Check if this command should require faction specific stuff
@@ -388,8 +391,8 @@ public class CommandService implements TabCompleter {
 
     private ArrayList<String> getSubCommandNamesForSender(CommandSender sender) {
         ArrayList<String> commandNames = new ArrayList<String>();
-        for (SubCommand subCommand : this.subCommands) {
-            if (subCommand.checkPermissions(sender).size() == 0) commandNames.add(subCommand.getPrimaryCommandName().toLowerCase());
+        for (Command subCommand : this.commandRepository.all().values()) {
+            if (this.checkPermissions(sender, subCommand.getRequiredPermissions()).size() == 0) commandNames.add(subCommand.getName().toLowerCase());
         }
         return commandNames;
     }
