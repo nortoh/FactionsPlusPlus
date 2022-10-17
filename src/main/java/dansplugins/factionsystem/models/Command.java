@@ -1,14 +1,19 @@
 package dansplugins.factionsystem.models;
 
 import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.commands.abs.ColorTranslator;
 import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Command {
+import org.bukkit.entity.Player;
+
+public class Command implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
     private String name;
     private String[] aliases;
@@ -188,5 +193,9 @@ public class Command {
     
     public String toString() {
         return this.description;
+    }
+
+    public List<String> handleTabComplete(Player player, String[] args) {
+        return new ArrayList<>();
     }
 }
