@@ -72,6 +72,7 @@ public class PowerCommand extends SubCommand {
     @Override
     public void execute(CommandSender sender, String[] args, String key) {
         final PlayerRecord record;
+        double maxPower;
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
                 this.playerService.sendMessage(
@@ -83,12 +84,13 @@ public class PowerCommand extends SubCommand {
                 return;
             }
             record = this.persistentData.getPlayerRecord(((Player) sender).getUniqueId());
+            maxPower = this.playerService.getMaxPower(((Player) sender).getUniqueId());
             this.playerService.sendMessage(
                 sender,
-                "&b" + this.localeService.getText("AlertCurrentPowerLevel", record.getPower(), record.maxPower()),
+                "&b" + this.localeService.getText("AlertCurrentPowerLevel", record.getPower(), maxPower),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCurrentPowerLevel"))
                     .replace("#power#", String.valueOf(record.getPower()))
-                    .replace("#max#", String.valueOf(record.maxPower())),
+                    .replace("#max#", String.valueOf(maxPower)),
                 true
             );
             return;
@@ -105,12 +107,13 @@ public class PowerCommand extends SubCommand {
             return;
         }
         record = this.persistentData.getPlayerRecord(target);
+        maxPower = this.playerService.getMaxPower(target);
         this.playerService.sendMessage(
             sender, 
-            "&b" + this.localeService.getText("CurrentPowerLevel", args[0], record.getPower(), record.maxPower()),
+            "&b" + this.localeService.getText("CurrentPowerLevel", args[0], record.getPower(), maxPower),
             Objects.requireNonNull(this.messageService.getLanguage().getString("CurrentPowerLevel"))
                 .replace("#power#", String.valueOf(record.getPower()))
-                .replace("#max#", String.valueOf(record.maxPower()))
+                .replace("#max#", String.valueOf(maxPower))
                 .replace("#name#", args[0]),
             true
         );

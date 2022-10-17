@@ -15,6 +15,7 @@ import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DataService;
 import dansplugins.factionsystem.services.FactionService;
+import dansplugins.factionsystem.services.PlayerService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -31,6 +32,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
     private final ConfigService configService;
     private final FactionService factionService;
     private final DataService dataService;
+    private final PlayerService playerService;
 
     @Inject
     public PlaceholderAPI(
@@ -38,13 +40,15 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         PersistentData persistentData,
         ConfigService configService,
         FactionService factionService,
-        DataService dataService
+        DataService dataService,
+        PlayerService playerService
     ) {
         this.medievalFactions = medievalFactions;
         this.persistentData = persistentData;
         this.configService = configService;
         this.factionService = factionService;
         this.dataService = dataService;
+        this.playerService = playerService;
     }
 
     @Override
@@ -158,12 +162,12 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_player_max_power")) {
             // The player-specific max_power which is their total contribute-able power toward their Faction's power.
-            return String.valueOf(persistentData.getPlayerRecord(player.getUniqueId()).maxPower());
+            return String.valueOf(this.playerService.getMaxPower(player.getUniqueId()));
         }
         if (id.equalsIgnoreCase("faction_player_power_full")) {
             // The formatted version of the 'power' and 'max_power' placeholders, 10/10 for example.
             final PlayerRecord playersPowerRecord = persistentData.getPlayerRecord(player.getUniqueId());
-            return playersPowerRecord.getPower() + "/" + playersPowerRecord.maxPower();
+            return playersPowerRecord.getPower() + "/" + this.playerService.getMaxPower(player.getUniqueId());
         }
 
         // Player-Specific.

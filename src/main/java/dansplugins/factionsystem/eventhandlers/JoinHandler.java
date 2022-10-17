@@ -104,7 +104,7 @@ public class JoinHandler implements Listener {
     }
 
     private void createRecordsForPlayer(Player player) {
-        PlayerRecord record = new PlayerRecord(player.getUniqueId(), 1);
+        PlayerRecord record = new PlayerRecord(player.getUniqueId(), 1, this.configService.getInt("initialPowerLevel"));
         this.persistentData.addPlayerRecord(record);
     }
 
