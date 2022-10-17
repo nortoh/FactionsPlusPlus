@@ -48,7 +48,7 @@ public class DataService {
     }
 
     public Faction getRandomFaction() {
-        return this.factionRepository.all().get(new Random().generator.nextInt(this.factionRepository.all().size()));
+        return this.factionRepository.all().get(new Random().nextInt(this.factionRepository.all().size()));
     }
 
     public ClaimedChunkRepository getClaimedChunkRepository() {
