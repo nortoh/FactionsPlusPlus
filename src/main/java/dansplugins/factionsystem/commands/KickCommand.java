@@ -135,7 +135,7 @@ public class KickCommand extends SubCommand {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(targetUUID);
         this.faction.removeMember(targetUUID);
-        this.messageFaction(
+        this.messageService.messageFaction(
             this.faction,
             "&c" + this.localeService.getText("HasBeenKickedFrom", target.getName(), this.faction.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasBeenKickedFrom"))

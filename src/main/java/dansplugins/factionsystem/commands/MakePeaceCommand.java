@@ -120,7 +120,7 @@ public class MakePeaceCommand extends SubCommand {
             Objects.requireNonNull(this.messageService.getLanguage().getString("AttemptedPeace")).replace("#name#", target.getName()),
             true
         );
-        this.messageFaction(
+        this.messageService.messageFaction(
             target,
             this.translate("&a" + this.localeService.getText("HasAttemptedToMakePeaceWith", this.faction.getName(), target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasAttemptedToMakePeaceWith"))
@@ -142,7 +142,7 @@ public class MakePeaceCommand extends SubCommand {
                 // TODO: set active flag in war to false
 
                 // Notify
-                this.messageServer(
+                this.messageService.messageServer(
                     "&a" + this.localeService.getText("AlertNowAtPeaceWith", this.faction.getName(), target.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAtPeaceWith"))
                         .replace("#p1#", this.faction.getName())

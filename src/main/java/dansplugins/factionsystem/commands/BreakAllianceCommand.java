@@ -89,13 +89,13 @@ public class BreakAllianceCommand extends SubCommand {
 
         this.faction.removeAlly(otherFaction.getName());
         otherFaction.removeAlly(this.faction.getName());
-        this.messageFaction(
+        this.messageService.messageFaction(
             this.faction, 
             this.translate("&c" + this.localeService.getText("AllianceBrokenWith", otherFaction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AllianceBrokenWith"))
                 .replace("#faction#", otherFaction.getName())
         );
-        this.messageFaction(
+        this.messageService.messageFaction(
             otherFaction, 
             this.translate("&c" + this.localeService.getText("AlertAllianceHasBeenBroken", this.faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAllianceHasBeenBroken"))

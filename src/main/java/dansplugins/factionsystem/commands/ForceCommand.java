@@ -132,8 +132,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceSave(CommandSender sender) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.save", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.save", "mf.force.*", "mf.admin"))) {
             return;
         }
         sender.sendMessage(this.translate("&a" + this.localeService.getText("AlertForcedSave")));
@@ -142,8 +141,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceLoad(CommandSender sender) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.load", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.load", "mf.force.*", "mf.admin"))) {
             return;
         }
         sender.sendMessage(this.translate("&a" + this.localeService.get("AlertForcedLoad")));
@@ -153,8 +151,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forcePeace(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.peace", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.peace", "mf.force.*", "mf.admin"))) {
             return;
         }
         if (!(args.length >= 3)) {
@@ -180,7 +177,7 @@ public class ForceCommand extends SubCommand {
             if (latter.isEnemy(former.getName())) latter.removeEnemy(former.getName());
 
             // announce peace to all players on server.
-            this.messageServer(
+            this.messageService.messageServer(
                 "&a" + this.localeService.getText("AlertNowAtPeaceWith", former.getName(), latter.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAtPeaceWith"))
                     .replace("#p1#", former.getName())
@@ -191,8 +188,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceDemote(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.demote", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.demote", "mf.force.*", "mf.admin"))) return;
         if (!(args.length > 1)) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageForceDemote")));
             return;
@@ -221,8 +217,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceJoin(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.join", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.join", "mf.force.*", "mf.admin"))) return;
         if (!(args.length >= 3)) {
             sender.sendMessage(this.translate("&c" + "Usage: /mf force join \"player\" \"faction\""));
             return;
@@ -258,7 +253,7 @@ public class ForceCommand extends SubCommand {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        this.messageFaction(
+        this.messageService.messageFaction(
             faction,
             this.translate("&a" + this.localeService.getText("HasJoined", player.getName(), faction.getName())),
             ""
@@ -272,8 +267,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceKick(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.kick", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.kick", "mf.force.*", "mf.admin"))) return;
         if (!(args.length > 1)) {
             sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageForceKick")));
             return;
@@ -311,7 +305,7 @@ public class ForceCommand extends SubCommand {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(targetUUID);
         faction.removeMember(targetUUID);
-        this.messageFaction(
+        this.messageService.messageFaction(
             faction,
             this.translate("&c" + this.localeService.getText("HasBeenKickedFrom", target.getName(), faction.getName())), 
             ""
@@ -324,8 +318,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forcePower(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.power", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.power", "mf.force.*", "mf.admin"))) return;
         if (!(args.length >= 3)) {
             sender.sendMessage(this.translate("&c" + "Usage: /mf force power \"player\" \"number\""));
             return;
@@ -349,8 +342,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceRenounce(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.renounce", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.renounce", "mf.force.*", "mf.admin"))) return;
         if (args.length < 2) {
             sender.sendMessage(this.translate("&c" + "Usage: /mf force renounce \"faction\""));
             return;
@@ -384,8 +376,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceTransfer(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.transfer", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.transfer", "mf.force.*", "mf.admin"))) return;
         if (!(args.length >= 3)) {
             sender.sendMessage(this.translate("&c" + "Usage: /mf force transfer \"faction\" \"player\""));
             return;
@@ -430,8 +421,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceRemoveVassal(CommandSender sender, String[] args) {
-        // TODO: inform of no permissions
-        if (!(this.checkPermissions(sender, "mf.force.removevassal", "mf.force.*", "mf.admin"))) return;
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.removevassal", "mf.force.*", "mf.admin"))) return;
         if (args.length < 3) {
             sender.sendMessage(this.translate("&c" + "Usage: /mf force removevassal \"liege\" \"vassal\""));
             return;
@@ -455,8 +445,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceRename(CommandSender sender, String[] args) {
-        // TODO: force of no permission
-        if (!(this.checkPermissions(sender, "mf.force.rename", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.rename", "mf.force.*", "mf.admin"))) {
             return;
         }
         if (args.length < 3) {
@@ -503,8 +492,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceBonusPower(CommandSender sender, String[] args) {
-        // TODO: inform of no permission
-        if (!(checkPermissions(sender, "mf.force.bonuspower", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.bonuspower", "mf.force.*", "mf.admin"))) {
             return;
         }
         if (args.length < 3) {
@@ -547,8 +535,7 @@ public class ForceCommand extends SubCommand {
 
         Player player = (Player) sender;
 
-        // TODO: inform of no permission
-        if (!(checkPermissions(player, "mf.force.unlock", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.unlock", "mf.force.*", "mf.admin"))) {
             return;
         }
 
@@ -582,8 +569,7 @@ public class ForceCommand extends SubCommand {
 
         Player player = (Player) sender;
 
-        // TODO: inform of no permission
-        if (!(checkPermissions(player, "mf.force.create", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.create", "mf.force.*", "mf.admin"))) {
             return;
         }
 
@@ -623,8 +609,7 @@ public class ForceCommand extends SubCommand {
 
         Player p = (Player) sender;
 
-        // TODO: inform of no permission
-        if (!(p.hasPermission("mf.force.claim") || p.hasPermission("mf.force.*") || p.hasPermission("mf.admin"))) {
+        if (!this.checkAndInformOfMissingPermissions(sender, "mf.force.claim", "mf.force.*", "mf.admin")) {
             return;
         }
 
@@ -654,8 +639,7 @@ public class ForceCommand extends SubCommand {
 
     @SuppressWarnings("unused")
     private void forceFlag(CommandSender sender, String[] args) {
-        // TODO: inform of no permission
-        if (!(checkPermissions(sender, "mf.force.flag", "mf.force.*", "mf.admin"))) {
+        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.flag", "mf.force.*", "mf.admin"))) {
             return;
         }
 
@@ -685,5 +669,14 @@ public class ForceCommand extends SubCommand {
         final String value = argumentsInsideDoubleQuotes.get(2);
 
         faction.getFlags().setFlag(option, value, player);
+    }
+
+    public boolean checkAndInformOfMissingPermissions(CommandSender sender, String... permisions) {
+        List<String> missingPermissions = this.checkPermissions(sender, permisions);
+        if (missingPermissions.size() > 0) {
+            this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+            return false;
+        }
+        return true;
     }
 }

@@ -129,7 +129,7 @@ public class VassalizeCommand extends SubCommand {
         this.faction.addAttemptedVassalization(target.getName());
 
         // inform all players in that faction that they are trying to be vassalized
-        this.messageFaction(
+        this.messageService.messageFaction(
             target, 
             this.translate("&a" + this.localeService.getText("AlertAttemptedVassalization", this.faction.getName(), this.faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedVassalization"))
@@ -137,7 +137,7 @@ public class VassalizeCommand extends SubCommand {
         );
 
         // inform all players in players faction that a vassalization offer was sent
-        this.messageFaction(
+        this.messageService.messageFaction(
             this.faction,
             this.translate("&a" + this.localeService.getText("AlertFactionAttemptedToVassalize", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionAttemptedToVassalize"))

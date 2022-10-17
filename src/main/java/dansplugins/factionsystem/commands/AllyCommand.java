@@ -108,7 +108,7 @@ public class AllyCommand extends SubCommand {
         // send the request
         this.faction.requestAlly(otherFaction.getName());
 
-        this.messageFaction(
+        this.messageService.messageFaction(
                 this.faction,
                 this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
@@ -116,7 +116,7 @@ public class AllyCommand extends SubCommand {
                         .replace("#faction_b#", otherFaction.getName())
         );
 
-        this.messageFaction(
+        this.messageService.messageFaction(
                 otherFaction,
                 this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
@@ -130,14 +130,14 @@ public class AllyCommand extends SubCommand {
             this.faction.addAlly(otherFaction.getName());
             otherFaction.addAlly(this.faction.getName());
             // message player's faction
-            this.messageFaction(
+            this.messageService.messageFaction(
                 this.faction, 
                 this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", otherFaction.getName())), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", otherFaction.getName())
             );
 
             // message target faction
-            this.messageFaction(
+            this.messageService.messageFaction(
                 otherFaction, 
                 this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", this.faction.getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", this.faction.getName())
             );

@@ -100,7 +100,7 @@ public class SwearFealtyCommand extends SubCommand {
         faction.setLiege(target.getName());
 
         // inform target faction that they have a new vassal
-        this.messageFaction(
+        this.messageService.messageFaction(
             target,
             this.translate("&a" + this.localeService.getText("AlertFactionHasNewVassal", faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasNewVassal"))
@@ -108,7 +108,7 @@ public class SwearFealtyCommand extends SubCommand {
         );
 
         // inform players faction that they have a new liege
-        this.messageFaction(
+        this.messageService.messageFaction(
             faction,
             this.translate("&a" + this.localeService.getText("AlertFactionHasBeenVassalized", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasBeenVassalized"))

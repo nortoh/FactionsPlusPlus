@@ -208,7 +208,7 @@ public class DeclareWarCommand extends SubCommand {
             this.faction.addEnemy(opponent.getName());
             opponent.addEnemy(faction.getName());
             warFactory.createWar(this.faction, opponent);
-            this.messageServer(
+            this.messageService.messageServer(
                 "&c" + this.localeService.getText("HasDeclaredWarAgainst", this.faction.getName(), opponent.getName()), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredWarAgainst"))
                     .replace("#f_a#", this.faction.getName())

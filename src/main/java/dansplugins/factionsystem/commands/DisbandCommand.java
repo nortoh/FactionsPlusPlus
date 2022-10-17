@@ -25,6 +25,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -94,7 +95,11 @@ public class DisbandCommand extends SubCommand {
         final Faction disband;
         final boolean self;
         if (args.length == 0) {
-            if (!this.checkPermissions(sender, "mf.disband")) return;
+            List<String> missingPermissions = this.checkPermissions(sender, "mf.disband");
+            if (missingPermissions.size() > 0) {
+                this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+                return;
+            }
             if (!(sender instanceof Player)) { // ONLY Players can be in a Faction
                 if (!this.configService.getBoolean("useNewLanguageFile")) {
                     sender.sendMessage(this.translate(this.localeService.getText("OnlyPlayersCanUseCommand")));
@@ -115,7 +120,11 @@ public class DisbandCommand extends SubCommand {
                 return;
             }
         } else {
-            if (!this.checkPermissions(sender, "mf.disband.others", "mf.admin")) return;
+            List<String> missingPermissions = this.checkPermissions(sender, "mf.disband.others", "mf.admin");
+            if (missingPermissions.size() > 0) {
+                this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+                return;
+            }
             disband = this.factionRepository.get(String.join(" ", args));
             self = false;
         }
@@ -179,7 +188,6 @@ public class DisbandCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (! this.checkPermissions(sender)) return null;
         return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

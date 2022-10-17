@@ -134,7 +134,7 @@ public class InvokeCommand extends SubCommand {
             invokee.addEnemy(warringFaction.getName());
             warringFaction.addEnemy(invokee.getName());
 
-            this.messageFaction(
+            this.messageService.messageFaction(
                 invokee, // Message ally faction
                 "&c" + this.localeService.getText("AlertCalledToWar1", this.faction.getName(), warringFaction.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar1"))
@@ -142,7 +142,7 @@ public class InvokeCommand extends SubCommand {
                     .replace("#f2#", warringFaction.getName())
             );
 
-            this.messageFaction(
+            this.messageService.messageFaction(
                 warringFaction, // Message warring faction
                 "&c" + this.localeService.getText("AlertCalledToWar2", this.faction.getName(), invokee.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar2"))
@@ -150,7 +150,7 @@ public class InvokeCommand extends SubCommand {
                     .replace("#f2#", invokee.getName())
             );
 
-            this.messageFaction(
+            this.messageService.messageFaction(
                 this.faction, // Message player faction
                 "&a" + this.localeService.getText("AlertCalledToWar3", invokee.getName(), warringFaction.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar3"))

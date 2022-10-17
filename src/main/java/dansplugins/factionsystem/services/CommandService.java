@@ -140,52 +140,35 @@ public class CommandService implements TabCompleter {
     public boolean performCommandChecks(SubCommand command, CommandSender sender, String[] args, String key) {
         if (command.shouldBePlayerCommand()) {
             if (!(sender instanceof Player)) { // Require a player for a player-only command.
-                sender.sendMessage(command.translate(this.getText("OnlyPlayersCanUseCommand")));
+                sender.sendMessage(command.translate(this.localeService.getText("OnlyPlayersCanUseCommand")));
                 return false;
             }
             Player player = (Player) sender;
             if (command.shouldRequirePlayerInFaction()) { // Find and check the status of a Faction.
                 Faction faction = this.playerService.getPlayerFaction(player);
                 if (faction == null) {
-                    player.sendMessage(command.translate("&c" + this.getText("AlertMustBeInFactionToUseCommand")));
+                    player.sendMessage(command.translate("&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand")));
                     return false;
                 }
                 if (command.shouldRequireFactionOfficer()) { // If the command requires an Officer or higher, check for it.
                     if (!(faction.isOwner(player.getUniqueId()) || faction.isOfficer(player.getUniqueId()))) {
-                        player.sendMessage(command.translate("&c" + this.getText("AlertMustBeOwnerOrOfficerToUseCommand")));
+                        player.sendMessage(command.translate("&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand")));
                         return false;
                     }
                 }
                 if (command.shouldRequireFactionOwner() && !faction.isOwner(player.getUniqueId())) { // If the command requires an owner only, check for it.
-                    player.sendMessage(command.translate("&c" + this.getText("AlertMustBeOwnerToUseCommand")));
+                    player.sendMessage(command.translate("&c" + this.localeService.getText("AlertMustBeOwnerToUseCommand")));
                     return false;
                 }
                 command.setUserFaction(faction);
             }
-            if (!command.checkPermissions(sender, true)) {
-                // TODO: re-add missing permissions
-                this.playerService.sendMessage(
-                    sender,
-                    command.translate("&c" + this.getText("PermissionNeeded")), 
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("PermissionNeeded"))
-                        .replace("#permission#", ""), 
-                    true
-                );
+            List<String> missingPermissions = command.checkPermissions(sender, true);
+            if (missingPermissions.size() > 0) {
+                this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * Method to obtain text from a key.
-     *
-     * @param key of the message in LocaleManager.
-     * @return String message
-     */
-    protected String getText(String key) {
-        String text = this.localeService.getText(key);
-        return text.replace("%d", "%s");
     }
 
     public boolean interpretCommand(CommandSender sender, String label, String[] args) {
@@ -243,7 +226,7 @@ public class CommandService implements TabCompleter {
     private ArrayList<String> getSubCommandNamesForSender(CommandSender sender) {
         ArrayList<String> commandNames = new ArrayList<String>();
         for (SubCommand subCommand : this.subCommands) {
-            if (subCommand.checkPermissions(sender)) commandNames.add(subCommand.getPrimaryCommandName().toLowerCase());
+            if (subCommand.checkPermissions(sender).size() == 0) commandNames.add(subCommand.getPrimaryCommandName().toLowerCase());
         }
         return commandNames;
     }
