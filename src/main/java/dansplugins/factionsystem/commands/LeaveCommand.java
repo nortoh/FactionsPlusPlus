@@ -85,7 +85,7 @@ public class LeaveCommand extends SubCommand {
             "AlertLeftFaction", 
             false
         );
-        this.messageFaction(
+        this.messageService.messageFaction(
             this.faction, 
             this.translate("&a" + player.getName() + " has left " + this.faction.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertLeftFactionTeam"))

@@ -104,7 +104,7 @@ public class DeclareIndependenceCommand extends SubCommand {
                 }
             }
         }
-        this.messageServer(
+        this.messageService.messageServer(
             "&c" + this.localeService.getText("HasDeclaredIndependence", this.faction.getName(), liege.getName()), 
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredIndependence"))
                 .replace("#faction_a#", this.faction.getName())

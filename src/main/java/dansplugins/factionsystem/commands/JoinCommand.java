@@ -109,7 +109,7 @@ public class JoinCommand extends SubCommand {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        this.messageFaction(
+        this.messageService.messageFaction(
             target,
             "&a" + this.localeService.getText("HasJoined", player.getName(), target.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasJoined"))

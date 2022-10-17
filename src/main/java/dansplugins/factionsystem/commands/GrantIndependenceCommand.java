@@ -87,14 +87,14 @@ public class GrantIndependenceCommand extends SubCommand {
         target.setLiege("none");
         this.faction.removeVassal(target.getName());
         // inform all players in that faction that they are now independent
-        this.messageFaction(
+        this.messageService.messageFaction(
             target,
             this.translate("&a" + this.localeService.getText("AlertGrantedIndependence", this.faction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertGrantedIndependence"))
                 .replace("#name#", faction.getName())
         );
         // inform all players in players faction that a vassal was granted independence
-        this.messageFaction(
+        this.messageService.messageFaction(
             this.faction,
             this.translate("&a" + this.localeService.getText("AlertNoLongerVassalFaction", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNoLongerVassalFaction"))

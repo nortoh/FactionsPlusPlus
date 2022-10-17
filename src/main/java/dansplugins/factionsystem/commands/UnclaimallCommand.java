@@ -19,6 +19,7 @@ import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -88,7 +89,11 @@ public class UnclaimallCommand extends SubCommand {
                 );
                 return;
             }
-            if (!(this.checkPermissions(sender, "mf.unclaimall"))) return;
+            List<String> missingPermissions = this.checkPermissions(sender, "mf.unclaimall");
+            if (missingPermissions.size() > 0) {
+                this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+                return;
+            }
             faction = this.playerService.getPlayerFaction(sender);
             if (faction == null) {
                 this.playerService.sendMessage(
@@ -109,7 +114,11 @@ public class UnclaimallCommand extends SubCommand {
                 return;
             }
         } else {
-            if (!(this.checkPermissions(sender, "mf.unclaimall.others", "mf.admin"))) return;
+            List<String> missingPermissions = this.checkPermissions(sender, "mf.unclaimall.others", "mf.admin");
+            if (missingPermissions.size() > 0) {
+                this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+                return;
+            }
             faction = this.factionRepository.get(String.join(" ", args));
             if (faction == null) {
                 this.playerService.sendMessage(
@@ -123,7 +132,7 @@ public class UnclaimallCommand extends SubCommand {
         }
         // remove faction home
         faction.setFactionHome(null);
-        this.messageFaction(
+        this.messageService.messageFaction(
             faction, 
             this.translate("&c" + this.localeService.getText("AlertFactionHomeRemoved")),
             this.messageService.getLanguage().getString("AlertFactionHomeRemoved")
@@ -151,7 +160,6 @@ public class UnclaimallCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (! this.checkPermissions(sender)) return null;
         return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

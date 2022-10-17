@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.PlayerService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -26,7 +25,6 @@ import java.util.UUID;
  */
 public abstract class SubCommand implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
-    @Inject protected PlayerService playerService; // remove later, just makes the compiler happy for now.
     private boolean playerCommand;
     private boolean requiresFaction;
     private boolean requiresOfficer;
@@ -115,7 +113,7 @@ public abstract class SubCommand implements ColorTranslator {
      * Parent method to conduct tab completion. This will check permissions first, then hand to the child.
      */
     public List<String> onTabComplete(CommandSender sender, String[] args) {
-        if (!this.checkPermissions(sender)) return null;
+        if (this.checkPermissions(sender).size() > 0) return null;
         if (this.playerCommand) {
             if (!(sender instanceof Player)) {
                 return this.handleTabComplete((Player)sender, args);
@@ -148,15 +146,15 @@ public abstract class SubCommand implements ColorTranslator {
     }
 
     // Helper methods for checkPermissions in different cases
-    public boolean checkPermissions(CommandSender sender) {
+    public List<String> checkPermissions(CommandSender sender) {
         return this.checkPermissions(sender, this.requiredPermissions);
     }
 
-    public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing) {
+    public List<String> checkPermissions(CommandSender sender, boolean announcePermissionsMissing) {
         return this.checkPermissions(sender, this.requiredPermissions);
     }
 
-    public boolean checkPermissions(CommandSender sender, boolean announcePermissionsMissing, String... permissions) {
+    public List<String> checkPermissions(CommandSender sender, boolean announcePermissionsMissing, String... permissions) {
         return this.checkPermissions(sender, permissions);
     }
 
@@ -170,16 +168,16 @@ public abstract class SubCommand implements ColorTranslator {
      * @param permission to test for.
      * @return {@code true} if they do.
      */
-    public boolean checkPermissions(CommandSender sender, String... permissions) {
-        if (permissions.length == 0) return true;
+    public List<String> checkPermissions(CommandSender sender, String... permissions) {
+        List<String> missingPermissions = new ArrayList<>();
+        if (permissions.length == 0) return missingPermissions;
         boolean hasPermission = false;
-        List<String> missingPermissions = new ArrayList<String>();
         for (String perm : permissions) {
             hasPermission = sender.hasPermission(perm);
-            if (hasPermission) break;
+            if (hasPermission) return missingPermissions;
             missingPermissions.add(perm);
         }
-        return hasPermission;
+        return missingPermissions;
     }
 
     /**
@@ -194,33 +192,6 @@ public abstract class SubCommand implements ColorTranslator {
     */
     public String getPrimaryCommandName() {
         return this.names[0];
-    }
-
-    /**
-     * Method to send an entire Faction a message.
-     *
-     * @param faction    to send a message to.
-     * @param oldMessage old message to send to the Faction.
-     * @param newMessage new message to send to the Faction.
-     */
-    protected void messageFaction(Faction faction, String oldMessage, String newMessage) {
-        faction.getMemberList()
-            .stream()
-            .map(Bukkit::getOfflinePlayer)
-            .filter(OfflinePlayer::isOnline)
-            .map(OfflinePlayer::getPlayer)
-            .filter(Objects::nonNull)
-            .forEach(player -> this.playerService.sendMessage(player, oldMessage, newMessage, true));
-    }
-
-    /**
-     * Method to send the entire Server a message.
-     *
-     * @param oldMessage old message to send to the players.
-     * @param newMessage old message to send to the players.
-     */
-    protected void messageServer(String oldMessage, String newMessage) {
-        Bukkit.getOnlinePlayers().forEach(player -> this.playerService.sendMessage(player, oldMessage, newMessage, true));
     }
 
     /**

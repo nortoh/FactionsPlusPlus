@@ -108,7 +108,6 @@ public class PlayerService {
      */
     @SuppressWarnings("deprecation")
     public Faction getPlayerFaction(Object object) {
-        // TODO: reimplement using FactionRepository
         if (object instanceof OfflinePlayer) {
             return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
         } else if (object instanceof UUID) {
