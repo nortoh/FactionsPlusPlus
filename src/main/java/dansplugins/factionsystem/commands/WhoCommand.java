@@ -84,12 +84,11 @@ public class WhoCommand extends SubCommand {
                     , "PlayerIsNotInAFaction", false);
             return;
         }
-        // TODO: reimp
-        /*this.messenger.sendFactionInfo(
+        this.messenger.sendFactionInfo(
             player, 
             temp,
             this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())
-        );*/
+        );
     }
 
     /**

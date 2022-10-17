@@ -168,8 +168,7 @@ public class AllyCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
-        // TODO: reimp
-        /*final List<String> factionsAllowedtoAlly = new ArrayList<>();
+        final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> playerAllies = playerFaction.getAllies();
@@ -179,7 +178,7 @@ public class AllyCommand extends SubCommand {
                 }
             }
             return TabCompleteTools.filterStartingWith(args[0], factionsAllowedtoAlly);
-        }*/
+        }
         return null;
     }
 }

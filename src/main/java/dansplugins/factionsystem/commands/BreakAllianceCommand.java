@@ -123,14 +123,12 @@ public class BreakAllianceCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(Player player, String[] args) {
-        // TODO: reimp
-        /*
         final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> playerAllies = playerFaction.getAllies();
             return TabCompleteTools.filterStartingWith(args[0], playerAllies);
-        } */
+        }
         return null;
     }
 }

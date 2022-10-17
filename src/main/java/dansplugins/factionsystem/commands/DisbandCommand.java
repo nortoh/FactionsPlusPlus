@@ -128,7 +128,6 @@ public class DisbandCommand extends SubCommand {
             );
             return;
         }
-        final int factionIndex = this.persistentData.getFactionIndexOf(disband);
         if (self) {
             this.playerService.sendMessage(
                 sender,
@@ -145,17 +144,13 @@ public class DisbandCommand extends SubCommand {
                 true
             );
         }
-        this.removeFaction(factionIndex, self ? ((OfflinePlayer) sender) : null);
+        this.removeFaction(disband, self ? ((OfflinePlayer) sender) : null);
     }
 
-    private void removeFaction(int i, OfflinePlayer disbandingPlayer) {
-
-        // TODO: reimp with FactionRepo
-        /*
-        Faction disbandingThisFaction = this.persistentData.getFactionByIndex(i);
-        String nameOfFactionToRemove = disbandingThisFaction.getName();
+    private void removeFaction(Faction faction, OfflinePlayer disbandingPlayer) {
+        String nameOfFactionToRemove = faction.getName();
         FactionDisbandEvent event = new FactionDisbandEvent(
-                disbandingThisFaction,
+                faction,
                 disbandingPlayer
         );
         Bukkit.getPluginManager().callEvent(event);
@@ -169,11 +164,11 @@ public class DisbandCommand extends SubCommand {
         this.dynmapService.updateClaimsIfAble();
 
         // remove locks associated with this faction
-        this.persistentData.removeAllLocks(this.persistentData.getFactionByIndex(i).getName());
+        this.persistentData.removeAllLocks(nameOfFactionToRemove);
 
         this.persistentData.removePoliticalTiesToFaction(nameOfFactionToRemove);
 
-        this.persistentData.removeFactionByIndex(i);*/
+        this.factionRepository.delete(faction);
     }
 
     /**
