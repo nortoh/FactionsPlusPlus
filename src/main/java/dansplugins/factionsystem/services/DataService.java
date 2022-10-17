@@ -3,6 +3,7 @@ package dansplugins.factionsystem.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Random;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -44,6 +45,10 @@ public class DataService {
 
     public Faction getFaction(String name) {
         return this.factionRepository.get(name);
+    }
+
+    public Faction getRandomFaction() {
+        return this.factionRepository.all().get(new Random().generator.nextInt(this.factionRepository.all().size()));
     }
 
     public ClaimedChunkRepository getClaimedChunkRepository() {

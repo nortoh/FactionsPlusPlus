@@ -325,14 +325,6 @@ public class PersistentData {
         }
     }
 
-    // TODO: implement this in FactionService
-    public Faction getRandomFaction() {
-        /*Random generator = new Random();
-        int randomIndex = generator.nextInt(factions.size());
-        return factions.get(randomIndex);*/
-        return null;
-    }
-
     public void addWar(War war) {
         wars.add(war);
     }

@@ -12,6 +12,7 @@ import dansplugins.factionsystem.events.FactionJoinEvent;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.DataService;
 import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.utils.Logger;
@@ -37,6 +38,7 @@ public class JoinHandler implements Listener {
     private final Messenger messenger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
     private final FactionService factionService;
+    private final DataService dataService;
 
     @Inject
     public JoinHandler(
@@ -46,7 +48,8 @@ public class JoinHandler implements Listener {
         Logger logger,
         Messenger messenger,
         TerritoryOwnerNotifier territoryOwnerNotifier,
-        FactionService factionService
+        FactionService factionService,
+        DataService dataService
     ) {
         this.persistentData = persistentData;
         this.localeService = localeService;
@@ -55,6 +58,7 @@ public class JoinHandler implements Listener {
         this.messenger = messenger;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.factionService = factionService;
+        this.dataService = dataService;
     }
 
     @EventHandler()
@@ -113,7 +117,7 @@ public class JoinHandler implements Listener {
     }
 
     private void assignPlayerToRandomFaction(Player player) {
-        Faction faction = persistentData.getRandomFaction();
+        Faction faction = this.dataService.getRandomFaction();
         if (faction != null) {
             FactionJoinEvent joinEvent = new FactionJoinEvent(faction, player);
             Bukkit.getPluginManager().callEvent(joinEvent);
