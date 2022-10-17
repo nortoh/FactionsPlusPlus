@@ -72,7 +72,7 @@ public class InviteCommand extends SubCommand {
             player.sendMessage(this.translate("&c" + this.localeService.getText("UsageInvite")));
             return;
         }
-        if ((boolean) this.faction.getFlags().getFlag("mustBeOfficerToInviteOthers")) {
+        if (this.faction.getFlag("mustBeOfficerToInviteOthers").toBoolean()) {
             // officer or owner rank required
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
                 this.playerService.sendMessage(

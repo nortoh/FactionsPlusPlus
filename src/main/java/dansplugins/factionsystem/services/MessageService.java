@@ -7,9 +7,12 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.commands.abs.ColorTranslator;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.FactionFlag;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,7 +21,11 @@ import org.bukkit.command.CommandSender;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,12 +37,14 @@ public class MessageService implements ColorTranslator {
     private FileConfiguration language;
     private PlayerService playerService;
     private LocaleService localeService;
+    private ConfigService configService;
 
     @Inject
-    public MessageService(MedievalFactions medievalFactions, PlayerService playerService, LocaleService localeService) {
+    public MessageService(MedievalFactions medievalFactions, PlayerService playerService, LocaleService localeService, ConfigService configService) {
         this.medievalFactions = medievalFactions;
         this.playerService = playerService;
         this.localeService = localeService;
+        this.configService = configService;
         this.createLanguageFile();
     }
 
@@ -82,6 +91,19 @@ public class MessageService implements ColorTranslator {
                 .replace("#permission#", String.join(", ", missingPermissions)), 
             true
         );
+    }
+
+    public void sendFlagList(Player player, Faction faction) {
+        // Clone because we may need to remove flags
+        HashMap<String, FactionFlag> flagList = (HashMap<String, FactionFlag>)faction.getFlags().clone();
+        if (!this.configService.getBoolean("allowNeutrality")) flagList.remove("neutral");
+        if (!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) flagList.remove("prefixColor");
+        String flagOutput = flagList
+            .keySet()
+            .stream()
+            .map(key -> String.format("%s: %s", key, flagList.get(key).toString()))
+            .collect(Collectors.joining(", "));
+        player.sendMessage(ChatColor.AQUA + "" + flagOutput);
     }
 
     /**

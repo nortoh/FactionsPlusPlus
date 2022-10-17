@@ -88,7 +88,7 @@ public class DeclareIndependenceCommand extends SubCommand {
         liege.removeVassal(this.faction.getName());
         this.faction.setLiege("none");
 
-        if (!this.configService.getBoolean("allowNeutrality") || (!((boolean) this.faction.getFlags().getFlag("neutral")) && !((boolean) liege.getFlags().getFlag("neutral")))) {
+        if (!this.configService.getBoolean("allowNeutrality") || (!(this.faction.getFlag("neutral").toBoolean()) && !(liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
             FactionWarStartEvent warStartEvent = new FactionWarStartEvent(this.faction, liege, player);
             Bukkit.getPluginManager().callEvent(warStartEvent);

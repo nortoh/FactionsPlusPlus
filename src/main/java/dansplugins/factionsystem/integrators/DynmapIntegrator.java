@@ -203,10 +203,10 @@ public class DynmapIntegrator {
             String popupText;
             // If there's no liege, then f is the liege.
             if (liege != null) {
-                liegeColor = liege.getFlags().getFlag("dynmapTerritoryColor").toString();
+                liegeColor = liege.getFlag("dynmapTerritoryColor").toString();
                 popupText = this.buildNationPopupText(liege);
             } else {
-                liegeColor = f.getFlags().getFlag("dynmapTerritoryColor").toString();
+                liegeColor = f.getFlag("dynmapTerritoryColor").toString();
                 liegeName = f.getName() + "__parent";
                 popupText = this.buildNationPopupText(f);
             }
@@ -234,7 +234,7 @@ public class DynmapIntegrator {
 
         /* Loop through factions and build coloured faction area markers. */
         for (Faction f : this.persistentData.getFactions()) {
-            this.dynmapUpdateFaction(f, this.claims, newmap, "claims", f.getName(), buildNationPopupText(f), f.getFlags().getFlag("dynmapTerritoryColor").toString(), newmap);
+            this.dynmapUpdateFaction(f, this.claims, newmap, "claims", f.getName(), buildNationPopupText(f), f.getFlag("dynmapTerritoryColor").toString(), newmap);
         }
 
         /* Now, review old map - anything left is gone */

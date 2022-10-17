@@ -119,7 +119,7 @@ public class InvokeCommand extends SubCommand {
             );
             return;
         }
-        if (this.configService.getBoolean("allowNeutrality") && ((boolean) invokee.getFlags().getFlag("neutral"))) {
+        if (this.configService.getBoolean("allowNeutrality") && (invokee.getFlag("neutral").toBoolean())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotBringNeutralFactionIntoWar"),

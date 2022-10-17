@@ -5,6 +5,8 @@
 package dansplugins.factionsystem.externalapi;
 
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.FactionFlag;
+
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -39,8 +41,8 @@ public class MF_Faction {
         return faction.isOfficer(player.getUniqueId());
     }
 
-    public Object getFlag(String flag) {
-        return faction.getFlags().getFlag(flag);
+    public FactionFlag getFlag(String flag) {
+        return faction.getFlag(flag);
     }
 
     public boolean isAlly(String factionName) {

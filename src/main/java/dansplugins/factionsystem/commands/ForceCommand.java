@@ -13,6 +13,7 @@ import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.*;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.FactionService;
@@ -591,7 +592,7 @@ public class ForceCommand extends SubCommand {
             return;
         }
 
-        this.faction = new Faction(newFactionName);
+        this.faction = this.factionService.createFaction(newFactionName);
         this.factionRepository.create(this.faction);
         FactionCreateEvent createEvent = new FactionCreateEvent(this.faction, player);
         Bukkit.getPluginManager().callEvent(createEvent);
@@ -668,7 +669,9 @@ public class ForceCommand extends SubCommand {
         final String option = argumentsInsideDoubleQuotes.get(1);
         final String value = argumentsInsideDoubleQuotes.get(2);
 
-        faction.getFlags().setFlag(option, value, player);
+        FactionFlag flag = faction.getFlag(option);
+        if (flag != null) flag.set(value);
+        // TODO: handle errors & informing of flag being set
     }
 
     public boolean checkAndInformOfMissingPermissions(CommandSender sender, String... permisions) {

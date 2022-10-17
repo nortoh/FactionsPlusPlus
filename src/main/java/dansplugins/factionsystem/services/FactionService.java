@@ -3,10 +3,13 @@ package dansplugins.factionsystem.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import dansplugins.factionsystem.constants.FlagType;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.repositories.PlayerRecordRepository;
 
+import java.util.HashMap;
 import java.util.UUID;
 @Singleton
 public class FactionService {
@@ -29,7 +32,7 @@ public class FactionService {
     }
 
     public void setBonusPower(Faction faction, int power) {
-        if (!this.configService.getBoolean("bonusPowerEnabled") || !((boolean) faction.getFlags().getFlag("acceptBonusPower"))) {
+        if (!this.configService.getBoolean("bonusPowerEnabled") || !(faction.getFlag("acceptBonusPower").toBoolean())) {
             return;
         }
         faction.setBonusPower(power);
@@ -106,5 +109,27 @@ public class FactionService {
         return liegeName;
     }
 
+    public HashMap<String, FactionFlag> getDefaultFlags() {
+        HashMap<String, FactionFlag> defaultFlags = new HashMap<>();
+        defaultFlags.put("mustBeOfficerToManageLand", new FactionFlag(FlagType.Boolean, true));
+        defaultFlags.put("mustBeOfficerToInviteOthers", new FactionFlag(FlagType.Boolean, true));
+        defaultFlags.put("alliesCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")));
+        defaultFlags.put("vassalageTreeCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")));
+        defaultFlags.put("neutral", new FactionFlag(FlagType.Boolean, false));
+        defaultFlags.put("dynmapTerritoryColor", new FactionFlag(FlagType.Color, "#ff0000"));
+        defaultFlags.put("territoryAlertColor", new FactionFlag(FlagType.Color, this.configService.getString("territoryAlertColor")));
+        defaultFlags.put("prefixColor", new FactionFlag(FlagType.Color, "white"));
+        defaultFlags.put("allowFriendlyFire", new FactionFlag(FlagType.Boolean, false));
+        defaultFlags.put("acceptBonusPower", new FactionFlag(FlagType.Boolean, true));
+        defaultFlags.put("enableMobProtection", new FactionFlag(FlagType.Boolean, true));
+        return defaultFlags;
+    }
     
+    public Faction createFaction(String factionName, UUID ownerUUID) {
+        return new Faction(factionName, ownerUUID, this.getDefaultFlags());
+    }
+
+    public Faction createFaction(String factionName) {
+        return new Faction(factionName, this.getDefaultFlags());
+    }
 }

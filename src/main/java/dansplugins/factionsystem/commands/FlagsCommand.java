@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -79,14 +80,16 @@ public class FlagsCommand extends SubCommand {
             )
         );
         if (show) {
-            playersFaction.getFlags().sendFlagList(player);
+            this.messageService.sendFlagList(player, playersFaction);
         } else if (set) {
             if (args.length < 3) {
                 this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageFlagsSet"), "UsageFlagsSet", false);
             } else {
                 final StringBuilder builder = new StringBuilder(); // Send the flag_argument as one String
                 for (int i = 2; i < args.length; i++) builder.append(args[i]).append(" ");
-                playersFaction.getFlags().setFlag(args[1], builder.toString().trim(), player);
+                FactionFlag flag = playersFaction.getFlag(args[1]);
+                if (flag != null) flag.set(builder.toString().trim());
+                // TODO: error handling, alert that flag was set
 
             }
         } else {
@@ -121,7 +124,7 @@ public class FlagsCommand extends SubCommand {
             if (args[0] == "set") {
                 if (this.persistentData.isInFaction(player.getUniqueId())) {
                     Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
-                    return TabCompleteTools.filterStartingWith(args[1], faction.getFlags().getFlagNamesList());
+                    return TabCompleteTools.filterStartingWith(args[1], faction.getFlagNames().stream());
                 }
             }
         }

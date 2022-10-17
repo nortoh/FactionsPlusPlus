@@ -46,7 +46,8 @@ public class FactionRepository {
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             Faction[] jsonFactions = gson.fromJson(reader, Faction[].class);
-            for (Faction faction : jsonFactions) faction.getFlags().loadMissingFlagsIfNecessary();
+            // TODO: reimplement
+            //for (Faction faction : jsonFactions) faction.getFlags().loadMissingFlagsIfNecessary();
             this.factionStore.addAll(Arrays.asList(jsonFactions));
         } catch (FileNotFoundException ignored) {
             // TODO: log here
