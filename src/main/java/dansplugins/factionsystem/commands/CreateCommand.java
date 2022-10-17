@@ -15,6 +15,7 @@ import dansplugins.factionsystem.events.FactionCreateEvent;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
+import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -39,6 +40,7 @@ public class CreateCommand extends SubCommand {
     private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
     private final FactionRepository factionRepository;
+    private final FactionService factionService;
 
     @Inject
     public CreateCommand(
@@ -49,7 +51,8 @@ public class CreateCommand extends SubCommand {
         Logger logger,
         LocaleService localeService,
         MedievalFactions medievalFactions,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        FactionService factionService
     ) {
         super();
         this.playerService = playerService;
@@ -60,6 +63,7 @@ public class CreateCommand extends SubCommand {
         this.localeService = localeService;
         this.medievalFactions = medievalFactions;
         this.factionRepository = factionRepository;
+        this.factionService = factionService;
         this
             .setNames("create", LOCALE_PREFIX + "CmdCreate")
             .requiresPermissions("mf.create")
@@ -112,7 +116,7 @@ public class CreateCommand extends SubCommand {
             return;
         }
 
-        playerFaction = new Faction(factionName, player.getUniqueId());
+        playerFaction = this.factionService.createFaction(factionName, player.getUniqueId());
         playerFaction.addMember(player.getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, player);
         Bukkit.getPluginManager().callEvent(createEvent);

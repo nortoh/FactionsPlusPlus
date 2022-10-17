@@ -127,7 +127,7 @@ public class DamageHandler implements Listener {
         final Faction chunkHolder = persistentData.getFaction(persistentData.getChunkDataAccessor().getClaimedChunk(entity.getLocation().getChunk()).getHolder());
         final Faction attackerFaction = persistentData.getFaction(attacker.getName());
 
-        if (!(boolean) chunkHolder.getFlags().getFlag("enableMobProtection")) {
+        if (!chunkHolder.getFlag("enableMobProtection").toBoolean()) {
             logger.debug("Mob Protection is disabled");
             return false;
         }
@@ -232,7 +232,7 @@ public class DamageHandler implements Listener {
      */
     private void handleFriendlyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
         Faction faction = persistentData.getPlayersFaction(attacker.getUniqueId());
-        boolean friendlyFireAllowed = (boolean) faction.getFlags().getFlag("allowFriendlyFire");
+        boolean friendlyFireAllowed = faction.getFlag("allowFriendlyFire").toBoolean();
         if (!friendlyFireAllowed) {
             event.setCancelled(true);
             attacker.sendMessage(ChatColor.RED + localeService.get("CannotAttackFactionMember"));

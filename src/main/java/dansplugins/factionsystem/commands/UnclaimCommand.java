@@ -61,7 +61,7 @@ public class UnclaimCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args, String key) {
         final boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
-        if ((boolean) this.faction.getFlags().getFlag("mustBeOfficerToManageLand")) {
+        if ((boolean) this.faction.getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId()) && !isPlayerBypassing) {
                 this.playerService.sendMessage(

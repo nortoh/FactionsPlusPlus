@@ -28,7 +28,7 @@ public class Faction extends Nation implements Feudal {
     @JsonAdapter(ArrayListGateAdapter.class)
     private final ArrayList<Gate> gates = new ArrayList<>();
     @Expose
-    private final FactionFlags flags;
+    private final HashMap<String, FactionFlag> flags;
     @Expose
     private ArrayList<String> vassals = new ArrayList<>();
     @Expose
@@ -46,22 +46,28 @@ public class Faction extends Nation implements Feudal {
     private final ArrayList<String> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
-    public Faction(String factionName, UUID owner) {
+    public Faction(String factionName, HashMap<String, FactionFlag> flags) {
         this.name = factionName;
-        this.owner = owner;
-        this.flags = new FactionFlags();
-        this.flags.initializeFlagValues();
+        this.flags = flags;
     }
 
-    public Faction(String factionName) {
+    public Faction(String factionName, UUID owner, HashMap<String, FactionFlag> flags) {
         this.name = factionName;
-        this.flags = new FactionFlags();
-        this.flags.initializeFlagValues();
+        this.owner = owner;
+        this.flags = flags;
     }
 
     // Flags
-    public FactionFlags getFlags() {
+    public HashMap<String, FactionFlag> getFlags() {
         return this.flags;
+    }
+
+    public FactionFlag getFlag(String flagName) {
+        return this.flags.get(flagName);
+    }
+
+    public Set<String> getFlagNames() {
+        return this.flags.keySet();
     }
 
     // Bonus Power

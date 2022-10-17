@@ -181,7 +181,7 @@ public class DeclareWarCommand extends SubCommand {
             return;
         }
 
-        if (this.configService.getBoolean("allowNeutrality") && ((boolean) opponent.getFlags().getFlag("neutral"))) {
+        if (this.configService.getBoolean("allowNeutrality") && (opponent.getFlag("neutral").toBoolean())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotDeclareWarOnNeutralFaction"),
@@ -191,7 +191,7 @@ public class DeclareWarCommand extends SubCommand {
             return;
         }
 
-        if (this.configService.getBoolean("allowNeutrality") && ((boolean) faction.getFlags().getFlag("neutral"))) {
+        if (this.configService.getBoolean("allowNeutrality") && (faction.getFlag("neutral").toBoolean())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotDeclareWarIfNeutralFaction"),

@@ -48,7 +48,7 @@ public class ClaimCommand extends SubCommand {
      */
     @Override
     public void execute(Player player, String[] args, String key) {
-        if ((boolean) this.faction.getFlags().getFlag("mustBeOfficerToManageLand")) {
+        if (this.faction.getFlags().get("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
             if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
                 this.playerService.sendMessage(player, "&a" + this.localeService.getText("AlertMustBeOfficerOrOwnerToClaimLand"), "AlertMustBeOfficerOrOwnerToClaimLand", false);

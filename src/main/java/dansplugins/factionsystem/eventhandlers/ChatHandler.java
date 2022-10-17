@@ -61,7 +61,7 @@ public class ChatHandler implements Listener {
 
     private void initializeValues(Faction playersFaction, AsyncPlayerChatEvent event) {
         factionChatColor = configService.getString("factionChatColor");
-        prefixColor = (String) playersFaction.getFlags().getFlag("prefixColor");
+        prefixColor = playersFaction.getFlag("prefixColor").toString();
         prefix = playersFaction.getPrefix();
         message = event.getMessage();
     }

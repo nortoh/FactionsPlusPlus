@@ -51,7 +51,7 @@ public class TerritoryOwnerNotifier {
     private ChatColor getColor(Faction holder) {
         String territoryAlertColorString;
         if (holder != null) {
-            territoryAlertColorString = (String) holder.getFlags().getFlag("territoryAlertColor");
+            territoryAlertColorString = holder.getFlag("territoryAlertColor").toString();
         } else {
             territoryAlertColorString = configService.getString("territoryAlertColor");
         }
