@@ -8,10 +8,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
-import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionCreateEvent;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
@@ -21,17 +21,18 @@ import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 
 import java.util.Objects;
+
+
+import dansplugins.factionsystem.builders.*;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class CreateCommand extends SubCommand {
+public class CreateCommand extends Command {
     private final PlayerService playerService;
     private final ConfigService configService;
     private final MessageService messageService;
@@ -54,7 +55,23 @@ public class CreateCommand extends SubCommand {
         FactionRepository factionRepository,
         FactionService factionService
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("create")
+                .withAliases(LOCALE_PREFIX + "CMDCreate")
+                .withDescription("creates a new faction")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.create")
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("a name for your new faction")
+                        .expectsString()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                        
+                )
+        );
         this.playerService = playerService;
         this.configService = configService;
         this.messageService = messageService;
@@ -64,41 +81,19 @@ public class CreateCommand extends SubCommand {
         this.medievalFactions = medievalFactions;
         this.factionRepository = factionRepository;
         this.factionService = factionService;
-        this
-            .setNames("create", LOCALE_PREFIX + "CmdCreate")
-            .requiresPermissions("mf.create")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        Faction playerFaction = this.playerService.getPlayerFaction(player);
-        if (playerFaction != null) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlreadyInFaction"),
+    public void execute(CommandContext context) {
+        if (context.getExecutorsFaction() != null) {
+            this.playerService.sendMessage(context.getPlayer(), "&c" + this.localeService.getText("AlreadyInFaction"),
                     "AlreadyInFaction", false);
             return;
         }
-
-        if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageCreate"),
-                    "UsageCreate", false);
-            return;
-        }
-
-        final String factionName = String.join(" ", args).trim();
-
+        final String factionName = (String)context.getArgument("faction name");
         final FileConfiguration config = this.configService.getConfig();
-
         if (factionName.length() > config.getInt("factionMaxNameLength")) {
             this.playerService.sendMessage(
-                player, 
+                context.getPlayer(), 
                 "&c" + this.localeService.getText("FactionNameTooLong"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNameTooLong"))
                     .replace("#name#", factionName), true
@@ -108,7 +103,7 @@ public class CreateCommand extends SubCommand {
 
         if (this.factionRepository.get(factionName) != null) {
             this.playerService.sendMessage(
-                player, 
+                context.getPlayer(), 
                 "&c" + this.localeService.getText("FactionAlreadyExists"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionAlreadyExists"))
                     .replace("#name#", factionName), true
@@ -116,30 +111,18 @@ public class CreateCommand extends SubCommand {
             return;
         }
 
-        playerFaction = this.factionService.createFaction(factionName, player.getUniqueId());
-        playerFaction.addMember(player.getUniqueId());
-        FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, player);
+        Faction playerFaction = this.factionService.createFaction(factionName, context.getPlayer().getUniqueId());
+        playerFaction.addMember(context.getPlayer().getUniqueId());
+        FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {
             this.factionRepository.create(playerFaction);
             this.playerService.sendMessage(
-                player, 
+                context.getPlayer(), 
                 "&a" + this.localeService.getText("FactionCreated"),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("FactionCreated"))
                     .replace("#name#", factionName), true
             );
         }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 }

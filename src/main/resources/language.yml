@@ -1,3 +1,4 @@
+InvalidSyntax: "&cUsage: /mf #command# #syntax#"
 UsageAddLaw: "&cUsage: /mf addlaw (new law)"
 LawAdded: "&aAdded law #law#."
 UsageAlly: "&cUsage: /mf ally (faction-name)"

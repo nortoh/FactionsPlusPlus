@@ -133,5 +133,46 @@ public class MessageService implements ColorTranslator {
         Bukkit.getOnlinePlayers().forEach(player -> this.playerService.sendMessage(player, oldMessage, newMessage, true));
     }
 
+    public void sendCommandNotFoundMessage(CommandSender sender) {
+        this.playerService.sendMessage(sender, ChatColor.RED + this.localeService.get("CommandNotRecognized"), "CommandNotRecognized", false);
+    }
+
+    public void sendInvalidSyntaxMessage(CommandSender sender, String commandName, String commandSyntax) {
+        this.playerService.sendMessage(
+            sender, 
+            "&c" + this.localeService.getText("InvalidSyntax"),
+            Objects.requireNonNull(this.getLanguage().getString("InvalidSyntax"))
+                .replace("#command#", commandName)
+                .replace("#syntax#", commandSyntax),
+            true
+        );
+    }
+
+    public void sendFactionMembershipRequiredMessage(CommandSender sender) {
+        this.playerService.sendMessage(
+            sender,
+            this.translate("&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand")), 
+            Objects.requireNonNull(this.getLanguage().getString("AlertMustBeInFactionToUseCommand")),
+            true
+        );
+    }
+
+    public void sendFactionOwnershipRequiredMessage(CommandSender sender) {
+        this.playerService.sendMessage(
+            sender,
+            this.translate("&c" + this.localeService.getText("AlertMustBeOwnerToUseCommand")), 
+            Objects.requireNonNull(this.getLanguage().getString("AlertMustBeOwnerToUseCommand")),
+            true
+        );
+    }
+
+    public void sendFactionOwnershipOrOfficershipRequiredMessage(CommandSender sender) {
+        this.playerService.sendMessage(
+            sender,
+            this.translate("&c" + this.localeService.getText("AlertMustBeOwnerOrOfficeToUseCommand")), 
+            Objects.requireNonNull(this.getLanguage().getString("AlertMustBeOwnerOrOfficeToUseCommand")),
+            true
+        );
+    }
 
 }
