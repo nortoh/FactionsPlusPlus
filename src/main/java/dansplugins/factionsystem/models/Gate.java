@@ -52,7 +52,7 @@ public class Gate {
     private World _world = null;
     @Expose
     private String world = "";
-    private GateStatus gateStatus = GateStatus.READY;
+    private GateStatus gateStatus = GateStatus.Ready;
 
     public Gate() { }
 
@@ -139,23 +139,6 @@ public class Gate {
     
     public JsonElement toJson() {
         return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create().toJsonTree(this);
-    }
-
-    public Map<String, String> save() {
-        Map<String, String> saveMap = new HashMap<>();
-
-        saveMap.put("name", name);
-        String factionName = "";
-        saveMap.put("factionName", factionName);
-        saveMap.put("open", String.valueOf(open));
-        saveMap.put("vertical", String.valueOf(vertical));
-        saveMap.put("material", material.name());
-        if (coord1 != null) saveMap.put("world", coord1.getWorld());
-        if (coord1 != null) saveMap.put("coord1", coord1.toString());
-        if (coord2 != null) saveMap.put("coord2", coord2.toString());
-        saveMap.put("triggerCoord", trigger.toString());
-
-        return saveMap;
     }
 
     public boolean isIntersecting(Gate gate) {
@@ -248,15 +231,15 @@ public class Gate {
     }
 
     public boolean isReady() {
-        return gateStatus.equals(GateStatus.READY);
+        return gateStatus.equals(GateStatus.Ready);
     }
 
     public boolean isClosed() {
         return !open;
     }
 
-    public String getStatus() {
-        return gateStatus.toString().substring(0, 1).toUpperCase() + gateStatus.toString().substring(1).toLowerCase();
+    public GateStatus getStatus() {
+        return this.gateStatus;
     }
 
     public GateCoord getTrigger() {

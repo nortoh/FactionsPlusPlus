@@ -88,8 +88,8 @@ public class GateService {
                     this.open(g);
                 } else {
                     event.setCancelled(true);
-                    playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("PleaseWaitGate"), g.getStatus())
-                            , Objects.requireNonNull(messageService.getLanguage().getString("PleaseWaitGate")).replace("#status#", g.getStatus()), true);
+                    playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("PleaseWaitGate"), g.getStatus().toString().toLowerCase())
+                            , Objects.requireNonNull(messageService.getLanguage().getString("PleaseWaitGate")).replace("#status#", g.getStatus().toString().toLowerCase()), true);
                     return;
                 }
             } else {
@@ -97,8 +97,8 @@ public class GateService {
                     this.close(g);
                 } else {
                     event.setCancelled(true);
-                    playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("PleaseWaitGate"), g.getStatus())
-                            , Objects.requireNonNull(messageService.getLanguage().getString("PleaseWaitGate")).replace("#status#", g.getStatus()), true);
+                    playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("PleaseWaitGate"), g.getStatus().toString().toLowerCase())
+                            , Objects.requireNonNull(messageService.getLanguage().getString("PleaseWaitGate")).replace("#status#", g.getStatus().toString().toLowerCase()), true);
                     return;
                 }
             }
@@ -251,12 +251,12 @@ public class GateService {
     }
 
     public void open(Gate gate) {
-        if (gate.isOpen() || !gate.getStatus().equals(GateStatus.READY)) {
+        if (gate.isOpen() || !gate.getStatus().equals(GateStatus.Ready)) {
             return;
         }
 
         gate.setOpen(true);
-        gate.setStatus(GateStatus.OPENING);
+        gate.setStatus(GateStatus.Opening);
 
         // For vertical we only need to iterate over x/y
         if (gate.isVertical()) {
@@ -299,7 +299,7 @@ public class GateService {
                 Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
                     @Override
                     public void run() {
-                        gate.setStatus(GateStatus.READY);
+                        gate.setStatus(GateStatus.Ready);
                         gate.setOpen(true);
                     }
                 }, (topY - bottomY + 2) * 10L);
@@ -341,7 +341,7 @@ public class GateService {
                 Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
                     @Override
                     public void run() {
-                        gate.setStatus(GateStatus.READY);
+                        gate.setStatus(GateStatus.Ready);
                         gate.setOpen(true);
                     }
                 }, (topY - bottomY + 2) * 10L);
@@ -350,12 +350,12 @@ public class GateService {
     }
 
     public void close(Gate gate) {
-        if (!gate.isOpen() || !gate.getStatus().equals(GateStatus.READY)) {
+        if (!gate.isOpen() || !gate.getStatus().equals(GateStatus.Ready)) {
             return;
         }
 
         gate.setOpen(false);
-        gate.setStatus(GateStatus.CLOSING);
+        gate.setStatus(GateStatus.Closing);
 
         // For vertical we only need to iterate over x/y
         if (gate.isVertical()) {
@@ -397,7 +397,7 @@ public class GateService {
                 Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
                     @Override
                     public void run() {
-                        gate.setStatus(GateStatus.READY);
+                        gate.setStatus(GateStatus.Ready);
                         gate.setOpen(false);
                     }
                 }, (topY - bottomY + 2) * 10L);
@@ -440,7 +440,7 @@ public class GateService {
                 Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
                     @Override
                     public void run() {
-                        gate.setStatus(GateStatus.READY);
+                        gate.setStatus(GateStatus.Ready);
                         gate.setOpen(false);
                     }
                 }, (topY - bottomY + 2) * 10L);
