@@ -199,6 +199,7 @@ public class CommandService implements TabCompleter {
         if (context == null) {
             context = new CommandContext();
             context.setSender(sender);
+            context.setRawArguments((String[])arguments.toArray());
         }
 
         // If arguments are missing, let the user know.

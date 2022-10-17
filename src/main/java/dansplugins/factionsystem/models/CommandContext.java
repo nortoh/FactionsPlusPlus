@@ -9,6 +9,7 @@ public class CommandContext {
     private Faction faction = null;
     private CommandSender sender = null;
     private HashMap<String, Object> arguments = new HashMap<>();
+    private String[] rawArguments;
 
     public Faction getExecutorsFaction() {
         return this.faction;
@@ -30,6 +31,10 @@ public class CommandContext {
         return this.arguments.get(name);
     }
 
+    public String[] getRawArguments() {
+        return this.rawArguments;
+    }
+
     public void setExecutorsFaction(Faction faction) {
         this.faction = faction;
     }
@@ -40,5 +45,9 @@ public class CommandContext {
 
     public void addArgument(String name, Object value) {
         this.arguments.put(name, value);
+    }
+
+    public void setRawArguments(String[] arguments) {
+        this.rawArguments = arguments;
     }
 }
