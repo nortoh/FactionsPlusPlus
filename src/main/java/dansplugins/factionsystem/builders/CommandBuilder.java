@@ -77,8 +77,9 @@ public class CommandBuilder {
         return new CommandBuilder().isSubCommand();
     }
 
-    public CommandBuilder addSubCommand(String name, CommandBuilder builder) {
-        this.subcommands.put(name, builder);
+    public CommandBuilder addSubCommand(CommandBuilder builder) {
+        builder.isSubCommand();
+        this.subcommands.put(builder.name, builder);
         return this;
     }
 
