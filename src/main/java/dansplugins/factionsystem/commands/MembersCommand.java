@@ -58,6 +58,7 @@ public class MembersCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to get a members list of")
                         .expectsFaction()
+                        .isOptional()
                 )
         );
         this.playerService = playerService;
