@@ -8,10 +8,17 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
+import dansplugins.factionsystem.models.ConfigOption;
+import dansplugins.factionsystem.repositories.ConfigOptionRepository;
+import dansplugins.factionsystem.utils.StringUtils;
+import dansplugins.factionsystem.builders.ConfigOptionBuilder;
+import dansplugins.factionsystem.constants.SetConfigResult;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.inject.Provider;
@@ -23,314 +30,345 @@ import javax.inject.Provider;
 public class ConfigService {
     private final Provider<MedievalFactions> medievalFactions;
     private final Provider<LocaleService> localeService;
+    private final ConfigOptionRepository configOptionRepository;
 
     private boolean altered = false;
 
     @Inject
-    public ConfigService(Provider<MedievalFactions> medievalFactions, Provider<LocaleService> localeService) {
+    public ConfigService(Provider<MedievalFactions> medievalFactions, Provider<LocaleService> localeService, ConfigOptionRepository configOptionRepository) {
         this.medievalFactions = medievalFactions;
         this.localeService = localeService;
-        if (!getConfig().isSet("languageid")) {
-            getConfig().set("languageid", "en-us");
-        }
+        this.configOptionRepository = configOptionRepository;
+        this.registerCoreOptions();
     }
 
-    public void handleVersionMismatch() {
-        getConfig().set("version", medievalFactions.get().getVersion());
-
-        // add defaults if they don't exist
-        if (!getConfig().isInt("initialMaxPowerLevel")) {
-            getConfig().set("initialMaxPowerLevel", 20);
-        }
-        if (!getConfig().isInt("initialPowerLevel")) {
-            getConfig().set("initialPowerLevel", 5);
-        }
-        if (!getConfig().isBoolean("mobsSpawnInFactionTerritory")) {
-            getConfig().set("mobsSpawnInFactionTerritory", false);
-        }
-        if (!getConfig().isInt("powerIncreaseAmount")) {
-            getConfig().set("powerIncreaseAmount", 2);
-        }
-        if (!getConfig().isBoolean("laddersPlaceableInEnemyFactionTerritory")) {
-            getConfig().set("laddersPlaceableInEnemyFactionTerritory", true);
-        }
-        if (!getConfig().isInt("minutesBeforeInitialPowerIncrease")) {
-            getConfig().set("minutesBeforeInitialPowerIncrease", 30);
-        }
-        if (!getConfig().isInt("minutesBetweenPowerIncreases")) {
-            getConfig().set("minutesBetweenPowerIncreases", 60);
-        }
-        if (!getConfig().isBoolean("warsRequiredForPVP")) {
-            getConfig().set("warsRequiredForPVP", true);
-        }
-        if (!getConfig().isDouble("factionOwnerMultiplier")) {
-            getConfig().set("factionOwnerMultiplier", 2.0);
-        }
-        if (!getConfig().isDouble("officerPerMemberCount")) {
-            getConfig().set("officerPerMemberCount", 5);
-        }
-        if (!getConfig().isDouble("factionOfficerMultiplier")) {
-            getConfig().set("factionOfficerMultiplier", 1.5);
-        }
-        if (!getConfig().isBoolean("powerDecreases")) {
-            getConfig().set("powerDecreases", true);
-        }
-        if (!getConfig().isInt("minutesBetweenPowerDecreases")) {
-            getConfig().set("minutesBetweenPowerDecreases", 1440);
-        }
-        if (!getConfig().isInt("minutesBeforePowerDecrease")) {
-            getConfig().set("minutesBeforePowerDecrease", 20160);
-        }
-        if (!getConfig().isInt("powerDecreaseAmount")) {
-            getConfig().set("powerDecreaseAmount", 1);
-        }
-        if (!getConfig().isInt("factionMaxNameLength")) {
-            getConfig().set("factionMaxNameLength", 20);
-        }
-        if (!getConfig().isInt("factionMaxNumberGates")) {
-            getConfig().set("factionMaxNumberGates", 5);
-        }
-        if (!getConfig().isInt("factionMaxGateArea")) {
-            getConfig().set("factionMaxGateArea", 64);
-        }
-        if (!getConfig().isBoolean("surroundedChunksProtected")) {
-            getConfig().set("surroundedChunksProtected", true);
-        }
-        if (!getConfig().isBoolean("zeroPowerFactionsGetDisbanded")) {
-            getConfig().set("zeroPowerFactionsGetDisbanded", false);
-        }
-        if (!getConfig().isDouble("vassalContributionPercentageMultiplier")) {
-            getConfig().set("vassalContributionPercentageMultiplier", 0.75);
-        }
-        if (!getConfig().isBoolean("nonMembersCanInteractWithDoors")) {
-            getConfig().set("nonMembersCanInteractWithDoors", false);
-        }
-        if (!getConfig().isBoolean("playersChatWithPrefixes")) {
-            getConfig().set("playersChatWithPrefixes", true);
-        }
-        if (!getConfig().isInt("maxClaimRadius")) {
-            getConfig().set("maxClaimRadius", 3);
-        }
-        if (!getConfig().isString("languageid")) {
-            getConfig().set("languageid", "en-us");
-        }
-        if (!getConfig().isBoolean("chatSharedInVassalageTrees")) {
-            getConfig().set("chatSharedInVassalageTrees", true);
-        }
-        if (!getConfig().isBoolean("allowAllyInteraction")) {
-            getConfig().set("allowAllyInteraction", false);
-        }
-        if (!getConfig().isBoolean("allowVassalageTreeInteraction")) {
-            getConfig().set("allowVassalageTreeInteraction", false);
-        }
-        if (!getConfig().isString("factionChatColor")) {
-            getConfig().set("factionChatColor", "gold");
-        }
-        if (!getConfig().isBoolean("territoryAlertPopUp")) {
-            getConfig().set("territoryAlertPopUp", true);
-        }
-        if (!getConfig().isBoolean("territoryIndicatorActionbar")) {
-            getConfig().set("territoryIndicatorActionbar", true);
-        }
-        if (!getConfig().isString("territoryAlertColor")) {
-            getConfig().set("territoryAlertColor", "white");
-        }
-        if (!getConfig().isBoolean("randomFactionAssignment")) {
-            getConfig().set("randomFactionAssignment", false);
-        }
-        if (!getConfig().isBoolean("allowNeutrality")) {
-            getConfig().set("allowNeutrality", false);
-        }
-        if (!getConfig().isBoolean("showPrefixesInFactionChat")) {
-            getConfig().set("showPrefixesInFactionChat", false);
-        }
-        if (!getConfig().isBoolean("debugMode")) {
-            getConfig().set("debugMode", false);
-        }
-        if (!getConfig().isBoolean("factionProtectionsEnabled")) {
-            getConfig().set("factionProtectionsEnabled", true);
-        }
-        if (!getConfig().isBoolean("limitLand")) {
-            getConfig().set("limitLand", true);
-        }
-        if (!getConfig().isBoolean("factionsCanSetPrefixColors")) {
-            getConfig().set("factionsCanSetPrefixColors", true);
-        }
-        if (!getConfig().isBoolean("playersLosePowerOnDeath")) {
-            getConfig().set("playersLosePowerOnDeath", true);
-        }
-        if (!getConfig().isBoolean("bonusPowerEnabled")) {
-            getConfig().set("bonusPowerEnabled", true);
-        }
-        if (!getConfig().isBoolean("useNewLanguageFile")) {
-            getConfig().set("useNewLanguageFile", true);
-        }
-        if (!getConfig().isDouble("powerLostOnDeath")) {
-            getConfig().set("powerLostOnDeath", 1.0);
-        }
-        if (!getConfig().isDouble("powerGainedOnKill")) {
-            getConfig().set("powerGainedOnKill", 1.0);
-        }
-        if (!getConfig().isInt("teleportDelay")) {
-            getConfig().set("teleportDelay", 3);
-        }
-        if (!getConfig().isString("factionless")) {
-            getConfig().set("factionless", "FactionLess");
-        }
-        if (!getConfig().isSet("secondsBeforeInitialAutosave")) {
-            getConfig().set("secondsBeforeInitialAutosave", 60 * 60);
-        }
-        if (!getConfig().isSet("secondsBetweenAutosaves")) {
-            getConfig().set("secondsBetweenAutosaves", 60 * 60);
-        }
-        deleteOldConfigOptionsIfPresent();
-
-        getConfig().options().copyDefaults(true);
-        medievalFactions.get().saveConfig();
-    }
-
-    private void deleteOldConfigOptionsIfPresent() {
-
-        if (getConfig().isInt("officerLimit")) {
-            getConfig().set("officerLimit", null);
-        }
-
-        if (getConfig().isInt("hourlyPowerIncreaseAmount")) {
-            getConfig().set("hourlyPowerIncreaseAmount", null);
-        }
-
-        if (getConfig().isInt("maxPowerLevel")) {
-            getConfig().set("maxPowerLevel", null);
-        }
-
-    }
-
-    public void setConfigOption(String option, String value, CommandSender sender) {
-
-        if (getConfig().isSet(option)) {
-
-            if (option.equalsIgnoreCase("version")) {
-                sender.sendMessage(ChatColor.RED + localeService.get().get("CannotSetVersion"));
-                return;
-            } else if (option.equalsIgnoreCase("initialMaxPowerLevel") || option.equalsIgnoreCase("initialPowerLevel")
-                    || option.equalsIgnoreCase("powerIncreaseAmount")
-                    || option.equalsIgnoreCase("minutesBeforeInitialPowerIncrease")
-                    || option.equalsIgnoreCase("minutesBetweenPowerIncreases")
-                    || option.equalsIgnoreCase("officerLimit")
-                    || option.equalsIgnoreCase("officerPerMemberCount")
-                    || option.equalsIgnoreCase("minutesBetweenPowerDecreases")
-                    || option.equalsIgnoreCase("minutesBeforePowerDecrease")
-                    || option.equalsIgnoreCase("powerDecreaseAmount")
-                    || option.equalsIgnoreCase("factionMaxNameLength")
-                    || option.equalsIgnoreCase("factionMaxNumberGates")
-                    || option.equalsIgnoreCase("factionMaxGateArea")
-                    || option.equalsIgnoreCase("maxClaimRadius")
-                    || option.equalsIgnoreCase("teleportDelay")
-                    || option.equalsIgnoreCase("secondsBeforeInitialAutosave")
-                    || option.equalsIgnoreCase("secondsBetweenAutosaves")) {
-                getConfig().set(option, Integer.parseInt(value));
-                sender.sendMessage(ChatColor.GREEN + localeService.get().get("IntegerSet"));
-            } else if (option.equalsIgnoreCase("mobsSpawnInFactionTerritory")
-                    || option.equalsIgnoreCase("laddersPlaceableInEnemyFactionTerritory")
-                    || option.equalsIgnoreCase("warsRequiredForPVP")
-                    || option.equalsIgnoreCase("powerDecreases")
-                    || option.equalsIgnoreCase("surroundedChunksProtected")
-                    || option.equalsIgnoreCase("zeroPowerFactionsGetDisbanded")
-                    || option.equalsIgnoreCase("nonMembersCanInteractWithDoors")
-                    || option.equalsIgnoreCase("playersChatWithPrefixes")
-                    || option.equalsIgnoreCase("chatSharedInVassalageTrees")
-                    || option.equalsIgnoreCase("allowAllyInteraction")
-                    || option.equalsIgnoreCase("allowVassalageTreeInteraction")
-                    || option.equalsIgnoreCase("territoryAlertPopUp")
-                    || option.equalsIgnoreCase("territoryIndicatorActionbar")
-                    || option.equalsIgnoreCase("randomFactionAssignment")
-                    || option.equalsIgnoreCase("allowNeutrality")
-                    || option.equalsIgnoreCase("showPrefixesInFactionChat")
-                    || option.equalsIgnoreCase("debugMode")
-                    || option.equalsIgnoreCase("factionProtectionsEnabled")
-                    || option.equalsIgnoreCase("limitLand")
-                    || option.equalsIgnoreCase("factionsCanSetPrefixColors")
-                    || option.equalsIgnoreCase("playersLosePowerOnDeath")
-                    || option.equalsIgnoreCase("bonusPowerEnabled")) {
-                getConfig().set(option, Boolean.parseBoolean(value));
-                sender.sendMessage(ChatColor.GREEN + localeService.get().get("BooleanSet"));
-            } else if (option.equalsIgnoreCase("factionOwnerMultiplier")
-                    || option.equalsIgnoreCase("factionOfficerMultiplier")
-                    || option.equalsIgnoreCase("vassalContributionPercentageMultiplier")
-                    || option.equalsIgnoreCase("powerLostOnDeath")
-                    || option.equalsIgnoreCase("powerGainedOnKill")) {
-                getConfig().set(option, Double.parseDouble(value));
-                sender.sendMessage(ChatColor.GREEN + localeService.get().get("DoubleSet"));
-            } else {
-                getConfig().set(option, value);
-                sender.sendMessage(ChatColor.GREEN + localeService.get().get("StringSet"));
-
-                if (option.equalsIgnoreCase("languageid")) {
-                    localeService.get().reloadStrings();
-                }
-            }
-
-            // save
-            medievalFactions.get().saveConfig();
-            altered = true;
-        } else {
-            sender.sendMessage(ChatColor.RED + String.format(localeService.get().get("WasntFound"), option));
-        }
-
+    public void registerCoreOptions() {
+        ConfigOptionBuilder[] configOptions = new ConfigOptionBuilder[]{
+            new ConfigOptionBuilder()
+                .withName("version")
+                .withDescription("Current version of this plugin")
+                .setDefaultValue(this.medievalFactions.get().getVersion())
+                .notUserSettable(),
+            new ConfigOptionBuilder()
+                .withName("initialMaxPowerLevel")
+                .withDescription("The initial maximum power a player has")
+                .setDefaultValue(20)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("initialPowerLevel")
+                .withDescription("The initial amount of power a player starts with")
+                .setDefaultValue(5)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("mobsSpawnInFactionTerritory")
+                .withDescription("If mobs will spawn in land claimed by a faction")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("powerIncreaseAmount")
+                .withDescription("...")
+                .setDefaultValue(2)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("laddersPlaceableInEnemyFactionTerritory")
+                .withDescription("If ladders should be placeable in land claimed by an enemey faction")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("minutesBeforeInitialPowerIncrease")
+                .withDescription("The number of minutes before a new player is given a power increase")
+                .setDefaultValue(30)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("minutesBetweenPowerIncreases")
+                .withDescription("The number of minutes between power increases")
+                .setDefaultValue(60)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("warsRequiredForPVP")
+                .withDescription("If an active war is required for PvP")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("factionOwnerMultiplier")
+                .withDescription("The power multiplier for owning a faction")
+                .setDefaultValue(2.0)
+                .isDouble(),
+            new ConfigOptionBuilder()
+                .withName("factionOfficerMultiplier")
+                .withDescription("The power multiplier for being an officer in a faction")
+                .setDefaultValue(1.5)
+                .isDouble(),
+            new ConfigOptionBuilder()
+                .withName("officerPerMemberCount")
+                .withDescription("The number of officers permitted per member in a faction")
+                .setDefaultValue(5)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("powerDecreases")
+                .withDescription("...")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("minutesBetweenPowerDecreases")
+                .withDescription("The number of minutes between automatic power decreases")
+                .setDefaultValue(1440)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("minutesBeforePowerDecrease")
+                .withDescription("The number of minutes before automatic power decreases start")
+                .setDefaultValue(20160)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("powerDecreaseAmount")
+                .withDescription("...")
+                .setDefaultValue(1)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("factionMaxNameLength")
+                .withDescription("The maximum length of a faction name")
+                .setDefaultValue(20)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("factionMaxNumberGates")
+                .withDescription("The maximum number of gates a faction may have")
+                .setDefaultValue(5)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("factionMaxGateArea")
+                .withDescription("The maximum area a gate may cover")
+                .setDefaultValue(64)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("surroundedChunksProtected")
+                .withDescription("...")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("zeroPowerFactionsGetDisbanded")
+                .withDescription("If factions with zero power get disbanded automatically")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("vassalContributionPercentageMultiplier")
+                .withDescription("...")
+                .setDefaultValue(0.75)
+                .isDouble(),
+            new ConfigOptionBuilder()
+                .withName("nonMembersCanInteractWithDoors")
+                .withDescription("If players that are not a member of a faction can interact with a factions doors")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("playersChatWithPrefixes")
+                .withDescription("If a factions prefix should be prepended to players chat messages")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("maxClaimRadius")
+                .withDescription("The maximum chunk radius that can be claimed by a faction using the claim command")
+                .setDefaultValue(3)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("languageid")
+                .withDescription("The locale to use when sending messages")
+                .setDefaultValue("en-us"),
+            new ConfigOptionBuilder()
+                .withName("chatSharedInVassalageTrees")
+                .withDescription("If faction chat is shared across a factions vassalage tree")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("allowAllyInteraction")
+                .withDescription("...")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("allowVassalageTreeInteraction")
+                .withDescription("...")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("factionChatColor")
+                .withDescription("The color displayed for faction chat")
+                .setDefaultValue("gold"),
+            new ConfigOptionBuilder()
+                .withName("territoryAlertPopUp")
+                .withDescription("...")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("territoryIndicatorActionbar")
+                .withDescription("...")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("territoryAlertColor")
+                .withDescription("...")
+                .setDefaultValue("white"),
+            new ConfigOptionBuilder()
+                .withName("randomFactionAssignment")
+                .withDescription("If new players are randomly assigned to a faction")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("allowNeutrality")
+                .withDescription("If factions are permitted to be neutral")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("showPrefixesInFactionChat")
+                .withDescription("If faction prefixes should be shown while in faction chat")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("debugMode")
+                .withDescription("If the plugin should be more verbose when logging")
+                .setDefaultValue(false)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("factionProtectionsEnabled")
+                .withDescription("...")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("limitLand")
+                .withDescription("...")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("factionsCanSetPrefixColors")
+                .withDescription("If factions can set their prefix color")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("playersLosePowerOnDeath")
+                .withDescription("If players lose power on death")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("bonusPowerEnabled")
+                .withDescription("If bonus power is enabled")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("useNewLanguageFile")
+                .withDescription("If the plugin should attempt to use the new style language file")
+                .setDefaultValue(true)
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("powerLostOnDeath")
+                .withDescription("The amount of power lost on power death (if power loss on death is enabled)")
+                .setDefaultValue(1.0)
+                .isDouble(),
+            new ConfigOptionBuilder()
+                .withName("powerGainedOnKill")
+                .withDescription("The amount of power gained from killing another player")
+                .setDefaultValue(1.0)
+                .isDouble(),
+            new ConfigOptionBuilder()
+                .withName("teleportDelay")
+                .withDescription("The number of seconds to wait before teleporting")
+                .setDefaultValue(3)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("factionless")
+                .withDescription("...")
+                .setDefaultValue("FactionLess"),
+            new ConfigOptionBuilder()
+                .withName("secondsBeforeInitialAutosave")
+                .withDescription("The number of seconds before the first auto-save after the plugin is loaded")
+                .setDefaultValue(60 * 60)
+                .isInteger(),
+            new ConfigOptionBuilder()
+                .withName("secondsBetweenAutosaves")
+                .withDescription("The number of seconds between auto-saves after the initial auto-save")
+                .setDefaultValue(60 * 60)
+                .isInteger()
+        };
+        for (ConfigOptionBuilder option : configOptions) this.configOptionRepository.add(option.create());
+        String[] deprecatedOptionNames = {
+            "officerLimit",
+            "hourlyPowerIncreaseAmount",
+            "maxPowerLevel"
+        };
+        for (String optionName : deprecatedOptionNames) this.configOptionRepository.addDeprecatedOption(optionName);
     }
 
     public void saveConfigDefaults() {
-        getConfig().set("version", medievalFactions.get().getVersion());
-        getConfig().set("initialMaxPowerLevel", 20);
-        getConfig().set("initialPowerLevel", 5);
-        getConfig().set("powerIncreaseAmount", 2);
-        getConfig().set("mobsSpawnInFactionTerritory", false);
-        getConfig().set("laddersPlaceableInEnemyFactionTerritory", true);
-        getConfig().set("minutesBeforeInitialPowerIncrease", 30);
-        getConfig().set("minutesBetweenPowerIncreases", 60);
-        getConfig().set("warsRequiredForPVP", true);
-        getConfig().set("factionOwnerMultiplier", 2.0);
-        getConfig().set("officerPerMemberCount", 5);
-        getConfig().set("factionOfficerMultiplier", 1.5);
-        getConfig().set("powerDecreases", true);
-        getConfig().set("minutesBetweenPowerDecreases", 1440);
-        getConfig().set("minutesBeforePowerDecrease", 20160);
-        getConfig().set("powerDecreaseAmount", 1);
-        getConfig().set("factionMaxNameLength", 20);
-        getConfig().set("factionMaxNumberGates", 5);
-        getConfig().set("factionMaxGateArea", 64);
-        getConfig().set("surroundedChunksProtected", true);
-        getConfig().set("zeroPowerFactionsGetDisbanded", false);
-        getConfig().set("vassalContributionPercentageMultiplier", 0.75);
-        getConfig().set("nonMembersCanInteractWithDoors", false);
-        getConfig().set("playersChatWithPrefixes", true);
-        getConfig().set("maxClaimRadius", 3);
-        getConfig().set("languageid", "en-us");
-        getConfig().set("chatSharedInVassalageTrees", true);
-        getConfig().set("allowAllyInteraction", false);
-        getConfig().set("allowVassalageTreeInteraction", false);
-        getConfig().set("factionChatColor", "gold");
-        getConfig().set("territoryAlertPopUp", true);
-        getConfig().set("territoryAlertColor", "white");
-        getConfig().set("territoryIndicatorActionbar", true);
-        getConfig().set("randomFactionAssignment", false);
-        getConfig().set("allowNeutrality", false);
-        getConfig().set("showPrefixesInFactionChat", false);
-        getConfig().set("debugMode", false);
-        getConfig().set("factionProtectionsEnabled", true);
-        getConfig().set("limitLand", true);
-        getConfig().set("factionsCanSetPrefixColors", true);
-        getConfig().set("playersLosePowerOnDeath", true);
-        getConfig().set("bonusPowerEnabled", true);
-        getConfig().set("powerLostOnDeath", 1.0);
-        getConfig().set("powerGainedOnKill", 1.0);
-        getConfig().set("teleportDelay", 3);
-        getConfig().set("factionless", "FactionLess");
-        getConfig().set("useNewLanguageFile", true);
-        getConfig().set("secondsBeforeInitialAutosave", 60);
-        getConfig().set("secondsBetweenAutosaves", 60);
+        this.saveConfigDefaults(false, false);
+    }
+
+    public void saveConfigDefaults(Boolean onlySetIfMissing, Boolean deleteOldOptions) {
+        for (ConfigOption configOption : this.configOptionRepository.all().values()) {
+            // Special case for version, because we always want to set to the new version
+            if (configOption.getName().equals("version")) getConfig().set("version", this.medievalFactions.get().getVersion());
+            Boolean optionExists = true;
+            switch(configOption.getType()) {
+                case Integer:
+                    optionExists = getConfig().isInt(configOption.getName());
+                    break;
+                case Double:
+                    optionExists = getConfig().isDouble(configOption.getName());
+                    break;
+                case String:
+                    optionExists = getConfig().isString(configOption.getName());
+                    break;
+                case Boolean:
+                    optionExists = getConfig().isBoolean(configOption.getName());
+                    break;
+                default:
+                    optionExists = getConfig().isSet(configOption.getName());
+                    break;
+            }
+            // TODO: implemenent onlySetIfMissing
+            if (! optionExists) getConfig().set(configOption.getName(), configOption.getDefaultValue());
+        }
+        if (deleteOldOptions) this.deleteOldConfigOptionsIfPresent();
         getConfig().options().copyDefaults(true);
-        medievalFactions.get().saveConfig();
+        this.medievalFactions.get().saveConfig();
+    }
+
+    public void handleVersionMismatch() {
+        this.saveConfigDefaults(true, true);
+    }
+    
+    private void deleteOldConfigOptionsIfPresent() {
+        for (String optionName : this.configOptionRepository.allDeprecatedOptions()) {
+            if (getConfig().isSet(optionName)) {
+                getConfig().set(optionName, null);
+            }
+        }
+    }
+
+    public ConfigOption getConfigOption(String name) {
+        return this.configOptionRepository.get(name);
+    }
+
+    public AbstractMap.SimpleEntry<SetConfigResult, String> setConfigOption(String optionName, String value) {
+        ConfigOption option = this.getConfigOption(optionName);
+        if (option != null) {
+            if (! option.isUserSettable()) return new AbstractMap.SimpleEntry<>(SetConfigResult.NotUserSettable, null);
+            Object parsedValue = null;
+            switch(option.getType()) {
+                case Integer:
+                    parsedValue = StringUtils.parseAsInteger(value);
+                    break;
+                case Double:
+                    parsedValue = StringUtils.parseAsDouble(value);
+                    break;
+                case Boolean:
+                    parsedValue = StringUtils.parseAsBoolean(value);
+                    break;
+                default:
+                    parsedValue = String.valueOf(value);
+                    break;
+            }
+            if (parsedValue == null) return new AbstractMap.SimpleEntry<>(SetConfigResult.NotExpectedType, option.getType().toString().toLowerCase());
+            getConfig().set(optionName, parsedValue);
+            return new AbstractMap.SimpleEntry<>(SetConfigResult.ValueSet, String.valueOf(parsedValue));
+        }
+        return new AbstractMap.SimpleEntry<>(SetConfigResult.DoesNotExist, null);
     }
 
     public void sendPageOneOfConfigList(CommandSender sender) {
@@ -444,11 +482,11 @@ public class ConfigService {
     }
 
     public boolean hasBeenAltered() {
-        return altered;
+        return this.altered;
     }
 
     public FileConfiguration getConfig() {
-        return medievalFactions.get().getConfig();
+        return this.medievalFactions.get().getConfig();
     }
 
     public int getInt(String option) {
@@ -468,6 +506,6 @@ public class ConfigService {
     }
 
     public LocaleService getLocaleService() {
-        return localeService.get();
+        return this.localeService.get();
     }
 }
