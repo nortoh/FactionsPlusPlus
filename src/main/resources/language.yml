@@ -1,3 +1,5 @@
+CommandsPageTitle: "&b&l== Medieval Factions Commands Page #page#/#pages# =="
+InvitationSent: "&aInvitation sent."
 InvalidSyntax: "&cUsage: /mf #command# #syntax#"
 ConfigValueSet: "&a#option# set to #value#"
 ConfigOptionDoesNotExist: "&cInvalid configuration option: #option#"
