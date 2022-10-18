@@ -103,11 +103,11 @@ public class CommandService implements TabCompleter {
             //MakePeaceCommand.class,
             MapCommand.class,
             MembersCommand.class,
-            //PowerCommand.class,
+            PowerCommand.class,
             //PrefixCommand.class,
-            //PromoteCommand.class,
+            PromoteCommand.class,
             RemoveLawCommand.class,
-            //RenameCommand.class,
+            RenameCommand.class,
             ResetPowerLevelsCommand.class,
             //RevokeAccessCommand.class,
             SetHomeCommand.class,
@@ -115,11 +115,11 @@ public class CommandService implements TabCompleter {
             //SwearFealtyCommand.class,
             //TransferCommand.class,
             //UnclaimallCommand.class,
-            //UnclaimCommand.class,
+            UnclaimCommand.class,
             UnlockCommand.class,
-            //VassalizeCommand.class,
+            VassalizeCommand.class,
             VersionCommand.class,
-            //WhoCommand.class
+            WhoCommand.class
         };
         for (Class commandClass : coreCommands) {
             this.registerCommand(commandClass);

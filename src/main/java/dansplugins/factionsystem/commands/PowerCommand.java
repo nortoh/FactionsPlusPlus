@@ -7,16 +7,16 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.PlayerRecord;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,96 +26,58 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class PowerCommand extends SubCommand {
+public class PowerCommand extends Command {
 
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final PlayerService playerService;
-    private final LocaleService localeService;
 
     @Inject
     public PowerCommand(
-        MessageService messageService,
         PersistentData persistentData,
-        PlayerService playerService,
-        LocaleService localeService
+        PlayerService playerService
     ) {
-        super();
-        this.messageService = messageService;
+        super(
+            new CommandBuilder()
+                .withName("power")
+                .withAliases(LOCALE_PREFIX + "CmdPower")
+                .withDescription("Check your power level.")
+                .requiresPermissions("mf.power")
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the player to check power for")
+                        .expectsAnyPlayer()
+                )
+        );
         this.persistentData = persistentData;
         this.playerService = playerService;
-        this.localeService = localeService;
-        this
-            .setNames("power", LOCALE_PREFIX + "CmdPower")
-            .requiresPermissions("mf.power");
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
+    public void execute(CommandContext context) {
         final PlayerRecord record;
         double maxPower;
-        if (args.length == 0) {
-            if (!(sender instanceof Player)) {
-                this.playerService.sendMessage(
-                    sender,
-                    this.localeService.getText("OnlyPlayersCanUseCommand"),
-                    "OnlyPlayersCanUseCommand",
-                    false
-                );
+        if (context.getRawArguments().length == 0) {
+            if (context.isConsole()) {
+                context.replyWith("OnlyPlayersCanUseCommand");
                 return;
             }
-            record = this.persistentData.getPlayerRecord(((Player) sender).getUniqueId());
-            maxPower = this.playerService.getMaxPower(((Player) sender).getUniqueId());
-            this.playerService.sendMessage(
-                sender,
-                "&b" + this.localeService.getText("AlertCurrentPowerLevel", record.getPower(), maxPower),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCurrentPowerLevel"))
-                    .replace("#power#", String.valueOf(record.getPower()))
-                    .replace("#max#", String.valueOf(maxPower)),
-                true
+            record = this.persistentData.getPlayerRecord(context.getPlayer().getUniqueId());
+            maxPower = this.playerService.getMaxPower(context.getPlayer().getUniqueId());
+            context.replyWith(
+                this.constructMessage("AlertCurrentPowerLevel")
+                    .with("power", String.valueOf(record.getPower()))
+                    .with("max", String.valueOf(maxPower))
             );
             return;
         }
-        UUIDChecker uuidChecker = new UUIDChecker();
-        final UUID target = uuidChecker.findUUIDBasedOnPlayerName(args[0]);
-        if (target == null) {
-            this.playerService.sendMessage(
-                sender,
-                "&c" + this.localeService.getText("PlayerNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
-                true
-            );
-            return;
-        }
+        final UUID target = context.getOfflinePlayerArgument("player").getUniqueId();
         record = this.persistentData.getPlayerRecord(target);
         maxPower = this.playerService.getMaxPower(target);
-        this.playerService.sendMessage(
-            sender, 
-            "&b" + this.localeService.getText("CurrentPowerLevel", args[0], record.getPower(), maxPower),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("CurrentPowerLevel"))
-                .replace("#power#", String.valueOf(record.getPower()))
-                .replace("#max#", String.valueOf(maxPower))
-                .replace("#name#", args[0]),
-            true
+        context.replyWith(
+            this.constructMessage("CurrentPowerLevel")
+                .with("power", String.valueOf(record.getPower()))
+                .with("max", String.valueOf(maxPower))
+                .with("name", context.getOfflinePlayerArgument("player").getName())
         );
     }
 
