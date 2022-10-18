@@ -8,8 +8,9 @@ public class CommandArgument {
     private Boolean required;
     private ArgumentType type;
     private Boolean shouldConsumeRestOfArguments;
-    public String[] permissionsIfNull = new String[]{};
-    public String[] permissionsIfNotNull = new String[]{};
+    private String[] permissionsIfNull = new String[]{};
+    private String[] permissionsIfNotNull = new String[]{};
+    private Object defaultValue;
 
     public String getDescription() {
         return this.description;
@@ -21,6 +22,10 @@ public class CommandArgument {
 
     public ArgumentType getType() {
         return this.type;
+    }
+
+    public Object getDefaultValue() {
+        return this.defaultValue;
     }
 
     public String[] getNullPermissions() {
@@ -50,6 +55,11 @@ public class CommandArgument {
         return this;
     }
 
+    public CommandArgument setDefaultValue(Object value) {
+        this.defaultValue = value;
+        return this;
+    }
+
     public CommandArgument setShouldConsumeRestOfArguments(Boolean value) {
         this.shouldConsumeRestOfArguments = value;
         return this;
@@ -70,6 +80,7 @@ public class CommandArgument {
             .setDescription(builder.description)
             .setRequired(builder.required)
             .setType(builder.type)
+            .setDefaultValue(builder.defaultValue)
             .setNullPermissions(builder.permissionsIfNull)
             .setNotNullPermissions(builder.permissionsIfNotNull)
             .setShouldConsumeRestOfArguments(builder.shouldConsumeRestOfArguments);

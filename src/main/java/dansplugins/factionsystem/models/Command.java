@@ -1,6 +1,7 @@
 package dansplugins.factionsystem.models;
 
 import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.MessageBuilder;
 import dansplugins.factionsystem.commands.abs.ColorTranslator;
 import dansplugins.factionsystem.builders.ArgumentBuilder;
 
@@ -26,6 +27,7 @@ public class Command implements ColorTranslator {
     private Boolean requiresFactionOwnership;
     private Boolean requiresFactionOfficership;
     private Boolean requiresSubCommand;
+    private Boolean requiresNoFactionMembership;
     private String executorMethod;
     private LinkedHashMap<String, CommandArgument> arguments = new LinkedHashMap<>();
     private HashMap<String, Command> subcommands = new HashMap<>();
@@ -40,6 +42,7 @@ public class Command implements ColorTranslator {
         this.setRequiresFactionMembership(builder.requiresFactionMembership);
         this.setRequiresFactionOwnership(builder.requiresFactionOwnership);
         this.setRequiresFactionOfficership(builder.requiresFactionOfficership);
+        this.setRequiresNoFactionMembership(builder.requiresNoFactionMembership);
         this.setRequiresSubCommand(builder.requiresSubCommand);
         this.setExecutorMethod(builder.executorMethod);
         for (Map.Entry<String, CommandBuilder> entry : builder.subcommands.entrySet()) {
@@ -84,6 +87,10 @@ public class Command implements ColorTranslator {
 
     public Boolean shouldRequireFactionOwnership() {
         return this.requiresFactionOwnership;
+    }
+
+    public Boolean shouldRequireNoFactionMembership() {
+        return this.requiresNoFactionMembership;
     }
 
     public Boolean shouldRequireSubCommand() {
@@ -172,6 +179,11 @@ public class Command implements ColorTranslator {
         return this;
     }
 
+    public Command setRequiresNoFactionMembership(Boolean value) {
+        this.requiresNoFactionMembership = value;
+        return this;
+    }
+
     public Command setRequiresSubCommand(Boolean value) {
         this.requiresSubCommand = value;
         return this;
@@ -202,5 +214,9 @@ public class Command implements ColorTranslator {
 
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
         return new ArrayList<>();
+    }
+
+    public MessageBuilder constructMessage(String localizationKey) {
+        return new MessageBuilder(localizationKey);
     }
 }

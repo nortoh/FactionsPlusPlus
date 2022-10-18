@@ -9,6 +9,7 @@ public class ArgumentBuilder {
     public Boolean shouldConsumeRestOfArguments = false;
     public String[] permissionsIfNull = new String[]{};
     public String[] permissionsIfNotNull = new String[]{};
+    public Object defaultValue = null;
 
     public ArgumentBuilder setDescription(String description) {
         this.description = description;
@@ -27,6 +28,11 @@ public class ArgumentBuilder {
 
     public ArgumentBuilder isOptional() {
         this.required = false;
+        return this;
+    }
+
+    public ArgumentBuilder setDefaultValue(Object value) {
+        this.defaultValue = value;
         return this;
     }
 
@@ -112,6 +118,11 @@ public class ArgumentBuilder {
 
     public ArgumentBuilder expectsFactionFlagName() {
         this.type = ArgumentType.FactionFlagName;
+        return this;
+    }
+
+    public ArgumentBuilder expectsConfigOptionName() {
+        this.type = ArgumentType.ConfigOptionName;
         return this;
     }
 }

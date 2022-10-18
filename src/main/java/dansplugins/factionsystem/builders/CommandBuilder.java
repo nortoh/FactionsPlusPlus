@@ -15,6 +15,7 @@ public class CommandBuilder {
     public Boolean requiresFactionOwnership = false;
     public Boolean requiresFactionOfficership = false;
     public Boolean requiresSubCommand = false;
+    public Boolean requiresNoFactionMembership = false;
     public HashMap<String, ArgumentBuilder> arguments = new HashMap<>();
     public HashMap<String, CommandBuilder> subcommands = new HashMap<>();
 
@@ -56,6 +57,11 @@ public class CommandBuilder {
 
     public CommandBuilder expectsPlayerExecution() {
         this.requiresPlayerExecution = true;
+        return this;
+    }
+
+    public CommandBuilder expectsNoFactionMembership() {
+        this.requiresNoFactionMembership = true;
         return this;
     }
 
