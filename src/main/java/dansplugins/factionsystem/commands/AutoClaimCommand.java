@@ -30,7 +30,7 @@ public class AutoClaimCommand extends Command {
         super(
             new CommandBuilder()
                 .withName("autoclaim")
-                .withAliases("ac", LOCALE_PREFIX + "CMDAutoClaim")
+                .withAliases("ac", LOCALE_PREFIX + "CmdAutoClaim")
                 .withDescription("toggles auto claim for your player")
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.autoclaim")

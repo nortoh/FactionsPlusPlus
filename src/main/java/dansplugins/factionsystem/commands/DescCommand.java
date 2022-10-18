@@ -7,11 +7,12 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
-import org.bukkit.command.CommandSender;
+import dansplugins.factionsystem.builders.*;
 import org.bukkit.entity.Player;
 
 import java.util.Objects;
@@ -20,7 +21,7 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class DescCommand extends SubCommand {
+public class DescCommand extends Command {
 
     private final PlayerService playerService;
     private final LocaleService localeService;
@@ -28,55 +29,38 @@ public class DescCommand extends SubCommand {
 
     @Inject
     public DescCommand(PlayerService playerService, LocaleService localeService, MessageService messageService) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("description")
+                .withAliases("desc", LOCALE_PREFIX + "CmdDesc")
+                .withDescription("Set your faction description.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.desc")
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .addArgument(
+                    "description",
+                    new ArgumentBuilder()
+                        .setDescription("the description to set")
+                        .expectsString()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                        
+                )
+        );
         this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
-        this
-            .setNames("description", "desc", LOCALE_PREFIX + "CmdDesc")
-            .requiresPermissions("mf.desc")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("UsageDesc"),
-                "UsageDesc", 
-                false
-            );
-            return;
-        }
-
-        this.faction.setDescription(String.join(" ", args));
+    public void execute(CommandContext context) {
+        String description = (String)context.getArgument("description");
+        context.getExecutorsFaction().setDescription(description);
         this.playerService.sendMessage(
-            player, 
+            context.getPlayer(), 
             "&c" + this.localeService.getText("DescriptionSet"),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("Description")).replace("#desc#", String.join(" ", args)), 
+            Objects.requireNonNull(this.messageService.getLanguage().getString("Description")).replace("#desc#", description), 
             true
         );
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 }

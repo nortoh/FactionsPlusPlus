@@ -7,15 +7,16 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.builders.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ import java.util.List;
  * @author Callum Johnson
  */
 @Singleton
-public class ListCommand extends SubCommand {
+public class ListCommand extends Command {
 
     private final PlayerService playerService;
     private final LocaleService localeService;
@@ -37,37 +38,21 @@ public class ListCommand extends SubCommand {
         PersistentData persistentData,
         FactionService factionService
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("list")
+                .withAliases(LOCALE_PREFIX + "CmdList")
+                .withDescription("List all factions on the server.")
+                .requiresPermissions("mf.list")
+        );
         this.playerService = playerService;
         this.localeService = localeService;
         this.persistentData = persistentData;
         this.factionService = factionService;
-        this
-            .setNames("list", LOCALE_PREFIX + "CmdList")
-            .requiresPermissions("mf.list");
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
+    public void execute(CommandContext context) {
+        CommandSender sender = context.getSender();
         if (this.persistentData.getNumFactions() == 0) {
             this.playerService.sendMessage(
                 sender, 

@@ -7,17 +7,18 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.builders.*;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Objects;
@@ -26,7 +27,7 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class DeclareIndependenceCommand extends SubCommand {
+public class DeclareIndependenceCommand extends Command {
 
     private final PlayerService playerService;
     private final MessageService messageService;
@@ -44,84 +45,60 @@ public class DeclareIndependenceCommand extends SubCommand {
         PersistentData persistentData,
         FactionRepository factionRepository
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("declareindependence")
+                .withAliases("di", LOCALE_PREFIX + "CmdDeclareIndependence")
+                .withDescription("Declare independence from your liege.")
+                .expectsPlayerExecution()
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .requiresPermissions("mf.declareindependence")
+        );
         this.localeService = localeService;
         this.playerService = playerService;
         this.messageService = messageService;
         this.configService = configService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
-        this
-            .setNames("declareindependence", "di", LOCALE_PREFIX + "CmdDeclareIndependence")
-            .requiresPermissions("mf.declareindependence")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (!(this.faction.hasLiege()) || this.faction.getLiege() == null) {
+    public void execute(CommandContext context) {
+        Faction faction = context.getExecutorsFaction();
+        Player player = context.getPlayer();
+        if (!(faction.hasLiege()) || faction.getLiege() == null) {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("NotAVassalOfAFaction"), "NotAVassalOfAFaction", false);
             return;
         }
 
-        final Faction liege = this.factionRepository.get(this.faction.getLiege());
-        if (liege == null) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("FactionNotFound"), 
-                Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
-                    .replace("#faction#", String.join(" ", args)), true
-            );
-            return;
-        }
+        final Faction liege = this.factionRepository.get(faction.getLiege());
 
         // break vassal agreement.
-        liege.removeVassal(this.faction.getName());
-        this.faction.setLiege("none");
+        liege.removeVassal(faction.getName());
+        faction.setLiege("none");
 
-        if (!this.configService.getBoolean("allowNeutrality") || (!(this.faction.getFlag("neutral").toBoolean()) && !(liege.getFlag("neutral").toBoolean()))) {
+        if (!this.configService.getBoolean("allowNeutrality") || (!(faction.getFlag("neutral").toBoolean()) && !(liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
-            FactionWarStartEvent warStartEvent = new FactionWarStartEvent(this.faction, liege, player);
+            FactionWarStartEvent warStartEvent = new FactionWarStartEvent(faction, liege, player);
             Bukkit.getPluginManager().callEvent(warStartEvent);
 
             if (!warStartEvent.isCancelled()) {
-                this.faction.addEnemy(liege.getName());
-                liege.addEnemy(this.faction.getName());
+                faction.addEnemy(liege.getName());
+                liege.addEnemy(faction.getName());
 
                 // break alliance if allied
-                if (this.faction.isAlly(liege.getName())) {
-                    this.faction.removeAlly(liege.getName());
+                if (faction.isAlly(liege.getName())) {
+                    faction.removeAlly(liege.getName());
                     liege.removeAlly(faction.getName());
                 }
             }
         }
         this.messageService.messageServer(
-            "&c" + this.localeService.getText("HasDeclaredIndependence", this.faction.getName(), liege.getName()), 
+            "&c" + this.localeService.getText("HasDeclaredIndependence", faction.getName(), liege.getName()), 
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredIndependence"))
-                .replace("#faction_a#", this.faction.getName())
+                .replace("#faction_a#", faction.getName())
                 .replace("#faction_b#", liege.getName())
         );
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
 
     }
 }

@@ -9,10 +9,12 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
-import org.bukkit.command.CommandSender;
+import dansplugins.factionsystem.builders.*;
 import org.bukkit.entity.Player;
 
 import java.util.Objects;
@@ -21,7 +23,7 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class CheckClaimCommand extends SubCommand {
+public class CheckClaimCommand extends Command {
 
     private final PersistentData persistentData;
     private final PlayerService playerService;
@@ -35,26 +37,22 @@ public class CheckClaimCommand extends SubCommand {
         LocaleService localeService,
         MessageService messageService
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("checkclaim")
+                .withAliases("cc", LOCALE_PREFIX + "CmdCheckClaim")
+                .withDescription("Check if land is claimed.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.checkclaim")
+        );
         this.localeService = localeService;
         this.persistentData = persistentData;
         this.playerService = playerService;
         this.messageService = messageService;
-        this
-            .setNames("checkclaim", "cc", LOCALE_PREFIX + "CmdCheckClaim")
-            .requiresPermissions("mf.checkclaim")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
+    public void execute(CommandContext context) {
+        Player player = context.getPlayer();
         final String result = this.persistentData.getChunkDataAccessor().checkOwnershipAtPlayerLocation(player);
 
         if (result.equals("unclaimed")) {
@@ -63,17 +61,5 @@ public class CheckClaimCommand extends SubCommand {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("LandClaimedBy"), Objects.requireNonNull(this.messageService.getLanguage().getString("LandClaimedBy"))
                     .replace("#player#", result), true);
         }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 }

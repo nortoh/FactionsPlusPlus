@@ -36,7 +36,7 @@ public class AddLawCommand extends Command {
             new CommandBuilder()
                 .withName("addlaw")
                 .withAliases("al", LOCALE_PREFIX + "CMDAddLaw")
-                .withDescription("adds a law to your faction")
+                .withDescription("Add a law to your faction.")
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.addlaw")
                 .expectsFactionMembership()

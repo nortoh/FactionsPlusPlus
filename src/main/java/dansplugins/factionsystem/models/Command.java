@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 
 public class Command implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Locale_";
@@ -196,6 +197,10 @@ public class Command implements ColorTranslator {
     }
 
     public List<String> handleTabComplete(Player player, String[] args) {
+        return new ArrayList<>();
+    }
+
+    public List<String> handleTabComplete(CommandSender sender, String[] args) {
         return new ArrayList<>();
     }
 }

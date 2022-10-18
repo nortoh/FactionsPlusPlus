@@ -58,7 +58,7 @@ public class CreateCommand extends Command {
         super(
             new CommandBuilder()
                 .withName("create")
-                .withAliases(LOCALE_PREFIX + "CMDCreate")
+                .withAliases(LOCALE_PREFIX + "CmdCreate")
                 .withDescription("creates a new faction")
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.create")
