@@ -4,16 +4,22 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.services.PlayerService;
+
 import org.bukkit.entity.Player;
 import preponderous.ponder.misc.Pair;
+
+import java.util.UUID;
 
 @Singleton
 public class RelationChecker {
     private final PersistentData persistentData;
+    private final PlayerService playerService;
 
     @Inject
-    public RelationChecker(PersistentData persistentData) {
+    public RelationChecker(PersistentData persistentData, PlayerService playerService) {
         this.persistentData = persistentData;
+        this.playerService = playerService;
     }
 
     public boolean arePlayersInAFaction(Player player1, Player player2) {
@@ -29,35 +35,22 @@ public class RelationChecker {
     }
 
     public boolean arePlayersInSameFaction(Player player1, Player player2) {
-        Pair<Integer, Integer> factionIndices = getFactionIndices(player1, player2);
-        int attackersFactionIndex = factionIndices.getLeft();
-        int victimsFactionIndex = factionIndices.getRight();
-        return arePlayersInAFaction(player1, player2) && attackersFactionIndex == victimsFactionIndex;
+        Pair<UUID, UUID> factionIndices = getFactionIndices(player1, player2);
+        UUID attackersFactionIndex = factionIndices.getLeft();
+        UUID victimsFactionIndex = factionIndices.getRight();
+        return arePlayersInAFaction(player1, player2) && attackersFactionIndex.equals(victimsFactionIndex);
     }
 
     public boolean arePlayersFactionsNotEnemies(Player player1, Player player2) {
-        Pair<Integer, Integer> factionIndices = getFactionIndices(player1, player2);
-        int attackersFactionIndex = factionIndices.getLeft();
-        int victimsFactionIndex = factionIndices.getRight();
+        Pair<UUID, UUID> factionIndices = getFactionIndices(player1, player2);
+        UUID attackersFactionIndex = factionIndices.getLeft();
+        UUID victimsFactionIndex = factionIndices.getRight();
 
-        return !(persistentData.getFactionByIndex(attackersFactionIndex).isEnemy(persistentData.getFactionByIndex(victimsFactionIndex).getName())) &&
-                !(persistentData.getFactionByIndex(victimsFactionIndex).isEnemy(persistentData.getFactionByIndex(attackersFactionIndex).getName()));
+        return !(persistentData.getFactionByID(attackersFactionIndex).isEnemy(persistentData.getFactionByID(victimsFactionIndex).getID())) &&
+                !(persistentData.getFactionByID(victimsFactionIndex).isEnemy(persistentData.getFactionByID(attackersFactionIndex).getID()));
     }
 
-    private Pair<Integer, Integer> getFactionIndices(Player player1, Player player2) {
-        int attackersFactionIndex = 0;
-        int victimsFactionIndex = 0;
-
-        if (player1 != null && player2 != null) {
-            for (int i = 0; i < persistentData.getNumFactions(); i++) {
-                if (persistentData.getFactionByIndex(i).isMember(player1.getUniqueId())) {
-                    attackersFactionIndex = i;
-                }
-                if (persistentData.getFactionByIndex(i).isMember(player2.getUniqueId())) {
-                    victimsFactionIndex = i;
-                }
-            }
-        }
-        return new Pair<>(attackersFactionIndex, victimsFactionIndex);
+    private Pair<UUID, UUID> getFactionIndices(Player player1, Player player2) {
+        return new Pair<>(this.playerService.getPlayerFaction(player1).getID(), this.playerService.getPlayerFaction(player2).getID());
     }
 }

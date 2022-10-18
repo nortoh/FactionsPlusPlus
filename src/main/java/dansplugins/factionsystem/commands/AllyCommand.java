@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -90,23 +91,23 @@ public class AllyCommand extends SubCommand {
         }
 
         // no need to allow them to ally if they're already allies
-        if (this.faction.isAlly(otherFaction.getName())) {
+        if (this.faction.isAlly(otherFaction.getID())) {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
             return;
         }
 
-        if (this.faction.isEnemy(otherFaction.getName())) {
+        if (this.faction.isEnemy(otherFaction.getID())) {
             this.playerService.sendMessage(player, "&cThat faction is currently at war with your faction.", "FactionIsEnemy", false);
             return;
         }
 
-        if (this.faction.isRequestedAlly(otherFaction.getName())) {
+        if (this.faction.isRequestedAlly(otherFaction.getID())) {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
             return;
         }
 
         // send the request
-        this.faction.requestAlly(otherFaction.getName());
+        this.faction.requestAlly(otherFaction.getID());
 
         this.messageService.messageFaction(
                 this.faction,
@@ -125,10 +126,10 @@ public class AllyCommand extends SubCommand {
         );
 
         // check if both factions are have requested an alliance
-        if (this.faction.isRequestedAlly(otherFaction.getName()) && otherFaction.isRequestedAlly(this.faction.getName())) {
+        if (this.faction.isRequestedAlly(otherFaction.getID()) && otherFaction.isRequestedAlly(this.faction.getID())) {
             // ally them
-            this.faction.addAlly(otherFaction.getName());
-            otherFaction.addAlly(this.faction.getName());
+            this.faction.addAlly(otherFaction.getID());
+            otherFaction.addAlly(this.faction.getID());
             // message player's faction
             this.messageService.messageFaction(
                 this.faction, 
@@ -143,8 +144,8 @@ public class AllyCommand extends SubCommand {
             );
 
             // remove alliance requests
-            this.faction.removeAllianceRequest(otherFaction.getName());
-            otherFaction.removeAllianceRequest(this.faction.getName());
+            this.faction.removeAllianceRequest(otherFaction.getID());
+            otherFaction.removeAllianceRequest(this.faction.getID());
         }
     }
 
@@ -171,9 +172,9 @@ public class AllyCommand extends SubCommand {
         final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> playerAllies = playerFaction.getAllies();
+            ArrayList<UUID> playerAllies = playerFaction.getAllies();
             for(Faction faction : this.persistentData.getFactions()) {
-                if(!playerAllies.contains(faction.getName()) && !faction.getName().equals(playerFaction.getName())) {
+                if(!playerAllies.contains(faction.getID()) && !faction.getID().equals(playerFaction.getID())) {
                     factionsAllowedtoAlly.add(faction.getName());
                 }
             }

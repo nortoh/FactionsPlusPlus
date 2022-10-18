@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonElement;
 import dansplugins.factionsystem.jsonadapters.LocationAdapter;
 import dansplugins.factionsystem.jsonadapters.ArrayListGateAdapter;
+import dansplugins.factionsystem.jsonadapters.UUIDAdapter;
 import dansplugins.factionsystem.models.interfaces.Feudal;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -25,14 +26,17 @@ import com.google.gson.annotations.SerializedName;
 // TODO: updateDate function to handle renames
 public class Faction extends Nation implements Feudal {
     @Expose
+    @JsonAdapter(UUIDAdapter.class)
+    private final UUID id;
+    @Expose
     @JsonAdapter(ArrayListGateAdapter.class)
     private final ArrayList<Gate> gates = new ArrayList<>();
     @Expose
     private final HashMap<String, FactionFlag> flags;
     @Expose
-    private ArrayList<String> vassals = new ArrayList<>();
+    private ArrayList<UUID> vassals = new ArrayList<>();
     @Expose
-    private String liege = "none";
+    private UUID liege = null;
     @Expose
     private String prefix = "none";
     @Expose
@@ -43,18 +47,25 @@ public class Faction extends Nation implements Feudal {
     private int bonusPower = 0;
 
     private boolean autoclaim = false;
-    private final ArrayList<String> attemptedVassalizations = new ArrayList<>();
+    private final ArrayList<UUID> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
     public Faction(String factionName, HashMap<String, FactionFlag> flags) {
+        this.id = UUID.randomUUID();
         this.name = factionName;
         this.flags = flags;
     }
 
     public Faction(String factionName, UUID owner, HashMap<String, FactionFlag> flags) {
+        this.id = UUID.randomUUID();
         this.name = factionName;
         this.owner = owner;
         this.flags = flags;
+    }
+
+    // ID
+    public UUID getID() {
+        return this.id;
     }
 
     // Flags
@@ -111,20 +122,24 @@ public class Faction extends Nation implements Feudal {
         return this.vassals.size() > 0;
     }
 
-    public String getLiege() {
+    public UUID getLiege() {
         return this.liege;
     }
 
-    public void setLiege(String newLiege) {
+    public void setLiege(UUID newLiege) {
         this.liege = newLiege;
     }
 
     public boolean hasLiege() {
-        return !this.liege.equalsIgnoreCase("none");
+        return !(this.liege == null);
     }
 
-    public boolean isLiege(String faction) {
-        return this.liege.equalsIgnoreCase(faction);
+    public boolean isLiege(UUID uuid) {
+        return this.liege.equals(uuid);
+    }
+
+    public void unsetIfLiege(UUID uuid) {
+        if (this.isLiege(uuid)) this.liege = null;
     }
 
     // Gates
@@ -166,18 +181,16 @@ public class Faction extends Nation implements Feudal {
     }
 
     // Vassals
-    public boolean isVassal(String faction) {
-        return (this.containsIgnoreCase(this.vassals, faction));
+    public boolean isVassal(UUID uuid) {
+        return this.vassals.contains(uuid);
     }
 
-    public void addVassal(String name) {
-        if (!this.containsIgnoreCase(vassals, name)) {
-            this.vassals.add(name);
-        }
+    public void addVassal(UUID uuid) {
+        if (! this.isVassal(uuid)) this.vassals.add(uuid);
     }
 
-    public void removeVassal(String name) {
-        this.removeIfContainsIgnoreCase(this.vassals, name);
+    public void removeVassal(UUID uuid) {
+        if (this.isVassal(uuid)) this.vassals.remove(uuid);
     }
 
     public void clearVassals() {
@@ -188,7 +201,7 @@ public class Faction extends Nation implements Feudal {
         return this.vassals.size();
     }
 
-    public ArrayList<String> getVassals() {
+    public ArrayList<UUID> getVassals() {
         return this.vassals;
     }
 
@@ -203,18 +216,16 @@ public class Faction extends Nation implements Feudal {
         return toReturn.toString();
     }
 
-    public void addAttemptedVassalization(String factionName) {
-        if (!containsIgnoreCase(this.attemptedVassalizations, factionName)) {
-            this.attemptedVassalizations.add(factionName);
-        }
+    public void addAttemptedVassalization(UUID uuid) {
+        if (! this.hasBeenOfferedVassalization(uuid)) this.attemptedVassalizations.add(uuid);
     }
 
-    public boolean hasBeenOfferedVassalization(String factionName) {
-        return containsIgnoreCase(this.attemptedVassalizations, factionName);
+    public boolean hasBeenOfferedVassalization(UUID uuid) {
+        return this.attemptedVassalizations.contains(uuid);
     }
 
-    public void removeAttemptedVassalization(String factionName) {
-        removeIfContainsIgnoreCase(this.attemptedVassalizations, factionName);
+    public void removeAttemptedVassalization(UUID uuid) {
+        if (this.hasBeenOfferedVassalization(uuid)) this.attemptedVassalizations.remove(uuid);
     }
 
     // Tools

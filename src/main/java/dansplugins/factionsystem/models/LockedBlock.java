@@ -30,14 +30,14 @@ public class LockedBlock {
     @JsonAdapter(UUIDAdapter.class)
     private UUID owner = UUID.randomUUID();
     @Expose
-    private String faction = "";
+    private UUID faction = null;
     @Expose
     @JsonAdapter(ArrayListUUIDAdapter.class)
     private ArrayList<UUID> accessList = new ArrayList<>();
 
     public LockedBlock(
         UUID owner,
-        String faction,
+        UUID faction,
         int xCoord,
         int yCoord,
         int zCoord,
@@ -91,11 +91,11 @@ public class LockedBlock {
         return this.accessList;
     }
 
-    public void setFaction(String name) {
-        this.faction = name;
+    public void setFaction(UUID uuid) {
+        this.faction = uuid;
     }
 
-    public String getFactionName() {
+    public UUID getFactionID() {
         return this.faction;
     }
 

@@ -47,6 +47,10 @@ public class DataService {
         return this.factionRepository.get(name);
     }
 
+    public Faction getFactionByID(UUID uuid) {
+        return this.factionRepository.getByID(uuid);
+    }
+
     public Faction getRandomFaction() {
         return this.factionRepository.all().get(new Random().nextInt(this.factionRepository.all().size()));
     }
@@ -78,7 +82,7 @@ public class DataService {
     public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
         List<ClaimedChunk> chunks = new ArrayList<>();
         for (ClaimedChunk chunk : this.claimedChunkRepository.all()) {
-            if (chunk.getHolder().equalsIgnoreCase(faction.getName())) {
+            if (chunk.getHolder().equals(faction.getID())) {
                 chunks.add(chunk);
             }
         }

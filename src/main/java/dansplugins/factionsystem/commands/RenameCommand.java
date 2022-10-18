@@ -113,8 +113,6 @@ public class RenameCommand extends SubCommand {
             false
         );
 
-        this.persistentData.updateFactionReferencesDueToNameChange(oldName, newName);
-
         // Prefix (if it was unset)
         if (this.faction.getPrefix().equalsIgnoreCase(oldName)) this.faction.setPrefix(newName);
 

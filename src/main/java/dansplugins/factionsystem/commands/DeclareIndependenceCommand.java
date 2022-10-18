@@ -73,7 +73,7 @@ public class DeclareIndependenceCommand extends SubCommand {
             return;
         }
 
-        final Faction liege = this.factionRepository.get(this.faction.getLiege());
+        final Faction liege = this.factionRepository.getByID(this.faction.getLiege());
         if (liege == null) {
             this.playerService.sendMessage(
                 player, 
@@ -85,8 +85,8 @@ public class DeclareIndependenceCommand extends SubCommand {
         }
 
         // break vassal agreement.
-        liege.removeVassal(this.faction.getName());
-        this.faction.setLiege("none");
+        liege.removeVassal(this.faction.getID());
+        this.faction.setLiege(null);
 
         if (!this.configService.getBoolean("allowNeutrality") || (!(this.faction.getFlag("neutral").toBoolean()) && !(liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
@@ -94,13 +94,13 @@ public class DeclareIndependenceCommand extends SubCommand {
             Bukkit.getPluginManager().callEvent(warStartEvent);
 
             if (!warStartEvent.isCancelled()) {
-                this.faction.addEnemy(liege.getName());
-                liege.addEnemy(this.faction.getName());
+                this.faction.addEnemy(liege.getID());
+                liege.addEnemy(this.faction.getID());
 
                 // break alliance if allied
-                if (this.faction.isAlly(liege.getName())) {
-                    this.faction.removeAlly(liege.getName());
-                    liege.removeAlly(faction.getName());
+                if (this.faction.isAlly(liege.getID())) {
+                    this.faction.removeAlly(liege.getID());
+                    liege.removeAlly(faction.getID());
                 }
             }
         }

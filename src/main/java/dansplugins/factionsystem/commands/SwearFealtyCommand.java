@@ -83,7 +83,7 @@ public class SwearFealtyCommand extends SubCommand {
             );
             return;
         }
-        if (!target.hasBeenOfferedVassalization(faction.getName())) {
+        if (!target.hasBeenOfferedVassalization(faction.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("AlertNotOfferedVassalizationBy"),
@@ -93,11 +93,11 @@ public class SwearFealtyCommand extends SubCommand {
             return;
         }
         // set vassal
-        target.addVassal(faction.getName());
-        target.removeAttemptedVassalization(faction.getName());
+        target.addVassal(faction.getID());
+        target.removeAttemptedVassalization(faction.getID());
 
         // set liege
-        faction.setLiege(target.getName());
+        faction.setLiege(target.getID());
 
         // inform target faction that they have a new vassal
         this.messageService.messageFaction(

@@ -143,6 +143,10 @@ public class PersistentData {
         return this.factionRepository.get(name);
     }
 
+    public Faction getFactionByID(UUID uuid) {
+        return this.factionRepository.getByID(uuid);
+    }
+
     /**
      * Method to get a Faction by its prefix.
      * <p>
@@ -178,7 +182,7 @@ public class PersistentData {
     }
 
     public Faction getPlayersFaction(UUID playerUUID) {
-        for (Faction faction : this.factionRepository.all()) {
+        for (Faction faction : this.factionRepository.all().values()) {
             if (faction.isMember(playerUUID)) {
                 return faction;
             }
@@ -214,25 +218,25 @@ public class PersistentData {
                 // record number of factions
                 numFactionsFound = foundFactions.size();
 
-                Faction liege = this.factionRepository.get(current.getLiege());
+                Faction liege = this.factionRepository.getByID(current.getLiege());
                 if (liege != null) {
-                    if (!containsFactionByName(toAdd, liege) && !containsFactionByName(foundFactions, liege)) {
+                    if (!containsFactionByID(toAdd, liege) && !containsFactionByID(foundFactions, liege)) {
                         toAdd.add(liege);
                         numFactionsFound++;
                     }
 
-                    for (String vassalName : liege.getVassals()) {
-                        Faction vassal = this.factionRepository.get(vassalName);
-                        if (!containsFactionByName(toAdd, vassal) && !containsFactionByName(foundFactions, vassal)) {
+                    for (UUID vassalID : liege.getVassals()) {
+                        Faction vassal = this.factionRepository.getByID(vassalID);
+                        if (!containsFactionByID(toAdd, vassal) && !containsFactionByID(foundFactions, vassal)) {
                             toAdd.add(vassal);
                             numFactionsFound++;
                         }
                     }
                 }
 
-                for (String vassalName : current.getVassals()) {
-                    Faction vassal = this.factionRepository.get(vassalName);
-                    if (!containsFactionByName(toAdd, vassal) && !containsFactionByName(foundFactions, vassal)) {
+                for (UUID vassalID : current.getVassals()) {
+                    Faction vassal = this.factionRepository.getByID(vassalID);
+                    if (!containsFactionByID(toAdd, vassal) && !containsFactionByID(foundFactions, vassal)) {
                         toAdd.add(vassal);
                         numFactionsFound++;
                     }
@@ -248,9 +252,9 @@ public class PersistentData {
         return foundFactions;
     }
 
-    private boolean containsFactionByName(ArrayList<Faction> list, Faction faction) {
+    private boolean containsFactionByID(ArrayList<Faction> list, Faction faction) {
         for (Faction f : list) {
-            if (f.getName().equalsIgnoreCase(faction.getName())) {
+            if (f.getID().equals(faction.getID())) {
                 return true;
             }
         }
@@ -258,7 +262,7 @@ public class PersistentData {
     }
 
     public boolean isInFaction(UUID playerUUID) {
-        for (Faction faction : this.factionRepository.all()) {
+        for (Faction faction : this.factionRepository.all().values()) {
             if (faction.isMember(playerUUID)) {
                 return true;
             }
@@ -279,7 +283,7 @@ public class PersistentData {
     }
 
     public boolean isGateBlock(Block targetBlock) {
-        for (Faction faction : this.factionRepository.all()) {
+        for (Faction faction : this.factionRepository.all().values()) {
             for (Gate gate : faction.getGates()) {
                 if (gate.hasBlock(targetBlock)) {
                     return true;
@@ -299,12 +303,12 @@ public class PersistentData {
         return false;
     }
 
-    public void removeAllLocks(String factionName) {
+    public void removeAllLocks(UUID factionUUID) {
         Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
 
         while (itr.hasNext()) {
             LockedBlock currentBlock = itr.next();
-            if (currentBlock.getFactionName().equalsIgnoreCase(factionName)) {
+            if (currentBlock.getFactionID().equals(factionUUID)) {
                 try {
                     itr.remove();
                 } catch (Exception e) {
@@ -330,49 +334,23 @@ public class PersistentData {
     }
 
     public void addFaction(Faction faction) {
-        //factions.add(faction);
+        this.factionRepository.create(faction);
     }
 
-    public int getFactionIndexOf(Faction faction) {
-        //return factions.indexOf(faction);
-        return 0;
-    }
-
-    public Faction getFactionByIndex(int i) {
-        //return factions.get(i);
-        return null;
-    }
-
-    public void removeFactionByIndex(int i) {
-        //factions.remove(i);
-    }
-
-    public void removePoliticalTiesToFaction(String factionName) {
-        for (Faction faction : this.factionRepository.all()) {
-
-            // remove records of alliances/wars associated with this faction
-            if (faction.isAlly(factionName)) {
-                faction.removeAlly(factionName);
-            }
-            if (faction.isEnemy(factionName)) {
-                faction.removeEnemy(factionName);
-            }
-
-            // remove liege and vassal references associated with this faction
-            if (faction.isLiege(factionName)) {
-                faction.setLiege("none");
-            }
-
-            if (faction.isVassal(factionName)) {
-                faction.removeVassal(factionName);
-            }
+    public void removePoliticalTiesToFaction(Faction targetFaction) {
+        for (Map.Entry<UUID, Faction> entry : this.factionRepository.all().entrySet()) {
+            Faction faction = entry.getValue();
+            faction.removeAlly(targetFaction.getID());
+            faction.removeEnemy(targetFaction.getID());
+            faction.unsetIfLiege(targetFaction.getID());
+            faction.removeVassal(targetFaction.getID());
         }
     }
 
-    public List<ClaimedChunk> getChunksClaimedByFaction(String factionName) {
+    public List<ClaimedChunk> getChunksClaimedByFaction(UUID factionUUID) {
         List<ClaimedChunk> output = new ArrayList<>();
         for (ClaimedChunk chunk : this.claimedChunkRepository.all()) {
-            if (chunk.getHolder().equalsIgnoreCase(factionName)) {
+            if (chunk.getHolder().equals(factionUUID)) {
                 output.add(chunk);
             }
         }
@@ -402,33 +380,19 @@ public class PersistentData {
         return this.playerRecordRepository.all().size();
     }
 
-    public void updateFactionReferencesDueToNameChange(String oldName, String newName) {
-        // Change Ally/Enemy/Vassal/Liege references
-        // TODO: reimplement, we should consider assigning UUIDs to factions that don't change to avoid this...
-        //this.factionRepository.all().forEach(fac -> fac.updateData(oldName, newName));
-
-        // Change Claims
-        this.claimedChunkRepository.all().stream().filter(cc -> cc.getHolder().equalsIgnoreCase(oldName))
-                .forEach(cc -> cc.setHolder(newName));
-
-        // Locked Blocks
-        this.lockedBlockRepository.all().stream().filter(lb -> lb.getFactionName().equalsIgnoreCase(oldName))
-                .forEach(lb -> lb.setFaction(newName));
-    }
-
-    public long removeLiegeAndVassalReferencesToFaction(String factionName) {
-        long changes = this.factionRepository.all().stream()
-                .filter(f -> f.isLiege(factionName) || f.isVassal(factionName))
+    public long removeLiegeAndVassalReferencesToFaction(UUID factionUUID) {
+        long changes = this.factionRepository.all().values().stream()
+                .filter(f -> f.isLiege(factionUUID) || f.isVassal(factionUUID))
                 .count(); // Count changes
 
-        this.factionRepository.all().stream().filter(f -> f.isLiege(factionName)).forEach(f -> f.setLiege("none"));
-        this.factionRepository.all().stream().filter(f -> f.isVassal(factionName)).forEach(Faction::clearVassals);
+        this.factionRepository.all().values().stream().filter(f -> f.isLiege(factionUUID)).forEach(f -> f.setLiege(null));
+        this.factionRepository.all().values().stream().filter(f -> f.isVassal(factionUUID)).forEach(Faction::clearVassals);
 
         return changes;
     }
 
     public boolean isBlockInGate(Block block, Player player) {
-        for (Faction faction : this.factionRepository.all()) {
+        for (Faction faction : this.factionRepository.all().values()) {
             for (Gate gate : faction.getGates()) {
                 if (gate.hasBlock(block)) {
                     playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("BlockIsPartOfGateMustRemoveGate"), gate.getName())
@@ -471,7 +435,7 @@ public class PersistentData {
 
     public void disbandAllZeroPowerFactions() {
         ArrayList<String> factionsToDisband = new ArrayList<>();
-        for (Faction faction : this.factionRepository.all()) {
+        for (Faction faction : this.factionRepository.all().values()) {
             if (this.factionService.getCumulativePowerLevel(faction) == 0) {
                 factionsToDisband.add(faction.getName());
             }
@@ -490,23 +454,15 @@ public class PersistentData {
 
         if (factionToRemove != null) {
             // remove claimed land objects associated with this faction
-            getChunkDataAccessor().removeAllClaimedChunks(factionToRemove.getName());
+            getChunkDataAccessor().removeAllClaimedChunks(factionToRemove.getID());
             this.dynmapService.updateClaimsIfAble();
 
             // remove locks associated with this faction
-            removeAllLocks(factionToRemove.getName());
+            removeAllLocks(factionToRemove.getID());
 
-            removePoliticalTiesToFaction(factionToRemove.getName());
+            removePoliticalTiesToFaction(factionToRemove);
 
-            int index = -1;
-            for (int i = 0; i < getNumFactions(); i++) {
-                if (getFactionByIndex(i).getName().equalsIgnoreCase(name)) {
-                    index = i;
-                }
-            }
-            if (index != -1) {
-                removeFactionByIndex(index);
-            }
+            this.factionRepository.delete(name);
         }
     }
 
@@ -525,19 +481,19 @@ public class PersistentData {
     }
 
     public List<SortableFaction> getSortedListOfFactions() {
-        return this.factionRepository.all().stream()
+        return this.factionRepository.all().values().stream()
                 .map(fac -> new SortableFaction(fac, this.factionService.getCumulativePowerLevel(fac)))
                 .sorted() // Sort the Factions by Power.
                 .collect(Collectors.toList());
     }
 
     public Gate getGate(Block targetBlock) {
-        return this.factionRepository.all().stream().flatMap(faction -> faction.getGates().stream())
+        return this.factionRepository.all().values().stream().flatMap(faction -> faction.getGates().stream())
                 .filter(gate -> gate.hasBlock(targetBlock)).findFirst().orElse(null);
     }
 
     public Faction getGateFaction(Gate gate) {
-        return this.factionRepository.all().stream()
+        return this.factionRepository.all().values().stream()
                 .filter(faction -> faction.getGates().contains(gate)).findFirst().orElse(null);
     }
 
@@ -549,11 +505,11 @@ public class PersistentData {
     }
 
     public boolean isPrefixTaken(String newPrefix) {
-        return this.factionRepository.all().stream().map(Faction::getPrefix).anyMatch(prefix -> prefix.equalsIgnoreCase(newPrefix));
+        return this.factionRepository.all().values().stream().map(Faction::getPrefix).anyMatch(prefix -> prefix.equalsIgnoreCase(newPrefix));
     }
 
-    public ArrayList<Faction> getFactions() {
-        return this.factionRepository.all();
+    public Collection<Faction> getFactions() {
+        return this.factionRepository.all().values();
     }
 
     public ArrayList<PlayerRecord> getPlayerRecords() {
@@ -702,7 +658,7 @@ public class PersistentData {
             if (ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId())) {
                 ClaimedChunk chunk = isChunkClaimed(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
                 if (chunk != null) {
-                    removeChunk(chunk, player, getFaction(chunk.getHolder()));
+                    removeChunk(chunk, player, getFactionByID(chunk.getHolder()));
                     playerService.sendMessage(player, ChatColor.GREEN + localeService.get("LandClaimedUsingAdminBypass")
                             , "LandClaimedUsingAdminBypass", false);
                     return;
@@ -720,9 +676,10 @@ public class PersistentData {
             }
 
             // ensure that the chunk is claimed by the player's faction.
-            if (!chunk.getHolder().equalsIgnoreCase(playersFaction.getName())) {
-                playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("LandClaimedBy"), chunk.getHolder())
-                        , Objects.requireNonNull(messageService.getLanguage().getString("LandClaimedBy")).replace("#player#", chunk.getHolder()), true);
+            if (!chunk.getHolder().equals(playersFaction.getName())) {
+                Faction chunkOwner = getFactionByID(chunk.getHolder());
+                playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("LandClaimedBy"), chunkOwner.getName())
+                        , Objects.requireNonNull(messageService.getLanguage().getString("LandClaimedBy")).replace("#player#", chunkOwner.getName()), true);
                 return;
             }
 
@@ -744,7 +701,7 @@ public class PersistentData {
             playerCoords[1] = player.getLocation().getChunk().getZ();
             ClaimedChunk chunk = isChunkClaimed(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
             if (chunk != null) {
-                return chunk.getHolder();
+                return factionRepository.getByID(chunk.getHolder()).getName();
             }
             return "unclaimed";
         }
@@ -767,10 +724,10 @@ public class PersistentData {
          * @param factionName The name of the faction we are checking.
          * @return An integer indicating how many chunks have been claimed by this faction.
          */
-        public int getChunksClaimedByFaction(String factionName) {
+        public int getChunksClaimedByFaction(UUID factionUUID) {
             int counter = 0;
             for (ClaimedChunk chunk : claimedChunkRepository.all()) {
-                if (chunk.getHolder().equalsIgnoreCase(factionName)) {
+                if (chunk.getHolder().equals(factionUUID)) {
                     counter++;
                 }
             }
@@ -797,12 +754,12 @@ public class PersistentData {
          *
          * @param factionName The name of the faction we are removing all claimed chunks from.
          */
-        public void removeAllClaimedChunks(String factionName) {
+        public void removeAllClaimedChunks(UUID factionUUID) {
             Iterator<ClaimedChunk> itr = claimedChunkRepository.all().iterator();
 
             while (itr.hasNext()) {
                 ClaimedChunk currentChunk = itr.next();
-                if (currentChunk.getHolder().equalsIgnoreCase(factionName)) {
+                if (currentChunk.getHolder().equals(factionUUID)) {
                     try {
                         itr.remove();
                     } catch (Exception e) {
@@ -819,7 +776,7 @@ public class PersistentData {
          * @return Whether the faction's claimed land exceeds their power.
          */
         public boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-            return (getChunksClaimedByFaction(faction.getName()) > factionService.getCumulativePowerLevel(faction));
+            return (getChunksClaimedByFaction(faction.getID()) > factionService.getCumulativePowerLevel(faction));
         }
 
         /**
@@ -864,7 +821,7 @@ public class PersistentData {
             }
 
             // if player's faction is not the same as the holder of the chunk and player isn't overriding
-            if (!(playersFaction.getName().equalsIgnoreCase(claimedChunk.getHolder())) && !ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+            if (!(playersFaction.getID().equals(claimedChunk.getHolder())) && !ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
 
                 Block block = event.getClickedBlock();
                 if (configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && blockChecker.isDoor(block)) {
@@ -944,7 +901,7 @@ public class PersistentData {
             // if demesne limit enabled
             if (configService.getBoolean("limitLand")) {
                 // if at demesne limit
-                if (!(getChunksClaimedByFaction(claimantsFaction.getName()) < factionService.getCumulativePowerLevel(claimantsFaction))) {
+                if (!(getChunksClaimedByFaction(claimantsFaction.getID()) < factionService.getCumulativePowerLevel(claimantsFaction))) {
                     playerService.sendMessage(claimant, ChatColor.RED + localeService.get("AlertReachedDemesne")
                             , "AlertReachedDemesne", false);
                     return;
@@ -955,7 +912,7 @@ public class PersistentData {
             ClaimedChunk chunk = isChunkClaimed(chunkCoords[0], chunkCoords[1], world.getName());
             if (chunk != null) {
                 // chunk already claimed
-                Faction targetFaction = getFaction(chunk.getHolder());
+                Faction targetFaction = getFactionByID(chunk.getHolder());
 
                 // if holder is player's faction
                 if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && !claimantsFaction.getAutoClaimStatus()) {
@@ -965,7 +922,7 @@ public class PersistentData {
                 }
 
                 // if not at war with target faction
-                if (!claimantsFaction.isEnemy(targetFaction.getName())) {
+                if (!claimantsFaction.isEnemy(targetFaction.getID())) {
                     playerService.sendMessage(claimant, ChatColor.RED + "You must be at war with a faction to conquer land from them."
                             , "IsNotEnemy", false);
                     return;
@@ -981,7 +938,7 @@ public class PersistentData {
                 }
 
                 int targetFactionsCumulativePowerLevel = factionService.getCumulativePowerLevel(targetFaction);
-                int chunksClaimedByTargetFaction = getChunksClaimedByFaction(targetFaction.getName());
+                int chunksClaimedByTargetFaction = getChunksClaimedByFaction(targetFaction.getID());
 
                 // if target faction does not have more land than their demesne limit
                 if (!(targetFactionsCumulativePowerLevel < chunksClaimedByTargetFaction)) {
@@ -1003,8 +960,8 @@ public class PersistentData {
 
                     Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandConqueredFromAnotherFaction"), targetFaction.getName(), getChunksClaimedByFaction(claimantsFaction.getName()), factionService.getCumulativePowerLevel(claimantsFaction))
-                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandConqueredFromAnotherFaction")).replace("#name", targetFaction.getName()).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getName()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
+                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandConqueredFromAnotherFaction"), targetFaction.getName(), getChunksClaimedByFaction(claimantsFaction.getID()), factionService.getCumulativePowerLevel(claimantsFaction))
+                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandConqueredFromAnotherFaction")).replace("#name", targetFaction.getName()).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getID()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
 
                     messenger.sendAllPlayersInFactionMessage(targetFaction, playerService
                             .decideWhichMessageToUse(ChatColor.RED + String.format(localeService.get("AlertLandConqueredFromYourFaction"), claimantsFaction.getName())
@@ -1017,8 +974,8 @@ public class PersistentData {
                 if (!claimEvent.isCancelled()) {
                     // chunk not already claimed
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandClaimed"), getChunksClaimedByFaction(claimantsFaction.getName()), factionService.getCumulativePowerLevel(claimantsFaction))
-                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandClaimed")).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getName()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
+                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandClaimed"), getChunksClaimedByFaction(claimantsFaction.getID()), factionService.getCumulativePowerLevel(claimantsFaction))
+                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandClaimed")).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getID()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
                 }
             }
         }
@@ -1032,7 +989,7 @@ public class PersistentData {
          */
         private void addClaimedChunk(Chunk chunk, Faction faction, World world) {
             ClaimedChunk newChunk = new ClaimedChunk(chunk);
-            newChunk.setHolder(faction.getName());
+            newChunk.setHolder(faction.getID());
             claimedChunkRepository.create(newChunk);            
         }
 
@@ -1099,7 +1056,7 @@ public class PersistentData {
             Faction playersFaction = getPlayersFaction(unclaimingPlayer.getUniqueId());
 
             // ensure that the claimed chunk is owned by the player's faction
-            if (!chunkToRemove.getHolder().equals(playersFaction.getName())) {
+            if (!chunkToRemove.getHolder().equals(playersFaction.getID())) {
                 // TODO: add locale message
                 return;
             }
@@ -1186,10 +1143,10 @@ public class PersistentData {
 
             }
 
-            boolean northernChunkClaimedBySameFaction = target.getHolder().equalsIgnoreCase(northernClaimedChunk.getHolder());
-            boolean easternChunkClaimedBySameFaction = target.getHolder().equalsIgnoreCase(easternClaimedChunk.getHolder());
-            boolean southernChunkClaimedBySameFaction = target.getHolder().equalsIgnoreCase(southernClaimedChunk.getHolder());
-            boolean westernChunkClaimedBySameFaction = target.getHolder().equalsIgnoreCase(westernClaimedChunk.getHolder());
+            boolean northernChunkClaimedBySameFaction = target.getHolder().equals(northernClaimedChunk.getHolder());
+            boolean easternChunkClaimedBySameFaction = target.getHolder().equals(easternClaimedChunk.getHolder());
+            boolean southernChunkClaimedBySameFaction = target.getHolder().equals(southernClaimedChunk.getHolder());
+            boolean westernChunkClaimedBySameFaction = target.getHolder().equals(westernClaimedChunk.getHolder());
 
             return (northernChunkClaimedBySameFaction &&
                     easternChunkClaimedBySameFaction &&

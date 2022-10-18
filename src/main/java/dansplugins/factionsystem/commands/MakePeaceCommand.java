@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -95,7 +96,7 @@ public class MakePeaceCommand extends SubCommand {
             );
             return;
         }
-        if (this.faction.isTruceRequested(target.getName())) {
+        if (this.faction.isTruceRequested(target.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("AlertAlreadyRequestedPeace"),
@@ -104,7 +105,7 @@ public class MakePeaceCommand extends SubCommand {
             );
             return;
         }
-        if (!this.faction.isEnemy(target.getName())) {
+        if (!this.faction.isEnemy(target.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("FactionNotEnemy"),
@@ -113,7 +114,7 @@ public class MakePeaceCommand extends SubCommand {
             );
             return;
         }
-        this.faction.requestTruce(target.getName());
+        this.faction.requestTruce(target.getID());
         this.playerService.sendMessage(
             player,
             "&a" + this.localeService.getText("AttemptedPeace", target.getName()),
@@ -127,17 +128,17 @@ public class MakePeaceCommand extends SubCommand {
                 .replace("#f1#", this.faction.getName())
                 .replace("#f2#", target.getName())
         );
-        if (this.faction.isTruceRequested(target.getName()) && target.isTruceRequested(this.faction.getName())) {
+        if (this.faction.isTruceRequested(target.getID()) && target.isTruceRequested(this.faction.getID())) {
             FactionWarEndEvent warEndEvent = new FactionWarEndEvent(this.faction, target);
             Bukkit.getPluginManager().callEvent(warEndEvent);
             if (!warEndEvent.isCancelled()) {
                 // remove requests in case war breaks out again, and they need to make peace again
-                this.faction.removeRequestedTruce(target.getName());
-                target.removeRequestedTruce(this.faction.getName());
+                this.faction.removeRequestedTruce(target.getID());
+                target.removeRequestedTruce(this.faction.getID());
 
                 // make peace between factions
-                this.faction.removeEnemy(target.getName());
-                target.removeEnemy(this.faction.getName());
+                this.faction.removeEnemy(target.getID());
+                target.removeEnemy(this.faction.getID());
 
                 // TODO: set active flag in war to false
 
@@ -153,11 +154,11 @@ public class MakePeaceCommand extends SubCommand {
 
         // if faction was a liege, then make peace with all of their vassals as well
         if (target.isLiege()) {
-            for (String vassalName : target.getVassals()) {
-                this.faction.removeEnemy(vassalName);
+            for (UUID vassalID : target.getVassals()) {
+                this.faction.removeEnemy(vassalID);
 
-                Faction vassal = this.factionRepository.get(vassalName);
-                vassal.removeEnemy(this.faction.getName());
+                Faction vassal = this.factionRepository.getByID(vassalID);
+                vassal.removeEnemy(this.faction.getID());
             }
         }
     }
@@ -184,7 +185,8 @@ public class MakePeaceCommand extends SubCommand {
     public List<String> handleTabComplete(Player player, String[] args) {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> factionEnemies = playerFaction.getEnemyFactions();
+            ArrayList<String> factionEnemies = new ArrayList<>();
+            for (UUID factionID : playerFaction.getEnemyFactions()) factionEnemies.add(this.factionRepository.getByID(factionID).getName());
             return TabCompleteTools.filterStartingWith(args[0], factionEnemies);
         }
         return null;

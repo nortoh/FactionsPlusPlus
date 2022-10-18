@@ -23,8 +23,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import preponderous.ponder.misc.ArgumentParser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -101,7 +103,7 @@ public class InvokeCommand extends SubCommand {
             );
             return;
         }
-        if (!this.faction.isAlly(invokee.getName()) && !this.faction.isVassal(invokee.getName())) {
+        if (!this.faction.isAlly(invokee.getID()) && !this.faction.isVassal(invokee.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("NotAnAllyOrVassal", invokee.getName()),
@@ -110,7 +112,7 @@ public class InvokeCommand extends SubCommand {
             );
             return;
         }
-        if (!this.faction.isEnemy(warringFaction.getName())) {
+        if (!this.faction.isEnemy(warringFaction.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("NotAtWarWith", warringFaction.getName()),
@@ -131,8 +133,8 @@ public class InvokeCommand extends SubCommand {
         FactionWarStartEvent warStartEvent = new FactionWarStartEvent(invokee, warringFaction, player);
         Bukkit.getPluginManager().callEvent(warStartEvent);
         if (!warStartEvent.isCancelled()) {
-            invokee.addEnemy(warringFaction.getName());
-            warringFaction.addEnemy(invokee.getName());
+            invokee.addEnemy(warringFaction.getID());
+            warringFaction.addEnemy(invokee.getID());
 
             this.messageService.messageFaction(
                 invokee, // Message ally faction
@@ -183,9 +185,13 @@ public class InvokeCommand extends SubCommand {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             if (args.length == 1) {
-                return TabCompleteTools.filterStartingWithAddQuotes(args[0], playerFaction.getAllies());
+                ArrayList<String> allyFactionNames = new ArrayList<>();
+                for (UUID uuid : playerFaction.getAllies()) allyFactionNames.add(this.factionRepository.getByID(uuid).getName());
+                return TabCompleteTools.filterStartingWithAddQuotes(args[0], allyFactionNames);
             } else if (args.length == 2) {
-                return TabCompleteTools.filterStartingWithAddQuotes(args[0], playerFaction.getEnemyFactions());
+                ArrayList<String> enemyFactionNames = new ArrayList<>();
+                for (UUID uuid : playerFaction.getEnemyFactions()) enemyFactionNames.add(this.factionRepository.getByID(uuid).getName());
+                return TabCompleteTools.filterStartingWithAddQuotes(args[0], enemyFactionNames);
             }
         }
         return null;

@@ -84,7 +84,7 @@ public class HomeCommand extends SubCommand {
             );
             return;
         }
-        if (!chunk.getHolder().equalsIgnoreCase(this.faction.getName())) {
+        if (!chunk.getHolder().equals(this.faction.getID())) {
             this.playerService.sendMessage(
                 player, 
                 "&c" + this.localeService.getText("HomeClaimedByAnotherFaction"),

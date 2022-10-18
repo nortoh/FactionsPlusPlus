@@ -8,6 +8,7 @@ import dansplugins.factionsystem.models.interfaces.Diplomatic;
 import dansplugins.factionsystem.models.interfaces.Lawful;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import com.google.gson.annotations.Expose;
 
@@ -16,34 +17,32 @@ import com.google.gson.annotations.Expose;
  */
 public class Nation extends Group implements Diplomatic, Lawful {
     @Expose
-    protected ArrayList<String> allyFactions = new ArrayList<>();
-    protected ArrayList<String> attemptedAlliances = new ArrayList<>();
+    protected ArrayList<UUID> allyFactions = new ArrayList<>();
+    protected ArrayList<UUID> attemptedAlliances = new ArrayList<>();
     @Expose
-    protected ArrayList<String> enemyFactions = new ArrayList<>();
-    protected ArrayList<String> attemptedTruces = new ArrayList<>();
+    protected ArrayList<UUID> enemyFactions = new ArrayList<>();
+    protected ArrayList<UUID> attemptedTruces = new ArrayList<>();
     @Expose
     protected ArrayList<String> laws = new ArrayList<>();
 
     @Override
-    public void addAlly(String factionName) {
-        if (!containsIgnoreCase(allyFactions, factionName)) {
-            allyFactions.add(factionName);
-        }
+    public void addAlly(UUID allyUUID) {
+        if (! this.isAlly(allyUUID)) this.allyFactions.add(allyUUID);
     }
 
     @Override
-    public void removeAlly(String factionName) {
-        removeIfContainsIgnoreCase(allyFactions, factionName);
+    public void removeAlly(UUID allyUUID) {
+        if (this.isAlly(allyUUID)) this.allyFactions.remove(allyUUID);
     }
 
     @Override
-    public boolean isAlly(String factionName) {
-        return containsIgnoreCase(allyFactions, factionName);
+    public boolean isAlly(UUID allyUUID) {
+        return this.allyFactions.contains(allyUUID);
     }
 
     @Override
-    public ArrayList<String> getAllies() {
-        return allyFactions;
+    public ArrayList<UUID> getAllies() {
+        return this.allyFactions;
     }
 
     @Override
@@ -59,42 +58,38 @@ public class Nation extends Group implements Diplomatic, Lawful {
     }
 
     @Override
-    public void requestAlly(String factionName) {
-        if (!containsIgnoreCase(attemptedAlliances, factionName)) {
-            attemptedAlliances.add(factionName);
-        }
+    public void requestAlly(UUID requestedUUID) {
+        if (! this.isRequestedAlly(requestedUUID)) this.attemptedAlliances.add(requestedUUID);
     }
 
     @Override
-    public boolean isRequestedAlly(String factionName) {
-        return containsIgnoreCase(attemptedAlliances, factionName);
+    public boolean isRequestedAlly(UUID requestedUUID) {
+        return this.attemptedAlliances.contains(requestedUUID);
     }
 
     @Override
-    public void removeAllianceRequest(String factionName) {
-        attemptedAlliances.remove(factionName);
+    public void removeAllianceRequest(UUID requestedUUID) {
+        if (this.isRequestedAlly(requestedUUID)) this.attemptedAlliances.remove(requestedUUID);
     }
 
     @Override
-    public void addEnemy(String factionName) {
-        if (!containsIgnoreCase(enemyFactions, factionName)) {
-            enemyFactions.add(factionName);
-        }
+    public void addEnemy(UUID enemyUUID) {
+        if (! this.isEnemy(enemyUUID)) this.enemyFactions.add(enemyUUID);
     }
 
     @Override
-    public void removeEnemy(String factionName) {
-        removeIfContainsIgnoreCase(enemyFactions, factionName);
+    public void removeEnemy(UUID enemyUUID) {
+        if (this.isEnemy(enemyUUID)) this.enemyFactions.remove(enemyUUID);
     }
 
     @Override
-    public boolean isEnemy(String factionName) {
-        return containsIgnoreCase(enemyFactions, factionName);
+    public boolean isEnemy(UUID enemyUUID) {
+        return this.enemyFactions.contains(enemyUUID);
     }
 
     @Override
-    public ArrayList<String> getEnemyFactions() {
-        return enemyFactions;
+    public ArrayList<UUID> getEnemyFactions() {
+        return this.enemyFactions;
     }
 
     @Override
@@ -110,20 +105,18 @@ public class Nation extends Group implements Diplomatic, Lawful {
     }
 
     @Override
-    public void requestTruce(String factionName) {
-        if (!containsIgnoreCase(attemptedTruces, factionName)) {
-            attemptedTruces.add(factionName);
-        }
+    public void requestTruce(UUID requestedUUID) {
+        if (! this.isTruceRequested(requestedUUID)) this.attemptedTruces.add(requestedUUID);
     }
 
     @Override
-    public boolean isTruceRequested(String factionName) {
-        return containsIgnoreCase(attemptedTruces, factionName);
+    public boolean isTruceRequested(UUID requestedUUID) {
+        return this.attemptedTruces.contains(requestedUUID);
     }
 
     @Override
-    public void removeRequestedTruce(String factionName) {
-        removeIfContainsIgnoreCase(attemptedTruces, factionName);
+    public void removeRequestedTruce(UUID requestedUUID) {
+        if (this.isTruceRequested(requestedUUID)) this.attemptedTruces.remove(requestedUUID);
     }
 
     @Override

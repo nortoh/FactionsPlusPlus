@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -80,15 +81,15 @@ public class BreakAllianceCommand extends SubCommand {
             return;
         }
 
-        if (!this.faction.isAlly(otherFaction.getName())) {
+        if (!this.faction.isAlly(otherFaction.getID())) {
             this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertNotAllied", otherFaction.getName()),
                     Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNotAllied"))
                             .replace("#faction#", otherFaction.getName()), true);
             return;
         }
 
-        this.faction.removeAlly(otherFaction.getName());
-        otherFaction.removeAlly(this.faction.getName());
+        this.faction.removeAlly(otherFaction.getID());
+        otherFaction.removeAlly(this.faction.getID());
         this.messageService.messageFaction(
             this.faction, 
             this.translate("&c" + this.localeService.getText("AllianceBrokenWith", otherFaction.getName())),
@@ -126,8 +127,9 @@ public class BreakAllianceCommand extends SubCommand {
         final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> playerAllies = playerFaction.getAllies();
-            return TabCompleteTools.filterStartingWith(args[0], playerAllies);
+            ArrayList<String> factionAllyNames = new ArrayList<>();
+            for (UUID uuid : playerFaction.getAllies()) factionAllyNames.add(this.factionRepository.getByID(uuid).getName());
+            return TabCompleteTools.filterStartingWith(args[0], factionAllyNames);
         }
         return null;
     }

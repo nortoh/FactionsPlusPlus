@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -90,7 +91,7 @@ public class VassalizeCommand extends SubCommand {
             return;
         }
         // make sure player isn't trying to vassalize their own faction
-        if (this.faction.getName().equalsIgnoreCase(target.getName())) {
+        if (this.faction.getID().equals(target.getID())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotVassalizeSelf"),
@@ -100,7 +101,7 @@ public class VassalizeCommand extends SubCommand {
             return;
         }
         // make sure player isn't trying to vassalize their liege
-        if (target.getName().equalsIgnoreCase(faction.getLiege())) {
+        if (target.getID().equals(faction.getLiege())) {
             this.playerService.sendMessage(
                 player,
                 "&c" + this.localeService.getText("CannotVassalizeLiege"),
@@ -126,7 +127,7 @@ public class VassalizeCommand extends SubCommand {
             return;
         }
         // add faction to attemptedVassalizations
-        this.faction.addAttemptedVassalization(target.getName());
+        this.faction.addAttemptedVassalization(target.getID());
 
         // inform all players in that faction that they are trying to be vassalized
         this.messageService.messageFaction(
@@ -162,10 +163,10 @@ public class VassalizeCommand extends SubCommand {
         Faction current = vassalizer;
         int steps = 0;
         while (current != null && steps < MAX_STEPS) { // Prevents infinite loop and NPE (getFaction can return null).
-            String liegeName = current.getLiege();
-            if (liegeName.equalsIgnoreCase("none")) return 0; // no loop will be formed
-            if (liegeName.equalsIgnoreCase(potentialVassal.getName())) return 1; // loop will be formed
-            current = this.persistentData.getFaction(liegeName);
+            UUID liegeID = current.getLiege();
+            if (liegeID == null) return 0;
+            if (liegeID.equals(potentialVassal.getID())) return 1;
+            current = this.persistentData.getFactionByID(liegeID);
             steps++;
         }
         return 2; // We don't know :/
@@ -183,7 +184,7 @@ public class VassalizeCommand extends SubCommand {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
             ArrayList<String> vassalizeableFactions = new ArrayList<>();
             for (Faction faction : this.persistentData.getFactions()) {
-                if (!playerFaction.getVassals().contains(faction.getName())) {
+                if (!playerFaction.getVassals().contains(faction.getID())) {
                     vassalizeableFactions.add(faction.getName());
                 }
             }
