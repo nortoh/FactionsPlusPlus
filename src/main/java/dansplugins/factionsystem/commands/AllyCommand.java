@@ -72,35 +72,28 @@ public class AllyCommand extends Command {
 
     public void execute(CommandContext context) {
         // retrieve the Faction from the given arguments
-        final Faction otherFaction = (Faction)context.getArgument("faction name");
+        final Faction otherFaction = context.getFactionArgument("faction name");
         final Player player = context.getPlayer();
-
-        // the faction needs to exist to ally
-        if (otherFaction == null) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
-                    .replace("#faction#", String.join(" ", context.getRawArguments())), true);
-            return;
-        }
 
         // the faction can't be itself
         if (otherFaction == context.getExecutorsFaction()) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("CannotAllyWithSelf"), "CannotAllyWithSelf", false);
+            context.replyWith("CannotAllyWithSelf");
             return;
         }
 
         // no need to allow them to ally if they're already allies
         if (context.getExecutorsFaction().isAlly(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
+            context.replyWith("FactionAlreadyAlly");
             return;
         }
 
         if (context.getExecutorsFaction().isEnemy(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&cThat faction is currently at war with your faction.", "FactionIsEnemy", false);
+            context.replyWith("FactionIsEnemy");
             return;
         }
 
         if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getName())) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
+            context.replyWith("AlertAlreadyRequestedAlliance");
             return;
         }
 

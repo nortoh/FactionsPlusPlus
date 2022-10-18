@@ -12,8 +12,6 @@ import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.builders.*;
 import org.bukkit.entity.Player;
 
@@ -24,11 +22,9 @@ import org.bukkit.entity.Player;
 public class SetHomeCommand extends Command {
 
     private final PersistentData persistentData;
-    private final PlayerService playerService;
-    private final LocaleService localeService;
 
     @Inject
-    public SetHomeCommand(PersistentData persistentData, PlayerService playerService, LocaleService localeService) {
+    public SetHomeCommand(PersistentData persistentData) {
         super(
             new CommandBuilder()
                 .withName("sethome")
@@ -39,38 +35,21 @@ public class SetHomeCommand extends Command {
                 .requiresPermissions("mf.sethome")
         );
         this.persistentData = persistentData;
-        this.playerService = playerService;
-        this.localeService = localeService;
     }
 
     public void execute(CommandContext context) {
         Player player = context.getPlayer();
         Faction faction = context.getExecutorsFaction();
         if (!this.persistentData.getChunkDataAccessor().isClaimed(player.getLocation().getChunk())) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("LandIsNotClaimed"),
-                "LandIsNotClaimed", 
-                false
-            );
+            context.replyWith("LandIsNotClaimed");
             return;
         }
         ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk());
         if (chunk == null || !chunk.getHolder().equalsIgnoreCase(faction.getName())) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("CannotSetFactionHomeInWilderness"),
-                "CannotSetFactionHomeInWilderness", 
-                false
-            );
+            context.replyWith("CannotSetFactionHomeInWilderness");
             return;
         }
         faction.setFactionHome(player.getLocation());
-        this.playerService.sendMessage(
-            player, 
-            "&a" + this.localeService.getText("FactionHomeSet"),
-            "FactionHomeSet", 
-            false
-        );
+        context.replyWith("FactionHomeSet");
     }
 }

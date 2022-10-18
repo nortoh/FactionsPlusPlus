@@ -7,17 +7,10 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
-import dansplugins.factionsystem.builders.*;
-import org.bukkit.entity.Player;
-
-import java.util.Objects;
+import dansplugins.factionsystem.builders.CommandBuilder;
 
 /**
  * @author Callum Johnson
@@ -26,17 +19,9 @@ import java.util.Objects;
 public class CheckClaimCommand extends Command {
 
     private final PersistentData persistentData;
-    private final PlayerService playerService;
-    private final LocaleService localeService;
-    private final MessageService messageService;
 
     @Inject
-    public CheckClaimCommand(
-        PlayerService playerService,
-        PersistentData persistentData,
-        LocaleService localeService,
-        MessageService messageService
-    ) {
+    public CheckClaimCommand(PersistentData persistentData) {
         super(
             new CommandBuilder()
                 .withName("checkclaim")
@@ -45,21 +30,19 @@ public class CheckClaimCommand extends Command {
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.checkclaim")
         );
-        this.localeService = localeService;
         this.persistentData = persistentData;
-        this.playerService = playerService;
-        this.messageService = messageService;
     }
 
     public void execute(CommandContext context) {
-        Player player = context.getPlayer();
-        final String result = this.persistentData.getChunkDataAccessor().checkOwnershipAtPlayerLocation(player);
+        final String result = this.persistentData.getChunkDataAccessor().checkOwnershipAtPlayerLocation(context.getPlayer());
 
         if (result.equals("unclaimed")) {
-            this.playerService.sendMessage(player, "&a" + this.localeService.getText("LandIsUnclaimed"), "LandIsUnclaimed", false);
+            context.replyWith("LandIsUnclaimed");
         } else {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("LandClaimedBy"), Objects.requireNonNull(this.messageService.getLanguage().getString("LandClaimedBy"))
-                    .replace("#player#", result), true);
+            context.replyWith(
+                this.constructMessage("LandClaimedBy")
+                    .with("player", result)
+            );
         }
     }
 }

@@ -9,13 +9,9 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 
-import dansplugins.factionsystem.builders.*;
-
-import java.util.Objects;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 /**
  * @author Callum Johnson
@@ -23,15 +19,11 @@ import java.util.Objects;
 @Singleton
 public class AddLawCommand extends Command {
 
-    protected final MessageService messageService;
-    protected final PlayerService playerService;
-    protected final LocaleService localeService;
-
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public AddLawCommand(MessageService messageService, PlayerService playerService, LocaleService localeService) {
+    public AddLawCommand() {
         super(
             new CommandBuilder()
                 .withName("addlaw")
@@ -51,14 +43,13 @@ public class AddLawCommand extends Command {
                         
                 )
         );
-        this.messageService = messageService;
-        this.playerService = playerService;
-        this.localeService = localeService;
     }
 
     public void execute(CommandContext context) {
-        context.getExecutorsFaction().addLaw(String.join(" ", (String)context.getArgument("law")));
-        this.playerService.sendMessage(context.getPlayer(), "&a" + this.localeService.getText("LawAdded"), Objects.requireNonNull(this.messageService.getLanguage().getString("LawAdded"))
-            .replace("#law#", (String)context.getArgument("law")), true);
+        context.getExecutorsFaction().addLaw(String.join(" ", context.getStringArgument("law")));
+        context.replyWith(
+            this.constructMessage("LawAdded")
+                .with("law", context.getStringArgument("law"))
+        );
     }
 }

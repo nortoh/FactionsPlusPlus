@@ -10,9 +10,8 @@ import com.google.inject.Singleton;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
-import dansplugins.factionsystem.builders.*;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 import org.bukkit.entity.Player;
 
 /**
@@ -21,12 +20,10 @@ import org.bukkit.entity.Player;
 @Singleton
 public class ChatCommand extends Command {
 
-    private final PlayerService playerService;
-    private final LocaleService localeService;
     private final EphemeralData ephemeralData;
 
     @Inject
-    public ChatCommand(PlayerService playerService, EphemeralData ephemeralData, LocaleService localeService) {
+    public ChatCommand(EphemeralData ephemeralData) {
         super(
             new CommandBuilder()
                 .withName("chat")
@@ -36,9 +33,7 @@ public class ChatCommand extends Command {
                 .expectsFactionMembership()
                 .requiresPermissions("mf.chat")
         );
-        this.playerService = playerService;
         this.ephemeralData = ephemeralData;
-        this.localeService = localeService;
     }
 
     public void execute(CommandContext context) {
@@ -52,6 +47,6 @@ public class ChatCommand extends Command {
         } else {
             this.ephemeralData.getPlayersInFactionChat().add(player.getUniqueId());
         }
-        this.playerService.sendMessage(player, "&c" + this.localeService.getText(path), path, false);
+        context.replyWith(path);
     }
 }

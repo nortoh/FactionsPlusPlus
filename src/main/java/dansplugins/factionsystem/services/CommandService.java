@@ -13,6 +13,7 @@ import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.RelationChecker;
+import dansplugins.factionsystem.utils.StringUtils;
 import dansplugins.factionsystem.utils.extended.Messenger;
 import dansplugins.factionsystem.utils.extended.Scheduler;
 import org.bukkit.ChatColor;
@@ -25,6 +26,8 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandArgument;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.repositories.CommandRepository;
+
+import dansplugins.factionsystem.builders.MessageBuilder;
 
 import java.util.Arrays;
 import java.lang.reflect.Method;
@@ -49,7 +52,6 @@ public class CommandService implements TabCompleter {
     private final MessageService messageService;
     private final CommandRepository commandRepository;
     private final DataService dataService;
-    private final Set<SubCommand> subCommands = new HashSet<>();
 
     @Inject
     public CommandService(LocaleService localeService, MedievalFactions medievalFactions, ConfigService configService, PlayerService playerService, MessageService messageService, CommandRepository commandRepository, DataService dataService) {
@@ -73,15 +75,15 @@ public class CommandService implements TabCompleter {
             //CheckAccessCommand.class,
             CheckClaimCommand.class,
             ClaimCommand.class,
-            //ConfigCommand.class,
+            ConfigCommand.class,
             CreateCommand.class,
             DeclareIndependenceCommand.class,
             //DeclareWarCommand.class,
-            //DemoteCommand.class,
+            DemoteCommand.class,
             DescCommand.class,
-            //DisbandCommand.class,
+            DisbandCommand.class,
             //DuelCommand.class,
-            //EditLawCommand.class,
+            EditLawCommand.class,
             //FlagsCommand.class,
             //ForceCommand.class,
             //GateCommand.class,
@@ -89,21 +91,23 @@ public class CommandService implements TabCompleter {
             //GrantIndependenceCommand.class,
             //HelpCommand.class,
             HomeCommand.class,
-            //InfoCommand.class,
+            InfoCommand.class,
             //InviteCommand.class,
             //InvokeCommand.class,
-            //JoinCommand.class,
-            //KickCommand.class,
-            //LawsCommand.class,
-            //LeaveCommand.class,
+            JoinCommand.class,
+            KickCommand.class,
+            LawsCommand.class,
+            LeaveCommand.class,
             ListCommand.class,
-            //LockCommand.class,
+            LockCommand.class,
             //MakePeaceCommand.class,
-            //MapCommand.class,
+            MapCommand.class,
             MembersCommand.class,
             //PowerCommand.class,
             //PrefixCommand.class,
             //PromoteCommand.class,
+            RemoveLawCommand.class,
+            //RenameCommand.class,
             ResetPowerLevelsCommand.class,
             //RevokeAccessCommand.class,
             SetHomeCommand.class,
@@ -112,6 +116,7 @@ public class CommandService implements TabCompleter {
             //TransferCommand.class,
             //UnclaimallCommand.class,
             //UnclaimCommand.class,
+            UnlockCommand.class,
             //VassalizeCommand.class,
             VersionCommand.class,
             //WhoCommand.class
@@ -148,64 +153,19 @@ public class CommandService implements TabCompleter {
         return missingPermissions;
     }
 
-    /**
-     * Method to be called by the command interpreter <em>only</em>.
-     * <p>
-     * This method uses the in-class variables to call a different method based on the parameters specified.
-     * <br>For example, if {@link SubCommand#playerCommand} is {@code true},
-     * <br>{@link SubCommand#execute(Player, String[], String)} is executed,
-     * <br>not {@link SubCommand#execute(CommandSender, String[], String)}.
-     * </p>
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command.
-     */
-    public boolean performCommandChecks(SubCommand command, CommandSender sender, String[] args, String key) {
-        if (command.shouldBePlayerCommand()) {
-            if (!(sender instanceof Player)) { // Require a player for a player-only command.
-                sender.sendMessage(command.translate(this.localeService.getText("OnlyPlayersCanUseCommand")));
-                return false;
-            }
-            Player player = (Player) sender;
-            if (command.shouldRequirePlayerInFaction()) { // Find and check the status of a Faction.
-                Faction faction = this.playerService.getPlayerFaction(player);
-                if (faction == null) {
-                    player.sendMessage(command.translate("&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand")));
-                    return false;
-                }
-                if (command.shouldRequireFactionOfficer()) { // If the command requires an Officer or higher, check for it.
-                    if (!(faction.isOwner(player.getUniqueId()) || faction.isOfficer(player.getUniqueId()))) {
-                        player.sendMessage(command.translate("&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand")));
-                        return false;
-                    }
-                }
-                if (command.shouldRequireFactionOwner() && !faction.isOwner(player.getUniqueId())) { // If the command requires an owner only, check for it.
-                    player.sendMessage(command.translate("&c" + this.localeService.getText("AlertMustBeOwnerToUseCommand")));
-                    return false;
-                }
-                command.setUserFaction(faction);
-            }
-            List<String> missingPermissions = command.checkPermissions(sender, true);
-            if (missingPermissions.size() > 0) {
-                this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
-                return false;
-            }
-        }
-        return true;
-    }
-
     public boolean processCommand(Command parentCommand, Command command, CommandSender sender, ArrayList<String> arguments, CommandContext context) {
         // If context is null, create a new command context. This usually means we're a root command.
         if (context == null) {
-            context = new CommandContext();
+            context = this.medievalFactions.getInjector().getInstance(CommandContext.class);
             context.setSender(sender);
-            context.setRawArguments((String[])arguments.toArray());
+            context.setRawArguments(Arrays.copyOf(arguments.toArray(), arguments.size(), String[].class));
         }
+
+        context.addCommandName(command.getName());
 
         // If arguments are missing, let the user know.
         if (command.getRequiredArgumentCount() > arguments.size()) {
-            this.messageService.sendInvalidSyntaxMessage(sender, command.getName(), command.buildSyntax());
+            this.messageService.sendInvalidSyntaxMessage(sender, context.getCommandNames(), command.buildSyntax());
             return false;
         }
 
@@ -219,17 +179,27 @@ public class CommandService implements TabCompleter {
         // Check if we require a player context (i.e. not the console)
         if (command.shouldRequirePlayerExecution()) {
             if (!(sender instanceof Player)) {
-                this.messageService.sendOnlyPlayersCanUseThisCommandMessage(sender);
+                context.replyWith("OnlyPlayersCanUseCommand");
                 return false;
             }
         }
 
         // Check if this command should require faction specific stuff
-        Faction playerFaction = this.playerService.getPlayerFaction(sender);
-        context.setExecutorsFaction(playerFaction);
+        Faction playerFaction = null;
+        if (! context.isConsole()) {
+            playerFaction = this.playerService.getPlayerFaction(sender);
+            context.setExecutorsFaction(playerFaction);
+        }
         if (command.shouldRequireFactionMembership()) {
             if (playerFaction == null) {
-                this.messageService.sendFactionMembershipRequiredMessage(sender);
+                context.replyWith("AlertMustBeInFactionToUseCommand");
+                return false;
+            }
+        }
+
+        if (command.shouldRequireNoFactionMembership()) {
+            if (playerFaction != null) {
+                context.replyWith("AlertAlreadyInFaction");
                 return false;
             }
         }
@@ -238,7 +208,7 @@ public class CommandService implements TabCompleter {
         if (command.shouldRequireFactionOwnership()) {
             if (context.isConsole()) return false; // bail if console
             if (! playerFaction.getOwner().equals(((Player)sender).getUniqueId())) {
-                this.messageService.sendFactionOwnershipRequiredMessage(sender);
+                context.replyWith("AlertMustBeOwnerToUseCommand");
                 return false;
             }
         }
@@ -248,7 +218,7 @@ public class CommandService implements TabCompleter {
             if (context.isConsole()) return false; // bail if console
             UUID senderUUID = ((Player)sender).getUniqueId();
             if (! playerFaction.getOwner().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
-                this.messageService.sendFactionOwnershipOrOfficershipRequiredMessage(sender);
+                context.replyWith("AlertMustBeOwnerOrOfficeToUseCommand");
                 return false;
             }
         }
@@ -307,12 +277,50 @@ public class CommandService implements TabCompleter {
             if (arguments.size() > 0) {
                 String argumentData = arguments.remove(0);
                 Object parsedArgumentData = null;
+                Boolean isInvalid = false;
                 switch(argument.getType()) {
                     case Faction:
-                        parsedArgumentData = this.dataService.getFaction(argumentData);
+                        Faction faction = this.dataService.getFaction(argumentData);
+                        if (faction != null) {
+                            parsedArgumentData = faction;
+                            break;
+                        }
+                        // If the faction isn't valid, abort.
+                        context.replyWith(
+                            new MessageBuilder("FactionNotFound")
+                                .with("faction", argumentData)
+                        );
+                        return false;
+                    case ConfigOptionName:
+                        if (this.configService.getConfigOption(argumentData) != null) {
+                            parsedArgumentData = argumentData;
+                            break;
+                        }
+                        isInvalid = true;
                         break;
+                    case Player:
+                        OfflinePlayer player = this.getPlayer(context, argumentData);
+                        if (player != null) {
+                            parsedArgumentData = player;
+                            break;
+                        }
+                        return false;
+                    case FactionMember:
+                        OfflinePlayer factionMember = this.getFactionMember(context, argumentData);
+                        if (factionMember != null) {
+                            parsedArgumentData = factionMember;
+                            break;
+                        }
+                        return false;
+                    case FactionOfficer:
+                        OfflinePlayer factionOfficer = this.getFactionOfficer(context, argumentData);
+                        if (factionOfficer != null) {
+                            parsedArgumentData = factionOfficer;
+                            break;
+                        }
+                        return false;
                     case Integer:
-                        parsedArgumentData = Integer.getInteger(argumentData);
+                        parsedArgumentData = Integer.parseInt(argumentData);
                         break;
                     case Double:
                         parsedArgumentData = Double.parseDouble(argumentData);
@@ -323,7 +331,8 @@ public class CommandService implements TabCompleter {
                 }
                 context.addArgument(argumentName, parsedArgumentData);
             } else {
-                break;
+                context.addArgument(argumentName, argument.getDefaultValue());
+                continue;
             }
         }
 
@@ -335,6 +344,39 @@ public class CommandService implements TabCompleter {
         } catch(Exception e) {
             return false;
         }
+    }
+
+    public OfflinePlayer getPlayer(CommandContext context, String argumentData) {
+        final OfflinePlayer player = StringUtils.parseAsPlayer(argumentData);
+        if (player == null) {
+            context.replyWith(
+                new MessageBuilder("PlayerNotFound")
+                    .with("name", argumentData)
+            );
+        }
+        return player;
+    }
+
+    public OfflinePlayer getFactionMember(CommandContext context, String argumentData) {
+        final OfflinePlayer player = this.getPlayer(context, argumentData);
+        if (player != null) {
+            if (context.getExecutorsFaction().isMember(player.getUniqueId())) {
+                return player;
+            }
+            context.replyWith("PlayerIsNotMemberOfFaction");
+        }
+        return null;
+    }
+
+    public OfflinePlayer getFactionOfficer(CommandContext context, String argumentData) {
+        final OfflinePlayer player = this.getFactionMember(context, argumentData);
+        if (player != null) {
+            if (context.getExecutorsFaction().isOfficer(player.getUniqueId())) {
+                return player;
+            }
+            context.replyWith("PlayerIsNotOfficerOfFaction");
+        }
+        return null;
     }
 
     public boolean interpretCommand(CommandSender sender, String label, String[] args) {
@@ -382,15 +424,6 @@ public class CommandService implements TabCompleter {
         return false;
     }
 
-    private SubCommand findSubCommandByName(String name) {
-        for (SubCommand subCommand : this.subCommands) {
-            if (subCommand.isCommand(name)) {
-                return subCommand;
-            }
-        }
-        return null;
-    }
-
     private ArrayList<String> getSubCommandNamesForSender(CommandSender sender) {
         ArrayList<String> commandNames = new ArrayList<String>();
         for (Command subCommand : this.commandRepository.all().values()) {
@@ -415,7 +448,7 @@ public class CommandService implements TabCompleter {
                 return result;
             } else {
                 // Attempt to find subcommand based on first argument
-                SubCommand subCommand = this.findSubCommandByName(args[0]);
+                Command subCommand = this.commandRepository.get(args[0]);
                 // Bail if no command found (can't autocomplete something we don't know about)
                 if (subCommand == null) {
                     return null;

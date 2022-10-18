@@ -73,36 +73,16 @@ public class MembersCommand extends Command {
         CommandSender sender = context.getSender();
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
-                this.playerService.sendMessage(
-                    sender,
-                    this.localeService.getText("OnlyPlayersCanUseCommand"),
-                    "OnlyPlayersCanUseCommand",
-                    false
-                );
+                context.replyWith("OnlyPlayersCanUseCommand");
                 return;
             }
             faction = context.getExecutorsFaction();
             if (faction == null) {
-                this.playerService.sendMessage(
-                    sender, 
-                    this.localeService.getText("AlertMustBeInFactionToUseCommand"),
-                    "AlertMustBeInFactionToUseCommand",
-                    false
-                );
+                context.replyWith("AlertMustBeInFactionToUseCommand");
                 return;
             }
         } else {
-            Object potentialFaction = context.getArgument("faction name");
-            if (potentialFaction == null) {
-                this.playerService.sendMessage(
-                    sender,
-                    "&c" + this.localeService.getText("FactionNameNotRecognized"),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", context.getRawArguments())),
-                    true
-                );
-                return;
-            }
-            faction = (Faction)potentialFaction;
+            faction = context.getFactionArgument("faction name");
         }
         // send Faction Members
         if (!this.configService.getBoolean("useNewLanguageFile")) {

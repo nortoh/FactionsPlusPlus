@@ -22,13 +22,11 @@ import org.bukkit.entity.Player;
 @Singleton
 public class ClaimCommand extends Command {
 
-    private final PlayerService playerService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
     private final DynmapIntegrationService dynmapService;
 
     @Inject
-    public ClaimCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData, DynmapIntegrationService dynmapService) {
+    public ClaimCommand(PersistentData persistentData, DynmapIntegrationService dynmapService) {
         super(
             new CommandBuilder()
                 .withName("claim")
@@ -44,18 +42,16 @@ public class ClaimCommand extends Command {
                         .expectsInteger()
                 )
         );
-        this.localeService = localeService;
-        this.playerService = playerService;
         this.persistentData = persistentData;
         this.dynmapService = dynmapService;
     }
 
     public void execute(CommandContext context) {
         Player player = context.getPlayer();
-        if (context.getExecutorsFaction().getFlags().get("mustBeOfficerToManageLand").toBoolean()) {
+        if (context.getExecutorsFaction().getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
             if (!context.getExecutorsFaction().isOfficer(player.getUniqueId()) && !context.getExecutorsFaction().isOwner(player.getUniqueId())) {
-                this.playerService.sendMessage(player, "&a" + this.localeService.getText("AlertMustBeOfficerOrOwnerToClaimLand"), "AlertMustBeOfficerOrOwnerToClaimLand", false);
+                context.replyWith("AlertMustBeOfficerOrOwnerToClaimLand");
                 return;
             }
         }
@@ -64,7 +60,7 @@ public class ClaimCommand extends Command {
         if (depthArgument != null) {
             int depth = (int)depthArgument;
             if (depth <= 0) {
-                this.playerService.sendMessage(player, "&a" + this.localeService.getText("UsageClaimRadius"), "UsageClaimRadius", false);
+                context.replyWith("UsageClaimRadius");
             } else {
                 this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), context.getExecutorsFaction());
             }

@@ -8,13 +8,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.commands.abs.FontMetrics;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.ClaimedChunk;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import org.bukkit.Chunk;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,31 +25,26 @@ import java.util.List;
  * @author Callum Johnson
  */
 @Singleton
-public class MapCommand extends SubCommand {
+public class MapCommand extends Command {
     private final char[] map_keys = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789abcdeghjmnopqrsuvwxyz?".toCharArray();
 
     private final PersistentData persistentData;
 
     @Inject
     public MapCommand(PersistentData persistentData) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("map")
+                .withAliases("showmap", "displaymap", LOCALE_PREFIX + "CmdMap")
+                .withDescription("Display a map of the claims near your surroundings.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.map")
+        );
         this.persistentData = persistentData;
-        this
-            .setNames("map", "showmap", "displaymap")
-            .requiresPermissions("mf.map")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        final Chunk center = player.getLocation().getChunk();
+    public void execute(CommandContext context) {
+        final Chunk center = context.getPlayer().getLocation().getChunk();
         // Needs to be Odd.
         int map_width = 53;
         final int topLeftX = center.getX() - (map_width / 2);
@@ -57,11 +53,11 @@ public class MapCommand extends SubCommand {
         final int topLeftZ = center.getZ() - (map_height / 2);
         final int bottomRightX = center.getX() + (map_width / 2);
         final int bottomRightZ = center.getZ() + (map_height / 2);
-        final Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
+        final Faction faction = context.getExecutorsFaction();
         final boolean hasFaction = faction != null;
         final HashMap<String, Integer> printedHolders = new HashMap<>();
         final HashMap<String, String> colourMap = new HashMap<>();
-        player.sendMessage(FontMetrics.obtainCenteredMessage("&fNorth"));
+        context.reply(FontMetrics.obtainCenteredMessage("&fNorth"));
         for (int z = topLeftZ; z <= bottomRightZ; z++) {
             final StringBuilder line = new StringBuilder();
             for (int x = topLeftX; x <= bottomRightX; x++) {
@@ -103,9 +99,9 @@ public class MapCommand extends SubCommand {
                     }
                 }
             }
-            player.sendMessage(this.translate(line.toString()));
+            context.reply(this.translate(line.toString()));
         }
-        player.sendMessage(this.translate(" &5+&7 = You"));
+        context.reply(this.translate(" &5+&7 = You"));
         final List<String> added = new ArrayList<>();
         int index = 0;
         for (String printedHolder : printedHolders.keySet()) {
@@ -129,7 +125,7 @@ public class MapCommand extends SubCommand {
             index++;
         }
         if (!added.isEmpty()) { // We don't wanna send an empty line, so check if the added lines is empty or not.
-            player.sendMessage(" " + this.translate(String.join(", ", added)));
+            context.reply(" " + this.translate(String.join(", ", added)));
         }
     }
 
@@ -142,17 +138,5 @@ public class MapCommand extends SubCommand {
      */
     private int getIndex(String holder, HashMap<String, Integer> printedHolders) {
         return new ArrayList<>(printedHolders.keySet()).indexOf(holder);
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 }

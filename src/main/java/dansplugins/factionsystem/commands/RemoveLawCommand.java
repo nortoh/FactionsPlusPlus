@@ -7,14 +7,15 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,78 +24,44 @@ import java.util.List;
  * @author Callum Johnson
  */
 @Singleton
-public class RemoveLawCommand extends SubCommand {
+public class RemoveLawCommand extends Command {
 
-    private final PlayerService playerService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
 
     @Inject
     public RemoveLawCommand(
-        PlayerService playerService,
-        LocaleService localeService,
         PersistentData persistentData
     ) {
-        super();
-        this.playerService = playerService;
-        this.localeService = localeService;
+        super(
+            new CommandBuilder()
+                .withName("removelaw")
+                .withAliases("rl", LOCALE_PREFIX + "CmdRemoveLaw")
+                .withDescription("Removes an already existing law in your faction.")
+                .requiresPermissions("mf.removelaw")
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .expectsPlayerExecution()
+                .addArgument(
+                    "law to remove",
+                    new ArgumentBuilder()
+                        .setDescription("the id of the law to remove")
+                        .expectsInteger()
+                        .isRequired()
+                )
+        );
         this.persistentData = persistentData;
-        this
-            .setNames("removelaw", LOCALE_PREFIX + "CmdRemoveLaw")
-            .requiresPermissions("mf.removelaw")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageRemoveLaw"),
-                "UsageRemoveLaw",
-                false
-            );
+    public void execute(CommandContext context) {
+        final int lawToRemove = context.getIntegerArgument("law to remove");
+        if (lawToRemove < 0 || lawToRemove > context.getExecutorsFaction().getNumLaws()-1) {
+            context.replyWith("UsageRemoveLaw");
             return;
         }
-        final int lawToRemove = this.getIntSafe(args[0], 0) - 1;
-        if (lawToRemove < 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageRemoveLaw"),
-                "UsageRemoveLaw",
-                false
-            );
-            return;
+        if (context.getExecutorsFaction().removeLaw(lawToRemove)) {
+            context.replyWith("LawRemoved");
         }
-        if (this.faction.removeLaw(lawToRemove)) {
-            this.playerService.sendMessage(
-                player, 
-                "&a" + this.localeService.getText("LawRemoved"),
-                "LawRemoved",
-                false
-            );
-        }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+        // TODO: handle this returning false
     }
 
     /**

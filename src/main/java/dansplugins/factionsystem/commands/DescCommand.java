@@ -9,13 +9,8 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
-import dansplugins.factionsystem.builders.*;
-import org.bukkit.entity.Player;
-
-import java.util.Objects;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 /**
  * @author Callum Johnson
@@ -23,12 +18,8 @@ import java.util.Objects;
 @Singleton
 public class DescCommand extends Command {
 
-    private final PlayerService playerService;
-    private final LocaleService localeService;
-    private final MessageService messageService;
-
     @Inject
-    public DescCommand(PlayerService playerService, LocaleService localeService, MessageService messageService) {
+    public DescCommand() {
         super(
             new CommandBuilder()
                 .withName("description")
@@ -48,19 +39,14 @@ public class DescCommand extends Command {
                         
                 )
         );
-        this.localeService = localeService;
-        this.playerService = playerService;
-        this.messageService = messageService;
     }
 
     public void execute(CommandContext context) {
-        String description = (String)context.getArgument("description");
+        String description = context.getStringArgument("description");
         context.getExecutorsFaction().setDescription(description);
-        this.playerService.sendMessage(
-            context.getPlayer(), 
-            "&c" + this.localeService.getText("DescriptionSet"),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("Description")).replace("#desc#", description), 
-            true
+        context.replyWith(
+            this.constructMessage("DescriptionSet")
+                .with("desc", description)
         );
     }
 }

@@ -219,4 +219,17 @@ public class Command implements ColorTranslator {
     public MessageBuilder constructMessage(String localizationKey) {
         return new MessageBuilder(localizationKey);
     }
+
+    /**
+     * Parent method to conduct tab completion. This will check permissions first, then hand to the child.
+     */
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
+        if (this.requiresPlayerExecution) {
+            if (!(sender instanceof Player)) {
+                return this.handleTabComplete((Player)sender, args);
+            }
+            return null;
+        }
+        return this.handleTabComplete(sender, args);
+    }
 }
