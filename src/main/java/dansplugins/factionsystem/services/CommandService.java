@@ -69,10 +69,10 @@ public class CommandService implements TabCompleter {
             AddLawCommand.class,
             AllyCommand.class,
             AutoClaimCommand.class,
-            //BreakAllianceCommand.class,
+            BreakAllianceCommand.class,
             BypassCommand.class,
             ChatCommand.class,
-            //CheckAccessCommand.class,
+            CheckAccessCommand.class,
             CheckClaimCommand.class,
             ClaimCommand.class,
             ConfigCommand.class,
@@ -87,7 +87,7 @@ public class CommandService implements TabCompleter {
             //FlagsCommand.class,
             //ForceCommand.class,
             //GateCommand.class,
-            //GrantAccessCommand.class,
+            GrantAccessCommand.class,
             //GrantIndependenceCommand.class,
             //HelpCommand.class,
             HomeCommand.class,
@@ -100,21 +100,21 @@ public class CommandService implements TabCompleter {
             LeaveCommand.class,
             ListCommand.class,
             LockCommand.class,
-            //MakePeaceCommand.class,
+            MakePeaceCommand.class,
             MapCommand.class,
             MembersCommand.class,
             PowerCommand.class,
-            //PrefixCommand.class,
+            PrefixCommand.class,
             PromoteCommand.class,
             RemoveLawCommand.class,
             RenameCommand.class,
             ResetPowerLevelsCommand.class,
-            //RevokeAccessCommand.class,
+            RevokeAccessCommand.class,
             SetHomeCommand.class,
             StatsCommand.class,
             //SwearFealtyCommand.class,
-            //TransferCommand.class,
-            //UnclaimallCommand.class,
+            TransferCommand.class,
+            UnclaimallCommand.class,
             UnclaimCommand.class,
             UnlockCommand.class,
             VassalizeCommand.class,
@@ -277,27 +277,24 @@ public class CommandService implements TabCompleter {
             if (arguments.size() > 0) {
                 String argumentData = arguments.remove(0);
                 Object parsedArgumentData = null;
-                Boolean isInvalid = false;
                 switch(argument.getType()) {
                     case Faction:
-                        Faction faction = this.dataService.getFaction(argumentData);
+                        Faction faction = this.getAnyFaction(context, argumentData);
                         if (faction != null) {
                             parsedArgumentData = faction;
                             break;
                         }
-                        // If the faction isn't valid, abort.
-                        context.replyWith(
-                            new MessageBuilder("FactionNotFound")
-                                .with("faction", argumentData)
-                        );
                         return false;
                     case ConfigOptionName:
                         if (this.configService.getConfigOption(argumentData) != null) {
                             parsedArgumentData = argumentData;
                             break;
                         }
-                        isInvalid = true;
-                        break;
+                        context.replyWith(
+                            new MessageBuilder("ConfigOptionDoesNotExist")
+                                .with("option", argumentData)
+                        );
+                        return false;
                     case Player:
                         OfflinePlayer player = this.getPlayer(context, argumentData);
                         if (player != null) {
@@ -306,16 +303,30 @@ public class CommandService implements TabCompleter {
                         }
                         return false;
                     case FactionMember:
-                        OfflinePlayer factionMember = this.getFactionMember(context, argumentData);
-                        if (factionMember != null) {
-                            parsedArgumentData = factionMember;
+                        player = this.getFactionMember(context, argumentData);
+                        if (player != null) {
+                            parsedArgumentData = player;
                             break;
                         }
                         return false;
                     case FactionOfficer:
-                        OfflinePlayer factionOfficer = this.getFactionOfficer(context, argumentData);
-                        if (factionOfficer != null) {
-                            parsedArgumentData = factionOfficer;
+                        player = this.getFactionOfficer(context, argumentData);
+                        if (player != null) {
+                            parsedArgumentData = player;
+                            break;
+                        }
+                        return false;
+                    case AlliedFaction:
+                        faction = this.getAllyFaction(context, argumentData);
+                        if (faction != null) {
+                            parsedArgumentData = faction;
+                            break;
+                        }
+                        return false;
+                    case EnemyFaction:
+                        faction = this.getEnemyFaction(context, argumentData);
+                        if (faction != null) {
+                            parsedArgumentData = faction;
                             break;
                         }
                         return false;
@@ -344,6 +355,42 @@ public class CommandService implements TabCompleter {
         } catch(Exception e) {
             return false;
         }
+    }
+
+    public Faction getAnyFaction(CommandContext context, String argumentData) {
+        final Faction faction = this.dataService.getFaction(argumentData);
+        if (faction == null) {
+            context.replyWith(
+                new MessageBuilder("FactionNotFound")
+                    .with("faction", argumentData)
+            );
+        }
+        return faction;
+    }
+
+    public Faction getAllyFaction(CommandContext context, String argumentData) {
+        final Faction faction = this.getAnyFaction(context, argumentData);
+        if (faction != null) {
+            if (context.getExecutorsFaction().isAlly(faction.getName())) {
+                return faction;
+            }
+            context.replyWith(
+                new MessageBuilder("AlertNotAllied")
+                    .with("faction", faction.getName())
+            );
+        }
+        return null;
+    }
+
+    public Faction getEnemyFaction(CommandContext context, String argumentData) {
+        final Faction faction = this.dataService.getFaction(argumentData);
+        if (faction != null) {
+            if (context.getExecutorsFaction().isEnemy(faction.getName())) {
+                return faction;
+            }
+            context.replyWith("FactionNotEnemy");
+        }
+        return null;
     }
 
     public OfflinePlayer getPlayer(CommandContext context, String argumentData) {

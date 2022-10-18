@@ -26,7 +26,7 @@ public class AutoClaimCommand extends Command {
             new CommandBuilder()
                 .withName("autoclaim")
                 .withAliases("ac", LOCALE_PREFIX + "CmdAutoClaim")
-                .withDescription("toggles auto claim for your player")
+                .withDescription("Toggles auto claim for faction.")
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.autoclaim")
                 .expectsFactionMembership()

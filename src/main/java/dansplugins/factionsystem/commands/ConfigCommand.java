@@ -193,12 +193,6 @@ public class ConfigCommand extends Command {
                         .with("value", result.getValue())
                 );
                 break;
-            case DoesNotExist:
-                context.replyWith(
-                    this.constructMessage("ConfigOptionDoesNotExist")
-                        .with("option", configOption)
-                );
-                break;
             case NotExpectedType:
                 context.replyWith(
                     this.constructMessage("ConfigValueInvalid")
@@ -211,6 +205,8 @@ public class ConfigCommand extends Command {
                     this.constructMessage("ConfigValueNotUserSettable")
                         .with("option", configOption)
                 );
+                break;
+            default:
                 break;
         }
     }

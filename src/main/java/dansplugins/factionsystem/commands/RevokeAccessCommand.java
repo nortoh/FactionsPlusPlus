@@ -7,128 +7,78 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
+
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class RevokeAccessCommand extends SubCommand {
+public class RevokeAccessCommand extends Command {
 
-    private final LocaleService localeService;
-    private final PlayerService playerService;
     private final EphemeralData ephemeralData;
-    private final MessageService messageService;
 
     @Inject
-    public RevokeAccessCommand(
-        LocaleService localeService,
-        PlayerService playerService,
-        EphemeralData ephemeralData,
-        MessageService messageService
-    ) {
-        super();
-        this.localeService = localeService;
-        this.playerService = playerService;
+    public RevokeAccessCommand(EphemeralData ephemeralData) {
+        super(
+            new CommandBuilder()
+                .withName("revokeaccess")
+                .withAliases("ra", LOCALE_PREFIX + "CmdRevokeAccess")
+                .withDescription("Revokes access from a player for a locked block.")
+                .requiresPermissions("mf.revokeaccess")
+                .expectsPlayerExecution()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("cancel")
+                        .withAliases(LOCALE_PREFIX + "CmdRevokeAccessCancel")
+                        .withDescription("Cancels pending revoke access request")
+                        .setExecutorMethod("cancelCommand")
+                )
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the player to revoke access from")
+                        .expectsAnyPlayer()
+                        .isRequired()
+                )
+        );
         this.ephemeralData = ephemeralData;
-        this.messageService = messageService;
-        this
-            .setNames("revokeaccess", "ra", LOCALE_PREFIX + "CmdRevokeAccess")
-            .requiresPermissions("mf.revokeaccess")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageRevokeAccess"),
-                "UsageRevokeAccess",
-                false
-            );
+
+    public void execute(CommandContext context) {
+        if (this.ephemeralData.getPlayersRevokingAccess().containsKey(context.getPlayer().getUniqueId())) {
+            context.replyWith("AlreadyEnteredRevokeAccess");
             return;
         }
-        if (args[0].equalsIgnoreCase("cancel")) {
-            this.ephemeralData.getPlayersRevokingAccess().remove(player.getUniqueId());
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("Cancelled"),
-                "Cancelled",
-                false
-            );
-            return;
-        }
-        if (this.ephemeralData.getPlayersRevokingAccess().containsKey(player.getUniqueId())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("AlreadyEnteredRevokeAccess"),
-                "AlreadyEnteredRevokeAccess",
-                false
-            );
-            return;
-        }
-        UUIDChecker uuidChecker = new UUIDChecker();
-        final UUID targetUUID = uuidChecker.findUUIDBasedOnPlayerName(args[0]);
-        if (targetUUID == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
-                true
-            );
-            return;
-        }
-        if (targetUUID == player.getUniqueId()) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("CannotRevokeAccessFromSelf"),
-                "CannotRevokeAccessFromSelf",
-                false
-            );
+        final OfflinePlayer target = context.getOfflinePlayerArgument("player");
+        final UUID targetUUID = target.getUniqueId();
+        if (targetUUID.equals(context.getPlayer().getUniqueId())) {
+            context.replyWith("CannotRevokeAccessFromSelf");
             return;
         }
         this.ephemeralData.getPlayersRevokingAccess().put(
-                player.getUniqueId(), targetUUID
+                context.getPlayer().getUniqueId(), targetUUID
         );
-        this.playerService.sendMessage(
-            player,
-            "&a" + this.localeService.getText("RightClickRevokeAccess"),
-            "RightClickRevokeAccess",
-            false)
-        ;
+        context.replyWith("RightClickRevokeAccess");
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+    public void cancelCommand(CommandContext context) {
+        this.ephemeralData.getPlayersRevokingAccess().remove(context.getPlayer().getUniqueId());
+        context.replyWith("Cancelled");
     }
+
 
     /**
      * Method to handle tab completion.
