@@ -4,7 +4,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
+import dansplugins.factionsystem.builders.MessageBuilder;
 import dansplugins.factionsystem.utils.Logger;
+import dansplugins.factionsystem.utils.StringUtils;
 import dansplugins.factionsystem.commands.abs.ColorTranslator;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 @Singleton
 public class MessageService implements ColorTranslator {
@@ -81,6 +84,27 @@ public class MessageService implements ColorTranslator {
         } else {
             this.createLanguageFile();
         }
+    }
+
+    public void messageSender(CommandSender sender, String message) {
+        sender.sendMessage(
+            StringUtils.colorize(
+                message
+            )
+        );
+    }
+
+    public void replyToSender(CommandSender sender, String localizationKey) {
+        this.messageSender(sender, this.getLanguage().getString(localizationKey));
+    }
+
+    public void replyToSender(CommandSender sender, MessageBuilder builder) {
+        this.messageSender(
+            sender,
+            builder.toString(
+                this.getLanguage().getString(builder.getLocalizationKey())
+            )
+        );
     }
 
     public void sendPermissionMissingMessage(CommandSender sender, List<String> missingPermissions) {
@@ -148,35 +172,8 @@ public class MessageService implements ColorTranslator {
         );
     }
 
-    public void sendFactionMembershipRequiredMessage(CommandSender sender) {
-        this.playerService.sendMessage(
-            sender,
-            this.translate("&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand")), 
-            Objects.requireNonNull(this.getLanguage().getString("AlertMustBeInFactionToUseCommand")),
-            true
-        );
-    }
-
-    public void sendFactionOwnershipRequiredMessage(CommandSender sender) {
-        this.playerService.sendMessage(
-            sender,
-            this.translate("&c" + this.localeService.getText("AlertMustBeOwnerToUseCommand")), 
-            Objects.requireNonNull(this.getLanguage().getString("AlertMustBeOwnerToUseCommand")),
-            true
-        );
-    }
-
-    public void sendFactionOwnershipOrOfficershipRequiredMessage(CommandSender sender) {
-        this.playerService.sendMessage(
-            sender,
-            this.translate("&c" + this.localeService.getText("AlertMustBeOwnerOrOfficeToUseCommand")), 
-            Objects.requireNonNull(this.getLanguage().getString("AlertMustBeOwnerOrOfficeToUseCommand")),
-            true
-        );
-    }
-
-    public void sendOnlyPlayersCanUseThisCommandMessage(CommandSender sender) {
-        sender.sendMessage(this.translate(this.localeService.getText("OnlyPlayersCanUseCommand")));
+    public void sendInvalidSyntaxMessage(CommandSender sender, ArrayList<String> commandNameList, String commandSyntax) {
+        this.sendInvalidSyntaxMessage(sender, String.join(" ", commandNameList), commandSyntax);
     }
 
 }
