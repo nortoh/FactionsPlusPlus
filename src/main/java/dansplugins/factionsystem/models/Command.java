@@ -124,6 +124,17 @@ public class Command implements ColorTranslator {
 
     public String buildSyntax() {
         StringJoiner output = new StringJoiner(" ");
+        if (this.hasSubCommands()) {
+            StringJoiner joiner = new StringJoiner("/");
+            for (Map.Entry<String, Command> entry : this.subcommands.entrySet()) {
+                joiner.add(entry.getKey());
+            }
+            if (!this.requiresSubCommand) {
+                output.add(String.format("[%s]", joiner.toString()));
+            } else {
+                output.add(joiner.toString());
+            }
+        }
         for (Map.Entry<String, CommandArgument> entry : this.arguments.entrySet()) {
             if (entry.getValue().isRequired()) {
                 output.add(String.format("<%s>", entry.getKey()));
