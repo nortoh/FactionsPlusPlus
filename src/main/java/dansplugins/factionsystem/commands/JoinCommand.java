@@ -12,7 +12,6 @@ import dansplugins.factionsystem.events.FactionJoinEvent;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -30,13 +29,11 @@ import java.util.Objects;
  */
 @Singleton
 public class JoinCommand extends Command {
-    private final MessageService messageService;
     private final Logger logger;
     private final PersistentData persistentData;
 
     @Inject
     public JoinCommand(
-        MessageService messageService,
         PersistentData persistentData,
         Logger logger
     ) {
@@ -57,7 +54,6 @@ public class JoinCommand extends Command {
                         .isRequired()
                 )
         );
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.logger = logger;
     }
@@ -74,7 +70,7 @@ public class JoinCommand extends Command {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             target, 
             this.constructMessage("HasJoined")
                 .with("name", context.getPlayer().getName())

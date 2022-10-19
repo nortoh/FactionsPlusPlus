@@ -28,14 +28,12 @@ import java.util.Objects;
 @Singleton
 public class DeclareIndependenceCommand extends Command {
 
-    private final MessageService messageService;
     private final ConfigService configService;
     private final FactionRepository factionRepository;
     private final WarFactory warFactory;
 
     @Inject
     public DeclareIndependenceCommand(
-        MessageService messageService,
         ConfigService configService,
         FactionRepository factionRepository,
         WarFactory warFactory
@@ -50,7 +48,6 @@ public class DeclareIndependenceCommand extends Command {
                 .expectsFactionOwnership()
                 .requiresPermissions("mf.declareindependence")
         );
-        this.messageService = messageService;
         this.configService = configService;
         this.factionRepository = factionRepository;
         this.warFactory = warFactory;
@@ -89,7 +86,7 @@ public class DeclareIndependenceCommand extends Command {
                 }
             }
         }
-        this.messageService.sendAllPlayersLocalizedMessage(
+        context.messageAllPlayers(
             this.constructMessage("HasDeclaredIndependence")
                 .with("faction_a", faction.getName())
                 .with("faction_b", liege.getName())

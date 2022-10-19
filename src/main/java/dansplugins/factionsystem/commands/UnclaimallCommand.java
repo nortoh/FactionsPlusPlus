@@ -13,7 +13,6 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 
@@ -30,14 +29,12 @@ import java.util.List;
 public class UnclaimallCommand extends Command {
 
     private PersistentData persistentData;
-    private MessageService messageService;
     private DynmapIntegrationService dynmapService;
     private FactionRepository factionRepository;
 
     @Inject
     public UnclaimallCommand(
         PersistentData persistentData,
-        MessageService messageService,
         DynmapIntegrationService dynmapService,
         FactionRepository factionRepository
     ) {
@@ -57,7 +54,6 @@ public class UnclaimallCommand extends Command {
                 )
         );
         this.persistentData = persistentData;
-        this.messageService = messageService;
         this.dynmapService = dynmapService;
         this.factionRepository = factionRepository;
     }
@@ -84,7 +80,7 @@ public class UnclaimallCommand extends Command {
         }
         // remove faction home
         faction.setFactionHome(null);
-        this.messageService.sendFactionLocalizedMessage(faction, "AlertFactionHomeRemoved");
+        context.messageFaction(faction, "AlertFactionHomeRemoved");
 
         // remove claimed chunks
         this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());

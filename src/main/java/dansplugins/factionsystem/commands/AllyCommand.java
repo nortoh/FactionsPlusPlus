@@ -13,7 +13,6 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import dansplugins.factionsystem.builders.CommandBuilder;
@@ -30,7 +29,6 @@ import java.util.UUID;
  */
 @Singleton
 public class AllyCommand extends Command {
-    protected final MessageService messageService;
     protected final PlayerService playerService;
     protected final PersistentData persistentData;
     protected final LocaleService localeService;
@@ -41,7 +39,6 @@ public class AllyCommand extends Command {
      */
     @Inject
     public AllyCommand(
-        MessageService messageService,
         PlayerService playerService,
         LocaleService localeService,
         PersistentData persistentData,
@@ -65,7 +62,6 @@ public class AllyCommand extends Command {
                         .isRequired() 
                 )
         );
-        this.messageService = messageService;
         this.playerService = playerService;
         this.persistentData = persistentData;
         this.localeService = localeService;
@@ -102,14 +98,13 @@ public class AllyCommand extends Command {
         // send the request
         context.getExecutorsFaction().requestAlly(otherFaction.getID());
 
-        this.messageService.sendFactionLocalizedMessage(
-            context.getExecutorsFaction(),
+        context.messagePlayersFaction(
             this.constructMessage("AlertAttemptedAlliance")
                 .with("faction_a", context.getExecutorsFaction().getName())
                 .with("faction_b", otherFaction.getName())
         );
 
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             otherFaction,
             this.constructMessage("AlertAttemptedAlliance")
                 .with("faction_a", otherFaction.getName())
@@ -122,14 +117,13 @@ public class AllyCommand extends Command {
             context.getExecutorsFaction().addAlly(otherFaction.getID());
             otherFaction.addAlly(context.getExecutorsFaction().getID());
             // message player's faction
-            this.messageService.sendFactionLocalizedMessage(
-                context.getExecutorsFaction(), 
+            context.messagePlayersFaction(
                 this.constructMessage("AlertNowAlliedWith")
                     .with("faction", otherFaction.getName())
             );
 
             // message target faction
-            this.messageService.sendFactionLocalizedMessage(
+            context.messageFaction(
                 otherFaction, 
                 this.constructMessage("AlertNowAlliedWith")
                     .with("faction", context.getExecutorsFaction().getName())

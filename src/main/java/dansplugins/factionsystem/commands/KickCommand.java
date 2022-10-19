@@ -13,7 +13,6 @@ import dansplugins.factionsystem.events.FactionKickEvent;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -33,14 +32,12 @@ import java.util.UUID;
  */
 @Singleton
 public class KickCommand extends Command {
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final Logger logger;
 
     @Inject
     public KickCommand(
-        MessageService messageService,
         EphemeralData ephemeralData,
         PersistentData persistentData,
         Logger logger
@@ -62,7 +59,6 @@ public class KickCommand extends Command {
                         .isRequired()
                 )
         );
-        this.messageService = messageService;
         this.ephemeralData = ephemeralData;
         this.persistentData = persistentData;
         this.logger = logger;
@@ -91,8 +87,7 @@ public class KickCommand extends Command {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
         faction.removeMember(target.getUniqueId());
-        this.messageService.sendFactionLocalizedMessage(
-            faction,
+        context.messagePlayersFaction(
             this.constructMessage("HasBeenKickedFrom")
                 .with("name", target.getName())
                 .with("faction", faction.getName())

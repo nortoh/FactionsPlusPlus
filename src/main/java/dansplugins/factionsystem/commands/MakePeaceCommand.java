@@ -15,7 +15,6 @@ import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.repositories.WarRepository;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -34,14 +33,12 @@ import java.util.UUID;
 @Singleton
 public class MakePeaceCommand extends Command {
 
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
     private final WarRepository warRepository;
 
     @Inject
     public MakePeaceCommand(
-        MessageService messageService,
         PersistentData persistentData,
         FactionRepository factionRepository,
         WarRepository warRepository
@@ -64,7 +61,6 @@ public class MakePeaceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
         this.warRepository = warRepository;
@@ -86,7 +82,7 @@ public class MakePeaceCommand extends Command {
             this.constructMessage("AttemptedPeace")
                 .with("name", target.getName())
         );
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             target,
             this.constructMessage("HasAttemptedToMakePeaceWith")
                 .with("f1", faction.getName())
@@ -108,7 +104,7 @@ public class MakePeaceCommand extends Command {
                 war.end();
 
                 // Notify
-                this.messageService.sendAllPlayersLocalizedMessage(
+                context.messageAllPlayers(
                     this.constructMessage("AlertNowAtPeaceWith")
                         .with("p1", faction.getName())
                         .with("p2", target.getName())

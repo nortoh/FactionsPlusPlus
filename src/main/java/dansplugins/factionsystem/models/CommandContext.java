@@ -133,6 +133,26 @@ public class CommandContext {
         this.messageService.sendLocalizedMessage(player, builder);
     }
 
+    public void messageFaction(Faction faction, String localizationKey) {
+        this.messageService.sendFactionLocalizedMessage(faction, localizationKey);
+    }
+
+    public void messageFaction(Faction faction, MessageBuilder builder) {
+        this.messageService.sendFactionLocalizedMessage(faction, builder);
+    }
+
+    public void messagePlayersFaction(String localizationKey) {
+        this.messageFaction(this.getExecutorsFaction(), localizationKey);
+    }
+
+    public void messagePlayersFaction(MessageBuilder builder) {
+        this.messageFaction(this.getExecutorsFaction(), builder);
+    }
+
+    public void messageAllPlayers(MessageBuilder builder) {
+        this.messageService.sendAllPlayersLocalizedMessage(builder);
+    }
+
     public String getLocalizedString(String localizationKey) {
         return this.localeService.get(localizationKey);
     }

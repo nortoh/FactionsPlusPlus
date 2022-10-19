@@ -11,7 +11,6 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
@@ -31,14 +30,12 @@ import java.util.UUID;
 @Singleton
 public class VassalizeCommand extends Command {
 
-    private final MessageService messageService;
     private final Logger logger;
     private final PersistentData persistentData;
 
     
     @Inject
     public VassalizeCommand(
-        MessageService messageService,
         PersistentData persistentData,
         Logger logger
     ) {
@@ -60,7 +57,6 @@ public class VassalizeCommand extends Command {
                         .isRequired()
                 )
         );
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.logger = logger;
     }
@@ -92,15 +88,14 @@ public class VassalizeCommand extends Command {
         context.getExecutorsFaction().addAttemptedVassalization(target.getID());
 
         // inform all players in that faction that they are trying to be vassalized
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             target,
             this.constructMessage("AlertAttemptedVassalization")
                 .with("name", context.getExecutorsFaction().getName())
         );
 
         // inform all players in players faction that a vassalization offer was sent
-        this.messageService.sendFactionLocalizedMessage(
-            context.getExecutorsFaction(),
+        context.messagePlayersFaction(
             this.constructMessage("AlertFactionAttemptedToVassalize")
                 .with("name", target.getName())
         );
