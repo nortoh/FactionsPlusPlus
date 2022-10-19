@@ -9,7 +9,6 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.*;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.utils.Logger;
@@ -134,13 +133,9 @@ public class CommandService implements TabCompleter {
         return command;
     }
 
-    public void loadCommandNames(SubCommand command) {
-        String[] rawNames = command.getCommandNames();
-        for (int i = 0; i < rawNames.length; i++) {
-            String name = rawNames[i];
-            if (name.contains(SubCommand.LOCALE_PREFIX)) name = this.localeService.getText(name.replace(SubCommand.LOCALE_PREFIX, ""));
-            command.setName(i, name);
-        }
+    // TODO: reimplement
+    public void loadCommandNames(Command command) {
+
     }
 
     public List<String> checkPermissions(CommandSender sender, String[] permissions) {

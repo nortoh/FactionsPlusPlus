@@ -7,7 +7,6 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
