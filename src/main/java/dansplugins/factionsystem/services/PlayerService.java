@@ -116,6 +116,7 @@ public class PlayerService {
             double newPowerLevel = currentPowerLevel - decreaseAmount;
             playerRecord.setPower(Math.max(newPowerLevel, 0));
         }
+        playerRecord.increasePowerLostBy(decreaseAmount);
         return playerRecord.getPower();
     }
 

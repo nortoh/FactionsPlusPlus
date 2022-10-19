@@ -60,7 +60,7 @@ public class PlayerRecord {
         return this.stats.getLastLogout();
     }
 
-    public int getPowerLost() {
+    public double getPowerLost() {
         return this.stats.getPowerLost();
     }
 
@@ -80,8 +80,8 @@ public class PlayerRecord {
         return this.stats.getTimeSinceLastLogout();
     }
 
-    public void incrementPowerLost() {
-        this.stats.incrementPowerLost();
+    public void increasePowerLostBy(double amount) {
+        this.stats.increasePowerLostBy(amount);
     }
 
     // Tools

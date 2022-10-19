@@ -482,7 +482,6 @@ public class PersistentData {
                 isOnline = player.isOnline();
             }
             if (!isOnline && this.configService.getBoolean("powerDecreases") && record.getMinutesSinceLastLogout() > configService.getInt("minutesBeforePowerDecrease")) {
-                record.incrementPowerLost();
                 this.playerService.decreasePower(record.getPlayerUUID());
             }
         }
