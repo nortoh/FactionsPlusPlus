@@ -8,27 +8,26 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.*;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
-import preponderous.ponder.misc.ArgumentParser;
 
-import java.lang.reflect.Method;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
+
 import java.util.*;
 
 // TODO: re-implement autocomplete 
@@ -37,140 +36,374 @@ import java.util.*;
  * @author Callum Johnson
  */
 @Singleton
-public class ForceCommand extends SubCommand {
+public class ForceCommand extends Command {
     private final MedievalFactions medievalFactions;
     private final Logger logger;
     private final PersistentData persistentData;
-    private final LocaleService localeService;
     private final MessageService messageService;
     private final EphemeralData ephemeralData;
-    private final PlayerService playerService;
     private final FactionRepository factionRepository;
     private final FactionService factionService;
-
-    private final String[] commands = new String[]{
-            "Save", "Load", "Peace", "Demote", "Join", "Kick", "Power", "Renounce", "Transfer", "RemoveVassal", "Rename", "BonusPower", "Unlock", "Create", "Claim", "Flag"
-    };
-    private final HashMap<List<String>, String> subMap = new HashMap<>();
-
-    private final ArgumentParser argumentParser = new ArgumentParser();
-    private final UUIDChecker uuidChecker = new UUIDChecker();
 
     @Inject
     public ForceCommand(
         PersistentData persistentData,
-        LocaleService localeService,
         MessageService messageService,
         EphemeralData ephemeralData,
         MedievalFactions medievalFactions,
         Logger logger,
-        PlayerService playerService,
         FactionRepository factionRepository,
         FactionService factionService
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("force")
+                .withAliases(LOCALE_PREFIX + "CmdForce")
+                .withDescription("Administrative commands for mangaging the plugin.")
+                .requiresSubCommand()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("save")
+                        .withAliases(LOCALE_PREFIX + "CmdForceSave")
+                        .withDescription("Forces the plugin to save its configuration.")
+                        .setExecutorMethod("saveCommand")
+                        .requiresPermissions("mf.force.save", "mf.force.*", "mf.admin")
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("load")
+                        .withAliases(LOCALE_PREFIX + "CmdForceLoad")
+                        .withDescription("Forces the plugin to reload its configuration.")
+                        .setExecutorMethod("loadCommand")
+                        .requiresPermissions("mf.force.load", "mf.force.*", "mf.admin")
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("peace")
+                        .withAliases(LOCALE_PREFIX + "CmdForcePeace")
+                        .withDescription("Forces two factions at war to make peace.")
+                        .setExecutorMethod("peaceCommand")
+                        .requiresPermissions("mf.force.peace", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction one",
+                            new ArgumentBuilder()
+                                .setDescription("the first faction")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "faction two",
+                            new ArgumentBuilder()
+                                .setDescription("the second faction")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("demote")
+                        .withAliases(LOCALE_PREFIX + "CmdForceDemote")
+                        .withDescription("Forcefully demotes a player in a faction.")
+                        .setExecutorMethod("demoteCommand")
+                        .requiresPermissions("mf.force.demote", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to demote")
+                                .expectsAnyPlayer()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("join")
+                        .withAliases(LOCALE_PREFIX + "CmdForceJoin")
+                        .withDescription("Forcefully joins a player to a faction.")
+                        .setExecutorMethod("joinCommand")
+                        .requiresPermissions("mf.force.join", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to force faction joining")
+                                .expectsAnyPlayer()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the faction this player should join")
+                                .expectsFaction()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("kick")
+                        .withAliases(LOCALE_PREFIX + "CmdForceKick")
+                        .withDescription("Forcefully kicks a player from a faction.")
+                        .setExecutorMethod("kickCommand")
+                        .requiresPermissions("mf.force.kick", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to kick")
+                                .expectsAnyPlayer()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("power")
+                        .withAliases(LOCALE_PREFIX + "CmdForcePower")
+                        .withDescription("Forcefully sets a players power.")
+                        .setExecutorMethod("powerCommand")
+                        .requiresPermissions("mf.force.power", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to kick")
+                                .expectsAnyPlayer()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "desired power",
+                            new ArgumentBuilder()
+                                .setDescription("the power to set")
+                                .expectsInteger()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("renounce")
+                        .withAliases(LOCALE_PREFIX + "CmdForceRenounce")
+                        .withDescription("Forcefully renounces a faction.")
+                        .setExecutorMethod("renounceCommand")
+                        .requiresPermissions("mf.force.renounce", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the faction to renounce")
+                                .expectsFaction()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("transfer")
+                        .withAliases(LOCALE_PREFIX + "CmdForceTransfer")
+                        .withDescription("Forcefully transfers ownership of a faction.")
+                        .setExecutorMethod("transferCommand")
+                        .requiresPermissions("mf.force.transfer", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the faction to transfer ownership of")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to transfer ownership to")
+                                .expectsAnyPlayer()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("renounce")
+                        .withAliases(LOCALE_PREFIX + "CmdForceRenounce")
+                        .withDescription("Forcefully renounces a faction.")
+                        .setExecutorMethod("renounceCommand")
+                        .requiresPermissions("mf.force.renounce", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the faction to renounce")
+                                .expectsFaction()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("removevassal")
+                        .withAliases(LOCALE_PREFIX + "CmdForceRemoveVassal")
+                        .withDescription("Forcefully removes a vassal from a liege.")
+                        .setExecutorMethod("removeVassalCommand")
+                        .requiresPermissions("mf.force.removevassal", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "liege",
+                            new ArgumentBuilder()
+                                .setDescription("the target faction to remove vassal from")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "vassal",
+                            new ArgumentBuilder()
+                                .setDescription("the vassal to remove")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("rename")
+                        .withAliases(LOCALE_PREFIX + "CmdForceRename")
+                        .withDescription("Forcefully renames a faction.")
+                        .setExecutorMethod("renameCommand")
+                        .requiresPermissions("mf.force.rename", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the faction to rename")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "name",
+                            new ArgumentBuilder()
+                                .setDescription("the new faction name")
+                                .expectsString()
+                                .consumesAllLaterArguments()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("bonuspower")
+                        .withAliases(LOCALE_PREFIX + "CmdForceBonusPower")
+                        .withDescription("Forcefully sets bonus power on a faction.")
+                        .setExecutorMethod("bonusPowerCommand")
+                        .requiresPermissions("mf.force.bonuspower", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the target faction")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "amount",
+                            new ArgumentBuilder()
+                                .setDescription("the amount of bonus power")
+                                .expectsInteger()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("unlock")
+                        .withAliases(LOCALE_PREFIX + "CmdForceUnlock")
+                        .withDescription("Forcefully unlock a locked door or chest.")
+                        .setExecutorMethod("unlockCommand")
+                        .requiresPermissions("mf.force.unlock", "mf.force.*", "mf.admin")
+                        .addSubCommand(
+                            new CommandBuilder()
+                                .withName("cancel")
+                                .withAliases(LOCALE_PREFIX + "CmdForceUnlockCancel")
+                                .withDescription("Cancels pending force unlock request.")
+                                .setExecutorMethod("cancelUnlockCommand")
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("create")
+                        .withAliases(LOCALE_PREFIX + "CmdForceCreate")
+                        .withDescription("Forcefully creates a faction.")
+                        .setExecutorMethod("createCommand")
+                        .requiresPermissions("mf.force.create", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "name",
+                            new ArgumentBuilder()
+                                .setDescription("faction name")
+                                .expectsString()
+                                .consumesAllLaterArguments()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("claim")
+                        .withAliases(LOCALE_PREFIX + "CmdForceClaim")
+                        .withDescription("Forcefully claims land for a faction.")
+                        .setExecutorMethod("claimCommand")
+                        .requiresPermissions("mf.force.claim", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("faction name")
+                                .expectsFaction()
+                                .consumesAllLaterArguments()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("flag")
+                        .withAliases(LOCALE_PREFIX + "CmdForceFlag")
+                        .withDescription("Forcefully sets a faction flag.")
+                        .setExecutorMethod("flagCommand")
+                        .requiresPermissions("mf.force.flag", "mf.force.*", "mf.admin")
+                        .addArgument(
+                            "faction",
+                            new ArgumentBuilder()
+                                .setDescription("the target faction")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "flag",
+                            new ArgumentBuilder()
+                                .setDescription("the faction flag to set")
+                                .expectsString()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "value",
+                            new ArgumentBuilder()
+                                .setDescription("the value to set")
+                                .expectsString()
+                                .consumesAllLaterArguments()
+                                .isRequired()
+                        )
+                )
+        );        
         this.persistentData = persistentData;
-        this.localeService = localeService;
         this.messageService = messageService;
         this.ephemeralData = ephemeralData;
         this.medievalFactions = medievalFactions;
         this.logger = logger;
-        this.playerService = playerService;
         this.factionRepository = factionRepository;
         this.factionService = factionService;
-        this
-            .setNames("force", LOCALE_PREFIX + "CmdForce");
-        // Register sub-commands.
-        Arrays.stream(commands).forEach(command ->
-                subMap.put(Arrays.asList(command, this.localeService.getText("CmdForce" + command)), "force" + command)
-        );
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-        if (!(args.length == 0)) { // If the Argument has Arguments in the 'args' list.
-            for (Map.Entry<List<String>, String> entry : subMap.entrySet()) { // Loop through the SubCommands.
-                // Map.Entry<List<String>, String> example => ([Save, CMDForceSave (translation key)], forceSave)
-                try {
-                    if (safeEquals(args[0], entry.getKey().toArray(new String[0]))) { // Do any of the Keys for the SubCommand match the Given Argument at index '0'.
-                        try {
-                            Method method = getClass().getDeclaredMethod(entry.getValue(), CommandSender.class, String[].class); // Get the Declared method for that SubCommand.
-                            method.invoke(this, sender, args);  // Use reflection to invoke the command.
-                            // Due to the nature of the force-command, it is safe to use reflection here.
-                        } catch (ReflectiveOperationException ex) {
-                            System.out.println("DEBUG: Failed to resolve method from '" + args[0] + "'!");
-                        }
-                        return;
-                    }
-                } catch (Exception e) {
-                    System.out.println("DEBUG: Failed to use safeEquals to determine the command chosen.");
-                }
-            }
-        }
-        // Print out these messages if the command either isn't found or if an error occurs or if the arguments ('args') list is empty.
-        sender.sendMessage(this.translate("&b" + this.localeService.getText("SubCommands")));
-        Arrays.stream(commands).forEach(str -> sender.sendMessage(this.translate("&b" + this.localeService.getText("HelpForce" + str))));
-    }
-
-    @SuppressWarnings("unused")
-    private void forceSave(CommandSender sender) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.save", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("AlertForcedSave")));
+    // "mf.force.save", "mf.force.*", "mf.admin"
+    public void saveCommand(CommandContext context) {
         this.persistentData.getLocalStorageService().save();
+        context.replyWith("AlertForcedSave");
     }
 
-    @SuppressWarnings("unused")
-    private void forceLoad(CommandSender sender) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.load", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-        sender.sendMessage(this.translate("&a" + this.localeService.get("AlertForcedLoad")));
+    // "mf.force.load", "mf.force.*", "mf.admin"
+    public void loadCommand(CommandContext context) {
         this.persistentData.getLocalStorageService().load();
         this.medievalFactions.reloadConfig();
+        context.replyWith("AlertForcedLoad");
     }
 
-    @SuppressWarnings("unused")
-    private void forcePeace(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.peace", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-        if (!(args.length >= 3)) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force peace \"faction1\" \"faction2\""));
-            return;
-        }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        final Faction former = this.factionRepository.get(doubleQuoteArgs.get(0));
-        final Faction latter = this.factionRepository.get(doubleQuoteArgs.get(1));
-        if (former == null || latter == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("DesignatedFactionNotFound")));
-            return;
-        }
+    //  "mf.force.peace", "mf.force.*", "mf.admin"
+    public void peaceCommand(CommandContext context) {
+        final Faction former = context.getFactionArgument("faction one");
+        final Faction latter = context.getFactionArgument("faction two");
         FactionWarEndEvent warEndEvent = new FactionWarEndEvent(former, latter);
         Bukkit.getPluginManager().callEvent(warEndEvent);
         if (!warEndEvent.isCancelled()) {
@@ -179,7 +412,7 @@ public class ForceCommand extends SubCommand {
 
             // announce peace to all players on server.
             this.messageService.messageServer(
-                "&a" + this.localeService.getText("AlertNowAtPeaceWith", former.getName(), latter.getName()),
+                "",
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAtPeaceWith"))
                     .replace("#p1#", former.getName())
                     .replace("#p2#", latter.getName())
@@ -187,65 +420,31 @@ public class ForceCommand extends SubCommand {
         }
     }
 
-    @SuppressWarnings("unused")
-    private void forceDemote(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.demote", "mf.force.*", "mf.admin"))) return;
-        if (!(args.length > 1)) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageForceDemote")));
+    // "mf.force.demote", "mf.force.*", "mf.admin"
+    public void demoteCommand(CommandContext context) {
+        final OfflinePlayer player = context.getOfflinePlayerArgument("player");
+        final Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
+        if (faction == null) {
+            context.replyWith("PlayerIsNotInAFaction");
             return;
         }
-        final UUID playerUUID = uuidChecker.findUUIDBasedOnPlayerName(args[1]);
-        if (playerUUID == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        final OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
-        if (!player.hasPlayedBefore()) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        final Faction faction = this.playerService.getPlayerFaction(player);
         if (!faction.isOfficer(player.getUniqueId())) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerIsNotOfficerOfFaction")));
+            context.replyWith("PlayerIsNotOfficerOfFaction");
             return;
         }
         faction.removeOfficer(player.getUniqueId()); // Remove Officer.
         if (player.isOnline() && player.getPlayer() != null) {
-            player.getPlayer().sendMessage(this.translate("&b" + this.localeService.getText("AlertForcedDemotion")));
+            player.getPlayer().sendMessage(this.translate("&b" + this.messageService.getLanguage().getString("AlertForcedDemotion")));
         }
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("SuccessOfficerRemoval")));
+        context.replyWith("SuccessOfficerRemoval");
     }
 
-    @SuppressWarnings("unused")
-    private void forceJoin(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.join", "mf.force.*", "mf.admin"))) return;
-        if (!(args.length >= 3)) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force join \"player\" \"faction\""));
-            return;
-        }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        final Faction faction = this.factionRepository.get(doubleQuoteArgs.get(1));
-        if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-        final UUID playerUUID = uuidChecker.findUUIDBasedOnPlayerName(doubleQuoteArgs.get(0));
-        if (playerUUID == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        final OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
-        if (!player.hasPlayedBefore()) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        if (this.persistentData.isInFaction(playerUUID)) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerAlreadyInFaction")));
+    // "mf.force.join", "mf.force.*", "mf.admin"
+    public void joinCommand(CommandContext context) {
+        final OfflinePlayer player = context.getOfflinePlayerArgument("player");
+        final Faction faction = context.getFactionArgument("faction");
+        if (this.persistentData.isInFaction(player.getUniqueId())) {
+            context.replyWith("PlayerAlreadyInFaction");
             return;
         }
         FactionJoinEvent joinEvent = new FactionJoinEvent(faction, player);
@@ -256,43 +455,26 @@ public class ForceCommand extends SubCommand {
         }
         this.messageService.messageFaction(
             faction,
-            this.translate("&a" + this.localeService.getText("HasJoined", player.getName(), faction.getName())),
+            this.translate("&a" + this.messageService.getLanguage().getString("HasJoined").replace("#player#", player.getName()).replace("#faction#", faction.getName())),
             ""
         );
-        faction.addMember(playerUUID);
+        faction.addMember(player.getUniqueId());
         if (player.isOnline() && player.getPlayer() != null) {
-            player.getPlayer().sendMessage(this.translate("&b" + this.localeService.getText("AlertForcedToJoinFaction")));
+            player.getPlayer().sendMessage(this.translate("&b" + this.messageService.getLanguage().getString("AlertForcedToJoinFaction")));
         }
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("SuccessForceJoin")));
+        context.replyWith("SuccessForceJoin");
     }
 
-    @SuppressWarnings("unused")
-    private void forceKick(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.kick", "mf.force.*", "mf.admin"))) return;
-        if (!(args.length > 1)) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageForceKick")));
-            return;
-        }
-        if (this.medievalFactions.isDebugEnabled()) {
-            System.out.printf("Looking for player UUID based on player name: '%s'%n", args[1]);
-        }
-        final UUID targetUUID = uuidChecker.findUUIDBasedOnPlayerName(args[1]);
-        if (targetUUID == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        final OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-        if (!target.hasPlayedBefore()) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        final Faction faction = this.playerService.getPlayerFaction(target);
+    // "mf.force.kick", "mf.force.*", "mf.admin"
+    public void kickCommand(CommandContext context) {
+        final OfflinePlayer target = context.getOfflinePlayerArgument("player");
+        final Faction faction = this.persistentData.getPlayersFaction(target.getUniqueId());
         if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
+            context.replyWith("PlayerIsNotInAFaction");
             return;
         }
-        if (faction.isOwner(targetUUID)) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("CannotForciblyKickOwner")));
+        if (faction.isOwner(target.getUniqueId())) {
+            context.replyWith("CannotForciblyKickOwner");
             return;
         }
         FactionKickEvent kickEvent = new FactionKickEvent(faction, target, null); // no kicker so null is used
@@ -301,66 +483,42 @@ public class ForceCommand extends SubCommand {
             this.logger.debug("Kick event was cancelled.");
             return;
         }
-        if (faction.isOfficer(targetUUID)) {
-            faction.removeOfficer(targetUUID); // Remove Officer (if one)
+        if (faction.isOfficer(target.getUniqueId())) {
+            faction.removeOfficer(target.getUniqueId()); // Remove Officer (if one)
         }
-        this.ephemeralData.getPlayersInFactionChat().remove(targetUUID);
-        faction.removeMember(targetUUID);
+        this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
+        faction.removeMember(target.getUniqueId());
         this.messageService.messageFaction(
             faction,
-            this.translate("&c" + this.localeService.getText("HasBeenKickedFrom", target.getName(), faction.getName())), 
+            this.messageService.getLanguage().getString("HasBeenKickedFrom")
+                .replace("#player#", target.getName())
+                .replace("#faction#", faction.getName()),
             ""
         );
         if (target.isOnline() && target.getPlayer() != null) {
-            target.getPlayer().sendMessage(this.translate("&c" + this.localeService.getText("AlertKicked", "an admin")));
+            target.getPlayer().sendMessage(
+                this.messageService.getLanguage().getString("AlertKicked")
+                    .replace("#name#", "an admin")
+            );
         }
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("SuccessFactionMemberRemoval")));
+        context.replyWith("SuccessFactionMemberRemoval");
     }
 
-    @SuppressWarnings("unused")
-    private void forcePower(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.power", "mf.force.*", "mf.admin"))) return;
-        if (!(args.length >= 3)) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force power \"player\" \"number\""));
-            return;
-        }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        final UUID playerUUID = uuidChecker.findUUIDBasedOnPlayerName(doubleQuoteArgs.get(0));
-        final int desiredPower = getIntSafe(doubleQuoteArgs.get(1), Integer.MIN_VALUE);
-        if (desiredPower == Integer.MIN_VALUE) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("DesiredPowerMustBeANumber")));
-            return;
-        }
-        final PlayerRecord record = this.persistentData.getPlayerRecord(playerUUID);
+    // "mf.force.power", "mf.force.*", "mf.admin"
+    public void powerCommand(CommandContext context) {
+        final OfflinePlayer player = context.getOfflinePlayerArgument("player");
+        final Integer desiredPower = context.getIntegerArgument("desired power");
+        final PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
         record.setPower(desiredPower); // Set power :)
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("PowerLevelHasBeenSetTo", desiredPower)));
+        context.replyWith(
+            this.constructMessage("PowerLevelHasBeenSetTo")
+                .with("level", String.valueOf(desiredPower))
+        );
     }
 
-    @SuppressWarnings("unused")
-    private void forceRenounce(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.renounce", "mf.force.*", "mf.admin"))) return;
-        if (args.length < 2) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force renounce \"faction\""));
-            return;
-        }
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-
-        if (doubleQuoteArgs.size() == 0) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        final String factionName = doubleQuoteArgs.get(0);
-        final Faction faction = this.factionRepository.get(factionName);
-        if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-
+    // "mf.force.renounce", "mf.force.*", "mf.admin"
+    public void renounceCommand(CommandContext context) {
+        final Faction faction = context.getFactionArgument("faction");
         long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(faction.getID());
 
         if (faction.getLiege() != null) {
@@ -371,104 +529,54 @@ public class ForceCommand extends SubCommand {
             changes = changes + faction.getNumVassals();
             faction.clearVassals();
         }
-        if (changes == 0) sender.sendMessage(this.translate("&a" + this.localeService.getText("NoVassalOrLiegeReferences")));
-        else sender.sendMessage(this.translate("&a" + this.localeService.getText("SuccessReferencesRemoved")));
+        if (changes == 0) context.replyWith("NoVassalOrLiegeReferences");
+        else context.replyWith("SuccessReferencesRemoved");
     }
 
-    @SuppressWarnings("unused")
-    private void forceTransfer(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.transfer", "mf.force.*", "mf.admin"))) return;
-        if (!(args.length >= 3)) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force transfer \"faction\" \"player\""));
+    // "mf.force.transfer", "mf.force.*", "mf.admin"
+    public void transferCommand(CommandContext context) {
+        final OfflinePlayer player = context.getOfflinePlayerArgument("player");
+        final Faction faction = context.getFactionArgument("faction");
+        if (faction.isOwner(player.getUniqueId())) {
+            context.replyWith("AlertPlayerAlreadyOwner");
             return;
         }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
+        if (!faction.isMember(player.getUniqueId())) {
+            context.replyWith("AlertPlayerNotInFaction");
             return;
         }
-        final Faction faction = this.factionRepository.get(doubleQuoteArgs.get(0));
-        if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-        final UUID playerUUID = uuidChecker.findUUIDBasedOnPlayerName(doubleQuoteArgs.get(1));
-        if (playerUUID == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        final OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
-        if (!player.hasPlayedBefore()) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("PlayerNotFound")));
-            return;
-        }
-        if (faction.isOwner(playerUUID)) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("AlertPlayerAlreadyOwner")));
-            return;
-        }
-        if (!faction.isMember(playerUUID)) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("AlertPlayerNotInFaction")));
-            return;
-        }
-        if (faction.isOfficer(playerUUID)) faction.removeOfficer(playerUUID); // Remove Officer.
-        faction.setOwner(playerUUID);
+        if (faction.isOfficer(player.getUniqueId())) faction.removeOfficer(player.getUniqueId()); // Remove Officer.
+        faction.setOwner(player.getUniqueId());
 
         if (player.isOnline() && player.getPlayer() != null) {
-            player.getPlayer().sendMessage(this.translate("&a" + this.localeService.getText("OwnershipTransferred", faction.getName())));
+            player.getPlayer().sendMessage(
+                this.messageService.getLanguage().getString("OwnershipTransferred")
+                    .replace("#name#", faction.getName())
+            );
         }
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("OwnerShipTransferredTo", player.getName())));
+        context.replyWith(
+            this.constructMessage("OwnerShipTransferredTo")
+                .with("name", player.getName())
+        );
     }
 
-    @SuppressWarnings("unused")
-    private void forceRemoveVassal(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.removevassal", "mf.force.*", "mf.admin"))) return;
-        if (args.length < 3) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force removevassal \"liege\" \"vassal\""));
-            return;
-        }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        final Faction liege = this.factionRepository.get(doubleQuoteArgs.get(0));
-        final Faction vassal = this.factionRepository.get(doubleQuoteArgs.get(1));
-        if (liege != null && vassal != null) {
-            // remove vassal from liege
-            if (liege.isVassal(vassal.getID())) liege.removeVassal(vassal.getID());
-            // set liege to "none" for vassal (if faction exists)
-            if (vassal.isLiege(liege.getID())) vassal.setLiege(null);
-        }
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("Done")));
+    // "mf.force.removevassal", "mf.force.*", "mf.admin"
+    public void removeVassalCommand(CommandContext context) {
+        final Faction liege = context.getFactionArgument("liege");
+        final Faction vassal = context.getFactionArgument("vassal");
+        if (liege.isVassal(vassal.getID())) liege.removeVassal(vassal.getID());
+        if (vassal.isLiege(liege.getID())) vassal.setLiege(null);
+        context.replyWith("Done");
     }
 
-    @SuppressWarnings("unused")
-    private void forceRename(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.rename", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-        if (args.length < 3) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force rename \"faction\" \"new name\""));
-            return;
-        }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        Faction faction = this.factionRepository.get(doubleQuoteArgs.get(0));
-        if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-        final String newName = doubleQuoteArgs.get(1);
+    // "mf.force.rename", "mf.force.*", "mf.admin"
+    public void renameCommand(CommandContext context) {
+        final Faction faction = context.getFactionArgument("faction");
         final String oldName = faction.getName();
+        final String newName = context.getStringArgument("name");
         // rename faction
         if (this.persistentData.getFaction(newName) != null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionAlreadyExists")));
+            context.replyWith("FactionAlreadyExists");
             return;
         }
         final FactionRenameEvent renameEvent = new FactionRenameEvent(faction, oldName, newName);
@@ -480,7 +588,7 @@ public class ForceCommand extends SubCommand {
 
         // change name
         faction.setName(newName);
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("FactionNameChanged")));
+        context.replyWith("FactionNameChanged");
 
         // Prefix (if it was unset)
         if (faction.getPrefix().equalsIgnoreCase(oldName)) faction.setPrefix(newName);
@@ -489,61 +597,19 @@ public class ForceCommand extends SubCommand {
         this.persistentData.getLocalStorageService().save();
     }
 
-    @SuppressWarnings("unused")
-    private void forceBonusPower(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.bonuspower", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-        if (args.length < 3) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force bonuspower \"faction\" \"number\""));
-            return;
-        }
-
-        final List<String> singleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (singleQuoteArgs.size() < 2) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-
-        // get faction
-        Faction faction = this.factionRepository.get(singleQuoteArgs.get(0));
-        if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-
-        // get bonus power
-        final int bonusPower = getIntSafe(singleQuoteArgs.get(1), Integer.MIN_VALUE);
-        if (bonusPower == Integer.MIN_VALUE) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("DesiredPowerMustBeANumber")));
-            return;
-        }
-
+    // "mf.force.bonuspower", "mf.force.*", "mf.admin"
+    public void bonusPowerCommand(CommandContext context) {
+        final Faction faction = context.getFactionArgument("faction");
+        final Integer amount = context.getIntegerArgument("amount");
         // set bonus power
-        this.factionService.setBonusPower(faction, bonusPower);
-
+        this.factionService.setBonusPower(faction, amount);
         // inform sender
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("Done")));
+        context.replyWith("Done");
     }
 
-    @SuppressWarnings("unused")
-    private void forceUnlock(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
-            return;
-        }
-
-        Player player = (Player) sender;
-
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.unlock", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-
-        if (args.length > 1 && args[1].equalsIgnoreCase("cancel")) {
-            this.ephemeralData.getUnlockingPlayers().remove(player.getUniqueId());
-            this.ephemeralData.getForcefullyUnlockingPlayers().remove(player.getUniqueId());
-            player.sendMessage(this.translate("&c" + this.localeService.getText("AlertUnlockingCancelled")));
-            return;
-        }
+    // "mf.force.unlock", "mf.force.*", "mf.admin"
+    public void unlockCommand(CommandContext context) {
+        Player player = context.getPlayer();
         if (!this.ephemeralData.getUnlockingPlayers().contains(player.getUniqueId())) {
             // add player to playersAboutToLockSomething list
             this.ephemeralData.getUnlockingPlayers().add(player.getUniqueId());
@@ -557,127 +623,53 @@ public class ForceCommand extends SubCommand {
         this.ephemeralData.getLockingPlayers().remove(player.getUniqueId()); // Remove from locking
 
         // inform them they need to right-click the block that they want to lock or type /mf lock cancel to cancel it
-        player.sendMessage(this.translate("&a" + this.localeService.getText("RightClickForceUnlock")));
+        context.replyWith("RightClickForceUnlock");
     }
 
-    @SuppressWarnings("unused")
-    public void forceCreate(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
-            return;
-        }
+    public void cancelUnlockCommand(CommandContext context) {
+        this.ephemeralData.getUnlockingPlayers().remove(context.getPlayer().getUniqueId());
+        this.ephemeralData.getForcefullyUnlockingPlayers().remove(context.getPlayer().getUniqueId());
+        context.replyWith("AlertUnlockingCancelled");
+    }
 
-        Player player = (Player) sender;
-
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.create", "mf.force.*", "mf.admin"))) {
-            return;
-        }
-
-        if (args.length < 2) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force create \"faction name\""));
-            return;
-        }
-
-        final List<String> doubleQuoteArgs = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (doubleQuoteArgs.size() < 1) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-
-        String newFactionName = doubleQuoteArgs.get(0);
+    // "mf.force.create", "mf.force.*", "mf.admin"
+    public void createCommand(CommandContext context) {
+        String newFactionName = context.getStringArgument("name");
 
         if (this.factionRepository.get(newFactionName) != null) {
-            player.sendMessage(this.translate("&c" + this.localeService.getText("FactionAlreadyExists")));
+            context.replyWith("FactionAlreadyExists");
             return;
         }
 
-        this.faction = this.factionService.createFaction(newFactionName);
-        this.factionRepository.create(this.faction);
-        FactionCreateEvent createEvent = new FactionCreateEvent(this.faction, player);
+        final Faction faction = this.factionService.createFaction(newFactionName);
+        FactionCreateEvent createEvent = new FactionCreateEvent(faction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {
-            this.persistentData.addFaction(this.faction);
-            player.sendMessage(this.translate("&a" + this.localeService.getText("FactionCreated")));
+            this.factionRepository.create(faction);
+            context.replyWith("FactionCreated");
         }
     }
 
-    @SuppressWarnings("unused")
-    public void forceClaim(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
-            return;
-        }
-
-        Player p = (Player) sender;
-
-        if (!this.checkAndInformOfMissingPermissions(sender, "mf.force.claim", "mf.force.*", "mf.admin")) {
-            return;
-        }
-
-        if (args.length < 2) {
-            sender.sendMessage(this.translate("&c" + "Usage: /mf force claim \"faction\""));
-            return;
-        }
-
-        final List<String> argumentsInsideDoubleQuotes = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (argumentsInsideDoubleQuotes.size() < 1) {
-            sender.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-
-        String factionName = argumentsInsideDoubleQuotes.get(0);
-
-        Faction faction = this.factionRepository.get(factionName);
-
-        if (faction == null) {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-
-        this.persistentData.getChunkDataAccessor().forceClaimAtPlayerLocation(p, faction);
-        sender.sendMessage(this.translate("&a" + this.localeService.getText("Done")));
+    // "mf.force.claim", "mf.force.*", "mf.admin"
+    public void claimCommand(CommandContext context) {
+        final Faction faction = context.getFactionArgument("faction");
+        this.persistentData.getChunkDataAccessor().forceClaimAtPlayerLocation(context.getPlayer(), faction);
+        context.replyWith("Done");
     }
 
-    @SuppressWarnings("unused")
-    private void forceFlag(CommandSender sender, String[] args) {
-        if (!(this.checkAndInformOfMissingPermissions(sender, "mf.force.flag", "mf.force.*", "mf.admin"))) {
-            return;
+    // "mf.force.flag", "mf.force.*", "mf.admin"
+    public void flagCommand(CommandContext context) {
+        final Faction faction = context.getFactionArgument("faction");
+        final String flagName = context.getStringArgument("flag");
+        final FactionFlag flag = faction.getFlag(flagName);
+        if (flag == null) {
+            context.replyWith(
+                this.constructMessage("InvalidFactionFlag")
+                    .with("flag", flagName)
+            );
         }
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("You must be a player ");
-            return;
-        }
-
-        Player player = (Player) sender;
-
-        if (args.length < 4) {
-            player.sendMessage(this.translate("&c" + "Usage: /mf force flag \"faction\" \"flag\" \"value\""));
-            return;
-        }
-
-        final List<String> argumentsInsideDoubleQuotes = argumentParser.getArgumentsInsideDoubleQuotes(args);
-        if (argumentsInsideDoubleQuotes.size() < 3) {
-            player.sendMessage(this.translate("&c" + "Arguments must be designated in between double quotes."));
-            return;
-        }
-        Faction faction = this.factionRepository.get(argumentsInsideDoubleQuotes.get(0));
-        if (faction == null) {
-            player.sendMessage(this.translate("&c" + this.localeService.getText("FactionNotFound")));
-            return;
-        }
-        final String option = argumentsInsideDoubleQuotes.get(1);
-        final String value = argumentsInsideDoubleQuotes.get(2);
-
-        FactionFlag flag = faction.getFlag(option);
-        if (flag != null) flag.set(value);
+        final String value = context.getStringArgument("value");
         // TODO: handle errors & informing of flag being set
-    }
-
-    public boolean checkAndInformOfMissingPermissions(CommandSender sender, String... permisions) {
-        List<String> missingPermissions = this.checkPermissions(sender, permisions);
-        if (missingPermissions.size() > 0) {
-            this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
-            return false;
-        }
-        return true;
+        flag.set(value);
     }
 }

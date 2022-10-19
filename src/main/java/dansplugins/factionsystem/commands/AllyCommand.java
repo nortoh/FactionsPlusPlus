@@ -7,16 +7,17 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.annotations.PostConstruct;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class AllyCommand extends SubCommand {
+public class AllyCommand extends Command {
     protected final MessageService messageService;
     protected final PlayerService playerService;
     protected final PersistentData persistentData;
@@ -46,93 +47,85 @@ public class AllyCommand extends SubCommand {
         PersistentData persistentData,
         FactionRepository factionRepository
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("ally")
+                .withAliases(LOCALE_PREFIX + "CmdAlly")
+                .withDescription("Attempt to ally with a faction.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.ally")
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the faction to request as an ally")
+                        .expectsFaction()
+                        .consumesAllLaterArguments()
+                        .isRequired() 
+                )
+        );
         this.messageService = messageService;
         this.playerService = playerService;
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.factionRepository = factionRepository;
-        this
-            .setNames("ally", LOCALE_PREFIX + "CmdAlly")
-            .requiresPermissions("mf.ally")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOfficer();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageAlly"), "UsageAlly", false);
-            return;
-        }
-
+    public void execute(CommandContext context) {
         // retrieve the Faction from the given arguments
-        final Faction otherFaction = this.factionRepository.get(String.join(" ", args));
-
-        // the faction needs to exist to ally
-        if (otherFaction == null) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
-                    .replace("#faction#", String.join(" ", args)), true);
-            return;
-        }
+        final Faction otherFaction = context.getFactionArgument("faction name");
+        final Player player = context.getPlayer();
 
         // the faction can't be itself
-        if (otherFaction == this.faction) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("CannotAllyWithSelf"), "CannotAllyWithSelf", false);
+        if (otherFaction == context.getExecutorsFaction()) {
+            context.replyWith("CannotAllyWithSelf");
             return;
         }
 
         // no need to allow them to ally if they're already allies
-        if (this.faction.isAlly(otherFaction.getID())) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionAlreadyAlly"), "FactionAlreadyAlly", false);
+        if (context.getExecutorsFaction().isAlly(otherFaction.getID())) {
+            context.replyWith("FactionAlreadyAlly");
             return;
         }
 
-        if (this.faction.isEnemy(otherFaction.getID())) {
-            this.playerService.sendMessage(player, "&cThat faction is currently at war with your faction.", "FactionIsEnemy", false);
+        if (context.getExecutorsFaction().isEnemy(otherFaction.getID())) {
+            context.replyWith("FactionIsEnemy");
             return;
         }
 
-        if (this.faction.isRequestedAlly(otherFaction.getID())) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyRequestedAlliance"), "AlertAlreadyRequestedAlliance", false);
+        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getID())) {
+            context.replyWith("AlertAlreadyRequestedAlliance");
             return;
         }
 
         // send the request
-        this.faction.requestAlly(otherFaction.getID());
+        context.getExecutorsFaction().requestAlly(otherFaction.getID());
 
         this.messageService.messageFaction(
-                this.faction,
-                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
+                context.getExecutorsFaction(),
+                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", context.getExecutorsFaction().getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
-                        .replace("#faction_a#", this.faction.getName())
+                        .replace("#faction_a#", context.getExecutorsFaction().getName())
                         .replace("#faction_b#", otherFaction.getName())
         );
 
         this.messageService.messageFaction(
                 otherFaction,
-                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", this.faction.getName(), otherFaction.getName())),
+                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", context.getExecutorsFaction().getName(), otherFaction.getName())),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
-                        .replace("#faction_a#", this.faction.getName())
+                        .replace("#faction_a#", context.getExecutorsFaction().getName())
                         .replace("#faction_b#", otherFaction.getName())
         );
 
         // check if both factions are have requested an alliance
-        if (this.faction.isRequestedAlly(otherFaction.getID()) && otherFaction.isRequestedAlly(this.faction.getID())) {
+        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getID()) && otherFaction.isRequestedAlly(context.getExecutorsFaction().getID())) {
             // ally them
-            this.faction.addAlly(otherFaction.getID());
-            otherFaction.addAlly(this.faction.getID());
+            context.getExecutorsFaction().addAlly(otherFaction.getID());
+            otherFaction.addAlly(context.getExecutorsFaction().getID());
             // message player's faction
             this.messageService.messageFaction(
-                this.faction, 
+                context.getExecutorsFaction(), 
                 this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", otherFaction.getName())), 
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", otherFaction.getName())
             );
@@ -140,25 +133,13 @@ public class AllyCommand extends SubCommand {
             // message target faction
             this.messageService.messageFaction(
                 otherFaction, 
-                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", this.faction.getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", this.faction.getName())
+                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", context.getExecutorsFaction().getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", context.getExecutorsFaction().getName())
             );
 
             // remove alliance requests
-            this.faction.removeAllianceRequest(otherFaction.getID());
-            otherFaction.removeAllianceRequest(this.faction.getID());
+            context.getExecutorsFaction().removeAllianceRequest(otherFaction.getID());
+            otherFaction.removeAllianceRequest(context.getExecutorsFaction().getID());
         }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

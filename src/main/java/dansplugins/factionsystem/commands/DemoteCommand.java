@@ -7,17 +7,19 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,112 +30,58 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class DemoteCommand extends SubCommand {
+public class DemoteCommand extends Command {
 
     private final PlayerService playerService;
     private final LocaleService localeService;
-    private final MessageService messageService;
     private final PersistentData persistentData;
 
     @Inject
-    public DemoteCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, PersistentData persistentData) {
-        super();
+    public DemoteCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData) {
+        super(
+            new CommandBuilder()
+                .withName("demote")
+                .withAliases(LOCALE_PREFIX + "CmdDemote")
+                .withDescription("Demote an officer of your faction.")
+                .expectsPlayerExecution()
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .requiresPermissions("mf.demote")
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the officer to demote")
+                        .expectsFactionOfficer()
+                        .isRequired()
+                )
+        );
         this.localeService = localeService;
         this.playerService = playerService;
-        this.messageService = messageService;
         this.persistentData = persistentData;
-        this
-            .setNames("demote", LOCALE_PREFIX + "CmdDemote")
-            .requiresPermissions("mf.demote")
-            .requiresPlayerInFaction()
-            .isPlayerCommand()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("UsageDemote"),
-                "UsageDemote", 
-                false
-            );
+    public void execute(CommandContext context) {
+        OfflinePlayer playerToBeDemoted = context.getOfflinePlayerArgument("player");
+
+        if (playerToBeDemoted.getUniqueId().equals(context.getPlayer().getUniqueId())) {
+            context.replyWith("CannotDemoteSelf");
             return;
         }
 
-        OfflinePlayer playerToBeDemoted = null;
-        for (UUID uuid : this.faction.getMemberList()) {
-            final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-            if (offlinePlayer.getName() == null) continue;
-            if (offlinePlayer.getName().equalsIgnoreCase(args[0])) playerToBeDemoted = offlinePlayer;
-        }
-
-        if (playerToBeDemoted == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerByNameNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerByNameNotFound")).replace("#name#", args[0]), 
-                true
-            );
-            return;
-        }
-
-        if (playerToBeDemoted.getUniqueId() == player.getUniqueId()) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("CannotDemoteSelf"),
-                "CannotDemoteSelf", 
-                false
-            );
-            return;
-        }
-
-        if (!this.faction.isOfficer(playerToBeDemoted.getUniqueId())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerIsNotOfficerOfFaction"),
-                "PlayerIsNotOfficerOfFaction", 
-                false
-            );
-            return;
-        }
-
-        this.faction.removeOfficer(playerToBeDemoted.getUniqueId());
+        context.getExecutorsFaction().removeOfficer(playerToBeDemoted.getUniqueId());
 
         if (playerToBeDemoted.isOnline()) {
             this.playerService.sendMessage(
-                player,
+                playerToBeDemoted.getPlayer(),
                 "&c" + this.localeService.getText("AlertDemotion"),
                 "AlertDemotion",
                 false
             );
         }
-        this.playerService.sendMessage(
-            player,
-            "&c" + this.localeService.getText("PlayerDemoted"),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerDemoted")).replace("#name#", playerToBeDemoted.getName()), 
-            true
+        context.replyWith(
+            this.constructMessage("PlayerDemoted")
+                .with("name", playerToBeDemoted.getName())
         );
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

@@ -7,16 +7,18 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,12 +27,11 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class SwearFealtyCommand extends SubCommand {
+public class SwearFealtyCommand extends Command {
 
     private final LocaleService localeService;
     private final MessageService messageService;
     private final PersistentData persistentData;
-    private final PlayerService playerService;
     private final FactionRepository factionRepository;
 
     @Inject
@@ -38,58 +39,37 @@ public class SwearFealtyCommand extends SubCommand {
         LocaleService localeService,
         MessageService messageService,
         PersistentData persistentData,
-        PlayerService playerService,
         FactionRepository factionRepository
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("swearfelty")
+                .withAliases("sf", LOCALE_PREFIX + "CmdSwearFealty")
+                .withDescription("Swear fealty to a faction.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.swearfealty")
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the faction to swear fealty to")
+                        .expectsFaction()
+                        .consumesAllLaterArguments()
+                        .isRequired() 
+                )
+        );
         this.localeService = localeService;
         this.messageService = messageService;
         this.persistentData = persistentData;
-        this.playerService = playerService;
         this.factionRepository = factionRepository;
-        this
-            .setNames("swearfealty", "sf", LOCALE_PREFIX + "CmdSwearFealty")
-            .requiresPermissions("mf.swearfealty")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageSwearFealty"),
-                "UsageSwearFealty",
-                false
-            );
-            return;
-        }
-        final Faction target = this.factionRepository.get(String.join(" ", args));
-        if (target == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("FactionNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
-                true
-            );
-            return;
-        }
+    public void execute(CommandContext context) {
+        final Faction faction = context.getExecutorsFaction();
+        final Faction target = context.getFactionArgument("faction name");
         if (!target.hasBeenOfferedVassalization(faction.getID())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("AlertNotOfferedVassalizationBy"),
-                "AlertNotOfferedVassalizationBy",
-                false
-            );
+            context.replyWith("AlertNotOfferedVassalizationBy");
             return;
         }
         // set vassal
@@ -114,18 +94,6 @@ public class SwearFealtyCommand extends SubCommand {
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasBeenVassalized"))
                 .replace("#name#", target.getName())
         );
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
      /**

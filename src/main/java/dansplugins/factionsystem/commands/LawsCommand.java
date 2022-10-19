@@ -7,126 +7,74 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
+
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class LawsCommand extends SubCommand {
+public class LawsCommand extends Command {
 
-    private final LocaleService localeService;
-    private final PlayerService playerService;
-    private final MessageService messageService;
     private final PersistentData persistentData;
-    private final FactionRepository factionRepository;
 
     @Inject
     public LawsCommand(
-        LocaleService localeService,
-        PlayerService playerService,
-        MessageService messageService,
-        PersistentData persistentData,
-        FactionRepository factionRepository
+        PersistentData persistentData
     ) {
-        super();
-        this.localeService = localeService;
-        this.playerService = playerService;
-        this.messageService = messageService;
+        super(
+            new CommandBuilder()
+                .withName("laws")
+                .withAliases(LOCALE_PREFIX + "CmdLaws")
+                .withDescription("List the laws of your faction or another faction.")
+                .requiresPermissions("mf.laws")
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the faction to get a list of laws")
+                        .consumesAllLaterArguments()
+                        .expectsFaction()
+                )
+        );
         this.persistentData = persistentData;
-        this.factionRepository = factionRepository;
-        this
-            .setNames("laws", LOCALE_PREFIX + "CmdLaws")
-            .requiresPermissions("mf.laws")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
+    public void execute(CommandContext context) {
         final Faction target;
-        if (args.length == 0) {
-            target = this.playerService.getPlayerFaction(player);
+        if (context.getRawArguments().length == 0) {
+            target = context.getExecutorsFaction();
             if (target == null) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("AlertMustBeInFactionToUseCommand"),
-                    "AlertMustBeInFactionToUseCommand",
-                    false
-                );
+                context.replyWith("AlertMustBeInFactionToUseCommand");
                 return;
             }
             if (target.getNumLaws() == 0) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("AlertNoLaws"),
-                    "AlertNoLaws",
-                    false
-                );
+                context.replyWith("AlertNoLaws");
                 return;
             }
         } else {
-            target = this.factionRepository.get(String.join(" ", args));
-            if (target == null) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("FactionNotFound"),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
-                    true
-                );
-                return;
-            }
+            target = context.getFactionArgument("faction name");
             if (target.getNumLaws() == 0) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("FactionDoesNotHaveLaws"),
-                    "FactionDoesNotHaveLaws",
-                    false
-                );
+                context.replyWith("FactionDoesNotHaveLaws");
                 return;
             }
         }
-        this.playerService.sendMessage(
-            player,
-            "&b" + this.localeService.getText("LawsTitle", target.getName()),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("LawsTitle")).replace("#name#", target.getName()),
-            true
+        context.replyWith(
+            this.constructMessage("LawsTitle")
+                .with("name", target.getName())
         );
         IntStream.range(0, target.getNumLaws())
                 .mapToObj(i -> translate("&b" + (i + 1) + ". " + target.getLaws().get(i)))
-                .forEach(player::sendMessage);
-    }
-
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+                .forEach(context::reply);
     }
 
     /**

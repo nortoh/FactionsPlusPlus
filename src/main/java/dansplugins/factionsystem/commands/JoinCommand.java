@@ -7,19 +7,21 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionJoinEvent;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,82 +30,49 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class JoinCommand extends SubCommand {
-    private final PlayerService playerService;
+public class JoinCommand extends Command {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final Logger logger;
     private final PersistentData persistentData;
-    private final FactionRepository factionRepository;
 
     @Inject
     public JoinCommand(
-        PlayerService playerService,
         MessageService messageService,
         LocaleService localeService,
         PersistentData persistentData,
-        Logger logger,
-        FactionRepository factionRepository
+        Logger logger
     ) {
-        this.playerService = playerService;
+        super(
+            new CommandBuilder()
+                .withName("join")
+                .withAliases(LOCALE_PREFIX + "CmdJoin")
+                .withDescription("Joins a faction.")
+                .requiresPermissions("mf.join")
+                .expectsPlayerExecution()
+                .expectsNoFactionMembership()
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the faction to join")
+                        .expectsFaction()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                )
+        );
         this.messageService = messageService;
         this.localeService = localeService;
         this.persistentData = persistentData;
-        this.factionRepository = factionRepository;
         this.logger = logger;
-        this
-            .setNames("join", LOCALE_PREFIX + "CmdJoin")
-            .requiresPermissions("mf.join")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageJoin"),
-                "UsageJoin",
-                false
-            );
+    public void execute(CommandContext context) {
+        final Faction target = context.getFactionArgument("faction name");
+        if (!target.isInvited(context.getPlayer().getUniqueId())) {
+            context.replyWith("NotInvite");
             return;
         }
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("AlertAlreadyInFaction"),
-                "AlertAlreadyInFaction",
-                false
-            );
-            return;
-        }
-        final Faction target = this.factionRepository.get(String.join(" ", args));
-        if (target == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("FactionNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
-                true
-            );
-            return;
-        }
-        if (!target.isInvited(player.getUniqueId())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + "You are not invited to this faction.",
-                "NotInvite",
-                false
-            );
-            return;
-        }
-        FactionJoinEvent joinEvent = new FactionJoinEvent(faction, player);
+        FactionJoinEvent joinEvent = new FactionJoinEvent(target, context.getPlayer());
         Bukkit.getPluginManager().callEvent(joinEvent);
         if (joinEvent.isCancelled()) {
             this.logger.debug("Join event was cancelled.");
@@ -111,26 +80,14 @@ public class JoinCommand extends SubCommand {
         }
         this.messageService.messageFaction(
             target,
-            "&a" + this.localeService.getText("HasJoined", player.getName(), target.getName()),
+            "&a" + this.localeService.getText("HasJoined", context.getPlayer().getName(), target.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasJoined"))
-                .replace("#name#", player.getName())
+                .replace("#name#", context.getPlayer().getName())
                 .replace("#faction#", target.getName())
         );
-        target.addMember(player.getUniqueId());
-        target.uninvite(player.getUniqueId());
-        player.sendMessage(this.translate("&a" + this.localeService.getText("AlertJoinedFaction")));
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+        target.addMember(context.getPlayer().getUniqueId());
+        target.uninvite(context.getPlayer().getUniqueId());
+        context.replyWith("AlertJoinedFaction");
     }
 
     /**

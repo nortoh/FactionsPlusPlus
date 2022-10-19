@@ -37,7 +37,6 @@ public class LocaleService {
     public LocaleService(Provider<MedievalFactions> medievalFactions, Provider<ConfigService> configService) {
         this.medievalFactions = medievalFactions;
         this.configService = configService;
-        initializePaths();
     }
 
     private void initializePaths() {
@@ -68,7 +67,7 @@ public class LocaleService {
     }
 
     public void loadStrings() {
-
+        if (localizationFilePath == null) this.initializePaths();
         if (isFilePresent(localizationFilePath)) {
             loadFromPluginFolder();
             if (medievalFactions.get().isDebugEnabled()) {

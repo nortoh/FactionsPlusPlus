@@ -8,48 +8,30 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import dansplugins.factionsystem.MedievalFactions;
-import dansplugins.factionsystem.commands.abs.SubCommand;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
+import dansplugins.factionsystem.builders.*;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class VersionCommand extends SubCommand {
+public class VersionCommand extends Command {
     private final String pluginVerson;
 
     @Inject
     public VersionCommand(@Named("pluginVersion") String pluginVersion) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("version")
+                .withAliases(LOCALE_PREFIX + "CmdVersion")
+                .withDescription("Check plugin version.")
+                .requiresPermissions("mf.version")
+        );
         this.pluginVerson = pluginVersion;
-        this
-            .setNames("version", LOCALE_PREFIX + "CmdVersion")
-            .requiresPermissions("mf.version");
     }
-
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-        sender.sendMessage(this.translate("&bMedieval-Factions-" + this.pluginVerson));
+    
+    public void execute(CommandContext context) {
+        context.getSender().sendMessage(this.translate("&bMedieval-Factions-" + this.pluginVerson));
     }
 }

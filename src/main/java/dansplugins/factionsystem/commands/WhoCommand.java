@@ -7,17 +7,17 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import dansplugins.factionsystem.utils.extended.Messenger;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,80 +27,49 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class WhoCommand extends SubCommand {
+public class WhoCommand extends Command {
     private final PlayerService playerService;
-    private final LocaleService localeService;
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final Messenger messenger;
 
     @Inject
     public WhoCommand(
         PlayerService playerService,
-        LocaleService localeService,
-        MessageService messageService,
         PersistentData persistentData,
         Messenger messenger
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("who")
+                .withAliases(LOCALE_PREFIX + "CmdWho")
+                .withDescription("Look up a players faction.")
+                .requiresPermissions("mf.who")
+                .expectsPlayerExecution()
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the player to look up their joined faction")
+                        .expectsAnyPlayer()
+                        .isRequired()
+                )
+        );
         this.playerService = playerService;
-        this.localeService = localeService;
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.messenger = messenger;
-        this
-            .setNames("who", LOCALE_PREFIX + "CmdWho")
-            .requiresPermissions("mf.who")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageWho"), "UsageWho", false);
-            return;
-        }
-        UUIDChecker uuidChecker = new UUIDChecker();
-        final UUID targetUUID = uuidChecker.findUUIDBasedOnPlayerName(args[0]);
-        if (targetUUID == null) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("PlayerNotFound"), 
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]), 
-                true
-            );
-            return;
-        }
+    public void execute(CommandContext context) {
+        final UUID targetUUID = context.getOfflinePlayerArgument("player").getUniqueId();
         final Faction temp = this.playerService.getPlayerFaction(targetUUID);
         if (temp == null) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("PlayerIsNotInAFaction")
-                    , "PlayerIsNotInAFaction", false);
+            context.replyWith("PlayerIsNotInAFaction");
             return;
         }
         this.messenger.sendFactionInfo(
-            player, 
+            context.getPlayer(), 
             temp,
             this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getID())
         );
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

@@ -7,15 +7,15 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,70 +24,48 @@ import java.util.List;
  * @author Callum Johnson
  */
 @Singleton
-public class EditLawCommand extends SubCommand {
+public class EditLawCommand extends Command {
 
-    private final PlayerService playerService;
-    private final MessageService messageService;
     private final PersistentData persistentData;
-    private final LocaleService localeService;
 
     @Inject
-    public EditLawCommand(PlayerService playerService, LocaleService localeService, MessageService messageService, PersistentData persistentData) {
-        super();
-        this.playerService = playerService;
-        this.messageService = messageService;
+    public EditLawCommand(PersistentData persistentData) {
+        super(
+            new CommandBuilder()
+                .withName("editlaw")
+                .withAliases("el", LOCALE_PREFIX + "CmdEditLaw")
+                .withDescription("Edit an already existing law in your faction.")
+                .requiresPermissions("mf.editlaw")
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .expectsPlayerExecution()
+                .addArgument(
+                    "law to edit",
+                    new ArgumentBuilder()
+                        .setDescription("the id of the law to edit")
+                        .expectsInteger()
+                        .isRequired()
+                )
+                .addArgument(
+                    "edited law",
+                    new ArgumentBuilder()
+                        .setDescription("the edited law")
+                        .expectsString()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                )
+        );
         this.persistentData = persistentData;
-        this.localeService = localeService;
-        this
-            .setNames("editlaw", "el", LOCALE_PREFIX + "CmdEditLaw")
-            .requiresPermissions("mf.editlaw")
-            .requiresPlayerInFaction()
-            .requiresFactionOwner()
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        final int lawToEdit = this.getIntSafe(args[0], 0) - 1;
-        if (lawToEdit < 0 || lawToEdit >= this.faction.getLaws().size()) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageEditLaw"),
-                "UsageEditLaw",
-                false
-            );
+    public void execute(CommandContext context) {
+        final int lawToEdit = context.getIntegerArgument("law to edit");
+        if (lawToEdit < 0 || lawToEdit >= context.getExecutorsFaction().getLaws().size()) {
+            context.replyWith("UsageEditLaw");
             return;
         }
-        String[] arguments = new String[args.length - 1];
-        System.arraycopy(args, 1, arguments, 0, arguments.length);
-        final String editedLaw = String.join(" ", arguments);
-        if (this.faction.editLaw(lawToEdit, editedLaw)) {
-            this.playerService.sendMessage(
-                player,
-                "&a" + this.localeService.getText("LawEdited"),
-                "LawEdited",
-                false
-            );
-        }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+        final String editedLaw = context.getStringArgument("edited law");
+        if (context.getExecutorsFaction().editLaw(lawToEdit, editedLaw)) context.replyWith("LawEdited");
     }
 
     /**

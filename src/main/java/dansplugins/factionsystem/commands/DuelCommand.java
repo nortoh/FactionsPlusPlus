@@ -8,12 +8,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.Duel.DuelState;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DeathService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.PlayerService;
@@ -22,6 +22,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -29,18 +32,16 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class DuelCommand extends SubCommand {
+public class DuelCommand extends Command {
     private final EphemeralData ephemeralData;
     private final PlayerService playerService;
     private final MessageService messageService;
     private final MedievalFactions medievalFactions;
     private final LocaleService localeService;
-    private final ConfigService configService;
     private final DeathService deathService;
 
     @Inject
     public DuelCommand(
-        ConfigService configService,
         EphemeralData ephemeralData,
         LocaleService localeService,
         PlayerService playerService,
@@ -48,141 +49,148 @@ public class DuelCommand extends SubCommand {
         MedievalFactions medievalFactions,
         DeathService deathService
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("duel")
+                .withAliases("dl", LOCALE_PREFIX + "CmdDuel")
+                .withDescription("Duel other players.")
+                .requiresPermissions("mf.duel")
+                .requiresSubCommand()
+                .expectsPlayerExecution()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("challenge")
+                        .withAliases(LOCALE_PREFIX + "CmdDuelChallenge")
+                        .withDescription("Challenge a player to a duel.")
+                        .setExecutorMethod("challengeCommand")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to challenge")
+                                .expectsOnlinePlayer()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "time limit",
+                            new ArgumentBuilder()
+                                .setDescription("the time limit for the player to acccept, in seconds")
+                                .expectsInteger()
+                                .isOptional()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("accept")
+                        .withAliases(LOCALE_PREFIX + "CmdDuelAccept")
+                        .withDescription("Accept a duel request.")
+                        .setExecutorMethod("acceptCommand")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player whose duel you wish to acccept")
+                                .expectsOnlinePlayer()
+                                .isOptional()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("cancel")
+                        .withAliases(LOCALE_PREFIX + "CmdDuelCancel")
+                        .withDescription("Cancel a pending duel.")
+                        .setExecutorMethod("cancelCommand")
+                )
+        );
         this.ephemeralData = ephemeralData;
         this.playerService = playerService;
         this.messageService = messageService;
         this.medievalFactions = medievalFactions;
         this.localeService = localeService;
-        this.configService = configService;
         this.deathService = deathService;
-        this
-            .setNames("duel", "dl", LOCALE_PREFIX + "CmdDuel")
-            .requiresPermissions("mf.duel")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            sendHelp(player);
+
+    public void cancelCommand(CommandContext context) {
+        Player player = context.getPlayer();
+        if(!this.isDuelling(player)) {
+            context.replyWith("AlertNoPendingChallenges");
             return;
         }
-        if (this.safeEquals(args[0], this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdDuelChallenge"), this.messageService.getLanguage().getString("Alias.  CmdDuelChallenge")), "challenge")) {
-            if (!(args.length >= 2)) {
-                this.sendHelp(player);
-                return;
-            }
-            if (player.getName().equals(args[1])) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("CannotDuelSelf"), "CannotDuelSelf", false);
-                return;
-            }
-            if (isDuelling(player)) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyDuelingSomeone"), "AlertAlreadyDuelingSomeone", false);
-                return;
-            }
-            Player target = Bukkit.getPlayer(args[1]);
-            if (target == null) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("PlayerNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[1]), true);
-                return;
-            }
-            if (isDuelling(target)) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("PlayerAlreadyDueling", target.getName()), Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerAlreadyDueling")).replace("#name#", args[1]), true);
-                return;
-            }
-            int timeLimit = 120; // Time limit in seconds. TODO: Make config option.
-            if (args.length == 3) {
-                timeLimit = this.getIntSafe(args[2], 120);
-            }
-            inviteDuel(player, target, timeLimit);
-            this.playerService.sendMessage(player, "&b" + this.localeService.getText("AlertChallengeIssued", target.getName()), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertChallengeIssued")).replace("#name#", target.getName()), true);
-        } else if (this.safeEquals(args[0], this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdDuelAccept"), this.messageService.getLanguage().getString("Alias.CmdDuelAccept")), "accept")) {
-            if (isDuelling(player)) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertAlreadyDuelingSomeone"), "AlertAlreadyDuelingSomeone", false);
-                return;
-            }
-            final Duel duel;
-            final String notChallenged, alreadyDueling, notChallenged2, alreadyDueling2;
-            if (args.length >= 2) {
-                final Player target = Bukkit.getPlayer(args[2]);
-                if (target == null) {
-                    this.playerService.sendMessage(player, "&c" + this.localeService.getText("PlayerNotFound"), Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[1]), true);
-                    return;
-                }
-                duel = this.ephemeralData.getDuel(player, target);
-                notChallenged = this.localeService.getText("AlertNotBeenChallengedByPlayer", target.getName());
-                notChallenged2 = Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNotBeenChallengedByPlayer")).replace("#name#", target.getName());
-                alreadyDueling = this.localeService.getText("AlertAlreadyDuelingPlayer", target.getName());
-                alreadyDueling2 = Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAlreadyDuelingPlayer")).replace("#name#", target.getName());
-            } else {
-                duel = getDuel(player);
-                notChallenged = this.localeService.getText("AlertNotBeenChallenged");
-                alreadyDueling = this.localeService.getText("AlertAlreadyDueling");
-                notChallenged2 = this.messageService.getLanguage().getString("AlertNotBeenChallenged");
-                alreadyDueling2 = this.messageService.getLanguage().getString("AlertAlreadyDueling");
-            }
-            if (duel == null) {
-                this.playerService.sendMessage(player, "&c" + notChallenged, notChallenged2, true);
-                return;
-            }
-            if (duel.getStatus().equals(DuelState.DUELLING)) {
-                this.playerService.sendMessage(player, "&c" + alreadyDueling, alreadyDueling2, true);
-                return;
-            }
-            if (!(duel.isChallenged(player))) {
-                this.playerService.sendMessage(player, "&c" + notChallenged, notChallenged2, true);
-                return;
-            }
-            duel.acceptDuel();
-        } else if (this.safeEquals(args[0], this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdDuelCancel"), this.messageService.getLanguage().getString("Alias.CmdDuelCancel")), "cancel")) {
-            if (!isDuelling(player)) {
-                playerService.sendMessage(player, "&c" + this.localeService.getText("AlertNoPendingChallenges"), "AlertNoPendingChallenges", false);
-                return;
-            }
-            final Duel duel = getDuel(player);
-            if (duel == null) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertNoPendingChallenges"), "AlertNoPendingChallenges", false);
-                return;
-            }
-            if (duel.getStatus().equals(DuelState.DUELLING)) {
-                this.playerService.sendMessage(player, "c" + this.localeService.getText("CannotCancelActiveDuel"), "CannotCancelActiveDuel", false);
-                return;
-            }
-            this.ephemeralData.getDuelingPlayers().remove(duel);
-            this.playerService.sendMessage(player, "&b" + this.localeService.getText("DuelChallengeCancelled"), "DuelChallengeCancelled", false);
-        } else {
-            this.sendHelp(player);
+        final Duel duel = this.getDuel(player);
+        if (duel == null) {
+            context.replyWith("AlertNoPendingChallenges");
+            return;
         }
+        if (duel.getStatus().equals(DuelState.DUELLING)) {
+            context.replyWith("CannotCancelActiveDuel");
+            return;
+        }
+        this.ephemeralData.getDuelingPlayers().remove(duel);
+        context.replyWith("DuelChallengeCancelled");
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+    public void acceptCommand(CommandContext context) {
+        Player player = context.getPlayer();
+        if (this.isDuelling(player)) {
+            context.replyWith("AlertAlreadyDuelingSomeone");
+            return;
+        }
+        Player target = context.getPlayerArgument("player");
+        final Duel duel;
+        if (target == null) {
+            duel = this.getDuel(player);
+            target = duel.getChallenger();
+        } else {
+            duel = this.ephemeralData.getDuel(player, target);
+        }
+        if (duel == null) {
+            context.replyWith(
+                this.constructMessage("AlertNotBeenChallengedByPlayer")
+                    .with("name", target.getName())
+            );
+            return;
+        }
+        if (duel.getStatus().equals(DuelState.DUELLING)) {
+            context.replyWith(
+                this.constructMessage("AlertAlreadyDuelingPlayer")
+                    .with("name", target.getName())
+            );
+            return;
+        }
+        if (!duel.isChallenged(player)) {
+            context.replyWith(
+                this.constructMessage("AlertNotBeenChallengedByPlayer")
+                    .with("name", target.getName())
+            );
+        }
+        duel.acceptDuel();
     }
 
-    private void sendHelp(CommandSender sender) {
-        if (!this.configService.getBoolean("useNewLanguageFile")) {
-            sender.sendMessage("&b" + this.localeService.getText("SubCommands"));
-            sender.sendMessage("&b" + this.localeService.getText("HelpDuelChallenge"));
-            sender.sendMessage("&b" + this.localeService.getText("HelpDuelAccept"));
-            sender.sendMessage("&b" + this.localeService.getText("HelpDuelCancel"));
-        } else {
-            this.playerService.sendMultipleMessages(sender, this.messageService.getLanguage().getStringList("DuelHelp"));
+    public void challengeCommand(CommandContext context) {
+        Player target = context.getPlayerArgument("player");
+        Player player = context.getPlayer();
+        if (target == player) {
+            context.replyWith("CannotDuelSelf");
+            return;
         }
+        if (this.isDuelling(player)) {
+            context.replyWith("AlertAlreadyDuelingSomeone");
+            return;
+        }
+        if (this.isDuelling(target)) {
+            context.replyWith(
+                this.constructMessage("PlayerAlreadyDueling")
+                    .with("name", target.getName())
+            );
+            return;
+        }
+        Integer timeLimit = context.getIntegerArgument("time limit");
+        if (timeLimit == null) timeLimit = 120;
+        timeLimit = Math.min(timeLimit, 120); // TODO: make maximum time configurable
+        this.inviteDuel(player, target, timeLimit);
+        context.replyWith(
+            this.constructMessage("AlertChallengeIssued")
+                .with("name", target.getName())
+        );
     }
 
     private Duel getDuel(Player player) {
