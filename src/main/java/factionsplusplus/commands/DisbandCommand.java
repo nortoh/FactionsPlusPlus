@@ -14,7 +14,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.services.DynmapIntegrationService;
+import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.builders.*;
@@ -35,17 +35,17 @@ public class DisbandCommand extends Command {
 
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
-    private final DynmapIntegrationService dynmapService;
     private final Logger logger;
     private final FactionRepository factionRepository;
+    private final FactionService factionService;
 
     @Inject
     public DisbandCommand(
         Logger logger,
         PersistentData persistentData,
-        DynmapIntegrationService dynmapService,
         EphemeralData ephemeralData,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        FactionService factionService
     ) {
         super(
             new CommandBuilder()
@@ -64,9 +64,9 @@ public class DisbandCommand extends Command {
         );
         this.logger = logger;
         this.persistentData = persistentData;
-        this.dynmapService = dynmapService;
         this.ephemeralData = ephemeralData;
         this.factionRepository = factionRepository;
+        this.factionService = factionService;
     }
 
     public void execute(CommandContext context) {
@@ -118,17 +118,7 @@ public class DisbandCommand extends Command {
             this.logger.debug("Disband event was cancelled.");
             return;
         }
-
-        // remove claimed land objects associated with this faction
-        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());
-        this.dynmapService.updateClaimsIfAble();
-
-        // remove locks associated with this faction
-        this.persistentData.removeAllLocks(faction.getID());
-
-        this.persistentData.removePoliticalTiesToFaction(faction);
-
-        this.factionRepository.delete(faction);
+        this.factionService.removeFaction(faction);
     }
 
     /**

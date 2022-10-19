@@ -47,6 +47,7 @@ public class PowerCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the player to check power for")
                         .expectsAnyPlayer()
+                        .isOptional()
                 )
         );
         this.persistentData = persistentData;

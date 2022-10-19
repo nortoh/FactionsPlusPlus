@@ -216,21 +216,6 @@ public class ForceCommand extends Command {
                 )
                 .addSubCommand(
                     new CommandBuilder()
-                        .withName("renounce")
-                        .withAliases(LOCALE_PREFIX + "CmdForceRenounce")
-                        .withDescription("Forcefully renounces a faction.")
-                        .setExecutorMethod("renounceCommand")
-                        .requiresPermissions("mf.force.renounce", "mf.force.*", "mf.admin")
-                        .addArgument(
-                            "faction",
-                            new ArgumentBuilder()
-                                .setDescription("the faction to renounce")
-                                .expectsFaction()
-                                .isRequired()
-                        )
-                )
-                .addSubCommand(
-                    new CommandBuilder()
                         .withName("removevassal")
                         .withAliases(LOCALE_PREFIX + "CmdForceRemoveVassal")
                         .withDescription("Forcefully removes a vassal from a liege.")

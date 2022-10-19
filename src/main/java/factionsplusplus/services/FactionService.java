@@ -6,29 +6,47 @@ import com.google.inject.Singleton;
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.LockedBlock;
+import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.repositories.PlayerRecordRepository;
+import factionsplusplus.repositories.ClaimedChunkRepository;
+import factionsplusplus.repositories.LockedBlockRepository;
+import factionsplusplus.services.DynmapIntegrationService;
 
+import javax.inject.Provider;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.UUID;
+import java.util.Map;
+
 @Singleton
 public class FactionService {
     private final ConfigService configService;
     private final FactionRepository factionRepository;
     private final PlayerRecordRepository playerRecordRepository;
     private final PlayerService playerService;
+    private final Provider<DynmapIntegrationService> dynmapService;
+    private final LockedBlockRepository lockedBlockRepository;
+    private final ClaimedChunkRepository claimedChunkRepository;
 
     @Inject
     public FactionService(
         ConfigService configService,
         FactionRepository factionRepository,
         PlayerRecordRepository playerRecordRepository,
-        PlayerService playerService
+        PlayerService playerService,
+        Provider<DynmapIntegrationService> dynmapService,
+        LockedBlockRepository lockedBlockRepository,
+        ClaimedChunkRepository claimedChunkRepository
     ) {
         this.configService = configService;
         this.factionRepository = factionRepository;
         this.playerRecordRepository = playerRecordRepository;
         this.playerService = playerService;
+        this.dynmapService = dynmapService;
+        this.lockedBlockRepository = lockedBlockRepository;
+        this.claimedChunkRepository = claimedChunkRepository;
     }
 
     public void setBonusPower(Faction faction, int power) {
@@ -132,4 +150,42 @@ public class FactionService {
     public Faction createFaction(String factionName) {
         return new Faction(factionName, this.getDefaultFlags());
     }
+
+    public void removeFaction(Faction faction) {
+        this.unclaimAllClaimedChunks(faction);
+        this.removeAllOwnedLocks(faction);
+        this.removePoliticalTiesToFaction(faction);
+        this.factionRepository.delete(faction);
+    }
+
+    public void unclaimAllClaimedChunks(Faction faction) {
+        this.removeAllClaimedChunks(faction);
+        this.dynmapService.get().updateClaimsIfAble();
+    }
+
+    public void removePoliticalTiesToFaction(Faction targetFaction) {
+        for (Map.Entry<UUID, Faction> entry : this.factionRepository.all().entrySet()) {
+            Faction faction = entry.getValue();
+            faction.removeAlly(targetFaction.getID());
+            faction.removeEnemy(targetFaction.getID());
+            faction.unsetIfLiege(targetFaction.getID());
+            faction.removeVassal(targetFaction.getID());
+        }
+    }
+    public void removeAllClaimedChunks(Faction faction) {
+        Iterator<ClaimedChunk> itr = this.claimedChunkRepository.all().iterator();
+        while (itr.hasNext()) {
+            ClaimedChunk currentChunk = itr.next();
+            if (currentChunk.getHolder().equals(faction.getID())) itr.remove();
+        }
+    }
+    public void removeAllOwnedLocks(Faction faction) {
+        Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
+
+        while (itr.hasNext()) {
+            LockedBlock currentBlock = itr.next();
+            if (currentBlock.getFactionID().equals(faction.getID())) itr.remove();
+        }
+    }
+
 }

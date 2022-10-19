@@ -27,6 +27,9 @@ import preponderous.ponder.minecraft.bukkit.tools.EventHandlerRegistry;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import javax.inject.Provider;
+
+import javax.swing.Action;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -42,6 +45,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;
     @Inject private LocaleService localeService;
+    @Inject private Provider<DynmapIntegrationService> dynmapService;
 
     private Injector injector;
 
@@ -156,7 +160,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     }
 
     private boolean configFileExists() {
-        return new File("./plugins/MedievalFactions/config.yml").exists();
+        return new File(getDataFolder(), "config.yml").exists();
     }
 
     public String getStoragePath() {
@@ -209,6 +213,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     private void handleIntegrations() {
         this.handlebStatsIntegration();
         this.handlePlaceholdersIntegration();
+        this.dynmapService.get().updateClaimsIfAble();
     }
 
     private void handlebStatsIntegration() {

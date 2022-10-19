@@ -28,7 +28,6 @@ import factionsplusplus.repositories.WarRepository;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
 import factionsplusplus.services.ConfigService;
-import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
@@ -77,7 +76,6 @@ public class PersistentData {
     private final ChunkDataAccessor chunkDataAccessor = new ChunkDataAccessor();
     private final LocalStorageService localStorageService = new LocalStorageService();
 
-    private final DynmapIntegrationService dynmapService;
     private final BlockChecker blockChecker;
 
     private final FactionService factionService;
@@ -93,7 +91,6 @@ public class PersistentData {
         Logger logger,
         EphemeralData ephemeralData,
         BlockChecker blockChecker,
-        DynmapIntegrationService dynmapService,
         InteractionAccessChecker interactionAccessChecker,
         FactionRepository factionRepository,
         ClaimedChunkRepository claimedChunkRepository,
@@ -110,7 +107,6 @@ public class PersistentData {
         this.messenger = messenger;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
-        this.dynmapService = dynmapService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.blockChecker = blockChecker;
         this.factionRepository = factionRepository;
@@ -307,21 +303,6 @@ public class PersistentData {
         return false;
     }
 
-    public void removeAllLocks(UUID factionUUID) {
-        Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
-
-        while (itr.hasNext()) {
-            LockedBlock currentBlock = itr.next();
-            if (currentBlock.getFactionID().equals(factionUUID)) {
-                try {
-                    itr.remove();
-                } catch (Exception e) {
-                    System.out.println("An error has occurred during lock removal.");
-                }
-            }
-        }
-    }
-
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
         for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
             PlayerRecord record = this.getPlayerRecord(player.getUniqueId());
@@ -335,16 +316,6 @@ public class PersistentData {
 
     public void addFaction(Faction faction) {
         this.factionRepository.create(faction);
-    }
-
-    public void removePoliticalTiesToFaction(Faction targetFaction) {
-        for (Map.Entry<UUID, Faction> entry : this.factionRepository.all().entrySet()) {
-            Faction faction = entry.getValue();
-            faction.removeAlly(targetFaction.getID());
-            faction.removeEnemy(targetFaction.getID());
-            faction.unsetIfLiege(targetFaction.getID());
-            faction.removeVassal(targetFaction.getID());
-        }
     }
 
     public List<ClaimedChunk> getChunksClaimedByFaction(UUID factionUUID) {
@@ -439,38 +410,20 @@ public class PersistentData {
     }
 
     public void disbandAllZeroPowerFactions() {
-        ArrayList<String> factionsToDisband = new ArrayList<>();
+        ArrayList<Faction> factionsToDisband = new ArrayList<>();
         for (Faction faction : this.factionRepository.all().values()) {
             if (this.factionService.getCumulativePowerLevel(faction) == 0) {
-                factionsToDisband.add(faction.getName());
+                factionsToDisband.add(faction);
             }
         }
 
-        for (String factionName : factionsToDisband) {
+        for (Faction faction : factionsToDisband) {
             this.messageService.sendFactionLocalizedMessage(
-                this.factionRepository.get(factionName), 
+                faction, 
                 "AlertDisbandmentDueToZeroPower"
             );
-            removeFaction(factionName);
+            this.factionService.removeFaction(faction);
             // TODO: log here?
-        }
-    }
-
-    private void removeFaction(String name) {
-
-        Faction factionToRemove = this.factionRepository.get(name);
-
-        if (factionToRemove != null) {
-            // remove claimed land objects associated with this faction
-            getChunkDataAccessor().removeAllClaimedChunks(factionToRemove.getID());
-            this.dynmapService.updateClaimsIfAble();
-
-            // remove locks associated with this faction
-            removeAllLocks(factionToRemove.getID());
-
-            removePoliticalTiesToFaction(factionToRemove);
-
-            this.factionRepository.delete(name);
         }
     }
 
@@ -744,6 +697,7 @@ public class PersistentData {
                     counter++;
                 }
             }
+            System.out.println("getChunksClaimed: "+counter);
             return counter;
         }
 
@@ -914,6 +868,7 @@ public class PersistentData {
             if (configService.getBoolean("limitLand")) {
                 // if at demesne limit
                 if (!(getChunksClaimedByFaction(claimantsFaction.getID()) < factionService.getCumulativePowerLevel(claimantsFaction))) {
+                    System.out.println("Limit reached");
                     messageService.sendLocalizedMessage(claimant, "AlertReachedDemesne");
                     return;
                 }

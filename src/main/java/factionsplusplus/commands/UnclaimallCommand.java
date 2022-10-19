@@ -12,7 +12,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.services.DynmapIntegrationService;
+import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 
@@ -29,13 +29,13 @@ import java.util.List;
 public class UnclaimallCommand extends Command {
 
     private PersistentData persistentData;
-    private DynmapIntegrationService dynmapService;
     private FactionRepository factionRepository;
+    private FactionService factionService;
 
     @Inject
     public UnclaimallCommand(
         PersistentData persistentData,
-        DynmapIntegrationService dynmapService,
+        FactionService factionService,
         FactionRepository factionRepository
     ) {
         super(
@@ -54,7 +54,7 @@ public class UnclaimallCommand extends Command {
                 )
         );
         this.persistentData = persistentData;
-        this.dynmapService = dynmapService;
+        this.factionService = factionService;
         this.factionRepository = factionRepository;
     }
 
@@ -83,15 +83,14 @@ public class UnclaimallCommand extends Command {
         context.messageFaction(faction, "AlertFactionHomeRemoved");
 
         // remove claimed chunks
-        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());
-        this.dynmapService.updateClaimsIfAble();
+        this.factionService.unclaimAllClaimedChunks(faction);
         context.replyWith(
             this.constructMessage("AllLandUnclaimedFrom")
                 .with("name", faction.getName())
         );
 
         // remove locks associated with this faction
-        this.persistentData.removeAllLocks(faction.getID());
+        this.factionService.removeAllOwnedLocks(faction);
     }
 
     /**

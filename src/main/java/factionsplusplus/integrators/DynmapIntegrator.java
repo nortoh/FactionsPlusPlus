@@ -29,7 +29,6 @@ import static org.bukkit.Bukkit.getServer;
  */
 @Singleton
 public class DynmapIntegrator {
-    public static boolean dynmapInitialized = false;
     private final Logger logger;
     private final LocaleService localeService;
     private final FactionsPlusPlus factionsPlusPlus;
@@ -88,10 +87,6 @@ public class DynmapIntegrator {
         }
     }
 
-    public static boolean hasDynmap() {
-        return dynmapInitialized;
-    }
-
     /***
      * Scheduled task that checks to see if there are changes to the claims that need
      * to be rendered on dynmap.
@@ -126,10 +121,7 @@ public class DynmapIntegrator {
         if (this.isDynmapMissing()) {
             return;
         }
-
-        if (DynmapIntegrator.hasDynmap()) {
-            updateClaimsAreaMarkers = true;
-        }
+        updateClaimsAreaMarkers = true;
     }
 
     private void initializeMarkerSets() {
@@ -199,11 +191,12 @@ public class DynmapIntegrator {
         for (Faction f : this.persistentData.getFactions()) {
             UUID liegeID = this.factionService.getTopLiege(f);
             Faction liege = this.persistentData.getFactionByID(liegeID);
-            String liegeName = liege.getName();
+            String liegeName;
             String liegeColor;
             String popupText;
             // If there's no liege, then f is the liege.
             if (liege != null) {
+                liegeName = liege.getName();
                 liegeColor = liege.getFlag("dynmapTerritoryColor").toString();
                 popupText = this.buildNationPopupText(liege);
             } else {
@@ -229,7 +222,6 @@ public class DynmapIntegrator {
     /* Update Faction information */
     private void dynmapUpdateFactions() {
         // Claims Layer
-
         Map<String, AreaMarker> newmap = new HashMap<>(); /* Build new map */
         Map<String, Marker> newmark = new HashMap<>(); /* Build new map */
 
