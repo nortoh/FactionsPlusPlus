@@ -25,6 +25,7 @@ import dansplugins.factionsystem.builders.ArgumentBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -67,7 +68,7 @@ public class MakePeaceCommand extends Command {
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
-
+    
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         final Faction faction = context.getExecutorsFaction();
@@ -75,11 +76,11 @@ public class MakePeaceCommand extends Command {
             context.replyWith("CannotMakePeaceWithSelf");
             return;
         }
-        if (faction.isTruceRequested(target.getName())) {
+        if (faction.isTruceRequested(target.getID())) {
             context.replyWith("AlertAlreadyRequestedPeace");
             return;
         }
-        faction.requestTruce(target.getName());
+        faction.requestTruce(target.getID());
         context.replyWith(
             this.constructMessage("AttemptedPeace")
                 .with("name", target.getName())
@@ -91,17 +92,17 @@ public class MakePeaceCommand extends Command {
                 .replace("#f1#", faction.getName())
                 .replace("#f2#", target.getName())
         );
-        if (faction.isTruceRequested(target.getName()) && target.isTruceRequested(faction.getName())) {
+        if (faction.isTruceRequested(target.getID()) && target.isTruceRequested(faction.getID())) {
             FactionWarEndEvent warEndEvent = new FactionWarEndEvent(faction, target);
             Bukkit.getPluginManager().callEvent(warEndEvent);
             if (!warEndEvent.isCancelled()) {
                 // remove requests in case war breaks out again, and they need to make peace again
-                faction.removeRequestedTruce(target.getName());
-                target.removeRequestedTruce(faction.getName());
+                faction.removeRequestedTruce(target.getID());
+                target.removeRequestedTruce(faction.getID());
 
                 // make peace between factions
-                faction.removeEnemy(target.getName());
-                target.removeEnemy(faction.getName());
+                faction.removeEnemy(target.getID());
+                target.removeEnemy(faction.getID());
 
                 // TODO: set active flag in war to false
 
@@ -117,11 +118,11 @@ public class MakePeaceCommand extends Command {
 
         // if faction was a liege, then make peace with all of their vassals as well
         if (target.isLiege()) {
-            for (String vassalName : target.getVassals()) {
-                faction.removeEnemy(vassalName);
+            for (UUID vassalID : target.getVassals()) {
+                faction.removeEnemy(vassalID);
 
-                Faction vassal = this.factionRepository.get(vassalName);
-                vassal.removeEnemy(faction.getName());
+                Faction vassal = this.factionRepository.getByID(vassalName);
+                vassal.removeEnemy(faction.getID());
             }
         }
     }
@@ -136,7 +137,8 @@ public class MakePeaceCommand extends Command {
     public List<String> handleTabComplete(Player player, String[] args) {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> factionEnemies = playerFaction.getEnemyFactions();
+            ArrayList<String> factionEnemies = new ArrayList<>();
+            for (UUID factionID : playerFaction.getEnemyFactions()) factionEnemies.add(this.factionRepository.getByID(factionID).getName());
             return TabCompleteTools.filterStartingWith(args[0], factionEnemies);
         }
         return null;

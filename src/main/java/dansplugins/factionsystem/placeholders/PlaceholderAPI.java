@@ -132,7 +132,8 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_liege")) {
             // The Liege for the Faction or N/A that the Player is in.
-            return faction.hasLiege() ? faction.getLiege() : "N/A";
+
+            return faction.hasLiege() ? this.dataService.getFactionByID(faction.getLiege()).getName() : "N/A";
         }
         if (id.equalsIgnoreCase("faction_leader")) {
             // The Leader of the Faction that the Player is in.
@@ -201,7 +202,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             // The Faction at the Player's current location. (Wilderness if nothing).
             ClaimedChunk claim = persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk());
             if (claim == null) return "Wilderness";
-            else return claim.getHolder();
+            else return this.dataService.getFactionByID(claim.getHolder()).getName();
         }
 
         return null; // This is required by PlaceholderAPI if there is no matching Placeholder.

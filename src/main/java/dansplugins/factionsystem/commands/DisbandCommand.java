@@ -138,13 +138,13 @@ public class DisbandCommand extends Command {
         }
 
         // remove claimed land objects associated with this faction
-        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(nameOfFactionToRemove);
+        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());
         this.dynmapService.updateClaimsIfAble();
 
         // remove locks associated with this faction
-        this.persistentData.removeAllLocks(nameOfFactionToRemove);
+        this.persistentData.removeAllLocks(faction.getID());
 
-        this.persistentData.removePoliticalTiesToFaction(nameOfFactionToRemove);
+        this.persistentData.removePoliticalTiesToFaction(faction);
 
         this.factionRepository.delete(faction);
     }

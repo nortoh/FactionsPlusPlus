@@ -68,7 +68,7 @@ public class WhoCommand extends Command {
         this.messenger.sendFactionInfo(
             context.getPlayer(), 
             temp,
-            this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())
+            this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getID())
         );
     }
 

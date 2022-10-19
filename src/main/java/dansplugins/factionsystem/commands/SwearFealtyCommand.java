@@ -68,16 +68,16 @@ public class SwearFealtyCommand extends Command {
     public void execute(CommandContext context) {
         final Faction faction = context.getExecutorsFaction();
         final Faction target = context.getFactionArgument("faction name");
-        if (!target.hasBeenOfferedVassalization(faction.getName())) {
+        if (!target.hasBeenOfferedVassalization(faction.getID())) {
             context.replyWith("AlertNotOfferedVassalizationBy");
             return;
         }
         // set vassal
-        target.addVassal(faction.getName());
-        target.removeAttemptedVassalization(faction.getName());
+        target.addVassal(faction.getID());
+        target.removeAttemptedVassalization(faction.getID());
 
         // set liege
-        faction.setLiege(target.getName());
+        faction.setLiege(target.getID());
 
         // inform target faction that they have a new vassal
         this.messageService.messageFaction(

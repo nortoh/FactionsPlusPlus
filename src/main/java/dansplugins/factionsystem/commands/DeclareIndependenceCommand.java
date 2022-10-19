@@ -71,11 +71,11 @@ public class DeclareIndependenceCommand extends Command {
             return;
         }
 
-        final Faction liege = this.factionRepository.get(faction.getLiege());
+        final Faction liege = this.factionRepository.getByID(faction.getLiege());
 
         // break vassal agreement.
-        liege.removeVassal(faction.getName());
-        faction.setLiege("none");
+        liege.removeVassal(faction.getID());
+        faction.setLiege(null);
 
         if (!this.configService.getBoolean("allowNeutrality") || (!(faction.getFlag("neutral").toBoolean()) && !(liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
@@ -83,13 +83,13 @@ public class DeclareIndependenceCommand extends Command {
             Bukkit.getPluginManager().callEvent(warStartEvent);
 
             if (!warStartEvent.isCancelled()) {
-                faction.addEnemy(liege.getName());
-                liege.addEnemy(faction.getName());
+                faction.addEnemy(liege.getID());
+                liege.addEnemy(faction.getID());
 
                 // break alliance if allied
-                if (faction.isAlly(liege.getName())) {
-                    faction.removeAlly(liege.getName());
-                    liege.removeAlly(faction.getName());
+                if (faction.isAlly(liege.getID())) {
+                    faction.removeAlly(liege.getID());
+                    liege.removeAlly(faction.getID());
                 }
             }
         }

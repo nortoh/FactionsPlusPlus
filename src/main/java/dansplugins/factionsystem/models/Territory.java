@@ -4,6 +4,7 @@
  */
 package dansplugins.factionsystem.models;
 
+import java.util.UUID;
 import com.google.gson.annotations.Expose;
 
 /**
@@ -11,13 +12,13 @@ import com.google.gson.annotations.Expose;
  */
 public class Territory {
     @Expose
-    protected String holder;
+    protected UUID holder;
 
-    public String getHolder() {
-        return holder;
+    public UUID getHolder() {
+        return this.holder;
     }
 
-    public void setHolder(String newHolder) {
-        holder = newHolder;
+    public void setHolder(UUID newHolder) {
+        this.holder = newHolder;
     }
 }

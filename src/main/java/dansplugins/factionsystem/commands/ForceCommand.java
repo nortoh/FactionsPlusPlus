@@ -407,8 +407,8 @@ public class ForceCommand extends Command {
         FactionWarEndEvent warEndEvent = new FactionWarEndEvent(former, latter);
         Bukkit.getPluginManager().callEvent(warEndEvent);
         if (!warEndEvent.isCancelled()) {
-            if (former.isEnemy(latter.getName())) former.removeEnemy(latter.getName());
-            if (latter.isEnemy(former.getName())) latter.removeEnemy(former.getName());
+            if (former.isEnemy(latter.getID())) former.removeEnemy(latter.getID());
+            if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
 
             // announce peace to all players on server.
             this.messageService.messageServer(
@@ -521,8 +521,8 @@ public class ForceCommand extends Command {
         final Faction faction = context.getFactionArgument("faction");
         long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(faction.getName());
 
-        if (!faction.getLiege().equalsIgnoreCase("none")) {
-            faction.setLiege("none");
+        if (faction.getLiege() != null) {
+            faction.setLiege(null);
             changes++;
         }
         if (faction.getNumVassals() != 0) {
@@ -564,8 +564,8 @@ public class ForceCommand extends Command {
     public void removeVassalCommand(CommandContext context) {
         final Faction liege = context.getFactionArgument("liege");
         final Faction vassal = context.getFactionArgument("vassal");
-        if (liege.isVassal(vassal.getName())) liege.removeVassal(vassal.getName());
-        if (vassal.isLiege(liege.getName())) vassal.setLiege("none");
+        if (liege.isVassal(vassal.getID())) liege.removeVassal(vassal.getID());
+        if (vassal.isLiege(liege.getID())) vassal.setLiege(null);
         context.replyWith("Done");
     }
 
@@ -589,8 +589,6 @@ public class ForceCommand extends Command {
         // change name
         faction.setName(newName);
         context.replyWith("FactionNameChanged");
-
-        this.persistentData.updateFactionReferencesDueToNameChange(oldName, newName);
 
         // Prefix (if it was unset)
         if (faction.getPrefix().equalsIgnoreCase(oldName)) faction.setPrefix(newName);

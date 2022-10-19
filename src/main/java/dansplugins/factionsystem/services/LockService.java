@@ -52,7 +52,7 @@ public class LockService {
         if (chunk != null) {
 
             // if claimed by other faction
-            if (!chunk.getHolder().equalsIgnoreCase(persistentData.getPlayersFaction(player.getUniqueId()).getName())) {
+            if (!chunk.getHolder().equals(persistentData.getPlayersFaction(player.getUniqueId()).getID())) {
                 playerService.sendMessage(player, ChatColor.RED + localeService.get("CanOnlyLockInFactionTerritory"), "CanOnlyLockInFactionTerritory", false);
                 event.setCancelled(true);
                 return;
@@ -77,7 +77,7 @@ public class LockService {
                         Block leftChest = ((Chest) doubleChest.getLeftSide()).getBlock();
                         Block rightChest = ((Chest) doubleChest.getRightSide()).getBlock();
 
-                        LockedBlock left = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getName(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
+                        LockedBlock left = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
                         persistentData.addLockedBlock(left);
 
                         lock1x1Block(player, rightChest);
@@ -90,16 +90,16 @@ public class LockService {
                 // door multi-lock (specific to doors because they have two block heights but you could have clicked either block).
                 if (blockChecker.isDoor(clickedBlock)) {
                     // lock initial block
-                    LockedBlock initial = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getName(), clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ(), clickedBlock.getWorld().getName());
+                    LockedBlock initial = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ(), clickedBlock.getWorld().getName());
                     persistentData.addLockedBlock(initial);
                     // check block above
                     if (blockChecker.isDoor(clickedBlock.getWorld().getBlockAt(clickedBlock.getX(), clickedBlock.getY() + 1, clickedBlock.getZ()))) {
-                        LockedBlock newLockedBlock2 = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getName(), clickedBlock.getX(), clickedBlock.getY() + 1, clickedBlock.getZ(), clickedBlock.getWorld().getName());
+                        LockedBlock newLockedBlock2 = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), clickedBlock.getX(), clickedBlock.getY() + 1, clickedBlock.getZ(), clickedBlock.getWorld().getName());
                         persistentData.addLockedBlock(newLockedBlock2);
                     }
                     // check block below
                     if (blockChecker.isDoor(clickedBlock.getWorld().getBlockAt(clickedBlock.getX(), clickedBlock.getY() - 1, clickedBlock.getZ()))) {
-                        LockedBlock newLockedBlock2 = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getName(), clickedBlock.getX(), clickedBlock.getY() - 1, clickedBlock.getZ(), clickedBlock.getWorld().getName());
+                        LockedBlock newLockedBlock2 = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), clickedBlock.getX(), clickedBlock.getY() - 1, clickedBlock.getZ(), clickedBlock.getWorld().getName());
                         persistentData.addLockedBlock(newLockedBlock2);
                     }
 
@@ -123,7 +123,7 @@ public class LockService {
     }
 
     private void lock1x1Block(Player player, Block clickedBlock) {
-        LockedBlock block = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getName(), clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ(), clickedBlock.getWorld().getName());
+        LockedBlock block = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ(), clickedBlock.getWorld().getName());
         persistentData.addLockedBlock(block);
         playerService.sendMessage(player, ChatColor.GREEN + localeService.get("Locked"), "Locked", false);
         ephemeralData.getLockingPlayers().remove(player.getUniqueId());

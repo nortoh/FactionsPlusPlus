@@ -95,7 +95,7 @@ public class UnclaimallCommand extends Command {
         );
 
         // remove claimed chunks
-        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getName());
+        this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());
         this.dynmapService.updateClaimsIfAble();
         context.replyWith(
             this.constructMessage("AllLandUnclaimedFrom")
@@ -103,7 +103,7 @@ public class UnclaimallCommand extends Command {
         );
 
         // remove locks associated with this faction
-        this.persistentData.removeAllLocks(faction.getName());
+        this.persistentData.removeAllLocks(faction.getID());
     }
 
     /**

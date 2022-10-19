@@ -63,8 +63,9 @@ public class GrantIndependenceCommand extends Command {
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
-        target.setLiege("none");
+        target.setLiege(null);
         context.getExecutorsFaction().removeVassal(target.getName());
+        
         // inform all players in that faction that they are now independent
         this.messageService.messageFaction(
             target,
@@ -91,7 +92,9 @@ public class GrantIndependenceCommand extends Command {
     public List<String> handleTabComplete(Player player, String[] args) {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            return TabCompleteTools.filterStartingWith(args[0], playerFaction.getVassals());
+            ArrayList<String> vassalNames = new ArrayList<>();
+            for (UUID factionUUID : playerFaction.getVassals()) vassalNames.add(this.factionRepository.getByID(factionUUID).getName());
+            return TabCompleteTools.filterStartingWith(args[0], vassalNames);
         }
         return null;
     }

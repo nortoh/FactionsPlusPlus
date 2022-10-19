@@ -24,7 +24,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.Objects;
-
+import java.util.UUID;
 import static org.bukkit.Bukkit.getServer;
 
 /**
@@ -67,8 +67,8 @@ public class MoveHandler implements Listener {
             this.initiateAutoclaimCheck(player);
 
             if (this.newChunkIsClaimedAndOldChunkWasNot(event)) {
-                String factionName = this.persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder();
-                Faction holder = this.persistentData.getFaction(factionName);
+                UUID factionUUID = this.persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder();
+                Faction holder = this.persistentData.getFactionByID(factionUUID);
                 this.territoryOwnerNotifier.sendPlayerTerritoryAlert(player, holder);
                 return;
             }
@@ -79,8 +79,8 @@ public class MoveHandler implements Listener {
             }
 
             if (this.newChunkIsClaimedAndOldChunkWasAlsoClaimed(event) && this.chunkHoldersAreNotEqual(event)) {
-                String factionName = this.persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder();
-                Faction holder = this.persistentData.getFaction(factionName);
+                UUID factionUUID = this.persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder();
+                Faction holder = this.persistentData.getFactionByID(factionUUID);
                 this.territoryOwnerNotifier.sendPlayerTerritoryAlert(player, holder);
             }
 
@@ -123,7 +123,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean notAtDemesneLimit(Faction faction) {
-        return persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getName()) < this.factionService.getCumulativePowerLevel(faction);
+        return persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getID()) < this.factionService.getCumulativePowerLevel(faction);
     }
 
     private void scheduleClaiming(Player player, Faction faction) {
@@ -147,7 +147,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean chunkHoldersAreNotEqual(PlayerMoveEvent event) {
-        return !(this.persistentData.getChunkDataAccessor().getClaimedChunk(event.getFrom().getChunk()).getHolder().equalsIgnoreCase(this.persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder()));
+        return !(this.persistentData.getChunkDataAccessor().getClaimedChunk(event.getFrom().getChunk()).getHolder().equals(this.persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder()));
     }
 
     private boolean playerMovedFromUnclaimedLandIntoClaimedLand(ClaimedChunk fromChunk, ClaimedChunk toChunk) {
@@ -155,7 +155,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean holdersOfChunksAreDifferent(ClaimedChunk fromChunk, ClaimedChunk toChunk) {
-        return !fromChunk.getHolder().equalsIgnoreCase(toChunk.getHolder());
+        return !fromChunk.getHolder().equals(toChunk.getHolder());
     }
 
     private boolean playerMovedFromClaimedLandIntoClaimedLand(ClaimedChunk fromChunk, ClaimedChunk toChunk) {

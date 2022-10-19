@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
@@ -36,6 +37,7 @@ public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messen
     @Inject private MedievalFactions medievalFactions;
     @Inject private ConfigService configService;
     @Inject private FactionService factionService;
+    @Inject private FactionRepository factionRepository;
 
     public void sendFactionInfo(CommandSender sender, Faction faction, int power) {
         UUIDChecker uuidChecker = new UUIDChecker();
@@ -93,8 +95,9 @@ public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messen
 
     private void sendLiegeInfoIfVassal(Faction faction, CommandSender sender) {
         if (faction.hasLiege()) {
-            playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("Liege"), faction.getLiege()) + "\n"
-                    , Objects.requireNonNull(messageService.getLanguage().getString("Liege")).replace("#name#", faction.getLiege()), true);
+            Faction factionLiege = this.factionRepository.getByID(faction.getLiege());
+            playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("Liege"), factionLiege.getName()) + "\n"
+                    , Objects.requireNonNull(messageService.getLanguage().getString("Liege")).replace("#name#", factionLiege.getName()), true);
         }
         if (faction.isLiege()) {
             playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("Vassals"), faction.getVassalsSeparatedByCommas()) + "\n"

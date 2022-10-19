@@ -22,6 +22,7 @@ import dansplugins.factionsystem.builders.ArgumentBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -70,8 +71,8 @@ public class BreakAllianceCommand extends Command {
             return;
         }
 
-        context.getExecutorsFaction().removeAlly(otherFaction.getName());
-        otherFaction.removeAlly(context.getExecutorsFaction().getName());
+        context.getExecutorsFaction().removeAlly(otherFaction.getID());
+        otherFaction.removeAlly(context.getExecutorsFaction().getID());
         this.messageService.messageFaction(
             context.getExecutorsFaction(), 
             this.translate("&c" + this.localeService.getText("AllianceBrokenWith", otherFaction.getName())),
@@ -97,8 +98,9 @@ public class BreakAllianceCommand extends Command {
         final List<String> factionsAllowedtoAlly = new ArrayList<>();
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> playerAllies = playerFaction.getAllies();
-            return TabCompleteTools.filterStartingWith(args[0], playerAllies);
+            ArrayList<String> factionAllyNames = new ArrayList<>();
+            for (UUID uuid : playerFaction.getAllies()) factionAllyNames.add(this.factionRepository.getByID(uuid).getName());
+            return TabCompleteTools.filterStartingWith(args[0], factionAllyNames);
         }
         return null;
     }

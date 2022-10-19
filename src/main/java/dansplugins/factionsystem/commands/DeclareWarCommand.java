@@ -29,6 +29,7 @@ import dansplugins.factionsystem.builders.ArgumentBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -99,7 +100,7 @@ public class DeclareWarCommand extends Command {
             return;
         }
 
-        if (faction.isEnemy(opponent.getName())) {
+        if (faction.isEnemy(opponent.getID())) {
             context.replyWith(
                 this.constructMessage("AlertAlreadyAtWarWith")
                     .with("faction", opponent.getName())
@@ -108,13 +109,13 @@ public class DeclareWarCommand extends Command {
         }
 
         if (faction.hasLiege() && opponent.hasLiege()) {
-            if (faction.isVassal(opponent.getName())) {
+            if (faction.isVassal(opponent.getID())) {
                 context.replyWith("CannotDeclareWarOnVassal");
                 return;
             }
 
-            if (!faction.getLiege().equalsIgnoreCase(opponent.getLiege())) {
-                final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
+            if (!faction.getLiege().equals(opponent.getLiege())) {
+                final Faction enemyLiege = this.factionRepository.getByID(opponent.getLiege());
                 if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
                         this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
                     context.replyWith("CannotDeclareWarIfLiegeNotWeakened");
@@ -122,12 +123,12 @@ public class DeclareWarCommand extends Command {
             }
         }
 
-        if (faction.isLiege(opponent.getName())) {
+        if (faction.isLiege(opponent.getID())) {
             context.replyWith("CannotDeclareWarOnLiege");
             return;
         }
 
-        if (faction.isAlly(opponent.getName())) {
+        if (faction.isAlly(opponent.getID())) {
             context.replyWith("CannotDeclareWarOnAlly");
             return;
         }
@@ -146,8 +147,8 @@ public class DeclareWarCommand extends Command {
         Bukkit.getPluginManager().callEvent(warStartEvent);
         if (!warStartEvent.isCancelled()) {
             // Make enemies.
-            faction.addEnemy(opponent.getName());
-            opponent.addEnemy(faction.getName());
+            faction.addEnemy(opponent.getID());
+            opponent.addEnemy(faction.getID());
             warFactory.createWar(faction, opponent, context.getStringArgument("reason"));
             this.messageService.messageServer(
                 "&c" + this.localeService.getText("HasDeclaredWarAgainst", faction.getName(), opponent.getName()), 
@@ -170,11 +171,11 @@ public class DeclareWarCommand extends Command {
         if (this.persistentData.isInFaction(player.getUniqueId())) {
             final List<String> factionsAllowedtoWar = new ArrayList<>();
             Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> playerEnemies = playerFaction.getEnemyFactions();
-            ArrayList<String> playerAllies = playerFaction.getAllies();
+            ArrayList<UUID> playerEnemies = playerFaction.getEnemyFactions();
+            ArrayList<UUID> playerAllies = playerFaction.getAllies();
             for(Faction faction : this.persistentData.getFactions()) {
                 // If the faction is not an ally and they are not already enemied to them
-                if(!playerAllies.contains(faction.getName()) && !playerEnemies.contains(faction.getName()) && !faction.getName().equalsIgnoreCase(playerFaction.getName())) {
+                if(!playerAllies.contains(faction.getID()) && !playerEnemies.contains(faction.getID()) && !faction.getID().equals(playerFaction.getID())) {
                     factionsAllowedtoWar.add(faction.getName());
                 }
             }

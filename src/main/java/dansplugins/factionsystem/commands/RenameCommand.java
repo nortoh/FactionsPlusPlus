@@ -87,8 +87,6 @@ public class RenameCommand extends Command {
         context.getExecutorsFaction().setName(newName);
         context.replyWith("FactionNameChanged");
 
-        this.persistentData.updateFactionReferencesDueToNameChange(oldName, newName);
-
         // Prefix (if it was unset)
         if (context.getExecutorsFaction().getPrefix().equalsIgnoreCase(oldName)) context.getExecutorsFaction().setPrefix(newName);
 

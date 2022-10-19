@@ -5,6 +5,7 @@
 package dansplugins.factionsystem.models.interfaces;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -12,39 +13,39 @@ import java.util.ArrayList;
 public interface Diplomatic {
 
     // allies
-    void addAlly(String name);
+    void addAlly(UUID uuid);
 
-    void removeAlly(String name);
+    void removeAlly(UUID uuid);
 
-    boolean isAlly(String name);
+    boolean isAlly(UUID uuid);
 
-    ArrayList<String> getAllies();
+    ArrayList<UUID> getAllies();
 
     String getAlliesSeparatedByCommas();
 
     // requests
-    void requestAlly(String name);
+    void requestAlly(UUID uuid);
 
-    boolean isRequestedAlly(String name);
+    boolean isRequestedAlly(UUID uuid);
 
-    void removeAllianceRequest(String name);
+    void removeAllianceRequest(UUID uuid);
 
     // enemies
-    void addEnemy(String name);
+    void addEnemy(UUID uuid);
 
-    void removeEnemy(String name);
+    void removeEnemy(UUID uuid);
 
-    boolean isEnemy(String name);
+    boolean isEnemy(UUID uuid);
 
-    ArrayList<String> getEnemyFactions();
+    ArrayList<UUID> getEnemyFactions();
 
     String getEnemiesSeparatedByCommas();
 
     // truces
-    void requestTruce(String name);
+    void requestTruce(UUID uuid);
 
-    boolean isTruceRequested(String name);
+    boolean isTruceRequested(UUID uuid);
 
-    void removeRequestedTruce(String name);
+    void removeRequestedTruce(UUID uuid);
 
 }

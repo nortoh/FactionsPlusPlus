@@ -45,12 +45,12 @@ public class MF_Faction {
         return faction.getFlag(flag);
     }
 
-    public boolean isAlly(String factionName) {
-        return faction.isAlly(factionName);
+    public boolean isAlly(UUID factionUUID) {
+        return faction.isAlly(factionUUID);
     }
 
-    public boolean isEnemy(String factionName) {
-        return faction.isEnemy(factionName);
+    public boolean isEnemy(UUID factionUUID) {
+        return faction.isEnemy(factionUUID);
     }
 
     /**

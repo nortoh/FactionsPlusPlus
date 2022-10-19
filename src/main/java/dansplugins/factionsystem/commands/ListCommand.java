@@ -55,7 +55,7 @@ public class ListCommand extends Command {
             final Faction temp = sortableFaction.getFaction();
             context.reply(ChatColor.AQUA + String.format("%-25s %10s %10s %10s", temp.getName(), "P: " +
                     this.factionService.getCumulativePowerLevel(temp), "M: " + temp.getPopulation(), "L: " +
-                    this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getName())));
+                    this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getID())));
         }
     }
 }
