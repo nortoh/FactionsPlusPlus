@@ -37,7 +37,6 @@ public class DeclareIndependenceCommand extends Command {
     public DeclareIndependenceCommand(
         MessageService messageService,
         ConfigService configService,
-        PersistentData persistentData,
         FactionRepository factionRepository,
         WarFactory warFactory
     ) {
