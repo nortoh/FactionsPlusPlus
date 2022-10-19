@@ -12,7 +12,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
@@ -30,13 +29,11 @@ import java.util.UUID;
 @Singleton
 public class GrantIndependenceCommand extends Command {
 
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
     public GrantIndependenceCommand(
-        MessageService messageService,
         PersistentData persistentData,
         FactionRepository factionRepository
     ) {
@@ -58,7 +55,6 @@ public class GrantIndependenceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
@@ -69,14 +65,13 @@ public class GrantIndependenceCommand extends Command {
         context.getExecutorsFaction().removeVassal(target.getID());
         
         // inform all players in that faction that they are now independent
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             target,
             this.constructMessage("AlertGrantedIndependence")
                 .with("name", context.getExecutorsFaction().getName())
         );
         // inform all players in players faction that a vassal was granted independence
-        this.messageService.sendFactionLocalizedMessage(
-            context.getExecutorsFaction(),
+        context.messagePlayersFaction(
             this.constructMessage("AlertNoLongerVassalFaction")
                 .with("name", target.getName())
         );

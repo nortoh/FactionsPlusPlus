@@ -12,7 +12,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
@@ -28,13 +27,11 @@ import java.util.Objects;
 @Singleton
 public class SwearFealtyCommand extends Command {
 
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
     public SwearFealtyCommand(
-        MessageService messageService,
         PersistentData persistentData,
         FactionRepository factionRepository
     ) {
@@ -56,7 +53,6 @@ public class SwearFealtyCommand extends Command {
                         .isRequired() 
                 )
         );
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
@@ -77,14 +73,13 @@ public class SwearFealtyCommand extends Command {
 
         
         // inform target faction that they have a new vassal
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             target,
             this.constructMessage("AlertFactionHasNewVassal")
                 .with("name", faction.getName())
         );
         // inform players faction that they have a new liege
-        this.messageService.sendFactionLocalizedMessage(
-            faction,
+        context.messagePlayersFaction(
             this.constructMessage("AlertFactionHasBeenVassalized")
                 .with("name", target.getName())
         );

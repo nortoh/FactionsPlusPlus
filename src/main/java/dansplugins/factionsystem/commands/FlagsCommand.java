@@ -13,7 +13,6 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
@@ -30,15 +29,13 @@ import java.util.HashMap;
 @Singleton
 public class FlagsCommand extends Command {
 
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final ConfigService configService;
 
     @Inject
     public FlagsCommand(
         PersistentData persistentData,
-        ConfigService configService,
-        MessageService messageService
+        ConfigService configService
     ) {
         super(
             new CommandBuilder()
@@ -79,7 +76,6 @@ public class FlagsCommand extends Command {
                         )
                 )
         );
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.configService = configService;
     }

@@ -20,7 +20,6 @@ import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.repositories.WarRepository;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -42,7 +41,6 @@ public class ForceCommand extends Command {
     private final MedievalFactions medievalFactions;
     private final Logger logger;
     private final PersistentData persistentData;
-    private final MessageService messageService;
     private final EphemeralData ephemeralData;
     private final FactionRepository factionRepository;
     private final FactionService factionService;
@@ -51,7 +49,6 @@ public class ForceCommand extends Command {
     @Inject
     public ForceCommand(
         PersistentData persistentData,
-        MessageService messageService,
         EphemeralData ephemeralData,
         MedievalFactions medievalFactions,
         Logger logger,
@@ -383,7 +380,6 @@ public class ForceCommand extends Command {
                 )
         );        
         this.persistentData = persistentData;
-        this.messageService = messageService;
         this.ephemeralData = ephemeralData;
         this.medievalFactions = medievalFactions;
         this.logger = logger;
@@ -419,7 +415,7 @@ public class ForceCommand extends Command {
             war.end();
 
             // announce peace to all players on server.
-            this.messageService.sendAllPlayersLocalizedMessage(
+            context.messageAllPlayers(
                 this.constructMessage("AlertNowAtPeaceWith")
                     .with("p1", former.getName())
                     .with("p2", latter.getName())  
@@ -460,7 +456,7 @@ public class ForceCommand extends Command {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             faction,
             this.constructMessage("HasJoined")
                 .with("player", player.getName())
@@ -496,7 +492,7 @@ public class ForceCommand extends Command {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
         faction.removeMember(target.getUniqueId());
-        this.messageService.sendFactionLocalizedMessage(
+        context.messageFaction(
             faction,
             this.constructMessage("HasBeenKickedFrom")
                 .with("player", target.getName())

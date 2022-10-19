@@ -16,7 +16,6 @@ import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -37,7 +36,6 @@ import java.util.UUID;
 public class DeclareWarCommand extends Command {
 
     private final ConfigService configService;
-    private final MessageService messageService;
     private final PersistentData persistentData;
     private final WarFactory warFactory;
     private final FactionRepository factionRepository;
@@ -46,7 +44,6 @@ public class DeclareWarCommand extends Command {
     @Inject
     public DeclareWarCommand(
         ConfigService configService,
-        MessageService messageService,
         PersistentData persistentData,
         WarFactory warFactory,
         FactionRepository factionRepository,
@@ -79,7 +76,6 @@ public class DeclareWarCommand extends Command {
                 )
         );
         this.configService = configService;
-        this.messageService = messageService;
         this.persistentData = persistentData;
         this.warFactory = warFactory;
         this.factionRepository = factionRepository;

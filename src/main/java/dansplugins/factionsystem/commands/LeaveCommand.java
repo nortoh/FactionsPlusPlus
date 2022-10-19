@@ -12,7 +12,6 @@ import dansplugins.factionsystem.events.FactionLeaveEvent;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.builders.CommandBuilder;
 import org.bukkit.Bukkit;
@@ -25,14 +24,12 @@ import java.util.Objects;
  */
 @Singleton
 public class LeaveCommand extends Command {
-    private final MessageService messageService;
     private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DisbandCommand disbandCommand;
 
     @Inject
     public LeaveCommand(
-        MessageService messageService,
         EphemeralData ephemeralData,
         Logger logger,
         DisbandCommand disbandCommand
@@ -46,7 +43,6 @@ public class LeaveCommand extends Command {
                 .expectsPlayerExecution()
                 .expectsFactionMembership()
         );
-        this.messageService = messageService;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
         this.disbandCommand = disbandCommand;
@@ -71,8 +67,7 @@ public class LeaveCommand extends Command {
         this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId()); // Remove from Faction Chat.
         faction.removeMember(player.getUniqueId());
         context.replyWith("AlertLeftFaction");
-        this.messageService.sendFactionLocalizedMessage(
-            faction, 
+        context.messagePlayersFaction(
             this.constructMessage("AlertLeftFactionTeam")
                 .with("name", player.getName())
                 .with("faction", faction.getName())

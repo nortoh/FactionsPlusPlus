@@ -14,7 +14,6 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -35,7 +34,6 @@ import java.util.UUID;
 public class InvokeCommand extends Command {
 
     private final PersistentData persistentData;
-    private final MessageService messageService;
     private final ConfigService configService;
     private final FactionRepository factionRepository;
 
@@ -43,7 +41,6 @@ public class InvokeCommand extends Command {
     public InvokeCommand(
         ConfigService configService,
         PersistentData persistentData,
-        MessageService messageService,
         FactionRepository factionRepository
     ) {
         super(
@@ -74,7 +71,6 @@ public class InvokeCommand extends Command {
         );
         this.configService = configService;
         this.persistentData = persistentData;
-        this.messageService = messageService;
         this.factionRepository = factionRepository;
     }
 
@@ -100,7 +96,7 @@ public class InvokeCommand extends Command {
             warringFaction.addEnemy(invokee.getID());
 
             // Alert ally faction
-            this.messageService.sendFactionLocalizedMessage(
+            context.messageFaction(
                 invokee,
                 this.constructMessage("AlertCalledToWar1")
                     .with("f1", context.getExecutorsFaction().getName())
@@ -108,7 +104,7 @@ public class InvokeCommand extends Command {
             );
 
             // Alert warring faction
-            this.messageService.sendFactionLocalizedMessage(
+            context.messageFaction(
                 warringFaction,
                 this.constructMessage("AlertCalledToWar2")
                     .with("f1", context.getExecutorsFaction().getName())
@@ -116,8 +112,7 @@ public class InvokeCommand extends Command {
             );
 
             // Alert player faction
-            this.messageService.sendFactionLocalizedMessage(
-                context.getExecutorsFaction(), 
+            context.messagePlayersFaction(
                 this.constructMessage("AlertCalledToWar3")
                     .with("f1", context.getExecutorsFaction().getName())
                     .with("f2", warringFaction.getName())
