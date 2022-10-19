@@ -58,6 +58,7 @@ public class MakePeaceCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the enemy faction to make peace with")
                         .expectsEnemyFaction()
+                        .consumesAllLaterArguments()
                         .isRequired()
                 )
         );

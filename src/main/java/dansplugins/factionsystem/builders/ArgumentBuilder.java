@@ -7,6 +7,7 @@ public class ArgumentBuilder {
     public Boolean required = true;
     public ArgumentType type = ArgumentType.Any;
     public Boolean shouldConsumeRestOfArguments = false;
+    public Boolean requiresDoubleQuotes = false;
     public String[] permissionsIfNull = new String[]{};
     public String[] permissionsIfNotNull = new String[]{};
     public Object defaultValue = null;
@@ -43,6 +44,11 @@ public class ArgumentBuilder {
 
     public ArgumentBuilder requiresPermissionsIfNotNull(String... permissions) {
         this.permissionsIfNotNull = permissions;
+        return this;
+    }
+
+    public ArgumentBuilder expectsDoubleQuotes() {
+        this.requiresDoubleQuotes = true;
         return this;
     }
 
@@ -108,6 +114,11 @@ public class ArgumentBuilder {
 
     public ArgumentBuilder expectsEnemyFaction() {
         this.type = ArgumentType.EnemyFaction;
+        return this;
+    }
+
+    public ArgumentBuilder expectsVassaledFaction() {
+        this.type = ArgumentType.VassaledFaction;
         return this;
     }
 

@@ -11,11 +11,13 @@ import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.commands.*;
 import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.RelationChecker;
 import dansplugins.factionsystem.utils.StringUtils;
 import dansplugins.factionsystem.utils.extended.Messenger;
 import dansplugins.factionsystem.utils.extended.Scheduler;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -78,22 +80,22 @@ public class CommandService implements TabCompleter {
             ConfigCommand.class,
             CreateCommand.class,
             DeclareIndependenceCommand.class,
-            //DeclareWarCommand.class,
+            DeclareWarCommand.class,
             DemoteCommand.class,
             DescCommand.class,
             DisbandCommand.class,
-            //DuelCommand.class,
+            DuelCommand.class,
             EditLawCommand.class,
-            //FlagsCommand.class,
+            FlagsCommand.class,
             //ForceCommand.class,
-            //GateCommand.class,
+            GateCommand.class,
             GrantAccessCommand.class,
-            //GrantIndependenceCommand.class,
+            GrantIndependenceCommand.class,
             HelpCommand.class,
             HomeCommand.class,
             InfoCommand.class,
             InviteCommand.class,
-            //InvokeCommand.class,
+            InvokeCommand.class,
             JoinCommand.class,
             KickCommand.class,
             LawsCommand.class,
@@ -112,7 +114,7 @@ public class CommandService implements TabCompleter {
             RevokeAccessCommand.class,
             SetHomeCommand.class,
             StatsCommand.class,
-            //SwearFealtyCommand.class,
+            SwearFealtyCommand.class,
             TransferCommand.class,
             UnclaimallCommand.class,
             UnclaimCommand.class,
@@ -276,14 +278,29 @@ public class CommandService implements TabCompleter {
             // TODO: handle errors
             if (arguments.size() > 0) {
                 String argumentData = arguments.remove(0);
+                // Check if the argument should start and end with double quotes, if so, append all other arguments until we get another double quote
+                if (argumentData.startsWith("\"") && argument.expectsDoubleQuotes()) {
+                    Boolean foundEnd = false;
+                    // Remove the opening quote
+                    argumentData = argumentData.substring(1);
+                    while (arguments.size() > 0) {
+                        if (arguments.get(0).startsWith("\"")) foundEnd = true;
+                        argumentData = argumentData + " " + arguments.remove(0);
+                    }
+                    // Remove the closing quote
+                    argumentData = argumentData.substring(0, argumentData.length() - 1);
+                    if (!foundEnd) {
+                        this.messageService.sendInvalidSyntaxMessage(sender, context.getCommandNames(), command.buildSyntax());
+                        return false;
+                    }
+                }
                 Object parsedArgumentData = null;
+                Faction faction = null;
+                OfflinePlayer player = null;
                 switch(argument.getType()) {
                     case Faction:
-                        Faction faction = this.getAnyFaction(context, argumentData);
-                        if (faction != null) {
-                            parsedArgumentData = faction;
-                            break;
-                        }
+                        faction = this.getAnyFaction(context, argumentData);
+                        if (faction != null) break;
                         return false;
                     case ConfigOptionName:
                         if (this.configService.getConfigOption(argumentData) != null) {
@@ -296,37 +313,44 @@ public class CommandService implements TabCompleter {
                         );
                         return false;
                     case Player:
-                        OfflinePlayer player = this.getPlayer(context, argumentData);
-                        if (player != null) {
-                            parsedArgumentData = player;
-                            break;
-                        }
+                        player = this.getPlayer(context, argumentData);
+                        if (player != null) break;
                         return false;
                     case FactionMember:
                         player = this.getFactionMember(context, argumentData);
-                        if (player != null) {
-                            parsedArgumentData = player;
-                            break;
-                        }
+                        if (player != null) break;
                         return false;
                     case FactionOfficer:
                         player = this.getFactionOfficer(context, argumentData);
-                        if (player != null) {
-                            parsedArgumentData = player;
-                            break;
-                        }
+                        if (player != null) break;
                         return false;
                     case AlliedFaction:
                         faction = this.getAllyFaction(context, argumentData);
-                        if (faction != null) {
-                            parsedArgumentData = faction;
-                            break;
-                        }
+                        if (faction != null) break;
                         return false;
                     case EnemyFaction:
                         faction = this.getEnemyFaction(context, argumentData);
-                        if (faction != null) {
-                            parsedArgumentData = faction;
+                        if (faction != null) break;
+                        return false;
+                    case VassaledFaction:
+                        faction = this.getVassaledFaction(context, argumentData);
+                        if (faction != null) break;
+                        return false;
+                    case OnlinePlayer:
+                        Player onlinePlayer = Bukkit.getPlayer(argumentData);
+                        if (onlinePlayer != null) {
+                            parsedArgumentData = onlinePlayer;
+                            break;
+                        }            
+                        context.replyWith(
+                            new MessageBuilder("PlayerNotFound")
+                                .with("name", argumentData)
+                        );
+                        return false;
+                    case FactionFlagName:
+                        FactionFlag flag = this.getFactionFlag(context, argumentData);
+                        if (flag != null) {
+                            parsedArgumentData = flag;
                             break;
                         }
                         return false;
@@ -340,6 +364,8 @@ public class CommandService implements TabCompleter {
                         parsedArgumentData = argumentData;
                         break;
                 }
+                if (player != null) parsedArgumentData = player;
+                if (faction != null) parsedArgumentData = faction;
                 context.addArgument(argumentName, parsedArgumentData);
             } else {
                 context.addArgument(argumentName, argument.getDefaultValue());
@@ -357,6 +383,16 @@ public class CommandService implements TabCompleter {
         }
     }
 
+    public FactionFlag getFactionFlag(CommandContext context, String argumentData) {
+        final FactionFlag flag = context.getExecutorsFaction().getFlag(argumentData);
+        if (flag == null) {
+            context.replyWith(
+                new MessageBuilder("InvalidFactionFlag")
+                    .with("flag", argumentData)
+            );
+        }
+        return flag;
+    }
     public Faction getAnyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.dataService.getFaction(argumentData);
         if (faction == null) {
@@ -383,12 +419,23 @@ public class CommandService implements TabCompleter {
     }
 
     public Faction getEnemyFaction(CommandContext context, String argumentData) {
-        final Faction faction = this.dataService.getFaction(argumentData);
+        final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
             if (context.getExecutorsFaction().isEnemy(faction.getName())) {
                 return faction;
             }
             context.replyWith("FactionNotEnemy");
+        }
+        return null;
+    }
+
+    public Faction getVassaledFaction(CommandContext context, String argumentData) {
+        final Faction faction = this.getAnyFaction(context, argumentData);
+        if (faction != null) {
+            if (faction.isLiege(context.getExecutorsFaction().getName())) {
+                return faction;
+            }
+            context.replyWith("FactionIsNotVassal");
         }
         return null;
     }

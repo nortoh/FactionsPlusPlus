@@ -7,16 +7,17 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
 
@@ -24,90 +25,69 @@ import java.util.List;
  * @author Callum Johnson
  */
 @Singleton
-public class FlagsCommand extends SubCommand {
+public class FlagsCommand extends Command {
 
-    private final PlayerService playerService;
     private final MessageService messageService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
 
     @Inject
     public FlagsCommand(
         PersistentData persistentData,
-        PlayerService playerService, 
-        MessageService messageService,
-        LocaleService localeService
+        MessageService messageService
     ) {
-        super();
-        this.playerService = playerService;
+        super(
+            new CommandBuilder()
+                .withName("flags")
+                .withAliases(LOCALE_PREFIX + "CmdFlags")
+                .withDescription("Manage faction flags.")
+                .requiresPermissions("mf.flags")
+                .requiresSubCommand()
+                .expectsPlayerExecution()
+                .expectsFactionOwnership()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("show")
+                        .withAliases(LOCALE_PREFIX + "CmdFlagShow")
+                        .withDescription("Shows the current faction flags.")
+                        .setExecutorMethod("showCommand")
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("set")
+                        .withAliases(LOCALE_PREFIX + "CmdFlagSet")
+                        .withDescription("Sets a faction flag.")
+                        .setExecutorMethod("setCommand")
+                        .addArgument(
+                            "flag name",
+                            new ArgumentBuilder()
+                                .setDescription("the flag you are setting")
+                                .expectsFactionFlagName()
+                            .isRequired()
+                        )
+                        .addArgument(
+                            "value",
+                            new ArgumentBuilder()
+                                .setDescription("the value of the flag you are setting")
+                                .expectsString()
+                                .consumesAllLaterArguments()
+                                .isRequired()
+                        )
+                )
+        );
         this.messageService = messageService;
-        this.localeService = localeService;
         this.persistentData = persistentData;
-        this
-            .setNames("flags", LOCALE_PREFIX + "CmdFlags")
-            .requiresPermissions("mf.flags")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("ValidSubCommandsShowSet"), "ValidSubCommandsShowSet", false);
-            return;
-        }
-
-        final Faction playersFaction = this.playerService.getPlayerFaction(player);
-
-        final boolean show = this.safeEquals(args[0], "get", "show", 
-            this.playerService.decideWhichMessageToUse(
-                this.localeService.getText("CmdFlagsShow"), 
-                this.messageService.getLanguage().getString("Alias.CmdFlagsShow")
-            )
-        );
-        final boolean set = this.safeEquals(args[0], "set", 
-            this.playerService.decideWhichMessageToUse(
-                this.localeService.getText("CmdFlagsSet"), 
-                this.messageService.getLanguage().getString("Alias.CmdFlagsSet")
-            )
-        );
-        if (show) {
-            this.messageService.sendFlagList(player, playersFaction);
-        } else if (set) {
-            if (args.length < 3) {
-                this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageFlagsSet"), "UsageFlagsSet", false);
-            } else {
-                final StringBuilder builder = new StringBuilder(); // Send the flag_argument as one String
-                for (int i = 2; i < args.length; i++) builder.append(args[i]).append(" ");
-                FactionFlag flag = playersFaction.getFlag(args[1]);
-                if (flag != null) flag.set(builder.toString().trim());
-                // TODO: error handling, alert that flag was set
-
-            }
-        } else {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("ValidSubCommandsShowSet"), "ValidSubCommandsShowSet", false);
-
-        }
+    public void setCommand(CommandContext context) {
+        final FactionFlag flag = context.getFactionFlagArgument("flag name");
+        final String flagValue = context.getStringArgument("value");
+        flag.set(flagValue);
+        // TODO: error handling, alert that flag was set
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+    public void showCommand(CommandContext context) {
+        // TODO: move the logic for this into this class
+        this.messageService.sendFlagList(context.getPlayer(), context.getExecutorsFaction());
     }
 
     /**

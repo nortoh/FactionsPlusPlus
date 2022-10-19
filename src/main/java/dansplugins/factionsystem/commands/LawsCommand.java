@@ -42,6 +42,7 @@ public class LawsCommand extends Command {
                     "faction name",
                     new ArgumentBuilder()
                         .setDescription("the faction to get a list of laws")
+                        .consumesAllLaterArguments()
                         .expectsFaction()
                 )
         );

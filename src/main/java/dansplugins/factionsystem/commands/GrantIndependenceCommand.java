@@ -7,111 +7,78 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
+
 import java.util.Objects;
+import java.util.List;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class GrantIndependenceCommand extends SubCommand {
+public class GrantIndependenceCommand extends Command {
 
-    private final PlayerService playerService;
     private final MessageService messageService;
     private final LocaleService localeService;
     private final PersistentData persistentData;
-    private final FactionRepository factionRepository;
 
     @Inject
     public GrantIndependenceCommand(
-        PlayerService playerService,
         MessageService messageService,
         LocaleService localeService,
-        PersistentData persistentData,
-        FactionRepository factionRepository
+        PersistentData persistentData
     ) {
-        super();
-        this.playerService = playerService;
+        super(
+            new CommandBuilder()
+                .withName("grantindependence")
+                .withAliases("gi", LOCALE_PREFIX + "CmdGrandIndependence")
+                .withDescription("Grants independence to a vassaled faction.")
+                .requiresPermissions("mf.grantindependence")
+                .expectsPlayerExecution()
+                .expectsNoFactionMembership()
+                .expectsFactionOwnership()
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the faction to get a members list of")
+                        .expectsVassaledFaction()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                )
+        );
         this.messageService = messageService;
         this.localeService = localeService;
         this.persistentData = persistentData;
-        this.factionRepository = factionRepository;
-        this
-            .setNames("grantindependence", "gi", LOCALE_PREFIX + "CmdGrantIndependence")
-            .requiresPermissions("mf.grantindependence")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            player.sendMessage(
-                this.translate("&c" + this.localeService.getText("UsageGrantIndependence"))
-            );
-            return;
-        }
-        final Faction target = this.factionRepository.get(String.join(" ", args));
-        if (target == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("FactionNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
-                true
-            );
-            return;
-        }
-        if (!target.isLiege(this.faction.getName())) {
-            player.sendMessage(this.translate("&c" + this.localeService.getText("FactionIsNotVassal")));
-            return;
-        }
+    public void execute(CommandContext context) {
+        final Faction target = context.getFactionArgument("faction name");
         target.setLiege("none");
-        this.faction.removeVassal(target.getName());
+        context.getExecutorsFaction().removeVassal(target.getName());
         // inform all players in that faction that they are now independent
         this.messageService.messageFaction(
             target,
-            this.translate("&a" + this.localeService.getText("AlertGrantedIndependence", this.faction.getName())),
+            this.translate("&a" + this.localeService.getText("AlertGrantedIndependence", context.getExecutorsFaction().getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertGrantedIndependence"))
-                .replace("#name#", faction.getName())
+                .replace("#name#", context.getExecutorsFaction().getName())
         );
         // inform all players in players faction that a vassal was granted independence
         this.messageService.messageFaction(
-            this.faction,
+            context.getExecutorsFaction(),
             this.translate("&a" + this.localeService.getText("AlertNoLongerVassalFaction", target.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNoLongerVassalFaction"))
                 .replace("#name#", target.getName())
         );
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

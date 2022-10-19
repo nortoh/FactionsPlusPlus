@@ -8,6 +8,7 @@ public class CommandArgument {
     private Boolean required;
     private ArgumentType type;
     private Boolean shouldConsumeRestOfArguments;
+    private Boolean requiresDoubleQuotes;
     private String[] permissionsIfNull = new String[]{};
     private String[] permissionsIfNotNull = new String[]{};
     private Object defaultValue;
@@ -18,6 +19,10 @@ public class CommandArgument {
 
     public Boolean isRequired() {
         return this.required;
+    }
+
+    public Boolean expectsDoubleQuotes() {
+        return this.requiresDoubleQuotes;
     }
 
     public ArgumentType getType() {
@@ -75,6 +80,11 @@ public class CommandArgument {
         return this;
     }
 
+    public CommandArgument setRequiresDoubleQuotes(Boolean value) {
+        this.requiresDoubleQuotes = value;
+        return this;
+    }
+
     public static CommandArgument fromBuilder(ArgumentBuilder builder) {
         return new CommandArgument()
             .setDescription(builder.description)
@@ -83,6 +93,7 @@ public class CommandArgument {
             .setDefaultValue(builder.defaultValue)
             .setNullPermissions(builder.permissionsIfNull)
             .setNotNullPermissions(builder.permissionsIfNotNull)
+            .setRequiresDoubleQuotes(builder.requiresDoubleQuotes)
             .setShouldConsumeRestOfArguments(builder.shouldConsumeRestOfArguments);
     }
 }

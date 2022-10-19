@@ -56,6 +56,7 @@ public class JoinCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to join")
                         .expectsFaction()
+                        .consumesAllLaterArguments()
                         .isRequired()
                 )
         );

@@ -12,6 +12,7 @@ public enum ArgumentType {
     FactionFlagName,
     AlliedFaction,
     EnemyFaction,
+    VassaledFaction,
     Player,
     OnlinePlayer,
     FactionMember,

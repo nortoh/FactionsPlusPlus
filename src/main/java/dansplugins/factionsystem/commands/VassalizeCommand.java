@@ -58,6 +58,7 @@ public class VassalizeCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to attempt vassalization")
                         .expectsFaction()
+                        .consumesAllLaterArguments()
                         .isRequired()
                 )
         );

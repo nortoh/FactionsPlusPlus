@@ -53,6 +53,7 @@ public class BreakAllianceCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the allied faction to break alliance with")
                         .expectsAlliedFaction()
+                        .consumesAllLaterArguments()
                         .isRequired()
                 )
         );

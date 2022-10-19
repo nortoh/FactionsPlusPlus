@@ -60,6 +60,7 @@ public class AllyCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to request as an ally")
                         .expectsFaction()
+                        .consumesAllLaterArguments()
                         .isRequired() 
                 )
         );

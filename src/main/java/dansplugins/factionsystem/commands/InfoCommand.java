@@ -47,6 +47,7 @@ public class InfoCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("optional faction to get information on")
                         .expectsFaction()
+                        .consumesAllLaterArguments()
                         .isOptional()
                 )
         );

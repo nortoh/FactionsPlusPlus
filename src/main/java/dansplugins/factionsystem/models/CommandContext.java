@@ -66,6 +66,22 @@ public class CommandContext {
         return null;
     }
 
+    public Player getPlayerArgument(String name) {
+        Object possibleArgument = this.arguments.get(name);
+        if (possibleArgument != null) {
+            return (Player)possibleArgument;
+        }
+        return null;
+    }
+
+    public FactionFlag getFactionFlagArgument(String name) {
+        Object possibleArgument = this.arguments.get(name);
+        if (possibleArgument != null) {
+            return (FactionFlag)possibleArgument;
+        }
+        return null;
+    }
+
     public String[] getRawArguments() {
         return this.rawArguments;
     }
