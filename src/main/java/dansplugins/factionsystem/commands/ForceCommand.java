@@ -16,7 +16,9 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
 import dansplugins.factionsystem.models.PlayerRecord;
+import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.repositories.WarRepository;
 import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
@@ -44,6 +46,7 @@ public class ForceCommand extends Command {
     private final EphemeralData ephemeralData;
     private final FactionRepository factionRepository;
     private final FactionService factionService;
+    private final WarRepository warRepository;
 
     @Inject
     public ForceCommand(
@@ -53,7 +56,8 @@ public class ForceCommand extends Command {
         MedievalFactions medievalFactions,
         Logger logger,
         FactionRepository factionRepository,
-        FactionService factionService
+        FactionService factionService,
+        WarRepository warRepository
     ) {
         super(
             new CommandBuilder()
@@ -385,6 +389,7 @@ public class ForceCommand extends Command {
         this.logger = logger;
         this.factionRepository = factionRepository;
         this.factionService = factionService;
+        this.warRepository = warRepository;
     }
 
     // "mf.force.save", "mf.force.*", "mf.admin"
@@ -409,6 +414,9 @@ public class ForceCommand extends Command {
         if (!warEndEvent.isCancelled()) {
             if (former.isEnemy(latter.getID())) former.removeEnemy(latter.getID());
             if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
+
+            War war = this.warRepository.getActiveWarsBetween(former.getID(), latter.getID());
+            war.end();
 
             // announce peace to all players on server.
             this.messageService.messageServer(

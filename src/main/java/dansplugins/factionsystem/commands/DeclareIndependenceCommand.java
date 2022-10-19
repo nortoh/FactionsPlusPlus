@@ -9,15 +9,17 @@ import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
+import dansplugins.factionsystem.factories.WarFactory;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
-import dansplugins.factionsystem.builders.*;
+import dansplugins.factionsystem.builders.CommandBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -35,6 +37,7 @@ public class DeclareIndependenceCommand extends Command {
     private final ConfigService configService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
+    private final WarFactory warFactory;
 
     @Inject
     public DeclareIndependenceCommand(
@@ -43,7 +46,8 @@ public class DeclareIndependenceCommand extends Command {
         MessageService messageService,
         ConfigService configService,
         PersistentData persistentData,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        WarFactory warFactory
     ) {
         super(
             new CommandBuilder()
@@ -61,6 +65,7 @@ public class DeclareIndependenceCommand extends Command {
         this.configService = configService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
+        this.warFactory = warFactory;
     }
 
     public void execute(CommandContext context) {
@@ -85,6 +90,9 @@ public class DeclareIndependenceCommand extends Command {
             if (!warStartEvent.isCancelled()) {
                 faction.addEnemy(liege.getID());
                 liege.addEnemy(faction.getID());
+
+                // TODO: check if they're already at work (which would be weird since they were a previous vassal?)
+                this.warFactory.createWar(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
 
                 // break alliance if allied
                 if (faction.isAlly(liege.getID())) {

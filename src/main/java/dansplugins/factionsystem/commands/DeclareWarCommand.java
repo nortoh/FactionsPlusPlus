@@ -150,13 +150,6 @@ public class DeclareWarCommand extends Command {
             faction.addEnemy(opponent.getID());
             opponent.addEnemy(faction.getID());
             warFactory.createWar(faction, opponent, context.getStringArgument("reason"));
-            this.messageService.messageServer(
-                "&c" + this.localeService.getText("HasDeclaredWarAgainst", faction.getName(), opponent.getName()), 
-                Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredWarAgainst"))
-                    .replace("#f_a#", faction.getName())
-                    .replace("#f_b#", opponent.getName())
-            );
-
         }
     }
 

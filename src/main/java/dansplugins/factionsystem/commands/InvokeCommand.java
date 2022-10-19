@@ -61,7 +61,7 @@ public class InvokeCommand extends Command {
                 .addArgument(
                     "allied faction name",
                     new ArgumentBuilder()
-                        .setDescription("the allied faction to invole")
+                        .setDescription("the allied faction to invoke")
                         .expectsAlliedFaction()
                         .expectsDoubleQuotes()
                         .isRequired()
@@ -69,7 +69,7 @@ public class InvokeCommand extends Command {
                 .addArgument(
                     "enemy faction name",
                     new ArgumentBuilder()
-                        .setDescription("the enemy faction to invole")
+                        .setDescription("the enemy faction to invoke")
                         .expectsEnemyFaction()
                         .expectsDoubleQuotes()
                         .isRequired()

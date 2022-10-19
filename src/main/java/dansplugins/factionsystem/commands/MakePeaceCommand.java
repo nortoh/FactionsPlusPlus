@@ -12,7 +12,9 @@ import dansplugins.factionsystem.events.FactionWarEndEvent;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
+import dansplugins.factionsystem.repositories.WarRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -37,13 +39,15 @@ public class MakePeaceCommand extends Command {
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
+    private final WarRepository warRepository;
 
     @Inject
     public MakePeaceCommand(
         LocaleService localeService,
         MessageService messageService,
         PersistentData persistentData,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        WarRepository warRepository
     ) {
         super(
             new CommandBuilder()
@@ -67,6 +71,7 @@ public class MakePeaceCommand extends Command {
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
+        this.warRepository = warRepository;
     }
     
     public void execute(CommandContext context) {
@@ -104,7 +109,8 @@ public class MakePeaceCommand extends Command {
                 faction.removeEnemy(target.getID());
                 target.removeEnemy(faction.getID());
 
-                // TODO: set active flag in war to false
+                War war = this.warRepository.getActiveWarsBetween(target.getID(), faction.getID());
+                war.end();
 
                 // Notify
                 this.messageService.messageServer(
