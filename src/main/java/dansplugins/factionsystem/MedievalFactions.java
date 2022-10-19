@@ -38,7 +38,6 @@ public class MedievalFactions extends PonderBukkitPlugin {
     @Inject private ActionBarService actionBarService;
     @Inject private ConfigService configService;
     @Inject private Logger logger;
-    @Inject private MessageService messageService;
     @Inject private PersistentData persistentData;
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;
@@ -76,7 +75,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
     @Override
     public void onDisable() {
         this.persistentData.getLocalStorageService().save();
-        this.messageService.saveLanguage();
+        this.localeService.saveLanguage();
     }
 
     /**
@@ -168,7 +167,6 @@ public class MedievalFactions extends PonderBukkitPlugin {
      * Loads stored data into Persistent Data.
      */
     private void load() {
-        this.localeService.loadStrings();
         this.persistentData.getLocalStorageService().load();
     }
 

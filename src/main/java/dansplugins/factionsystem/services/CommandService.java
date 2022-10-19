@@ -474,20 +474,11 @@ public class CommandService implements TabCompleter {
 
             // no arguments check
             if (args.length == 0) {
-                // send plugin information
-                if (!this.configService.getBoolean("useNewLanguageFile")) {
-                    sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("MedievalFactionsTitle"), this.medievalFactions.getVersion()));
-                    sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("DeveloperList"), this.medievalFactions.getDescription().getAuthors()));
-                    sender.sendMessage(ChatColor.AQUA + this.localeService.get("WikiLink"));
-                    sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("CurrentLanguageID"), this.configService.getString("languageid")));
-                    sender.sendMessage(ChatColor.AQUA + String.format(this.localeService.get("SupportedLanguageIDList"), this.localeService.getSupportedLanguageIDsSeparatedByCommas()));
-                } else {
-                    this.messageService.getLanguage().getStringList("PluginInfo")
-                            .forEach(s -> {
-                                s = s.replace("#version#", this.medievalFactions.getVersion()).replace("#dev#", this.medievalFactions.getDescription().getAuthors().toString());
-                                this.playerService.sendMessage(sender, s, s, true);
-                            });
-                }
+                this.localeService.getStrings("PluginInfo")
+                    .forEach(s -> {
+                        s = s.replace("#version", this.medievalFactions.getVersion()).replace("#dev", this.medievalFactions.getDescription().getAuthors().toString());
+                        this.messageService.send(sender, s);
+                    });
                 return true;
             }
 
@@ -503,7 +494,7 @@ public class CommandService implements TabCompleter {
 
             // Let the user know it wasn't found, if it wasn't found
             if (command == null) {
-                this.messageService.sendCommandNotFoundMessage(sender);
+                this.messageService.sendLocalizedMessage(sender, "CommandNotRecognized");
                 return false;
             }
 

@@ -7,7 +7,6 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.factories.WarFactory;
 import dansplugins.factionsystem.models.Command;
@@ -16,9 +15,7 @@ import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.builders.CommandBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -31,18 +28,13 @@ import java.util.Objects;
 @Singleton
 public class DeclareIndependenceCommand extends Command {
 
-    private final PlayerService playerService;
     private final MessageService messageService;
-    private final LocaleService localeService;
     private final ConfigService configService;
-    private final PersistentData persistentData;
     private final FactionRepository factionRepository;
     private final WarFactory warFactory;
 
     @Inject
     public DeclareIndependenceCommand(
-        PlayerService playerService,
-        LocaleService localeService,
         MessageService messageService,
         ConfigService configService,
         PersistentData persistentData,
@@ -59,11 +51,8 @@ public class DeclareIndependenceCommand extends Command {
                 .expectsFactionOwnership()
                 .requiresPermissions("mf.declareindependence")
         );
-        this.localeService = localeService;
-        this.playerService = playerService;
         this.messageService = messageService;
         this.configService = configService;
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
         this.warFactory = warFactory;
     }
@@ -72,7 +61,7 @@ public class DeclareIndependenceCommand extends Command {
         Faction faction = context.getExecutorsFaction();
         Player player = context.getPlayer();
         if (!(faction.hasLiege()) || faction.getLiege() == null) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("NotAVassalOfAFaction"), "NotAVassalOfAFaction", false);
+            context.replyWith("NotAVassalOfAFaction");
             return;
         }
 
@@ -101,11 +90,10 @@ public class DeclareIndependenceCommand extends Command {
                 }
             }
         }
-        this.messageService.messageServer(
-            "&c" + this.localeService.getText("HasDeclaredIndependence", faction.getName(), liege.getName()), 
-            Objects.requireNonNull(this.messageService.getLanguage().getString("HasDeclaredIndependence"))
-                .replace("#faction_a#", faction.getName())
-                .replace("#faction_b#", liege.getName())
+        this.messageService.sendAllPlayersLocalizedMessage(
+            this.constructMessage("HasDeclaredIndependence")
+                .with("faction_a", faction.getName())
+                .with("faction_b", liege.getName())
         );
 
     }

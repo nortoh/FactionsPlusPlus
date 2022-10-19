@@ -1,6 +1,7 @@
 package dansplugins.factionsystem.models;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 
 import org.bukkit.command.CommandSender;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import com.google.inject.Inject;
 
 import dansplugins.factionsystem.builders.MessageBuilder;
+import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.StringUtils;
 
@@ -20,6 +22,7 @@ public class CommandContext {
     private String[] rawArguments = new String[]{};
     private ArrayList<String> commandNames = new ArrayList<>();
     @Inject private MessageService messageService;
+    @Inject private LocaleService localeService;
 
     public Faction getExecutorsFaction() {
         return this.faction;
@@ -111,14 +114,30 @@ public class CommandContext {
     }
 
     public void reply(String message) {
-        this.messageService.messageSender(this.sender, message);
+        this.messageService.send(this.sender, message);
     }
 
     public void replyWith(String localizationKey) {
-        this.messageService.replyToSender(this.sender, localizationKey);
+        this.messageService.sendLocalizedMessage(this.sender, localizationKey);
     }
 
     public void replyWith(MessageBuilder builder) {
-        this.messageService.replyToSender(this.sender, builder);
+        this.messageService.sendLocalizedMessage(this.sender, builder);
+    }
+
+    public void messagePlayer(Player player, String localizationKey) {
+        this.messageService.sendLocalizedMessage(player, localizationKey);
+    }
+
+    public void messagePlayer(Player player, MessageBuilder builder) {
+        this.messageService.sendLocalizedMessage(player, builder);
+    }
+
+    public String getLocalizedString(String localizationKey) {
+        return this.localeService.get(localizationKey);
+    }
+
+    public List<String> getLocalizedStrings(String localizationKey) {
+        return this.localeService.getStrings(localizationKey);
     }
 }

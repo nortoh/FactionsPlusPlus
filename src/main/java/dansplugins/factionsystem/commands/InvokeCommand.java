@@ -14,7 +14,6 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -36,7 +35,6 @@ import java.util.UUID;
 public class InvokeCommand extends Command {
 
     private final PersistentData persistentData;
-    private final LocaleService localeService;
     private final MessageService messageService;
     private final ConfigService configService;
     private final FactionRepository factionRepository;
@@ -45,7 +43,6 @@ public class InvokeCommand extends Command {
     public InvokeCommand(
         ConfigService configService,
         PersistentData persistentData,
-        LocaleService localeService,
         MessageService messageService,
         FactionRepository factionRepository
     ) {
@@ -77,7 +74,6 @@ public class InvokeCommand extends Command {
         );
         this.configService = configService;
         this.persistentData = persistentData;
-        this.localeService = localeService;
         this.messageService = messageService;
         this.factionRepository = factionRepository;
     }
@@ -103,28 +99,28 @@ public class InvokeCommand extends Command {
             invokee.addEnemy(warringFaction.getID());
             warringFaction.addEnemy(invokee.getID());
 
-            this.messageService.messageFaction(
-                invokee, // Message ally faction
-                "&c" + this.localeService.getText("AlertCalledToWar1", context.getExecutorsFaction().getName(), warringFaction.getName()),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar1"))
-                    .replace("#f1#", context.getExecutorsFaction().getName())
-                    .replace("#f2#", warringFaction.getName())
+            // Alert ally faction
+            this.messageService.sendFactionLocalizedMessage(
+                invokee,
+                this.constructMessage("AlertCalledToWar1")
+                    .with("f1", context.getExecutorsFaction().getName())
+                    .with("f2", warringFaction.getName())
             );
 
-            this.messageService.messageFaction(
-                warringFaction, // Message warring faction
-                "&c" + this.localeService.getText("AlertCalledToWar2", context.getExecutorsFaction().getName(), invokee.getName()),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar2"))
-                    .replace("#f1#", context.getExecutorsFaction().getName())
-                    .replace("#f2#", invokee.getName())
+            // Alert warring faction
+            this.messageService.sendFactionLocalizedMessage(
+                warringFaction,
+                this.constructMessage("AlertCalledToWar2")
+                    .with("f1", context.getExecutorsFaction().getName())
+                    .with("f2", invokee.getName())
             );
 
-            this.messageService.messageFaction(
-                context.getExecutorsFaction(), // Message player faction
-                "&a" + this.localeService.getText("AlertCalledToWar3", invokee.getName(), warringFaction.getName()),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertCalledToWar3"))
-                    .replace("#f1#", context.getExecutorsFaction().getName())
-                    .replace("#f2#", warringFaction.getName())
+            // Alert player faction
+            this.messageService.sendFactionLocalizedMessage(
+                context.getExecutorsFaction(), 
+                this.constructMessage("AlertCalledToWar3")
+                    .with("f1", context.getExecutorsFaction().getName())
+                    .with("f2", warringFaction.getName())
             );
         }
     }

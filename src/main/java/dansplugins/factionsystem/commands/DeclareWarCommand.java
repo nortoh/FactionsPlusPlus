@@ -16,7 +16,6 @@ import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -40,7 +39,6 @@ public class DeclareWarCommand extends Command {
     private final ConfigService configService;
     private final MessageService messageService;
     private final PersistentData persistentData;
-    private final LocaleService localeService;
     private final WarFactory warFactory;
     private final FactionRepository factionRepository;
     private final FactionService factionService;
@@ -48,7 +46,6 @@ public class DeclareWarCommand extends Command {
     @Inject
     public DeclareWarCommand(
         ConfigService configService,
-        LocaleService localeService,
         MessageService messageService,
         PersistentData persistentData,
         WarFactory warFactory,
@@ -81,7 +78,6 @@ public class DeclareWarCommand extends Command {
                         .isOptional()
                 )
         );
-        this.localeService = localeService;
         this.configService = configService;
         this.messageService = messageService;
         this.persistentData = persistentData;

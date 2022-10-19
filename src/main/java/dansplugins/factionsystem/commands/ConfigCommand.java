@@ -110,54 +110,6 @@ public class ConfigCommand extends Command {
         this.medievalFactions = medievalFactions;
     }
 
-    public void execute(CommandSender sender, String[] args, String key) {
-        /*if (args.length == 0) {
-            sender.sendMessage(ChatColor.RED + "Valid subcommands: show, set, reload");
-            return;
-        }
-
-        final boolean show = this.safeEquals(args[0], "get", "show", this.localeService.getText("CmdConfigShow"));
-        final boolean set = this.safeEquals(args[0], "set", this.localeService.getText("CmdConfigSet"));
-        final boolean reload = this.safeEquals(args[0], "reload", "CmdConfigReload");
-
-        if (show) {
-            if (args.length < 2) {
-                sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigShow")));
-                return;
-            }
-
-            int page = this.getIntSafe(args[1], -1);
-
-            if (page == -1) {
-                sender.sendMessage(this.translate("&c" + this.localeService.getText("ArgumentMustBeNumber")));
-                return;
-            }
-
-            switch (page) {
-                case 1:
-                    this.configService.sendPageOneOfConfigList(sender);
-                    break;
-                case 2:
-                    this.configService.sendPageTwoOfConfigList(sender);
-                    break;
-                default:
-                    sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigShow")));
-            }
-        } else if (set) {
-            if (args.length < 3) {
-                sender.sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigSet")));
-            } else {
-                this.configService.setConfigOption(args[1], args[2], sender);
-            }
-        } else if (reload) {
-            this.medievalFactions.reloadConfig();
-            this.messageService.reloadLanguage();
-            sender.sendMessage(ChatColor.GREEN + "Config reloaded.");
-        } else {
-            sender.sendMessage(this.translate("&c" + this.localeService.getText("ValidSubCommandsShowSet")));
-        }*/
-    }
-
     public void listCommand(CommandContext context) {
         final int configPage = context.getIntegerArgument("page");
         switch(configPage) {
@@ -213,7 +165,7 @@ public class ConfigCommand extends Command {
 
     public void reloadCommand(CommandContext context) {
         this.medievalFactions.reloadConfig();
-        this.messageService.reloadLanguage();
+        this.localeService.reloadLanguage();
         context.reply(ChatColor.GREEN + "Config reloaded.");
     }
 

@@ -15,8 +15,6 @@ import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.objects.domain.Duel.DuelState;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.DeathService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -34,17 +32,13 @@ import java.util.Objects;
 @Singleton
 public class DuelCommand extends Command {
     private final EphemeralData ephemeralData;
-    private final PlayerService playerService;
     private final MessageService messageService;
     private final MedievalFactions medievalFactions;
-    private final LocaleService localeService;
     private final DeathService deathService;
 
     @Inject
     public DuelCommand(
         EphemeralData ephemeralData,
-        LocaleService localeService,
-        PlayerService playerService,
         MessageService messageService,
         MedievalFactions medievalFactions,
         DeathService deathService
@@ -101,10 +95,8 @@ public class DuelCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
-        this.playerService = playerService;
         this.messageService = messageService;
         this.medievalFactions = medievalFactions;
-        this.localeService = localeService;
         this.deathService = deathService;
     }
 
@@ -202,11 +194,10 @@ public class DuelCommand extends Command {
     }
 
     private void inviteDuel(Player player, Player target, int limit) {
-        this.playerService.sendMessage(
+        this.messageService.sendLocalizedMessage(
             target,
-            "&a" + this.localeService.getText("AlertChallengedToDuelPlusHowTo", player.getName()),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertChallengedToDuelPlusHowTo")).replace("#name#", player.getName()),
-            true
+            this.constructMessage("AlertChallengedToDuelPlusHowTo")
+                .with("name", player.getName())
         );
         this.ephemeralData.getDuelingPlayers().add(new Duel(this.medievalFactions, this.ephemeralData, this.deathService, player, target, limit));
     }

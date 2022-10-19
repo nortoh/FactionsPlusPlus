@@ -13,6 +13,7 @@ import dansplugins.factionsystem.objects.domain.Duel;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
+import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.RelationChecker;
 import org.bukkit.ChatColor;
@@ -34,15 +35,17 @@ public class DamageHandler implements Listener {
     private final LocaleService localeService;
     private final ConfigService configService;
     private final RelationChecker relationChecker;
+    private final MessageService messageService;
 
     @Inject
-    public DamageHandler(Logger logger, PersistentData persistentData, EphemeralData ephemeralData, LocaleService localeService, ConfigService configService, RelationChecker relationChecker) {
+    public DamageHandler(Logger logger, PersistentData persistentData, EphemeralData ephemeralData, LocaleService localeService, ConfigService configService, RelationChecker relationChecker, MessageService messageService) {
         this.logger = logger;
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.localeService = localeService;
         this.configService = configService;
         this.relationChecker = relationChecker;
+        this.messageService = messageService;
     }
 
     /**
@@ -235,14 +238,14 @@ public class DamageHandler implements Listener {
         boolean friendlyFireAllowed = faction.getFlag("allowFriendlyFire").toBoolean();
         if (!friendlyFireAllowed) {
             event.setCancelled(true);
-            attacker.sendMessage(ChatColor.RED + localeService.get("CannotAttackFactionMember"));
+            this.messageService.sendLocalizedMessage(attacker, "CannotAttackFactionMember");
         }
     }
 
     private void handleNonEnemyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
         if (configService.getBoolean("warsRequiredForPVP")) {
             event.setCancelled(true);
-            attacker.sendMessage(ChatColor.RED + localeService.get("CannotAttackNonWarringPlayer"));
+            this.messageService.sendLocalizedMessage(attacker, "CannotAttackNonWarringPlayer");
         }
     }
 }

@@ -11,8 +11,6 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -32,12 +30,10 @@ import java.util.UUID;
 @Singleton
 public class DemoteCommand extends Command {
 
-    private final PlayerService playerService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
 
     @Inject
-    public DemoteCommand(PlayerService playerService, LocaleService localeService, PersistentData persistentData) {
+    public DemoteCommand(PersistentData persistentData) {
         super(
             new CommandBuilder()
                 .withName("demote")
@@ -55,8 +51,6 @@ public class DemoteCommand extends Command {
                         .isRequired()
                 )
         );
-        this.localeService = localeService;
-        this.playerService = playerService;
         this.persistentData = persistentData;
     }
 
@@ -71,12 +65,7 @@ public class DemoteCommand extends Command {
         context.getExecutorsFaction().removeOfficer(playerToBeDemoted.getUniqueId());
 
         if (playerToBeDemoted.isOnline()) {
-            this.playerService.sendMessage(
-                playerToBeDemoted.getPlayer(),
-                "&c" + this.localeService.getText("AlertDemotion"),
-                "AlertDemotion",
-                false
-            );
+            context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
         }
         context.replyWith(
             this.constructMessage("PlayerDemoted")

@@ -44,7 +44,7 @@ public class TerritoryOwnerNotifier {
         if (holder != null) {
             return holder.getName();
         } else {
-            return localeService.get("Wilderness");
+            return this.localeService.get("Wilderness");
         }
     }
 
