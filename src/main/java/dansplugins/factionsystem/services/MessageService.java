@@ -93,19 +93,6 @@ public class MessageService implements ColorTranslator {
         );
     }
 
-    public void sendFlagList(Player player, Faction faction) {
-        // Clone because we may need to remove flags
-        HashMap<String, FactionFlag> flagList = (HashMap<String, FactionFlag>)faction.getFlags().clone();
-        if (!this.configService.getBoolean("allowNeutrality")) flagList.remove("neutral");
-        if (!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) flagList.remove("prefixColor");
-        String flagOutput = flagList
-            .keySet()
-            .stream()
-            .map(key -> String.format("%s: %s", key, flagList.get(key).toString()))
-            .collect(Collectors.joining(", "));
-        player.sendMessage(ChatColor.AQUA + "" + flagOutput);
-    }
-
     /**
      * Method to send an entire Faction a message.
      *
