@@ -12,7 +12,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
@@ -29,14 +28,12 @@ import java.util.Objects;
 @Singleton
 public class SwearFealtyCommand extends Command {
 
-    private final LocaleService localeService;
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
     public SwearFealtyCommand(
-        LocaleService localeService,
         MessageService messageService,
         PersistentData persistentData,
         FactionRepository factionRepository
@@ -59,7 +56,6 @@ public class SwearFealtyCommand extends Command {
                         .isRequired() 
                 )
         );
-        this.localeService = localeService;
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
@@ -79,20 +75,18 @@ public class SwearFealtyCommand extends Command {
         // set liege
         faction.setLiege(target.getID());
 
+        
         // inform target faction that they have a new vassal
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             target,
-            this.translate("&a" + this.localeService.getText("AlertFactionHasNewVassal", faction.getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasNewVassal"))
-                .replace("#name#", faction.getName())
+            this.constructMessage("AlertFactionHasNewVassal")
+                .with("name", faction.getName())
         );
-
         // inform players faction that they have a new liege
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             faction,
-            this.translate("&a" + this.localeService.getText("AlertFactionHasBeenVassalized", target.getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionHasBeenVassalized"))
-                .replace("#name#", target.getName())
+            this.constructMessage("AlertFactionHasBeenVassalized")
+                .with("name", target.getName())
         );
     }
 

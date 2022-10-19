@@ -12,11 +12,9 @@ import dansplugins.factionsystem.events.FactionLeaveEvent;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
-import dansplugins.factionsystem.builders.*;
+import dansplugins.factionsystem.builders.CommandBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -28,8 +26,6 @@ import java.util.Objects;
 @Singleton
 public class LeaveCommand extends Command {
     private final MessageService messageService;
-    private final PlayerService playerService;
-    private final LocaleService localeService;
     private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DisbandCommand disbandCommand;
@@ -37,8 +33,6 @@ public class LeaveCommand extends Command {
     @Inject
     public LeaveCommand(
         MessageService messageService,
-        PlayerService playerService,
-        LocaleService localeService,
         EphemeralData ephemeralData,
         Logger logger,
         DisbandCommand disbandCommand
@@ -53,8 +47,6 @@ public class LeaveCommand extends Command {
                 .expectsFactionMembership()
         );
         this.messageService = messageService;
-        this.playerService = playerService;
-        this.localeService = localeService;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
         this.disbandCommand = disbandCommand;
@@ -79,12 +71,11 @@ public class LeaveCommand extends Command {
         this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId()); // Remove from Faction Chat.
         faction.removeMember(player.getUniqueId());
         context.replyWith("AlertLeftFaction");
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             faction, 
-            this.translate("&a" + player.getName() + " has left " + faction.getName()),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertLeftFactionTeam"))
-                .replace("#name#", player.getName())
-                .replace("#faction#", faction.getName())
+            this.constructMessage("AlertLeftFactionTeam")
+                .with("name", player.getName())
+                .with("faction", faction.getName())
         );
     }
 }

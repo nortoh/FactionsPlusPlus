@@ -12,8 +12,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -33,15 +31,11 @@ import java.util.UUID;
 @Singleton
 public class PromoteCommand extends Command {
 
-    private final LocaleService localeService;
-    private final PlayerService playerService;
     private final PersistentData persistentData;
     private final FactionService factionService;
 
     @Inject
     public PromoteCommand(
-        LocaleService localeService,
-        PlayerService playerService,
         PersistentData persistentData,
         FactionService factionService
     ) {
@@ -62,8 +56,6 @@ public class PromoteCommand extends Command {
                         .isRequired()
                 )
         );
-        this.localeService = localeService;
-        this.playerService = playerService;
         this.persistentData = persistentData;
         this.factionService = factionService;
     }
@@ -84,12 +76,7 @@ public class PromoteCommand extends Command {
             faction.addOfficer(target.getUniqueId());
             context.replyWith("PlayerPromoted");
             if (target.isOnline() && target.getPlayer() != null) {
-                this.playerService.sendMessage(
-                    target.getPlayer(),
-                    "&a" + this.localeService.getText("PromotedToOfficer"),
-                    "PromotedToOfficer",
-                    false
-                );
+                context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
             }
         } else {
             context.replyWith(

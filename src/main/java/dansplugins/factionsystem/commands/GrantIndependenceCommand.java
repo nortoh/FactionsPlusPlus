@@ -12,7 +12,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
@@ -32,14 +31,12 @@ import java.util.UUID;
 public class GrantIndependenceCommand extends Command {
 
     private final MessageService messageService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
     public GrantIndependenceCommand(
         MessageService messageService,
-        LocaleService localeService,
         PersistentData persistentData,
         FactionRepository factionRepository
     ) {
@@ -62,7 +59,6 @@ public class GrantIndependenceCommand extends Command {
                 )
         );
         this.messageService = messageService;
-        this.localeService = localeService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
@@ -73,18 +69,16 @@ public class GrantIndependenceCommand extends Command {
         context.getExecutorsFaction().removeVassal(target.getID());
         
         // inform all players in that faction that they are now independent
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             target,
-            this.translate("&a" + this.localeService.getText("AlertGrantedIndependence", context.getExecutorsFaction().getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertGrantedIndependence"))
-                .replace("#name#", context.getExecutorsFaction().getName())
+            this.constructMessage("AlertGrantedIndependence")
+                .with("name", context.getExecutorsFaction().getName())
         );
         // inform all players in players faction that a vassal was granted independence
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             context.getExecutorsFaction(),
-            this.translate("&a" + this.localeService.getText("AlertNoLongerVassalFaction", target.getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNoLongerVassalFaction"))
-                .replace("#name#", target.getName())
+            this.constructMessage("AlertNoLongerVassalFaction")
+                .with("name", target.getName())
         );
     }
 

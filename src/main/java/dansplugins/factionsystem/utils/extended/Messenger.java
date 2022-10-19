@@ -15,6 +15,7 @@ import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.builders.MessageBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -41,33 +42,20 @@ public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messen
 
     public void sendFactionInfo(CommandSender sender, Faction faction, int power) {
         UUIDChecker uuidChecker = new UUIDChecker();
-        if (!configService.getBoolean("useNewLanguageFile")) {
-            sender.sendMessage(ChatColor.BOLD + "" + ChatColor.AQUA + String.format(localeService.get("FactionInfo"), faction.getName()) + "\n----------\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("Name"), faction.getName()) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("Owner"), uuidChecker.findPlayerNameBasedOnUUID(faction.getOwner())) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("Description"), faction.getDescription()) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("Population"), faction.getMemberList().size()) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("AlliedWith"), faction.getAlliesSeparatedByCommas()) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("AtWarWith"), faction.getEnemiesSeparatedByCommas()) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("PowerLevel"), this.factionService.getCumulativePowerLevel(faction)) + "/" + this.factionService.getMaximumCumulativePowerLevel(faction) + "\n");
-            sender.sendMessage(ChatColor.AQUA + String.format(localeService.get("DemesneSize"), power, this.factionService.getCumulativePowerLevel(faction)) + "\n");
-            sender.sendMessage(ChatColor.AQUA + "----------\n");
-        } else {
-            messageService.getLanguage().getStringList("FactionInfo").forEach(s -> {
-                s = s.replace("#faction#", faction.getName())
-                        .replace("#name#", faction.getName())
-                        .replace("#owner#", uuidChecker.findPlayerNameBasedOnUUID(faction.getOwner()))
-                        .replace("#desc#", faction.getDescription())
-                        .replace("#pplt#", String.valueOf(faction.getPopulation()))
-                        .replace("#aw#", faction.getAlliesSeparatedByCommas())
-                        .replace("#aww#", faction.getEnemiesSeparatedByCommas())
-                        .replace("#pl#", String.valueOf(this.factionService.getCumulativePowerLevel(faction)))
-                        .replace("#pl_max#", String.valueOf(this.factionService.getMaximumCumulativePowerLevel(faction)))
-                        .replace("#number#", String.valueOf(power))
-                        .replace("#max#", String.valueOf(this.factionService.getCumulativePowerLevel(faction)));
-                playerService.sendMessage(sender, "", s, true);
-            });
-        }
+        localeService.getStrings("FactionInfo").forEach(s -> {
+            s = s.replace("#faction#", faction.getName())
+                    .replace("#name#", faction.getName())
+                    .replace("#owner#", uuidChecker.findPlayerNameBasedOnUUID(faction.getOwner()))
+                    .replace("#desc#", faction.getDescription())
+                    .replace("#pplt#", String.valueOf(faction.getPopulation()))
+                    .replace("#aw#", faction.getAlliesSeparatedByCommas())
+                    .replace("#aww#", faction.getEnemiesSeparatedByCommas())
+                    .replace("#pl#", String.valueOf(this.factionService.getCumulativePowerLevel(faction)))
+                    .replace("#pl_max#", String.valueOf(this.factionService.getMaximumCumulativePowerLevel(faction)))
+                    .replace("#number#", String.valueOf(power))
+                    .replace("#max#", String.valueOf(this.factionService.getCumulativePowerLevel(faction)));
+            messageService.send(sender, s);
+        });
         sendLiegeInfoIfVassal(faction, sender);
         sendLiegeInfoIfLiege(faction, sender);
         sendBonusPowerInfo(faction, sender);
@@ -75,47 +63,41 @@ public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messen
 
     private void sendBonusPowerInfo(Faction faction, CommandSender sender) {
         if (faction.getBonusPower() != 0) {
-            playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("BonusPower"), faction.getBonusPower())
-                    , Objects.requireNonNull(messageService.getLanguage().getString("BonusPower")).replace("#amount#", String.valueOf(faction.getBonusPower())), true);
+            this.messageService.sendLocalizedMessage(
+                sender,
+                new MessageBuilder("BonusPower")
+                    .with("amount", String.valueOf(faction.getBonusPower()))
+            );
         }
     }
 
     private void sendLiegeInfoIfLiege(Faction faction, CommandSender sender) {
         int vassalContribution = this.factionService.calculateCumulativePowerLevelWithVassalContribution(faction) - this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(faction);
         if (faction.isLiege()) {
-            if (!this.factionService.isWeakened(faction)) {
-                playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("VassalContribution"), vassalContribution) + "\n"
-                        , Objects.requireNonNull(messageService.getLanguage().getString("VassalContribution")).replace("#amount#", String.valueOf(vassalContribution)), true);
-            } else {
-                playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("VassalContribution"), 0) + "\n"
-                        , Objects.requireNonNull(messageService.getLanguage().getString("VassalContribution")).replace("#amount#", String.valueOf(0)), true);
-            }
+            if (this.factionService.isWeakened(faction)) vassalContribution = 0;
+            messageService.sendLocalizedMessage(
+                sender,
+                new MessageBuilder("VassalContribution")
+                    .with("amount", String.valueOf(vassalContribution))
+            );
         }
     }
 
     private void sendLiegeInfoIfVassal(Faction faction, CommandSender sender) {
         if (faction.hasLiege()) {
             Faction factionLiege = this.factionRepository.getByID(faction.getLiege());
-            playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("Liege"), factionLiege.getName()) + "\n"
-                    , Objects.requireNonNull(messageService.getLanguage().getString("Liege")).replace("#name#", factionLiege.getName()), true);
+            messageService.sendLocalizedMessage(
+                sender,
+                new MessageBuilder("Liege")
+                    .with("name", factionLiege.getName())    
+            );
         }
         if (faction.isLiege()) {
-            playerService.sendMessage(sender, ChatColor.AQUA + String.format(localeService.get("Vassals"), faction.getVassalsSeparatedByCommas()) + "\n"
-                    , Objects.requireNonNull(messageService.getLanguage().getString("Vassals")).replace("#name#", faction.getVassalsSeparatedByCommas()), true);
-        }
-    }
-
-    public void sendAllPlayersInFactionMessage(Faction faction, String message) {
-        ArrayList<UUID> members = faction.getMemberArrayList();
-        for (UUID member : members) {
-            try {
-                Player target = getServer().getPlayer(member);
-                if (target != null) {
-                    target.sendMessage(playerService.colorize(message));
-                }
-            } catch (Exception ignored) {
-
-            }
+            messageService.sendLocalizedMessage(
+                sender,
+                new MessageBuilder("Vasslas")
+                    .with("name", faction.getVassalsSeparatedByCommas())    
+            );
         }
     }
 }

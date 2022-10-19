@@ -13,9 +13,7 @@ import dansplugins.factionsystem.events.FactionKickEvent;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -36,8 +34,6 @@ import java.util.UUID;
 @Singleton
 public class KickCommand extends Command {
     private final MessageService messageService;
-    private final PlayerService playerService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final Logger logger;
@@ -45,8 +41,6 @@ public class KickCommand extends Command {
     @Inject
     public KickCommand(
         MessageService messageService,
-        PlayerService playerService,
-        LocaleService localeService,
         EphemeralData ephemeralData,
         PersistentData persistentData,
         Logger logger
@@ -69,8 +63,6 @@ public class KickCommand extends Command {
                 )
         );
         this.messageService = messageService;
-        this.playerService = playerService;
-        this.localeService = localeService;
         this.ephemeralData = ephemeralData;
         this.persistentData = persistentData;
         this.logger = logger;
@@ -99,19 +91,17 @@ public class KickCommand extends Command {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
         faction.removeMember(target.getUniqueId());
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             faction,
-            "&c" + this.localeService.getText("HasBeenKickedFrom", target.getName(), faction.getName()),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("HasBeenKickedFrom"))
-                    .replace("#name#", target.getName())
-                    .replace("#faction#", faction.getName())
+            this.constructMessage("HasBeenKickedFrom")
+                .with("name", target.getName())
+                .with("faction", faction.getName())
         );
         if (target.isOnline() && target.getPlayer() != null) {
-            this.playerService.sendMessage(
+            context.messagePlayer(
                 target.getPlayer(),
-                "&c" + this.localeService.getText("AlertKicked", player.getName()),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertKicked")).replace("#name#", player.getName()),
-                true
+                this.constructMessage("AlertKicked")
+                    .with("name", player.getName())
             );
         }
     }

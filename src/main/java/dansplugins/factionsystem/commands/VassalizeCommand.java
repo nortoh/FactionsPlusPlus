@@ -11,7 +11,6 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -34,14 +33,12 @@ public class VassalizeCommand extends Command {
 
     private final MessageService messageService;
     private final Logger logger;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
 
     
     @Inject
     public VassalizeCommand(
         MessageService messageService,
-        LocaleService localeService,
         PersistentData persistentData,
         Logger logger
     ) {
@@ -64,7 +61,6 @@ public class VassalizeCommand extends Command {
                 )
         );
         this.messageService = messageService;
-        this.localeService = localeService;
         this.persistentData = persistentData;
         this.logger = logger;
     }
@@ -96,19 +92,17 @@ public class VassalizeCommand extends Command {
         context.getExecutorsFaction().addAttemptedVassalization(target.getID());
 
         // inform all players in that faction that they are trying to be vassalized
-        this.messageService.messageFaction(
-            target, 
-            this.translate("&a" + this.localeService.getText("AlertAttemptedVassalization", context.getExecutorsFaction().getName(), context.getExecutorsFaction().getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedVassalization"))
-                .replace("#name#", context.getExecutorsFaction().getName())
+        this.messageService.sendFactionLocalizedMessage(
+            target,
+            this.constructMessage("AlertAttemptedVassalization")
+                .with("name", context.getExecutorsFaction().getName())
         );
 
         // inform all players in players faction that a vassalization offer was sent
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             context.getExecutorsFaction(),
-            this.translate("&a" + this.localeService.getText("AlertFactionAttemptedToVassalize", target.getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertFactionAttemptedToVassalize"))
-                .replace("#name#", target.getName())
+            this.constructMessage("AlertFactionAttemptedToVassalize")
+                .with("name", target.getName())
         );
     }
 

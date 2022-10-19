@@ -14,11 +14,7 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import dansplugins.factionsystem.builders.*;
@@ -37,23 +33,15 @@ import java.util.Objects;
 @Singleton
 public class DisbandCommand extends Command {
 
-    private final PlayerService playerService;
-    private final MessageService messageService;
-    private final ConfigService configService;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final DynmapIntegrationService dynmapService;
     private final Logger logger;
-    private final LocaleService localeService;
     private final FactionRepository factionRepository;
 
     @Inject
     public DisbandCommand(
-        PlayerService playerService,
-        MessageService messageService,
-        ConfigService configService,
         Logger logger,
-        LocaleService localeService,
         PersistentData persistentData,
         DynmapIntegrationService dynmapService,
         EphemeralData ephemeralData,
@@ -74,10 +62,6 @@ public class DisbandCommand extends Command {
                         .requiresPermissionsIfNotNull("mf.disband.others", "mf.admin")
                 )
         );
-        this.localeService = localeService;
-        this.playerService = playerService;
-        this.messageService = messageService;
-        this.configService = configService;
         this.logger = logger;
         this.persistentData = persistentData;
         this.dynmapService = dynmapService;
@@ -105,11 +89,9 @@ public class DisbandCommand extends Command {
             self = false;
         }
         if (disband == null) {
-            this.playerService.sendMessage(
-                sender,
-                "&c" + this.localeService.getText("FactionNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", context.getRawArguments())),
-                true
+            context.replyWith(
+                this.constructMessage("FactionNotFound")
+                    .with("faction", String.join(" ", context.getRawArguments()))
             );
             return;
         }

@@ -411,11 +411,10 @@ public class ForceCommand extends Command {
             if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
 
             // announce peace to all players on server.
-            this.messageService.messageServer(
-                "",
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAtPeaceWith"))
-                    .replace("#p1#", former.getName())
-                    .replace("#p2#", latter.getName())
+            this.messageService.sendAllPlayersLocalizedMessage(
+                this.constructMessage("AlertNowAtPeaceWith")
+                    .with("p1", former.getName())
+                    .with("p2", latter.getName())  
             );
         }
     }
@@ -434,7 +433,7 @@ public class ForceCommand extends Command {
         }
         faction.removeOfficer(player.getUniqueId()); // Remove Officer.
         if (player.isOnline() && player.getPlayer() != null) {
-            player.getPlayer().sendMessage(this.translate("&b" + this.messageService.getLanguage().getString("AlertForcedDemotion")));
+            context.messagePlayer(player.getPlayer(), "AlertForcedDemotion");
         }
         context.replyWith("SuccessOfficerRemoval");
     }
@@ -453,14 +452,15 @@ public class ForceCommand extends Command {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             faction,
-            this.translate("&a" + this.messageService.getLanguage().getString("HasJoined").replace("#player#", player.getName()).replace("#faction#", faction.getName())),
-            ""
+            this.constructMessage("HasJoined")
+                .with("player", player.getName())
+                .with("faction", faction.getName())
         );
         faction.addMember(player.getUniqueId());
         if (player.isOnline() && player.getPlayer() != null) {
-            player.getPlayer().sendMessage(this.translate("&b" + this.messageService.getLanguage().getString("AlertForcedToJoinFaction")));
+            context.messagePlayer(player.getPlayer(), "AlertForcedToJoinFaction");
         }
         context.replyWith("SuccessForceJoin");
     }
@@ -488,17 +488,17 @@ public class ForceCommand extends Command {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
         faction.removeMember(target.getUniqueId());
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             faction,
-            this.messageService.getLanguage().getString("HasBeenKickedFrom")
-                .replace("#player#", target.getName())
-                .replace("#faction#", faction.getName()),
-            ""
+            this.constructMessage("HasBeenKickedFrom")
+                .with("player", target.getName())
+                .with("faction", faction.getName())
         );
         if (target.isOnline() && target.getPlayer() != null) {
-            target.getPlayer().sendMessage(
-                this.messageService.getLanguage().getString("AlertKicked")
-                    .replace("#name#", "an admin")
+            context.messagePlayer(
+                target.getPlayer(),
+                this.constructMessage("AlertKicked")
+                    .with("name", "an admin")
             );
         }
         context.replyWith("SuccessFactionMemberRemoval");
@@ -549,9 +549,10 @@ public class ForceCommand extends Command {
         faction.setOwner(player.getUniqueId());
 
         if (player.isOnline() && player.getPlayer() != null) {
-            player.getPlayer().sendMessage(
-                this.messageService.getLanguage().getString("OwnershipTransferred")
-                    .replace("#name#", faction.getName())
+            context.messagePlayer(
+                player.getPlayer(),
+                this.constructMessage("OwnershipTransferred")
+                    .with("name", faction.getName())
             );
         }
         context.replyWith(

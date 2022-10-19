@@ -13,8 +13,7 @@ import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TerritoryOwnerNotifier;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -34,29 +33,26 @@ import static org.bukkit.Bukkit.getServer;
 public class MoveHandler implements Listener {
     private final PersistentData persistentData;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
-    private final LocaleService localeService;
     private final MedievalFactions medievalFactions;
     private final DynmapIntegrationService dynmapService;
-    private final PlayerService playerService;
     private final FactionService factionService;
+    private final MessageService messageService;
 
     @Inject
     public MoveHandler(
         PersistentData persistentData,
         TerritoryOwnerNotifier territoryOwnerNotifier,
-        LocaleService localeService,
         MedievalFactions medievalFactions,
         DynmapIntegrationService dynmapService,
-        PlayerService playerService,
-        FactionService factionService
+        FactionService factionService,
+        MessageService messageService
     ) {
         this.persistentData = persistentData;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
-        this.localeService = localeService;
         this.medievalFactions = medievalFactions;
         this.dynmapService = dynmapService;
-        this.playerService = playerService;
         this.factionService = factionService;
+        this.messageService = messageService;
     }
 
     @EventHandler()
@@ -116,7 +112,7 @@ public class MoveHandler implements Listener {
                 if (this.notAtDemesneLimit(playersFaction)) {
                     this.scheduleClaiming(player, playersFaction);
                 } else {
-                    playerService.sendMessage(player, ChatColor.RED + this.localeService.get("AlertReachedDemesne"), "AlertReachedDemesne", false);
+                    this.messageService.sendLocalizedMessage(player, "AlertReachedDemesne");
                 }
             }
         }

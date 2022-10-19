@@ -99,7 +99,7 @@ public class FlagsCommand extends Command {
         String flagOutput = flagList
             .keySet()
             .stream()
-            .map(flagKey -> String.format("%s: %s", key, flagList.get(flagKey).toString()))
+            .map(flagKey -> String.format("%s: %s", flagKey, flagList.get(flagKey).toString()))
             .collect(Collectors.joining(", "));
         context.reply(ChatColor.AQUA + "" + flagOutput);
     }

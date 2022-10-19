@@ -11,9 +11,6 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -33,18 +30,10 @@ import java.util.UUID;
 @Singleton
 public class TransferCommand extends Command {
 
-    private final PlayerService playerService;
-    private final LocaleService localeService;
-    private final MessageService messageService;
     private final PersistentData persistentData;
 
     @Inject
-    public TransferCommand(
-        PlayerService playerService,
-        LocaleService localeService,
-        MessageService messageService,
-        PersistentData persistentData
-    ) {
+    public TransferCommand(PersistentData persistentData) {
         super(
             new CommandBuilder()
                 .withName("transfer")
@@ -62,9 +51,6 @@ public class TransferCommand extends Command {
                         .isRequired()
                 )
         );
-        this.playerService = playerService;
-        this.localeService = localeService;
-        this.messageService = messageService;
         this.persistentData = persistentData;
     }
 
@@ -85,11 +71,10 @@ public class TransferCommand extends Command {
                 .with("name", target.getName())
         );
         if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
-            this.playerService.sendMessage(
+            context.messagePlayer(
                 target.getPlayer(),
-                "&a" + this.localeService.getText("OwnershipTransferred", context.getExecutorsFaction().getName()),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("'OwnershipTransferred")).replace("#name#", context.getExecutorsFaction().getName()),
-                true
+                this.constructMessage("OwnershipTransferred")
+                    .with("name", context.getExecutorsFaction().getName())
             );
         }
     }

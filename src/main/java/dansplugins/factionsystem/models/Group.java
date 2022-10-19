@@ -76,6 +76,10 @@ public class Group {
         return members.contains(uuid);
     }
 
+    public ArrayList<UUID> getMembers() {
+        return members;
+    }
+
     public ArrayList<UUID> getMemberList() {
         return members;
     }

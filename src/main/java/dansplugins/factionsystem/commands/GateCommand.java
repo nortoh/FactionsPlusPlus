@@ -13,7 +13,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -33,13 +32,11 @@ public class GateCommand extends Command {
 
     private final EphemeralData ephemeralData;
     private final PersistentData persistentData;
-    private final MessageService messageService;
 
     @Inject
     public GateCommand(
         EphemeralData ephemeralData,
-        PersistentData persistentData,
-        MessageService messageService
+        PersistentData persistentData
     ) {
         super(
             new CommandBuilder()
@@ -105,7 +102,6 @@ public class GateCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
-        this.messageService = messageService;
         this.persistentData = persistentData;
     }
 
@@ -185,7 +181,7 @@ public class GateCommand extends Command {
         }
         // Require officer
         String gateName = context.getStringArgument("gate name");
-        if (gateName == null) gateName = this.messageService.getLanguage().getString("UnnamedGate");
+        if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.startCreatingGate(player, gateName);
         context.replyWith("CreatingGateClickWithHoe");
     }
