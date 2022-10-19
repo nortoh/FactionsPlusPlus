@@ -13,7 +13,6 @@ import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.DynmapIntegrationService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
@@ -31,7 +30,6 @@ import java.util.List;
 public class UnclaimallCommand extends Command {
 
     private PersistentData persistentData;
-    private LocaleService localeService;
     private MessageService messageService;
     private DynmapIntegrationService dynmapService;
     private FactionRepository factionRepository;
@@ -39,7 +37,6 @@ public class UnclaimallCommand extends Command {
     @Inject
     public UnclaimallCommand(
         PersistentData persistentData,
-        LocaleService localeService,
         MessageService messageService,
         DynmapIntegrationService dynmapService,
         FactionRepository factionRepository
@@ -60,7 +57,6 @@ public class UnclaimallCommand extends Command {
                 )
         );
         this.persistentData = persistentData;
-        this.localeService = localeService;
         this.messageService = messageService;
         this.dynmapService = dynmapService;
         this.factionRepository = factionRepository;
@@ -88,11 +84,7 @@ public class UnclaimallCommand extends Command {
         }
         // remove faction home
         faction.setFactionHome(null);
-        this.messageService.messageFaction(
-            faction, 
-            this.translate("&c" + this.localeService.getText("AlertFactionHomeRemoved")),
-            this.messageService.getLanguage().getString("AlertFactionHomeRemoved")
-        );
+        this.messageService.sendFactionLocalizedMessage(faction, "AlertFactionHomeRemoved");
 
         // remove claimed chunks
         this.persistentData.getChunkDataAccessor().removeAllClaimedChunks(faction.getID());

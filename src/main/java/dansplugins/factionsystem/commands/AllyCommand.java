@@ -102,38 +102,37 @@ public class AllyCommand extends Command {
         // send the request
         context.getExecutorsFaction().requestAlly(otherFaction.getID());
 
-        this.messageService.messageFaction(
-                context.getExecutorsFaction(),
-                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", context.getExecutorsFaction().getName(), otherFaction.getName())),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
-                        .replace("#faction_a#", context.getExecutorsFaction().getName())
-                        .replace("#faction_b#", otherFaction.getName())
+        this.messageService.sendFactionLocalizedMessage(
+            context.getExecutorsFaction(),
+            this.constructMessage("AlertAttemptedAlliance")
+                .with("faction_a", context.getExecutorsFaction().getName())
+                .with("faction_b", otherFaction.getName())
         );
 
-        this.messageService.messageFaction(
-                otherFaction,
-                this.translate("&a" + this.localeService.getText("AlertAttemptedAlliance", context.getExecutorsFaction().getName(), otherFaction.getName())),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAttemptedAlliance"))
-                        .replace("#faction_a#", context.getExecutorsFaction().getName())
-                        .replace("#faction_b#", otherFaction.getName())
+        this.messageService.sendFactionLocalizedMessage(
+            otherFaction,
+            this.constructMessage("AlertAttemptedAlliance")
+                .with("faction_a", otherFaction.getName())
+                .with("faction_b", context.getExecutorsFaction().getName())
         );
 
-        // check if both factions are have requested an alliance
+        // check if both factions have requested an alliance
         if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getID()) && otherFaction.isRequestedAlly(context.getExecutorsFaction().getID())) {
             // ally them
             context.getExecutorsFaction().addAlly(otherFaction.getID());
             otherFaction.addAlly(context.getExecutorsFaction().getID());
             // message player's faction
-            this.messageService.messageFaction(
+            this.messageService.sendFactionLocalizedMessage(
                 context.getExecutorsFaction(), 
-                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", otherFaction.getName())), 
-                Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", otherFaction.getName())
+                this.constructMessage("AlertNowAlliedWith")
+                    .with("faction", otherFaction.getName())
             );
 
             // message target faction
-            this.messageService.messageFaction(
+            this.messageService.sendFactionLocalizedMessage(
                 otherFaction, 
-                this.translate("&a" + this.localeService.getText("AlertNowAlliedWith", context.getExecutorsFaction().getName())), Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAlliedWith")).replace("#faction#", context.getExecutorsFaction().getName())
+                this.constructMessage("AlertNowAlliedWith")
+                    .with("faction", context.getExecutorsFaction().getName())
             );
 
             // remove alliance requests

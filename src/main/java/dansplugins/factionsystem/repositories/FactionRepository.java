@@ -105,6 +105,11 @@ public class FactionRepository {
         return this.factionStore;
     }
 
+    // Retrieve number of factions
+    public Integer count() {
+        return this.factionStore.size();
+    }
+
     // Write to file
     public void persist() {
         File file = new File(this.dataPath);

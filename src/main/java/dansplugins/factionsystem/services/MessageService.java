@@ -3,159 +3,109 @@ package dansplugins.factionsystem.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.MedievalFactions;
 import dansplugins.factionsystem.builders.MessageBuilder;
-import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.StringUtils;
-import dansplugins.factionsystem.commands.abs.ColorTranslator;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.models.FactionFlag;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.command.CommandSender;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
-import java.util.StringJoiner;
 
 @Singleton
-public class MessageService implements ColorTranslator {
+public class MessageService {
 
-    private final MedievalFactions medievalFactions;
-    private File languageFile;
-    private FileConfiguration language;
-    private PlayerService playerService;
-    private LocaleService localeService;
-    private ConfigService configService;
+    private final LocaleService localeService;
 
     @Inject
-    public MessageService(MedievalFactions medievalFactions, PlayerService playerService, LocaleService localeService, ConfigService configService) {
-        this.medievalFactions = medievalFactions;
-        this.playerService = playerService;
+    public MessageService(LocaleService localeService) {
         this.localeService = localeService;
-        this.configService = configService;
-        this.createLanguageFile();
     }
 
-    public void createLanguageFile() {
-        this.languageFile = new File(this.medievalFactions.getDataFolder(), "language.yml");
-        if (!this.languageFile.exists()) this.medievalFactions.saveResource("language.yml", false);
-        this.language = new YamlConfiguration();
-        try {
-            this.language.load(this.languageFile);
-        } catch (IOException | InvalidConfigurationException e) {
-            this.medievalFactions.getLogger().log(Level.WARNING, e.getCause().toString());
-        }
+    public void send(Player player, String message) {
+        player.sendMessage(StringUtils.colorize(message));
     }
 
-    public FileConfiguration getLanguage() {
-        return this.language;
+    public void send(CommandSender sender, String message) {
+        sender.sendMessage(StringUtils.colorize(message));
     }
 
-
-    public void reloadLanguage() {
-        if (languageFile.exists()) {
-            this.language = YamlConfiguration.loadConfiguration(this.languageFile);
-        } else {
-            this.createLanguageFile();
-        }
+    public void sendLocalizedMessage(CommandSender sender, String localizationKey) {
+        this.send(sender, this.localeService.get(localizationKey));
     }
 
-    public void saveLanguage() {
-        if (this.languageFile.exists()) {
-            try {
-                this.language.save(this.languageFile);
-            } catch (IOException ignored) {
-            }
-        } else {
-            this.createLanguageFile();
-        }
-    }
-
-    public void messageSender(CommandSender sender, String message) {
-        sender.sendMessage(
-            StringUtils.colorize(
-                message
+    public void sendLocalizedMessage(CommandSender sender, MessageBuilder builder) {
+        this.send(
+            sender,
+            builder.toString(
+                this.localeService.get(builder.getLocalizationKey())
             )
         );
     }
 
-    public void replyToSender(CommandSender sender, String localizationKey) {
-        this.messageSender(sender, this.getLanguage().getString(localizationKey));
+    public void sendAllPlayersLocalizedMessage(MessageBuilder builder) {
+        this.sendToAllPlayers(builder.toString(this.localeService.get(builder.getLocalizationKey())));
     }
 
-    public void replyToSender(CommandSender sender, MessageBuilder builder) {
-        this.messageSender(
-            sender,
+    public void sendFactionLocalizedMessage(Faction faction, String localizationKey) {
+        this.sendToFaction(faction, localizationKey);
+    }
+
+    public void sendFactionLocalizedMessage(Faction faction, MessageBuilder builder) {
+        this.sendToFaction(
+            faction, 
             builder.toString(
-                this.getLanguage().getString(builder.getLocalizationKey())
+                this.localeService.get(builder.getLocalizationKey())
             )
         );
     }
 
     public void sendPermissionMissingMessage(CommandSender sender, List<String> missingPermissions) {
-        this.playerService.sendMessage(
-            sender,
-            this.translate("&c" + this.localeService.getText("PermissionNeeded")), 
-            Objects.requireNonNull(this.getLanguage().getString("PermissionNeeded"))
-                .replace("#permission#", String.join(", ", missingPermissions)), 
-            true
-        );
+        this.sendLocalizedMessage(sender, new MessageBuilder("PermissionNeeded").with("permission", String.join(", ", missingPermissions)));
     }
 
     /**
      * Method to send an entire Faction a message.
      *
      * @param faction    to send a message to.
-     * @param oldMessage old message to send to the Faction.
-     * @param newMessage new message to send to the Faction.
+     * @param message    message to send to the Faction.
      */
-    public void messageFaction(Faction faction, String oldMessage, String newMessage) {
-        faction.getMemberList()
+    public void sendToFaction(Faction faction, String message) {
+        faction.getMembers()
             .stream()
-            .map(Bukkit::getOfflinePlayer)
-            .filter(OfflinePlayer::isOnline)
-            .map(OfflinePlayer::getPlayer)
+            .map(Bukkit::getPlayer)
             .filter(Objects::nonNull)
-            .forEach(player -> this.playerService.sendMessage(player, oldMessage, newMessage, true));
+            .forEach(player -> this.send(player, message));
     }
 
     /**
-     * Method to send the entire Server a message.
+     * Method to send every player in the server a message.
      *
-     * @param oldMessage old message to send to the players.
-     * @param newMessage old message to send to the players.
+     * @param message message to send to the players.
      */
-    public void messageServer(String oldMessage, String newMessage) {
-        Bukkit.getOnlinePlayers().forEach(player -> this.playerService.sendMessage(player, oldMessage, newMessage, true));
+    public void sendToAllPlayers(String message) {
+        Bukkit.getOnlinePlayers().forEach(player -> this.send(player, message));
     }
 
-    public void sendCommandNotFoundMessage(CommandSender sender) {
-        this.playerService.sendMessage(sender, ChatColor.RED + this.localeService.get("CommandNotRecognized"), "CommandNotRecognized", false);
+    /**
+     * Method to broadcast a message as the server.
+     * 
+     * @param message message to broadcast.
+     */
+    public void broadcast(String message) {
+        Bukkit.broadcastMessage(message);
     }
 
     public void sendInvalidSyntaxMessage(CommandSender sender, String commandName, String commandSyntax) {
-        this.playerService.sendMessage(
-            sender, 
-            "&c" + this.localeService.getText("InvalidSyntax"),
-            Objects.requireNonNull(this.getLanguage().getString("InvalidSyntax"))
-                .replace("#command#", commandName)
-                .replace("#syntax#", commandSyntax),
-            true
+        this.sendLocalizedMessage(
+            sender,
+            new MessageBuilder("InvalidSyntax")
+                .with("command", commandName)
+                .with("syntax", commandSyntax)
         );
     }
 

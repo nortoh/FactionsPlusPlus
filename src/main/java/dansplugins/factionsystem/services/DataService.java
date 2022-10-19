@@ -7,16 +7,15 @@ import java.util.Random;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.LockedBlock;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.models.ClaimedChunk;
-
-import dansplugins.factionsystem.repositories.ClaimedChunkRepository;
-import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.repositories.LockedBlockRepository;
-import dansplugins.factionsystem.repositories.PlayerRecordRepository;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.ConfigOption;
+import dansplugins.factionsystem.repositories.*;
 
 
 @Singleton
@@ -25,18 +24,24 @@ public class DataService {
     private final ClaimedChunkRepository claimedChunkRepository;
     private final LockedBlockRepository lockedBlockRepository;
     private final PlayerRecordRepository playerRecordRepository;
+    private final CommandRepository commandRepository;
+    private final ConfigOptionRepository configOptionRepository;
 
     @Inject
     public DataService(
         FactionRepository factionRepository,
         ClaimedChunkRepository claimedChunkRepository,
         LockedBlockRepository lockedBlockRepository,
-        PlayerRecordRepository playerRecordRepository
+        PlayerRecordRepository playerRecordRepository,
+        CommandRepository commandRepository,
+        ConfigOptionRepository configOptionRepository
     ) {
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
         this.lockedBlockRepository = lockedBlockRepository;
         this.playerRecordRepository = playerRecordRepository;
+        this.commandRepository = commandRepository;
+        this.configOptionRepository = configOptionRepository;
     }
 
     public FactionRepository getFactionRepository() {
@@ -87,5 +92,21 @@ public class DataService {
             }
         }
         return chunks;
+    }
+
+    public CommandRepository getCommandRepository() {
+        return this.commandRepository;
+    }
+
+    public Command getCommand(String command) {
+        return this.commandRepository.get(command);
+    }
+
+    public ConfigOptionRepository getConfigOptionRepository() {
+        return this.configOptionRepository;
+    }
+
+    public ConfigOption getConfigOption(String optionName) {
+        return this.configOptionRepository.get(optionName);
     }
 }

@@ -64,8 +64,8 @@ public class FactionFlag {
         return String.valueOf(this.getValue());
     }
 
-    public boolean toBoolean() {
-        return (boolean)this.getValue();
+    public Boolean toBoolean() {
+        return (Boolean)this.getValue();
     }
 
     public Color toColor() {

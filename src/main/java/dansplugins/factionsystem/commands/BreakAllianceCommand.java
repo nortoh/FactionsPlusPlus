@@ -81,17 +81,15 @@ public class BreakAllianceCommand extends Command {
 
         context.getExecutorsFaction().removeAlly(otherFaction.getID());
         otherFaction.removeAlly(context.getExecutorsFaction().getID());
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             context.getExecutorsFaction(), 
-            this.translate("&c" + this.localeService.getText("AllianceBrokenWith", otherFaction.getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AllianceBrokenWith"))
-                .replace("#faction#", otherFaction.getName())
+            this.constructMessage("AllianceBrokenWith")
+                .with("faction", otherFaction.getName())
         );
-        this.messageService.messageFaction(
-            otherFaction, 
-            this.translate("&c" + this.localeService.getText("AlertAllianceHasBeenBroken", context.getExecutorsFaction().getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAllianceHasBeenBroken"))
-                .replace("#faction#", context.getExecutorsFaction().getName())
+        this.messageService.sendFactionLocalizedMessage(
+            context.getExecutorsFaction(), 
+            this.constructMessage("AlertAllianceHasBeenBroken")
+                .with("faction", context.getExecutorsFaction().getName())
         );
     }
 

@@ -13,6 +13,7 @@ import dansplugins.factionsystem.repositories.ConfigOptionRepository;
 import dansplugins.factionsystem.utils.StringUtils;
 import dansplugins.factionsystem.builders.ConfigOptionBuilder;
 import dansplugins.factionsystem.constants.SetConfigResult;
+import dansplugins.factionsystem.builders.MessageBuilder;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -29,16 +30,16 @@ import javax.inject.Provider;
 @Singleton
 public class ConfigService {
     private final Provider<MedievalFactions> medievalFactions;
-    private final Provider<LocaleService> localeService;
     private final ConfigOptionRepository configOptionRepository;
+    private final MessageService messageService;
 
     private boolean altered = false;
 
     @Inject
-    public ConfigService(Provider<MedievalFactions> medievalFactions, Provider<LocaleService> localeService, ConfigOptionRepository configOptionRepository) {
+    public ConfigService(Provider<MedievalFactions> medievalFactions, ConfigOptionRepository configOptionRepository, MessageService messageService) {
         this.medievalFactions = medievalFactions;
-        this.localeService = localeService;
         this.configOptionRepository = configOptionRepository;
+        this.messageService = messageService;
         this.registerCoreOptions();
     }
 
@@ -372,7 +373,12 @@ public class ConfigService {
     }
 
     public void sendPageOneOfConfigList(CommandSender sender) {
-        sender.sendMessage(ChatColor.AQUA + localeService.get().get("ConfigListPageOne"));
+        this.messageService.sendLocalizedMessage(
+            sender,
+            new MessageBuilder("ConfigListPage")
+                .with("page", "1")
+                .with("pages", "2")
+        );
         sender.sendMessage(ChatColor.AQUA + "version: " + getString("version")
                 + ", languageid: " + getString("languageid")
                 + ", debugMode: " + getBoolean("debugMode")
@@ -396,7 +402,12 @@ public class ConfigService {
     }
 
     public void sendPageTwoOfConfigList(CommandSender sender) {
-        sender.sendMessage(ChatColor.AQUA + localeService.get().get("ConfigListPageTwo"));
+        this.messageService.sendLocalizedMessage(
+            sender,
+            new MessageBuilder("ConfigListPage")
+                .with("page", "2")
+                .with("pages", "2")
+        );
         sender.sendMessage(ChatColor.AQUA + "factionMaxGateArea: " + getInt("factionMaxGateArea")
                 + ", surroundedChunksProtected: " + getBoolean("surroundedChunksProtected")
                 + ", zeroPowerFactionsGetDisbanded: " + getBoolean("zeroPowerFactionsGetDisbanded")
@@ -503,9 +514,5 @@ public class ConfigService {
 
     public String getString(String option) {
         return getConfig().getString(option);
-    }
-
-    public LocaleService getLocaleService() {
-        return this.localeService.get();
     }
 }

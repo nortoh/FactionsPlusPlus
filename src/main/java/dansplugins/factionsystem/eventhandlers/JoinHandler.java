@@ -14,10 +14,10 @@ import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.DataService;
 import dansplugins.factionsystem.services.FactionService;
-import dansplugins.factionsystem.services.LocaleService;
+import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TerritoryOwnerNotifier;
-import dansplugins.factionsystem.utils.extended.Messenger;
+import dansplugins.factionsystem.builders.MessageBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -33,33 +33,30 @@ import java.util.UUID;
 @Singleton
 public class JoinHandler implements Listener {
     private final PersistentData persistentData;
-    private final LocaleService localeService;
     private final ConfigService configService;
     private final Logger logger;
-    private final Messenger messenger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
     private final FactionService factionService;
     private final DataService dataService;
+    private final MessageService messageService;
 
     @Inject
     public JoinHandler(
         PersistentData persistentData,
-        LocaleService localeService,
         ConfigService configService,
         Logger logger,
-        Messenger messenger,
         TerritoryOwnerNotifier territoryOwnerNotifier,
         FactionService factionService,
-        DataService dataService
+        DataService dataService,
+        MessageService messageService
     ) {
         this.persistentData = persistentData;
-        this.localeService = localeService;
         this.configService = configService;
         this.logger = logger;
-        this.messenger = messenger;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.factionService = factionService;
         this.dataService = dataService;
+        this.messageService = messageService;
     }
 
     @EventHandler()
@@ -82,11 +79,21 @@ public class JoinHandler implements Listener {
         double newPower = getNewPower(player);
 
         if (record.getLastLogout() != null && record.getMinutesSinceLastLogout() > 1) {
-            player.sendMessage(ChatColor.GREEN + String.format(localeService.get("WelcomeBackLastLogout"), event.getPlayer().getName(), record.getTimeSinceLastLogout()));
+            this.messageService.sendLocalizedMessage(
+                player,
+                new MessageBuilder("WelcomeBackLastLogout")
+                    .with("name", event.getPlayer().getName())
+                    .with("duration", record.getTimeSinceLastLogout())
+            );
         }
 
         if (record.getPowerLost() > 0) {
-            player.sendMessage(ChatColor.RED + String.format(localeService.get("PowerHasDecayed"), record.getPowerLost(), newPower));
+            this.messageService.sendLocalizedMessage(
+                player,
+                new MessageBuilder("PowerHasDecayed")
+                    .with("loss", String.valueOf(record.getPowerLost()))
+                    .with("power", String.valueOf(newPower))
+            );
         }
 
         record.setPowerLost(0);
@@ -126,10 +133,14 @@ public class JoinHandler implements Listener {
                 logger.debug("Join event was cancelled.");
                 return;
             }
-            messenger.sendAllPlayersInFactionMessage(faction, String.format(ChatColor.GREEN + "" + localeService.get("HasJoined"), player.getName(), faction.getName()));
+            this.messageService.sendFactionLocalizedMessage(
+                faction,
+                new MessageBuilder("HasJoined")
+                    .with("name", player.getName())
+                    .with("faction", faction.getName())
+            );
             faction.addMember(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "" + localeService.get("AssignedToRandomFaction"));
-
+            this.messageService.sendLocalizedMessage(player, "AssignedToRandomFaction");
             logger.debug(player.getName() + " has been randomly assigned to " + faction.getName() + "!");
         } else {
             logger.debug("Attempted to assign " + player.getName() + " to a random faction, but no factions are existent.");
@@ -160,7 +171,7 @@ public class JoinHandler implements Listener {
         }
 
         if (playersFaction.isLiege() && this.factionService.isWeakened(playersFaction)) {
-            player.sendMessage(ChatColor.RED + localeService.get("AlertFactionIsWeakened"));
+            this.messageService.sendLocalizedMessage(player, "AlertFactionIsWeakened");
         }
     }
 }

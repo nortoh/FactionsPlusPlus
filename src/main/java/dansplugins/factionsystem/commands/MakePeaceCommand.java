@@ -13,7 +13,6 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
@@ -33,14 +32,12 @@ import java.util.UUID;
 @Singleton
 public class MakePeaceCommand extends Command {
 
-    private final LocaleService localeService;
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
     public MakePeaceCommand(
-        LocaleService localeService,
         MessageService messageService,
         PersistentData persistentData,
         FactionRepository factionRepository
@@ -63,7 +60,6 @@ public class MakePeaceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.localeService = localeService;
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
@@ -85,12 +81,11 @@ public class MakePeaceCommand extends Command {
             this.constructMessage("AttemptedPeace")
                 .with("name", target.getName())
         );
-        this.messageService.messageFaction(
+        this.messageService.sendFactionLocalizedMessage(
             target,
-            this.translate("&a" + this.localeService.getText("HasAttemptedToMakePeaceWith", faction.getName(), target.getName())),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("HasAttemptedToMakePeaceWith"))
-                .replace("#f1#", faction.getName())
-                .replace("#f2#", target.getName())
+            this.constructMessage("HasAttemptedToMakePeaceWith")
+                .with("f1", faction.getName())
+                .with("f2", target.getName())
         );
         if (faction.isTruceRequested(target.getID()) && target.isTruceRequested(faction.getID())) {
             FactionWarEndEvent warEndEvent = new FactionWarEndEvent(faction, target);
@@ -107,11 +102,10 @@ public class MakePeaceCommand extends Command {
                 // TODO: set active flag in war to false
 
                 // Notify
-                this.messageService.messageServer(
-                    "&a" + this.localeService.getText("AlertNowAtPeaceWith", faction.getName(), target.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNowAtPeaceWith"))
-                        .replace("#p1#", faction.getName())
-                        .replace("#p2#", target.getName())
+                this.messageService.sendAllPlayersLocalizedMessage(
+                    this.constructMessage("AlertNowAtPeaceWith")
+                        .with("p1", faction.getName())
+                        .with("p2", target.getName())
                 );
             }
         }

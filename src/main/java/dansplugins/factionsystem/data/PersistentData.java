@@ -32,6 +32,7 @@ import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.builders.MessageBuilder;
 import dansplugins.factionsystem.utils.InteractionAccessChecker;
 import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.extended.BlockChecker;
@@ -333,10 +334,6 @@ public class PersistentData {
         wars.add(war);
     }
 
-    public void addFaction(Faction faction) {
-        this.factionRepository.create(faction);
-    }
-
     public void removePoliticalTiesToFaction(Faction targetFaction) {
         for (Map.Entry<UUID, Faction> entry : this.factionRepository.all().entrySet()) {
             Faction faction = entry.getValue();
@@ -395,8 +392,11 @@ public class PersistentData {
         for (Faction faction : this.factionRepository.all().values()) {
             for (Gate gate : faction.getGates()) {
                 if (gate.hasBlock(block)) {
-                    playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("BlockIsPartOfGateMustRemoveGate"), gate.getName())
-                            , Objects.requireNonNull(messageService.getLanguage().getString("BlockIsPartOfGateMustRemoveGate")).replace("#name#", gate.getName()), true);
+                    this.messageService.sendLocalizedMessage(
+                        player,
+                        new MessageBuilder("BlockIsPartOfGateMustRemoveGate")
+                            .with("name", gate.getName())
+                    );
                     return true;
                 }
             }
@@ -427,9 +427,11 @@ public class PersistentData {
         double maxPower = this.playerService.getMaxPower(record.getPlayerUUID());
         if (record.getPower() < maxPower && Objects.requireNonNull(getServer().getPlayer(record.getPlayerUUID())).isOnline()) {
             this.playerService.increasePower(record.getPlayerUUID());
-            playerService.sendMessage(getServer().getPlayer(record.getPlayerUUID()), ChatColor.GREEN + String.format(this.localeService.get("AlertPowerLevelIncreasedBy"), this.configService.getInt("powerIncreaseAmount"))
-                    , Objects.requireNonNull(this.messageService.getLanguage().getString("AlertPowerLevelIncreasedBy"))
-                            .replace("#amount#", String.valueOf(this.configService.getInt("powerIncreaseAmount"))), true);
+            this.messageService.sendLocalizedMessage(
+                getServer().getPlayer(record.getPlayerUUID()),
+                new MessageBuilder("AlertPowerLevelIncreasedBy")
+                    .with("amount", String.valueOf(this.configService.getInt("powerIncreaseAmount")))
+            );
         }
     }
 
@@ -442,9 +444,12 @@ public class PersistentData {
         }
 
         for (String factionName : factionsToDisband) {
-            messenger.sendAllPlayersInFactionMessage(this.factionRepository.get(factionName), playerService.decideWhichMessageToUse(ChatColor.RED + localeService.get("AlertDisbandmentDueToZeroPower"), messageService.getLanguage().getString("AlertDisbandmentDueToZeroPower")));
+            this.messageService.sendFactionLocalizedMessage(
+                this.factionRepository.get(factionName), 
+                "AlertDisbandmentDueToZeroPower"
+            );
             removeFaction(factionName);
-            System.out.printf((localeService.get("DisbandmentDueToZeroPower")) + "%n", factionName);
+            // TODO: log here?
         }
     }
 
@@ -586,9 +591,11 @@ public class PersistentData {
 
             // check if depth is valid
             if (depth < 0 || depth > maxClaimRadius) {
-                playerService.sendMessage(claimant, ChatColor.RED + String.format(localeService.get("RadiusRequirement"), maxClaimRadius),
-                        Objects.requireNonNull(messageService.getLanguage().getString("RadiusRequirement"))
-                                .replace("#number#", String.valueOf(maxClaimRadius)), true);
+                messageService.sendLocalizedMessage(
+                    claimant,
+                    new MessageBuilder("RadiusRequirement")
+                        .with("number", String.valueOf(maxClaimRadius))
+                );
                 return;
             }
 
@@ -618,7 +625,11 @@ public class PersistentData {
 
             // check if radius is valid
             if (radius <= 0 || radius > maxChunksUnclaimable) {
-                player.sendMessage(ChatColor.RED + String.format(localeService.getText("RadiusRequirement"), maxChunksUnclaimable));
+                messageService.sendLocalizedMessage(
+                    player,
+                    new MessageBuilder("RadiusRequirement")
+                        .with("number", String.valueOf(maxChunksUnclaimable))
+                );
                 return;
             }
 
@@ -659,12 +670,10 @@ public class PersistentData {
                 ClaimedChunk chunk = isChunkClaimed(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
                 if (chunk != null) {
                     removeChunk(chunk, player, getFactionByID(chunk.getHolder()));
-                    playerService.sendMessage(player, ChatColor.GREEN + localeService.get("LandClaimedUsingAdminBypass")
-                            , "LandClaimedUsingAdminBypass", false);
+                    messageService.sendLocalizedMessage(player, "LandClaimedUsingAdminBypass");
                     return;
                 }
-                playerService.sendMessage(player, ChatColor.RED + localeService.get("LandNotCurrentlyClaimed")
-                        , "LandNotCurrentlyClaimed", false);
+                messageService.sendLocalizedMessage(player, "LandNotCurrentlyClaimed");
                 return;
             }
 
@@ -678,15 +687,17 @@ public class PersistentData {
             // ensure that the chunk is claimed by the player's faction.
             if (!chunk.getHolder().equals(playersFaction.getName())) {
                 Faction chunkOwner = getFactionByID(chunk.getHolder());
-                playerService.sendMessage(player, ChatColor.RED + String.format(localeService.get("LandClaimedBy"), chunkOwner.getName())
-                        , Objects.requireNonNull(messageService.getLanguage().getString("LandClaimedBy")).replace("#player#", chunkOwner.getName()), true);
+                messageService.sendLocalizedMessage(
+                    player,
+                    new MessageBuilder("LandClaimedBy")
+                        .with("player", chunkOwner.getName())
+                );
                 return;
             }
 
             // initiate removal
             removeChunk(chunk, player, playersFaction);
-            playerService.sendMessage(player, ChatColor.GREEN + localeService.get("LandUnclaimed"),
-                    "LandUnclaimed", false);
+            messageService.sendLocalizedMessage(player, "LandUnclaimed");
         }
 
         /**
@@ -788,8 +799,7 @@ public class PersistentData {
             Faction faction = getPlayersFaction(player.getUniqueId());
             if (faction != null) {
                 if (isFactionExceedingTheirDemesneLimit(faction)) {
-                    playerService.sendMessage(player, ChatColor.RED + localeService.get("AlertMoreClaimedChunksThanPower")
-                            , "AlertMoreClaimedChunksThanPower", false);
+                    messageService.sendLocalizedMessage(player, "AlertMoreClaimedChunksThanPower");
                 }
             }
         }
@@ -902,8 +912,7 @@ public class PersistentData {
             if (configService.getBoolean("limitLand")) {
                 // if at demesne limit
                 if (!(getChunksClaimedByFaction(claimantsFaction.getID()) < factionService.getCumulativePowerLevel(claimantsFaction))) {
-                    playerService.sendMessage(claimant, ChatColor.RED + localeService.get("AlertReachedDemesne")
-                            , "AlertReachedDemesne", false);
+                    messageService.sendLocalizedMessage(claimant, "AlertReachedDemesne");
                     return;
                 }
             }
@@ -916,23 +925,20 @@ public class PersistentData {
 
                 // if holder is player's faction
                 if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && !claimantsFaction.getAutoClaimStatus()) {
-                    playerService.sendMessage(claimant, ChatColor.RED + localeService.get("LandAlreadyClaimedByYourFaction")
-                            , "LandAlreadyClaimedByYourFaction", false);
+                    messageService.sendLocalizedMessage(claimant, "LandAlreadyClaimedByYourFaction");
                     return;
                 }
 
                 // if not at war with target faction
                 if (!claimantsFaction.isEnemy(targetFaction.getID())) {
-                    playerService.sendMessage(claimant, ChatColor.RED + "You must be at war with a faction to conquer land from them."
-                            , "IsNotEnemy", false);
+                    messageService.sendLocalizedMessage(claimant, "IsNotEnemy");
                     return;
                 }
 
                 // surrounded chunk protection check
                 if (configService.getBoolean("surroundedChunksProtected")) {
                     if (isClaimedChunkSurroundedByChunksClaimedBySameFaction(chunk)) {
-                        playerService.sendMessage(claimant, ChatColor.RED + localeService.get("SurroundedChunkProtected"),
-                                "SurroundedChunkProtected", false);
+                        messageService.sendLocalizedMessage(claimant, "SurroundedChunkProtected");
                         return;
                     }
                 }
@@ -942,8 +948,7 @@ public class PersistentData {
 
                 // if target faction does not have more land than their demesne limit
                 if (!(targetFactionsCumulativePowerLevel < chunksClaimedByTargetFaction)) {
-                    playerService.sendMessage(claimant, ChatColor.RED + localeService.get("TargetFactionNotOverClaiming")
-                            , "TargetFactionNotOverClaiming", false);
+                    messageService.sendLocalizedMessage(claimant, "TargetFactionNotOverClaiming");
                     return;
                 }
 
@@ -960,12 +965,18 @@ public class PersistentData {
 
                     Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandConqueredFromAnotherFaction"), targetFaction.getName(), getChunksClaimedByFaction(claimantsFaction.getID()), factionService.getCumulativePowerLevel(claimantsFaction))
-                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandConqueredFromAnotherFaction")).replace("#name", targetFaction.getName()).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getID()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
-
-                    messenger.sendAllPlayersInFactionMessage(targetFaction, playerService
-                            .decideWhichMessageToUse(ChatColor.RED + String.format(localeService.get("AlertLandConqueredFromYourFaction"), claimantsFaction.getName())
-                                    , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandConqueredFromYourFaction")).replace("#number#", claimantsFaction.getName())));
+                    messageService.sendLocalizedMessage(
+                        claimant,
+                        new MessageBuilder("AlertLandConqueredFromAnotherFaction")
+                            .with("name", targetFaction.getName())
+                            .with("number", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getID())))
+                            .with("max", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction)))
+                    );
+                    messageService.sendFactionLocalizedMessage(
+                        targetFaction,
+                        new MessageBuilder("AlertLandConqueredFromYourFaction")
+                            .with("name", claimantsFaction.getName())
+                    );
                 }
             } else {
                 Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
@@ -974,8 +985,12 @@ public class PersistentData {
                 if (!claimEvent.isCancelled()) {
                     // chunk not already claimed
                     addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                    playerService.sendMessage(claimant, ChatColor.GREEN + String.format(localeService.get("AlertLandClaimed"), getChunksClaimedByFaction(claimantsFaction.getID()), factionService.getCumulativePowerLevel(claimantsFaction))
-                            , Objects.requireNonNull(messageService.getLanguage().getString("AlertLandClaimed")).replace("#number#", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getID()))).replace("#max#", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction))), true);
+                    messageService.sendLocalizedMessage(
+                        claimant,
+                        new MessageBuilder("AlertLandClaimed")
+                            .with("number", String.valueOf(getChunksClaimedByFaction(claimantsFaction.getID())))
+                            .with("max", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction)))
+                    );
                 }
             }
         }
@@ -1068,8 +1083,7 @@ public class PersistentData {
                         && chunkToRemove.getWorldName().equalsIgnoreCase(Objects.requireNonNull(unclaimingPlayer.getLocation().getWorld()).getName())) {
                     // remove faction home
                     holdingFaction.setFactionHome(null);
-                    messenger.sendAllPlayersInFactionMessage(holdingFaction, playerService.decideWhichMessageToUse(ChatColor.RED + localeService.get("AlertFactionHomeRemoved"), messageService.getLanguage().getString("AlertFactionHomeRemoved")));
-
+                    messageService.sendFactionLocalizedMessage(holdingFaction, "AlertFactionHomeRemoved");
                 }
             }
 

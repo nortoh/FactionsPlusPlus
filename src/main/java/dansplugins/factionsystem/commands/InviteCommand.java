@@ -12,9 +12,7 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -23,7 +21,7 @@ import org.bukkit.entity.Player;
 
 import dansplugins.factionsystem.builders.CommandBuilder;
 import dansplugins.factionsystem.builders.ArgumentBuilder;
-
+import dansplugins.factionsystem.builders.MessageBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,17 +33,13 @@ import static org.bukkit.Bukkit.getServer;
  */
 @Singleton
 public class InviteCommand extends Command {
-    private final PlayerService playerService;
     private final MessageService messageService;
-    private final LocaleService localeService;
     private final PersistentData persistentData;
     private final MedievalFactions medievalFactions;
 
     @Inject
     public InviteCommand(
-        PlayerService playerService,
         MessageService messageService,
-        LocaleService localeService,
         PersistentData persistentData,
         MedievalFactions medievalFactions
     ) {
@@ -64,9 +58,7 @@ public class InviteCommand extends Command {
                         .isRequired()
                 )
         );
-        this.playerService = playerService;
         this.messageService = messageService;
-        this.localeService = localeService;
         this.persistentData = persistentData;
         this.medievalFactions = medievalFactions;
     }
@@ -90,11 +82,10 @@ public class InviteCommand extends Command {
         faction.invite(playerUUID);
         context.replyWith("InvitationSent");
         if (target.isOnline() && target.getPlayer() != null) {
-            this.playerService.sendMessage(
-                    target.getPlayer(),
-                    "&a" + this.localeService.getText("AlertBeenInvited", faction.getName(), faction.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("AlertBeenInvited")).replace("#name#", faction.getName()),
-                    true
+            context.messagePlayer(
+                target.getPlayer(),
+                this.constructMessage("AlertBeenInvited")
+                    .with("name", faction.getName())
             );
         }
 
@@ -104,11 +95,10 @@ public class InviteCommand extends Command {
         getServer().getScheduler().runTaskLater(this.medievalFactions, () -> {
             faction.uninvite(playerUUID);
             if (tmp.isOnline() && tmp.getPlayer() != null) {
-                this.playerService.sendMessage(
+                messageService.sendLocalizedMessage(
                     tmp.getPlayer(),
-                    "&c" + this.localeService.getText("InvitationExpired", faction.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("InvitationExpired")).replace("#name#", faction.getName()),
-                    true
+                    new MessageBuilder("InvitationExpired")
+                        .with("name", faction.getName())
                 );
             }
         }, seconds);
