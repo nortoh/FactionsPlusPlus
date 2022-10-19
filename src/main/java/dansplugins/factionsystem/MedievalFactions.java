@@ -6,7 +6,6 @@ package dansplugins.factionsystem;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import dansplugins.factionsystem.commands.abs.TabCompleterBase;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.di.PluginModule;
 import dansplugins.factionsystem.eventhandlers.*;

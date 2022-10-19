@@ -7,16 +7,18 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +29,8 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class BreakAllianceCommand extends SubCommand {
+public class BreakAllianceCommand extends Command {
 
-    private final PlayerService playerService;
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final LocaleService localeService;
@@ -39,81 +40,59 @@ public class BreakAllianceCommand extends SubCommand {
      * Constructor to initialise a Command.
      */
     @Inject
-    public BreakAllianceCommand(PlayerService playerService, MessageService messageService, PersistentData persistentData, LocaleService localeService, FactionRepository factionRepository) {
-        super();
-        this.playerService = playerService;
+    public BreakAllianceCommand(
+        MessageService messageService,
+        PersistentData persistentData,
+        LocaleService localeService,
+        FactionRepository factionRepository
+    ) {
+        super(
+            new CommandBuilder()
+                .withName("breakalliance")
+                .withAliases("ba", LOCALE_PREFIX + "CmdBreakAlliance")
+                .withDescription("Breaks an alliance with an allied faction.")
+                .requiresPermissions("mf.breakalliance")
+                .expectsPlayerExecution()
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the allied faction to break alliance with")
+                        .expectsAlliedFaction()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                )
+        );
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.factionRepository = factionRepository;
-        this
-            .setNames("breakalliance", "ba", LOCALE_PREFIX + "CmdBreakAlliance")
-            .requiresPermissions("mf.breakalliance")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("UsageBreakAlliance"), "UsageBreakAlliance", false);
+
+    public void execute(CommandContext context) {
+        final Faction otherFaction = context.getFactionArgument("faction name");
+
+        if (otherFaction == context.getExecutorsFaction()) {
+            context.replyWith("CannotBreakAllianceWithSelf");
             return;
         }
 
-        final Faction otherFaction = this.factionRepository.get(String.join(" ", args));
-        if (otherFaction == null) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("FactionNotFound"),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound"))
-                            .replace("#faction#", String.join(" ", args)), true);
-            return;
-        }
-
-        if (otherFaction == this.faction) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("CannotBreakAllianceWithSelf"), "CannotBreakAllianceWithSelf", false);
-            return;
-        }
-
-        if (!this.faction.isAlly(otherFaction.getID())) {
-            this.playerService.sendMessage(player, "&c" + this.localeService.getText("AlertNotAllied", otherFaction.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("AlertNotAllied"))
-                            .replace("#faction#", otherFaction.getName()), true);
-            return;
-        }
-
-        this.faction.removeAlly(otherFaction.getID());
-        otherFaction.removeAlly(this.faction.getID());
+        context.getExecutorsFaction().removeAlly(otherFaction.getID());
+        otherFaction.removeAlly(context.getExecutorsFaction().getID());
         this.messageService.messageFaction(
-            this.faction, 
+            context.getExecutorsFaction(), 
             this.translate("&c" + this.localeService.getText("AllianceBrokenWith", otherFaction.getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AllianceBrokenWith"))
                 .replace("#faction#", otherFaction.getName())
         );
         this.messageService.messageFaction(
             otherFaction, 
-            this.translate("&c" + this.localeService.getText("AlertAllianceHasBeenBroken", this.faction.getName())),
+            this.translate("&c" + this.localeService.getText("AlertAllianceHasBeenBroken", context.getExecutorsFaction().getName())),
             Objects.requireNonNull(this.messageService.getLanguage().getString("AlertAllianceHasBeenBroken"))
-                .replace("#faction#", this.faction.getName())
+                .replace("#faction#", context.getExecutorsFaction().getName())
         );
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

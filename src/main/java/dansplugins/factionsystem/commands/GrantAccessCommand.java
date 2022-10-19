@@ -7,123 +7,77 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class GrantAccessCommand extends SubCommand {
+public class GrantAccessCommand extends Command {
 
-    private final LocaleService localeService;
-    private final MessageService messageService;
-    private final PlayerService playerService;
     private final EphemeralData ephemeralData;
 
     @Inject
-    public GrantAccessCommand(
-        LocaleService localeService,
-        MessageService messageService,
-        PlayerService playerService,
-        EphemeralData ephemeralData
-    ) {
-        super();
-        this.localeService = localeService;
-        this.messageService = messageService;
-        this.playerService = playerService;
+    public GrantAccessCommand(EphemeralData ephemeralData) {
+        super(
+            new CommandBuilder()
+                .withName("grantaccess")
+                .withAliases("ga", LOCALE_PREFIX + "CmdGrantAccess")
+                .withDescription("Grants access to a player for a locked block.")
+                .requiresPermissions("mf.grantaccess")
+                .expectsPlayerExecution()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("cancel")
+                        .withAliases(LOCALE_PREFIX + "CmdGrantAccessCancel")
+                        .withDescription("Cancels pending grant access request")
+                        .setExecutorMethod("cancelCommand")
+                )
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the player to grant access to")
+                        .expectsAnyPlayer()
+                        .isRequired()
+                )
+        );
         this.ephemeralData = ephemeralData;
-        this
-            .setNames("grantaccess", "ga", LOCALE_PREFIX + "CmdGrantAccess")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsageGrantAccess"),
-                "UsageGrantAccess",
-                false
-            );
+    public void execute(CommandContext context) {
+        if (this.ephemeralData.getPlayersGrantingAccess().containsKey(context.getPlayer().getUniqueId())) {
+            context.replyWith("AlertAlreadyGrantingAccess");
             return;
         }
-        if (args[0].equalsIgnoreCase("cancel")) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("CommandCancelled"),
-                "CommandCancelled",
-                false
-            );
+        final OfflinePlayer target = context.getOfflinePlayerArgument("player");
+        final UUID targetUUID = target.getUniqueId();
+        if (targetUUID.equals(context.getPlayer().getUniqueId())) {
+            context.replyWith("CannotGrantAccessToSelf");
             return;
         }
-        if (this.ephemeralData.getPlayersGrantingAccess().containsKey(player.getUniqueId())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("AlertAlreadyGrantingAccess"),
-                "AlertAlreadyGrantingAccess",
-                false
-            );
-            return;
-        }
-        UUIDChecker uuidChecker = new UUIDChecker();
-        final UUID targetUUID = uuidChecker.findUUIDBasedOnPlayerName(args[0]);
-        if (targetUUID == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
-                true
-            );
-            return;
-        }
-        if (targetUUID == player.getUniqueId()) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("CannotGrantAccessToSelf"),
-                "CannotGrantAccessToSelf",
-                false
-            );
-            return;
-        }
-        this.ephemeralData.getPlayersGrantingAccess().put(player.getUniqueId(), targetUUID);
-        this.playerService.sendMessage(
-            player,
-            "&a" + this.localeService.getText("RightClickGrantAccess", args[0]),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("RightClickGrantAccess")).replace("#name#", args[0]),
-            true
+        this.ephemeralData.getPlayersGrantingAccess().put(context.getPlayer().getUniqueId(), targetUUID);
+        context.replyWith(
+            this.constructMessage("RightClickGrantAccess")
+                .with("name", target.getName())
         );
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+    public void cancelCommand(CommandContext context) {
+        if (this.ephemeralData.getPlayersGrantingAccess().containsKey(context.getPlayer().getUniqueId())) {
+            this.ephemeralData.getPlayersGrantingAccess().remove(context.getPlayer().getUniqueId());
+            context.replyWith("CommandCancelled");
+        }
     }
 
     /**

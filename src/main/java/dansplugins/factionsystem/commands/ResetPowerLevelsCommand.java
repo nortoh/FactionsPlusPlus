@@ -7,54 +7,34 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
-import dansplugins.factionsystem.services.LocaleService;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
+import dansplugins.factionsystem.builders.CommandBuilder;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class ResetPowerLevelsCommand extends SubCommand {
+public class ResetPowerLevelsCommand extends Command {
 
-    private final LocaleService localeService;
     private final PersistentData persistentData;
 
     @Inject
-    public ResetPowerLevelsCommand(LocaleService localeService, PersistentData persistentData) {
-        super();
-        this.localeService = localeService;
+    public ResetPowerLevelsCommand(PersistentData persistentData) {
+        super(
+            new CommandBuilder()
+                .withName("resetpowerlevels")
+                .withAliases("rpl", LOCALE_PREFIX + "CmdResetPowerLevels")
+                .withDescription("Reset player power records and faction cumulative power levels.")
+                .requiresPermissions("mf.resetpowerlevels", "mf.admin")
+        );
         this.persistentData = persistentData;
-        this
-            .setNames("resetpowerlevels", "rpl", LOCALE_PREFIX + "CmdResetPowerLevels")
-            .requiresPermissions("mf.resetpowerlevels", "mf.admin");
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-        sender.sendMessage(this.translate("&aPower Levels Resetting..."));
-        System.out.println(this.localeService.getText("ResettingIndividualPowerRecords"));
+    public void execute(CommandContext context) {
+        context.reply(this.translate("&aPower Levels Resetting..."));
+        // TODO: log this?
         this.persistentData.resetPowerLevels();
     }
 }

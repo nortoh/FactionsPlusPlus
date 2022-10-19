@@ -7,10 +7,11 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.events.FactionKickEvent;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -19,9 +20,10 @@ import dansplugins.factionsystem.utils.Logger;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,7 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class KickCommand extends SubCommand {
+public class KickCommand extends Command {
     private final MessageService messageService;
     private final PlayerService playerService;
     private final LocaleService localeService;
@@ -49,119 +51,69 @@ public class KickCommand extends SubCommand {
         PersistentData persistentData,
         Logger logger
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("kick")
+                .withAliases(LOCALE_PREFIX + "CmdKick")
+                .withDescription("Kicks another player from your faction.")
+                .expectsPlayerExecution()
+                .expectsFactionMembership()
+                .expectsFactionOfficership()
+                .requiresPermissions("mf.kick")
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the player to kick from your faction")
+                        .expectsFactionMember()
+                        .isRequired()
+                )
+        );
         this.messageService = messageService;
         this.playerService = playerService;
         this.localeService = localeService;
         this.ephemeralData = ephemeralData;
         this.persistentData = persistentData;
         this.logger = logger;
-        this
-            .setNames("kick", LOCALE_PREFIX + "CmdKick")
-            .requiresPermissions("mf.kick")
-            .isPlayerCommand()
-            .requiresFactionOfficer()
-            .requiresPlayerInFaction();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("UsageKick"),
-                "UsageKick", 
-                false
-            );
+    public void execute(CommandContext context) {
+        OfflinePlayer target = context.getOfflinePlayerArgument("player");
+        if (target.getUniqueId().equals(context.getPlayer().getUniqueId())) {
+            context.replyWith("CannotKickSelf");
             return;
         }
-        UUIDChecker uuidChecker = new UUIDChecker();
-        final UUID targetUUID = uuidChecker.findUUIDBasedOnPlayerName(args[0]);
-        if (targetUUID == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]), 
-                true
-            );
+        Player player = context.getPlayer();
+        Faction faction = context.getExecutorsFaction();
+        if (faction.isOwner(target.getUniqueId())) {
+            context.replyWith("CannotKickOwner");
             return;
         }
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-        if (!target.hasPlayedBefore()) {
-            target = Bukkit.getPlayer(args[0]);
-            if (target == null) {
-                this.playerService.sendMessage(
-                    player, 
-                    "&c" + this.localeService.getText("PlayerNotFound"),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]), 
-                    true
-                );
-                return;
-            }
-        }
-        if (target.getUniqueId().equals(player.getUniqueId())) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("CannotKickSelf"),
-                "CannotKickSelf",
-                false
-            );
-            return;
-        }
-        if (this.faction.isOwner(targetUUID)) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("CannotKickOwner"),
-                "CannotKickOwner",
-                false
-            );
-            return;
-        }
-        FactionKickEvent kickEvent = new FactionKickEvent(this.faction, target, player);
+        FactionKickEvent kickEvent = new FactionKickEvent(faction, target, player);
         Bukkit.getPluginManager().callEvent(kickEvent);
         if (kickEvent.isCancelled()) {
             this.logger.debug("Kick event was cancelled.");
             return;
         }
-        if (this.faction.isOfficer(targetUUID)) {
-            this.faction.removeOfficer(targetUUID); // Remove Officer (if one)
+        if (faction.isOfficer(target.getUniqueId())) {
+            faction.removeOfficer(target.getUniqueId()); // Remove Officer (if one)
         }
-        this.ephemeralData.getPlayersInFactionChat().remove(targetUUID);
-        this.faction.removeMember(targetUUID);
+        this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
+        faction.removeMember(target.getUniqueId());
         this.messageService.messageFaction(
-            this.faction,
-            "&c" + this.localeService.getText("HasBeenKickedFrom", target.getName(), this.faction.getName()),
+            faction,
+            "&c" + this.localeService.getText("HasBeenKickedFrom", target.getName(), faction.getName()),
             Objects.requireNonNull(this.messageService.getLanguage().getString("HasBeenKickedFrom"))
-                    .replace("#name#", args[0])
-                    .replace("#faction#", this.faction.getName())
+                    .replace("#name#", target.getName())
+                    .replace("#faction#", faction.getName())
         );
         if (target.isOnline() && target.getPlayer() != null) {
             this.playerService.sendMessage(
-                player,
+                target.getPlayer(),
                 "&c" + this.localeService.getText("AlertKicked", player.getName()),
                 Objects.requireNonNull(this.messageService.getLanguage().getString("AlertKicked")).replace("#name#", player.getName()),
                 true
             );
         }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

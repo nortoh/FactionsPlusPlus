@@ -7,47 +7,39 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
-import org.bukkit.command.CommandSender;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 import org.bukkit.entity.Player;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class BypassCommand extends SubCommand {
+public class BypassCommand extends Command {
 
     private final EphemeralData ephemeralData;
-    private final LocaleService localeService;
-    private final PlayerService playerService;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public BypassCommand(PlayerService playerService, LocaleService localeService, EphemeralData ephemeralData) {
-        super();
-        this.playerService = playerService;
-        this.localeService = localeService;
+    public BypassCommand(EphemeralData ephemeralData) {
+        super(
+            new CommandBuilder()
+                .withName("bypass")
+                .withAliases(LOCALE_PREFIX + "CmdBypass")
+                .withDescription("Toggle bypass protections.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.bypass", "mf.admin")
+        );
         this.ephemeralData = ephemeralData;
-        this
-            .setNames("bypass", LOCALE_PREFIX + "CmdBypass")
-            .requiresPermissions("mf.bypass", "mf.admin")
-            .isPlayerCommand();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
+    public void execute(CommandContext context) {
+        Player player = context.getPlayer();
         final boolean contains = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
 
         final String path = (contains ? "NoLonger" : "Now") + "BypassingProtections";
@@ -57,18 +49,7 @@ public class BypassCommand extends SubCommand {
         } else {
             this.ephemeralData.getAdminsBypassingProtections().add(player.getUniqueId());
         }
-        this.playerService.sendMessage(player, "&a" + this.localeService.getText(path), path, false);
-    }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+        context.replyWith(path);
     }
 }

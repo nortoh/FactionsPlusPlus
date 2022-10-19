@@ -7,76 +7,46 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
-import java.util.Objects;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 /**
  * @author Callum Johnson
  */
 @Singleton
-public class DescCommand extends SubCommand {
-
-    private final PlayerService playerService;
-    private final LocaleService localeService;
-    private final MessageService messageService;
+public class DescCommand extends Command {
 
     @Inject
-    public DescCommand(PlayerService playerService, LocaleService localeService, MessageService messageService) {
-        super();
-        this.localeService = localeService;
-        this.playerService = playerService;
-        this.messageService = messageService;
-        this
-            .setNames("description", "desc", LOCALE_PREFIX + "CmdDesc")
-            .requiresPermissions("mf.desc")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
-    }
-
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("UsageDesc"),
-                "UsageDesc", 
-                false
-            );
-            return;
-        }
-
-        this.faction.setDescription(String.join(" ", args));
-        this.playerService.sendMessage(
-            player, 
-            "&c" + this.localeService.getText("DescriptionSet"),
-            Objects.requireNonNull(this.messageService.getLanguage().getString("Description")).replace("#desc#", String.join(" ", args)), 
-            true
+    public DescCommand() {
+        super(
+            new CommandBuilder()
+                .withName("description")
+                .withAliases("desc", LOCALE_PREFIX + "CmdDesc")
+                .withDescription("Set your faction description.")
+                .expectsPlayerExecution()
+                .requiresPermissions("mf.desc")
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .addArgument(
+                    "description",
+                    new ArgumentBuilder()
+                        .setDescription("the description to set")
+                        .expectsString()
+                        .consumesAllLaterArguments()
+                        .isRequired()
+                        
+                )
         );
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+    public void execute(CommandContext context) {
+        String description = context.getStringArgument("description");
+        context.getExecutorsFaction().setDescription(description);
+        context.replyWith(
+            this.constructMessage("DescriptionSet")
+                .with("desc", description)
+        );
     }
 }

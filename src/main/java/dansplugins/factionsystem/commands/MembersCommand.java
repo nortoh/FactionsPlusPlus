@@ -8,8 +8,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
@@ -17,9 +18,9 @@ import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
+import dansplugins.factionsystem.builders.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +29,7 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class MembersCommand extends SubCommand {
+public class MembersCommand extends Command {
 
     private final PlayerService playerService;
     private final MessageService messageService;
@@ -46,71 +47,44 @@ public class MembersCommand extends SubCommand {
         PersistentData persistentData,
         FactionRepository factionRepository
     ) {
-        super();
+        super(
+            new CommandBuilder()
+                .withName("members")
+                .withAliases(LOCALE_PREFIX + "CmdMembers")
+                .withDescription("List the members of your faction or another faction.")
+                .requiresPermissions("mf.members")
+                .addArgument(
+                    "faction name",
+                    new ArgumentBuilder()
+                        .setDescription("the faction to get a members list of")
+                        .expectsFaction()
+                        .consumesAllLaterArguments()
+                        .isOptional()
+                )
+        );
         this.playerService = playerService;
         this.messageService = messageService;
         this.localeService = localeService;
         this.configService = configService;
         this.persistentData = persistentData;
         this.factionRepository = factionRepository;
-        this
-            .setNames("members", LOCALE_PREFIX + "CmdMembers")
-            .requiresPermissions("mf.members");
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
+    public void execute(CommandContext context) {
         final Faction faction;
-        if (args.length == 0) {
-            if (!(sender instanceof Player)) {
-                this.playerService.sendMessage(
-                    sender,
-                    this.localeService.getText("OnlyPlayersCanUseCommand"),
-                    "OnlyPlayersCanUseCommand",
-                    false
-                );
+        CommandSender sender = context.getSender();
+        if (context.getRawArguments().length == 0) {
+            if (context.isConsole()) {
+                context.replyWith("OnlyPlayersCanUseCommand");
                 return;
             }
-            faction = this.playerService.getPlayerFaction(sender);
+            faction = context.getExecutorsFaction();
             if (faction == null) {
-                this.playerService.sendMessage(
-                    sender, 
-                    this.localeService.getText("AlertMustBeInFactionToUseCommand"),
-                    "AlertMustBeInFactionToUseCommand",
-                    false
-                );
+                context.replyWith("AlertMustBeInFactionToUseCommand");
                 return;
             }
         } else {
-            faction = this.factionRepository.get(String.join(" ", args));
-            if (faction == null) {
-                this.playerService.sendMessage(
-                    sender,
-                    "&c" + this.localeService.getText("FactionNameNotRecognized"),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("FactionNotFound")).replace("#faction#", String.join(" ", args)),
-                    true
-                );
-                return;
-            }
+            faction = context.getFactionArgument("faction name");
         }
         // send Faction Members
         if (!this.configService.getBoolean("useNewLanguageFile")) {

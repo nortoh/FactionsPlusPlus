@@ -7,19 +7,20 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.services.FactionService;
 import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,8 @@ import java.util.UUID;
  * @author Callum Johnson
  */
 @Singleton
-public class PromoteCommand extends SubCommand {
+public class PromoteCommand extends Command {
 
-    private final MessageService messageService;
     private final LocaleService localeService;
     private final PlayerService playerService;
     private final PersistentData persistentData;
@@ -40,104 +40,49 @@ public class PromoteCommand extends SubCommand {
 
     @Inject
     public PromoteCommand(
-        MessageService messageService,
         LocaleService localeService,
         PlayerService playerService,
         PersistentData persistentData,
         FactionService factionService
     ) {
-        super();
-        this.messageService = messageService;
+        super(
+            new CommandBuilder()
+                .withName("promote")
+                .withAliases(LOCALE_PREFIX + "CmdPromote")
+                .withDescription("Promotes a member of your faction to an officer.")
+                .expectsPlayerExecution()
+                .expectsFactionMembership()
+                .expectsFactionOwnership()
+                .requiresPermissions("mf.promote")
+                .addArgument(
+                    "player",
+                    new ArgumentBuilder()
+                        .setDescription("the member to promote")
+                        .expectsFactionMember()
+                        .isRequired()
+                )
+        );
         this.localeService = localeService;
         this.playerService = playerService;
         this.persistentData = persistentData;
         this.factionService = factionService;
-        this
-            .setNames("promote", LOCALE_PREFIX + "CmdPromote")
-            .requiresPermissions("mf.promote")
-            .isPlayerCommand()
-            .requiresPlayerInFaction()
-            .requiresFactionOwner();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("UsagePromote"),
-                "UsagePromote",
-                false
-            );
+    public void execute(CommandContext context) {
+        final Faction faction = context.getExecutorsFaction();
+        final OfflinePlayer target = context.getOfflinePlayerArgument("player");
+        if (faction.isOfficer(target.getUniqueId())) {
+            context.replyWith("PlayerAlreadyOfficer");
             return;
         }
-        UUIDChecker uuidChecker = new UUIDChecker();
-        final UUID targetUUID = uuidChecker.findUUIDBasedOnPlayerName(args[0]);
-        if (targetUUID == null) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerNotFound"),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
-                true
-            );
+        if (context.getPlayer().getUniqueId().equals(target.getUniqueId())) {
+            context.replyWith("CannotPromoteSelf");
             return;
         }
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-        if (!target.hasPlayedBefore()) {
-            target = Bukkit.getPlayer(args[0]);
-            if (target == null) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("PlayerNotFound"),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerNotFound")).replace("#name#", args[0]),
-                    true
-                );
-                return;
-            }
-        }
-        if (!this.faction.isMember(targetUUID)) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerIsNotMemberOfFaction"),
-                "PlayerIsNotMemberOfFaction",
-                false
-            );
-            return;
-        }
-        if (this.faction.isOfficer(targetUUID)) {
-            playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("PlayerAlreadyOfficer"),
-                "PlayerAlreadyOfficer",
-                false
-            );
-            return;
-        }
-        if (targetUUID == player.getUniqueId()) {
-            this.playerService.sendMessage(
-                player,
-                "&c" + this.localeService.getText("CannotPromoteSelf"),
-                "CannotPromoteSelf",
-                false
-            );
-            return;
-        }
-        int maxOfficers = this.factionService.calculateMaxOfficers(this.faction);
-        if (this.faction.getOfficerList().size() <= maxOfficers) {
-            this.faction.addOfficer(targetUUID);
-            this.playerService.sendMessage(
-                player,
-                "&a" + this.localeService.getText("PlayerPromoted"),
-                "PlayerPromoted",
-                false
-            );
+        int maxOfficers = this.factionService.calculateMaxOfficers(faction);
+        if (faction.getOfficerList().size() <= maxOfficers) {
+            faction.addOfficer(target.getUniqueId());
+            context.replyWith("PlayerPromoted");
             if (target.isOnline() && target.getPlayer() != null) {
                 this.playerService.sendMessage(
                     target.getPlayer(),
@@ -147,25 +92,11 @@ public class PromoteCommand extends SubCommand {
                 );
             }
         } else {
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("PlayerCantBePromotedBecauseOfLimit", maxOfficers),
-                Objects.requireNonNull(this.messageService.getLanguage().getString("PlayerCantBePromotedBecauseOfLimit")).replace("#number#", String.valueOf(this.factionService.calculateMaxOfficers(faction))), 
-                true
+            context.replyWith(
+                this.constructMessage("PlayerCantBePromotedBecauseOfLimit")
+                    .with("number", String.valueOf(maxOfficers))
             );
         }
-    }
-
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
     }
 
     /**

@@ -7,13 +7,13 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
-import dansplugins.factionsystem.services.LocaleService;
-import dansplugins.factionsystem.services.PlayerService;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.utils.TabCompleteTools;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
 
 import java.util.List;
 
@@ -21,73 +21,45 @@ import java.util.List;
  * @author Callum Johnson
  */
 @Singleton
-public class UnlockCommand extends SubCommand {
+public class UnlockCommand extends Command {
 
     private final EphemeralData ephemeralData;
-    private final PlayerService playerService;
-    private final LocaleService localeService;
 
     @Inject
-    public UnlockCommand(
-        EphemeralData ephemeralData,
-        PlayerService playerService,
-        LocaleService localeService
-    ) {
-        super();
+    public UnlockCommand(EphemeralData ephemeralData) {
+        super(
+            new CommandBuilder()
+                .withName("unlock")
+                .withAliases(LOCALE_PREFIX + "CmdUnlock")
+                .withDescription("Unlock a chest or door.")
+                .requiresPermissions("mf.unlock")
+                .expectsPlayerExecution()
+                .expectsFactionMembership()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("cancel")
+                        .withAliases(LOCALE_PREFIX + "CmdUnlockCancel")
+                        .withDescription("cancels a pending unlock request")
+                        .setExecutorMethod("cancelCommand")
+                )
+        );
         this.ephemeralData = ephemeralData;
-        this.playerService = playerService;
-        this.localeService = localeService;
-        this
-            .setNames("unlock", LOCALE_PREFIX + "CmdUnlock")
-            .requiresPermissions("mf.unlock")
-            .isPlayerCommand()
-            .requiresPlayerInFaction();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length != 0 && args[0].equalsIgnoreCase("cancel")) {
-            this.ephemeralData.getUnlockingPlayers().remove(player.getUniqueId());
-            this.ephemeralData.getForcefullyUnlockingPlayers().remove(player.getUniqueId()); // just in case the player tries to cancel a forceful unlock without using the force command
-            this.playerService.sendMessage(
-                player, 
-                "&c" + this.localeService.getText("AlertUnlockingCancelled"),
-                "AlertUnlockingCancelled", 
-                false
-            );
-            return;
+    public void execute(CommandContext context) {
+        if (!this.ephemeralData.getUnlockingPlayers().contains(context.getPlayer().getUniqueId())) {
+            this.ephemeralData.getUnlockingPlayers().add(context.getPlayer().getUniqueId());
         }
-        if (!this.ephemeralData.getUnlockingPlayers().contains(player.getUniqueId())) {
-            this.ephemeralData.getUnlockingPlayers().add(player.getUniqueId());
-        }
-        this.ephemeralData.getLockingPlayers().remove(player.getUniqueId());
+        this.ephemeralData.getLockingPlayers().remove(context.getPlayer().getUniqueId());
 
         // inform them they need to right click the block that they want to lock or type /mf lock cancel to cancel it
-        this.playerService.sendMessage(
-            player, 
-            "&a" + this.localeService.getText("RightClickUnlock"),
-            "RightClickUnlock", 
-            false
-        );
+        context.replyWith("RighClickUnlock");
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-
+    public void cancelCommand(CommandContext context) {
+        this.ephemeralData.getUnlockingPlayers().remove(context.getPlayer().getUniqueId());
+        this.ephemeralData.getForcefullyUnlockingPlayers().remove(context.getPlayer().getUniqueId()); // just in case the player tries to cancel a forceful unlock without using the force command
+        context.replyWith("AlertUnlockingCancelled");
     }
 
     /**

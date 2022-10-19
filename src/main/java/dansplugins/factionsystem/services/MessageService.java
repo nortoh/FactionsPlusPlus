@@ -4,7 +4,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.MedievalFactions;
+import dansplugins.factionsystem.builders.MessageBuilder;
 import dansplugins.factionsystem.utils.Logger;
+import dansplugins.factionsystem.utils.StringUtils;
 import dansplugins.factionsystem.commands.abs.ColorTranslator;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 @Singleton
 public class MessageService implements ColorTranslator {
@@ -83,6 +86,27 @@ public class MessageService implements ColorTranslator {
         }
     }
 
+    public void messageSender(CommandSender sender, String message) {
+        sender.sendMessage(
+            StringUtils.colorize(
+                message
+            )
+        );
+    }
+
+    public void replyToSender(CommandSender sender, String localizationKey) {
+        this.messageSender(sender, this.getLanguage().getString(localizationKey));
+    }
+
+    public void replyToSender(CommandSender sender, MessageBuilder builder) {
+        this.messageSender(
+            sender,
+            builder.toString(
+                this.getLanguage().getString(builder.getLocalizationKey())
+            )
+        );
+    }
+
     public void sendPermissionMissingMessage(CommandSender sender, List<String> missingPermissions) {
         this.playerService.sendMessage(
             sender,
@@ -133,5 +157,23 @@ public class MessageService implements ColorTranslator {
         Bukkit.getOnlinePlayers().forEach(player -> this.playerService.sendMessage(player, oldMessage, newMessage, true));
     }
 
+    public void sendCommandNotFoundMessage(CommandSender sender) {
+        this.playerService.sendMessage(sender, ChatColor.RED + this.localeService.get("CommandNotRecognized"), "CommandNotRecognized", false);
+    }
+
+    public void sendInvalidSyntaxMessage(CommandSender sender, String commandName, String commandSyntax) {
+        this.playerService.sendMessage(
+            sender, 
+            "&c" + this.localeService.getText("InvalidSyntax"),
+            Objects.requireNonNull(this.getLanguage().getString("InvalidSyntax"))
+                .replace("#command#", commandName)
+                .replace("#syntax#", commandSyntax),
+            true
+        );
+    }
+
+    public void sendInvalidSyntaxMessage(CommandSender sender, ArrayList<String> commandNameList, String commandSyntax) {
+        this.sendInvalidSyntaxMessage(sender, String.join(" ", commandNameList), commandSyntax);
+    }
 
 }

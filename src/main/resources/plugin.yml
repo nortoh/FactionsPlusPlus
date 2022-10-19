@@ -8,7 +8,7 @@ description: This Minecraft plugin allows players to organize themselves into fe
 
 commands:
   mf:
-    aliases: [ f, factions, midievalfactions ]
+    aliases: [ f, factions, medievalfactions ]
 
 permissions:
   mf.claim:

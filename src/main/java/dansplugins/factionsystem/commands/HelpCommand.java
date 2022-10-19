@@ -7,14 +7,29 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.commands.abs.SubCommand;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
+import dansplugins.factionsystem.repositories.CommandRepository;
 import dansplugins.factionsystem.services.LocaleService;
+import dansplugins.factionsystem.utils.StringUtils;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
+
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
+import java.util.Spliterator;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -22,59 +37,67 @@ import java.util.stream.IntStream;
  * @author Callum Johnson
  */
 @Singleton
-public class HelpCommand extends SubCommand {
-    private static final int LAST_PAGE = 7;
-    private final HashMap<Integer, List<String>> helpPages = new HashMap<>();
-
-    private final LocaleService localeService;
+public class HelpCommand extends Command {
+    private final CommandRepository commandRepository;
 
     @Inject
-    public HelpCommand(LocaleService localeService) {
-        super();
-        this.localeService = localeService;
-        this
-            .setNames("help", LOCALE_PREFIX + "CmdHelp")
-            .requiresPermissions("mf.help");
-        // there should be 9 commands per page
-        this.helpPages.put(1, Arrays.asList("Help", "List", "Info", "Members", "Join", "Leave", "Create", "Invite", "Desc"));
-        this.helpPages.put(2, Arrays.asList("FlagsShow", "FlagsSet", "Kick", "Transfer", "Disband", "DeclareWar", "MakePeace", "Invoke", "Claim"));
-        this.helpPages.put(3, Arrays.asList("Unclaim", "Unclaimall", "CheckClaim", "Autoclaim", "Promote", "Demote", "Power", "SetHome", "Home"));
-        this.helpPages.put(4, Arrays.asList("Who", "Ally", "BreakAlliance", "Rename", "Lock", "Unlock", "GrantAccess", "CheckAccess", "RevokeAccess"));
-        this.helpPages.put(5, Arrays.asList("Laws", "AddLaw", "RemoveLaw", "EditLaw", "Chat", "Vassalize", "SwearFealty", "DeclareIndependence", "GrantIndependence"));
-        this.helpPages.put(6, Arrays.asList("GateCreate", "GateName", "GateList", "GateRemove", "GateCancel", "DuelChallenge", "DuelAccept", "DuelCancel", "Prefix"));
-        this.helpPages.put(7, Arrays.asList("Map", "Bypass", "ConfigShow", "ConfigSet", "Force", "Version", "ResetPowerLevels"));
+    public HelpCommand(CommandRepository commandRepository) {
+        super(
+            new CommandBuilder()
+                .withName("help")
+                .withAliases(LOCALE_PREFIX + "CmdHelp")
+                .withDescription("Returns a list of commands for this plugin.")
+                .requiresPermissions("mf.help")
+                .addArgument(
+                    "page or command",
+                    new ArgumentBuilder()
+                        .setDescription("the page or command to show")
+                        .isOptional()
+                        .expectsString()
+                        .setDefaultValue(1)
+                )
+        );
+        this.commandRepository = commandRepository;
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-
+    public void execute(CommandContext context) {
+        Integer requestedPage = StringUtils.parseAsInteger(context.getStringArgument("page or command"));
+        if (requestedPage == null) {
+            String requestedCommand = context.getStringArgument("page or command");
+            Command command = this.commandRepository.get(requestedCommand);
+            // TODO: implement this
+            return;
+        }
+        final ArrayList<ArrayList<Command>> partitionedList = this.generateHelpPages();
+        requestedPage--; // pages start at 0
+        if (requestedPage > partitionedList.size()-1) {
+            requestedPage = partitionedList.size()-1; // Upper Limit over LAST_PAGE
+        }
+        if (requestedPage < 0) {
+            requestedPage = 0; // Lower Limit to 0
+        }
+        context.replyWith(
+            this.constructMessage("CommandsPageTitle")
+                .with("page", String.valueOf(requestedPage+1))
+                .with("pages", String.valueOf(partitionedList.size()))
+        );
+        partitionedList.get(requestedPage).forEach(line -> context.reply(this.constructHelpTextForCommand(line)));
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
-        int page = (args.length == 0 ? 1 : this.getIntSafe(args[0], 1));
-        if (page > LAST_PAGE) {
-            page = LAST_PAGE; // Upper Limit over LAST_PAGE
+    public ArrayList<ArrayList<Command>> generateHelpPages() {
+        ArrayList<ArrayList<Command>> result = new ArrayList<>();
+        Spliterator<Command> split = this.commandRepository.all().values().stream().spliterator();
+        while(true) {
+            ArrayList<Command> chunk = new ArrayList<>();
+            for (int i = 0; i < 9 && split.tryAdvance(chunk::add); i++){};
+            if (chunk.isEmpty()) break;
+            result.add(chunk);
         }
-        if (page <= 0) {
-            page = 1; // Lower Limit to 0
-        }
-        sender.sendMessage(this.translate("&b&l" + this.localeService.getText("CommandsPage" + page, LAST_PAGE)));
-        this.helpPages.get(page).forEach(line -> sender.sendMessage(this.translate("&b" + this.localeService.getText("Help" + line))));
+        return result;
+    }
+
+    public String constructHelpTextForCommand(Command command) {
+        return String.format("&b/mf %s %s - %s", command.getName(), command.buildSyntax(), command.getDescription());
     }
 
     /**
@@ -85,6 +108,6 @@ public class HelpCommand extends SubCommand {
      */
     @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.filterStartingWith(args[0], IntStream.range(1, this.helpPages.size()).mapToObj(String::valueOf));
+        return TabCompleteTools.filterStartingWith(args[0], IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf));
     }
 }

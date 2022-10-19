@@ -7,21 +7,20 @@ package dansplugins.factionsystem.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import dansplugins.factionsystem.MedievalFactions;
-import dansplugins.factionsystem.commands.abs.SubCommand;
 import dansplugins.factionsystem.data.EphemeralData;
 import dansplugins.factionsystem.data.PersistentData;
+import dansplugins.factionsystem.models.Command;
+import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
-import dansplugins.factionsystem.services.ConfigService;
-import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
-import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import dansplugins.factionsystem.builders.CommandBuilder;
+import dansplugins.factionsystem.builders.ArgumentBuilder;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,220 +29,165 @@ import java.util.Objects;
  * @author Callum Johnson
  */
 @Singleton
-public class GateCommand extends SubCommand {
+public class GateCommand extends Command {
 
-    private final PlayerService playerService;
-    private final MessageService messageService;
-    private final LocaleService localeService;
-    private final MedievalFactions medievalFactions;
     private final EphemeralData ephemeralData;
     private final PersistentData persistentData;
-    private final ConfigService configService;
+    private final MessageService messageService;
 
     @Inject
     public GateCommand(
-        PlayerService playerService,
-        MessageService messageService,
-        LocaleService localeService,
         EphemeralData ephemeralData,
-        ConfigService configService,
         PersistentData persistentData,
-        MedievalFactions medievalFactions
+        MessageService messageService
     ) {
-        super();
-        this.playerService = playerService;
-        this.messageService = messageService;
-        this.localeService = localeService;
-        this.medievalFactions = medievalFactions;
-        this.configService = configService;
+        super(
+            new CommandBuilder()
+                .withName("gate")
+                .withAliases("gt", LOCALE_PREFIX + "CmdGate")
+                .withDescription("Manage gates.")
+                .requiresPermissions("mf.gate")
+                .requiresSubCommand()
+                .expectsPlayerExecution()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("create")
+                        .withAliases(LOCALE_PREFIX + "CmdGateCreate")
+                        .withDescription("Create a new gate.")
+                        .setExecutorMethod("createCommand")
+                        .expectsFactionOfficership()
+                        .addArgument(
+                            "gate name",
+                            new ArgumentBuilder()
+                                .setDescription("the name of the gate you are creating")
+                                .expectsString()
+                                .consumesAllLaterArguments()
+                                .isOptional()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("rename")
+                        .withAliases(LOCALE_PREFIX + "CmdGateRename")
+                        .withDescription("Renames a gate.")
+                        .setExecutorMethod("renameCommand")
+                        .expectsFactionOfficership()
+                        .addArgument(
+                            "new name",
+                            new ArgumentBuilder()
+                                .setDescription("the new name of the gate")
+                                .expectsString()
+                                .consumesAllLaterArguments()
+                                .isOptional()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("remove")
+                        .withAliases("delete", LOCALE_PREFIX + "CmdGateRemove")
+                        .withDescription("Removes a gate.")
+                        .setExecutorMethod("removeCommand")
+                        .expectsFactionOfficership()
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("list")
+                        .withAliases(LOCALE_PREFIX + "CmdGateList")
+                        .withDescription("Lists your factions gates.")
+                        .setExecutorMethod("listCommand")
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("cancel")
+                        .withAliases(LOCALE_PREFIX + "CmdGateCancel")
+                        .withDescription("Cancel creating a gate.")
+                        .setExecutorMethod("cancelCommand")
+                )
+        );
         this.ephemeralData = ephemeralData;
+        this.messageService = messageService;
         this.persistentData = persistentData;
-        this
-            .setNames("gate", "gt", LOCALE_PREFIX + "CmdGate")
-            .requiresPermissions("mf.gate")
-            .isPlayerCommand()
-            .requiresPlayerInFaction();
     }
 
-    /**
-     * Method to execute the command for a player.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     * @param key    of the sub-command (e.g. Ally).
-     */
-    @Override
-    public void execute(Player player, String[] args, String key) {
-        if (args.length == 0) {
-            if (!this.configService.getBoolean("useNewLanguageFile")) {
-                player.sendMessage(this.translate("&b" + this.localeService.getText("SubCommands")));
-                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateCreate")));
-                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateName")));
-                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateList")));
-                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateRemove")));
-                player.sendMessage(this.translate("&b" + this.localeService.getText("HelpGateCancel")));
-            } else {
-                this.playerService.sendMultipleMessages(player, this.messageService.getLanguage().getStringList("GateHelp"));
-            }
-            return;
+    public Gate doCommonBlockChecks(CommandContext context) {
+        final Block targetBlock = context.getPlayer().getTargetBlock(null, 16);
+        if (targetBlock.getType().equals(Material.AIR)) {
+            context.replyWith("NoBlockDetectedToCheckForGate");
+            return null;
         }
-        if (this.safeEquals(args[0], "cancel", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateCancel"), this.messageService.getLanguage().getString("Alias.CmdGateCancel")))) {
-            // Cancel Logic
-            if (this.ephemeralData.getCreatingGatePlayers().remove(player.getUniqueId()) != null) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("CreatingGateCancelled"),
-                    "CreatingGateCancelled",
-                    false
-                );
-                return;
-            }
+        if (!this.persistentData.isGateBlock(targetBlock)) {
+            context.replyWith("TargetBlockNotPartOfGate");
+            return null;
         }
-        if (this.safeEquals(args[0], "create", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateCreate"), this.messageService.getLanguage().getString("Alias.CmdGateCreate")))) {
-            // Create Logic
-            if (this.ephemeralData.getCreatingGatePlayers().containsKey(player.getUniqueId())) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("AlertAlreadyCreatingGate"),
-                    "AlertAlreadyCreatingGate",
-                    false
-                );
-                return;
-            }
-            if (!this.faction.isOfficer(player.getUniqueId()) && !this.faction.isOwner(player.getUniqueId())) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
-                    "AlertMustBeOwnerOrOfficerToUseCommand",
-                    false
-                );
-                return;
-            }
-            final String gateName;
-            if (args.length > 1) {
-                String[] arguments = new String[args.length - 1];
-                System.arraycopy(args, 1, arguments, 0, arguments.length);
-                gateName = String.join(" ", arguments);
-            } else {
-                gateName = this.playerService.decideWhichMessageToUse("Unnamed Gate", this.messageService.getLanguage().getString("UnnamedGate"));
-            }
-            this.startCreatingGate(player, gateName);
-            this.playerService.sendMessage(
-                player,
-                "&b" + this.localeService.getText("CreatingGateClickWithHoe"),
-                "CreatingGateClickWithHoe",
-                false
+        final Gate gate = this.persistentData.getGate(targetBlock);
+        final Faction gateFaction = this.persistentData.getGateFaction(gate);
+        if (gateFaction == null) {
+            context.replyWith(
+                this.constructMessage("ErrorCouldNotFindGatesFaction")
+                    .with("name", gate.getName())
             );
-            return;
+            return null;
         }
-        if (this.safeEquals(args[0], "list", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateList"), this.messageService.getLanguage().getString("Alias.CmdGateList")))) {
-            // List logic
-            if (this.faction.getGates().size() > 0) {
-                this.playerService.sendMessage(player, "&bFaction Gates", "FactionGate", false);
-                for (Gate gate : this.faction.getGates()) {
-                    this.playerService.sendMessage(
-                        player, 
-                        "&b" + String.format("%s: %s", gate.getName(), gate.coordsToString()),
-                        Objects.requireNonNull(this.messageService.getLanguage().getString("GateLocation"))
-                            .replace("#name#", gate.getName())
-                            .replace("#location#", gate.coordsToString()),
-                        true
-                    );
-                }
-            } else {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("AlertNoGatesDefined"),
-                    "AlertNoGatesDefined",
-                    false
-                );
-            }
-            return;
-        }
-        final boolean remove = this.safeEquals(args[0], "remove", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateRemove"), this.messageService.getLanguage().getString("Alias.CmdGateRemove")));
-        final boolean rename = this.safeEquals(args[0], "name", this.playerService.decideWhichMessageToUse(this.localeService.getText("CmdGateName"), this.messageService.getLanguage().getString("Alias.CmdGateName")));
-        if (rename || remove) {
-            final Block targetBlock = player.getTargetBlock(null, 16);
-            if (targetBlock.getType().equals(Material.AIR)) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("NoBlockDetectedToCheckForGate"),
-                    "NoBlockDetectedToCheckForGate",
-                    false
-                );
-                return;
-            }
-            if (!this.persistentData.isGateBlock(targetBlock)) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("TargetBlockNotPartOfGate"),
-                    "TargetBlockNotPartOfGate",
-                    false
-                );
-                return;
-            }
-            final Gate gate = this.persistentData.getGate(targetBlock);
-            if (gate == null) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("TargetBlockNotPartOfGate"),
-                    "TargetBlockNotPartOfGate",
-                    false
-                );
-                return;
-            }
-            final Faction gateFaction = this.persistentData.getGateFaction(gate);
-            if (gateFaction == null) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("ErrorCouldNotFindGatesFaction", gate.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("ErrorCouldNotFindGatesFaction")).replace("#name#", gate.getName()),
-                    true
-                );
-                return;
-            }
-            if (!gateFaction.isOfficer(player.getUniqueId()) && !gateFaction.isOwner(player.getUniqueId())) {
-                this.playerService.sendMessage(
-                    player,
-                    "&c" + this.localeService.getText("AlertMustBeOwnerOrOfficerToUseCommand"),
-                    "AlertMustBeOwnerOrOfficerToUseCommand",
-                    false
-                );
-                return;
-            }
-            if (remove) {
-                gateFaction.removeGate(gate);
-                this.playerService.sendMessage(
-                    player,
-                    "&b" + this.localeService.getText("RemovedGate", gate.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("RemovedGate")).replace("#name#", gate.getName()),
-                    true
-                );
-            }
-            if (rename) {
-                String[] arguments = new String[args.length - 1];
-                System.arraycopy(args, 1, arguments, 0, arguments.length);
-                gate.setName(String.join(" ", arguments));
-                this.playerService.sendMessage(
-                    player,
-                    "&b" + this.localeService.getText("AlertChangedGateName", gate.getName()),
-                    Objects.requireNonNull(this.messageService.getLanguage().getString("AlertChangedGateName")).replace("#name#", gate.getName()),
-                    true
-                );
-            }
+        return gate;
+    }
+
+    public void removeCommand(CommandContext context) {
+        Gate targetGate = this.doCommonBlockChecks(context);
+        if (targetGate != null) {
+            final Faction gateFaction = this.persistentData.getGateFaction(targetGate);
+            gateFaction.removeGate(targetGate);
+            context.replyWith(
+                this.constructMessage("RemovedGate")
+                    .with("name", targetGate.getName())
+            );
         }
     }
 
-    /**
-     * Method to execute the command.
-     *
-     * @param sender who sent the command.
-     * @param args   of the command.
-     * @param key    of the command.
-     */
-    @Override
-    public void execute(CommandSender sender, String[] args, String key) {
+    public void renameCommand(CommandContext context) {
+        Gate targetGate = this.doCommonBlockChecks(context);
+        if (targetGate != null) {
+            final Faction gateFaction = this.persistentData.getGateFaction(targetGate);
+            final String newName = context.getStringArgument("new name");
+            targetGate.setName(newName);
+            context.replyWith(
+                this.constructMessage("AlertChangedGateName")
+                    .with("name", targetGate.getName())
+            );
+        }
+    }
 
+    public void cancelCommand(CommandContext context) {
+        if (this.ephemeralData.getCreatingGatePlayers().remove(context.getPlayer().getUniqueId()) != null) {
+            context.replyWith("CreatingGateCancelled");
+        }
+    }
+
+    public void listCommand(CommandContext context) {
+        if (context.getExecutorsFaction().getGates().size() > 0) {
+            context.replyWith("FactionGate");
+            for (Gate gate : context.getExecutorsFaction().getGates()) {
+                context.replyWith(
+                    this.constructMessage("GateLocation")
+                        .with("name", gate.getName())
+                        .with("location", gate.coordsToString())
+                );
+            }
+            return;
+        }
+        context.replyWith("AlertNoGatesDefined");
+    }
+
+    public void createCommand(CommandContext context) {
+        final Player player = context.getPlayer();
+        if (this.ephemeralData.getCreatingGatePlayers().containsKey(player.getUniqueId())) {
+            context.replyWith("AlertAlreadyCreatingGate");
+            return;
+        }
+        // Require officer
+        String gateName = context.getStringArgument("gate name");
+        if (gateName == null) gateName = this.messageService.getLanguage().getString("UnnamedGate");
+        this.startCreatingGate(player, gateName);
+        context.replyWith("CreatingGateClickWithHoe");
     }
 
     private void startCreatingGate(Player player, String name) {
