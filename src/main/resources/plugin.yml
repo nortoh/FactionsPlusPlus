@@ -1,14 +1,14 @@
-name: MedievalFactions
+name: FactionsPlusPlus
 version: '@version@'
-authors: [DanTheTechMan, Pasarus, Caibinus, Callum, Richardhyy, Mitras2, Kaonami, GoodLucky777, Elafir, Deej, VoChiDanh, alyphen, JackAttack924, ConfusedAlex]
-main: dansplugins.factionsystem.MedievalFactions
+authors: [nortoh, mattwb65, DanTheTechMan, Pasarus, Caibinus, Callum, Richardhyy, Mitras2, Kaonami, GoodLucky777, Elafir, Deej, VoChiDanh, alyphen, JackAttack924, ConfusedAlex]
+main: factionsplusplus.FactionsPlusPlus
 api-version: 1.19
 softdepend: [ dynmap, PlaceholderAPI ]
 description: This Minecraft plugin allows players to organize themselves into feudal, diplomatic, lawful groups akin to nations.
 
 commands:
-  mf:
-    aliases: [ f, factions, medievalfactions ]
+  fpp:
+    aliases: [ mf, f, factions, medievalfactions, fp ]
 
 permissions:
   mf.claim:

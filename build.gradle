@@ -26,9 +26,9 @@ dependencies {
     implementation 'org.bstats:bstats-bukkit:3.0.0'
 }
 
-group = 'dansplugins'
-version = '4.7.0-SNAPSHOT'
-description = 'Medieval Factions'
+group = 'factionsplusplus'
+version = '1.0.0-SNAPSHOT'
+description = 'Factions Plus Plus'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -46,13 +46,13 @@ shadowJar {
         include(dependency('org.bstats:bstats-bukkit'))
         include(dependency('org.bstats:bstats-base'))
     }
-    relocate 'preponderous.ponder', 'dansplugins.factionsystem.shadow.preponderous.ponder'
-    relocate 'org.intellij', 'dansplugins.factionsystem.shadow.org.intellij'
-    relocate 'org.jetbrains', 'dansplugins.factionsystem.shadow.org.jetbrains'
-    relocate 'org.bstats', 'dansplugins.factionsystem.shadow.org.bstats'
-    relocate 'junit', 'dansplugins.factionsystem.shadow.junit'
-    relocate 'org.hamcrest', 'dansplugins.factionsystem.shadow.org.hamcrest'
-    relocate 'org.junit', 'dansplugins.factionsystem.shadow.org.junit'
+    relocate 'preponderous.ponder', 'factionplusplus.shadow.preponderous.ponder'
+    relocate 'org.intellij', 'factionplusplus.shadow.org.intellij'
+    relocate 'org.jetbrains', 'factionplusplus.shadow.org.jetbrains'
+    relocate 'org.bstats', 'factionplusplus.shadow.org.bstats'
+    relocate 'junit', 'factionplusplus.shadow.junit'
+    relocate 'org.hamcrest', 'factionplusplus.shadow.org.hamcrest'
+    relocate 'org.junit', 'factionplusplus.shadow.org.junit'
 }
 
 artifacts {
