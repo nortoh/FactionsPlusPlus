@@ -13,7 +13,7 @@ public class PlayerStats {
     @Expose
     private int logins = 0;
     @Expose
-    private int powerLost = 0;
+    private double powerLost = 0;
     @Expose
     @JsonAdapter(ZonedDateTimeAdapter.class)
     private ZonedDateTime lastLogout = ZonedDateTime.now();
@@ -22,17 +22,16 @@ public class PlayerStats {
         this.logins = initialLogins;
     }
 
-    public int getPowerLost() {
+    public double getPowerLost() {
         return this.powerLost;
     }
 
-    public void setPowerLost(int power) {
-        powerLost = power;
+    public void setPowerLost(double power) {
+        this.powerLost = power;
     }
 
-    // TODO: reimplement in Player Service
-    public void incrementPowerLost() {
-        // powerLost += configService.getInt("powerDecreaseAmount");
+    public void increasePowerLostBy(double amount) {
+        this.powerLost += amount;
     }
 
     public ZonedDateTime getLastLogout() {
