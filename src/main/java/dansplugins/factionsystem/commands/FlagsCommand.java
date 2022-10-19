@@ -12,14 +12,17 @@ import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.FactionFlag;
+import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
 
+import java.util.stream.Collectors;
 import dansplugins.factionsystem.builders.CommandBuilder;
 import dansplugins.factionsystem.builders.ArgumentBuilder;
-
 import java.util.List;
+import java.util.HashMap;
 
 /**
  * @author Callum Johnson
@@ -29,10 +32,12 @@ public class FlagsCommand extends Command {
 
     private final MessageService messageService;
     private final PersistentData persistentData;
+    private final ConfigService configService;
 
     @Inject
     public FlagsCommand(
         PersistentData persistentData,
+        ConfigService configService,
         MessageService messageService
     ) {
         super(
@@ -76,8 +81,9 @@ public class FlagsCommand extends Command {
         );
         this.messageService = messageService;
         this.persistentData = persistentData;
+        this.configService = configService;
     }
-
+    
     public void setCommand(CommandContext context) {
         final FactionFlag flag = context.getFactionFlagArgument("flag name");
         final String flagValue = context.getStringArgument("value");
@@ -87,7 +93,15 @@ public class FlagsCommand extends Command {
 
     public void showCommand(CommandContext context) {
         // TODO: move the logic for this into this class
-        this.messageService.sendFlagList(context.getPlayer(), context.getExecutorsFaction());
+        HashMap<String, FactionFlag> flagList = (HashMap<String, FactionFlag>)context.getExecutorsFaction().getFlags().clone();
+        if (!this.configService.getBoolean("allowNeutrality")) flagList.remove("neutral");
+        if (!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) flagList.remove("prefixColor");
+        String flagOutput = flagList
+            .keySet()
+            .stream()
+            .map(flagKey -> String.format("%s: %s", key, flagList.get(flagKey).toString()))
+            .collect(Collectors.joining(", "));
+        context.reply(ChatColor.AQUA + "" + flagOutput);
     }
 
     /**
