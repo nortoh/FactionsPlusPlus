@@ -58,7 +58,7 @@ public class HomeCommand extends Command {
             context.replyWith("HomeIsInUnclaimedChunk");
             return;
         }
-        if (!chunk.getHolder().equalsIgnoreCase(faction.getName())) {
+        if (!chunk.getHolder().equals(faction.getID())) {
             context.replyWith("HomeClaimedByAnotherFaction");
             return;
         }

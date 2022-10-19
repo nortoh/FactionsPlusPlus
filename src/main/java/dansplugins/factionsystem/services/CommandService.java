@@ -402,7 +402,7 @@ public class CommandService implements TabCompleter {
     public Faction getAllyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
-            if (context.getExecutorsFaction().isAlly(faction.getName())) {
+            if (context.getExecutorsFaction().isAlly(faction.getID())) {
                 return faction;
             }
             context.replyWith(
@@ -416,7 +416,7 @@ public class CommandService implements TabCompleter {
     public Faction getEnemyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
-            if (context.getExecutorsFaction().isEnemy(faction.getName())) {
+            if (context.getExecutorsFaction().isEnemy(faction.getID())) {
                 return faction;
             }
             context.replyWith("FactionNotEnemy");
@@ -427,7 +427,7 @@ public class CommandService implements TabCompleter {
     public Faction getVassaledFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
-            if (faction.isLiege(context.getExecutorsFaction().getName())) {
+            if (faction.isLiege(context.getExecutorsFaction().getID())) {
                 return faction;
             }
             context.replyWith("FactionIsNotVassal");

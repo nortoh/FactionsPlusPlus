@@ -11,6 +11,7 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -19,8 +20,10 @@ import org.bukkit.entity.Player;
 import dansplugins.factionsystem.builders.CommandBuilder;
 import dansplugins.factionsystem.builders.ArgumentBuilder;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -31,12 +34,14 @@ public class GrantIndependenceCommand extends Command {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     @Inject
     public GrantIndependenceCommand(
         MessageService messageService,
         LocaleService localeService,
-        PersistentData persistentData
+        PersistentData persistentData,
+        FactionRepository factionRepository
     ) {
         super(
             new CommandBuilder()
@@ -59,12 +64,13 @@ public class GrantIndependenceCommand extends Command {
         this.messageService = messageService;
         this.localeService = localeService;
         this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         target.setLiege(null);
-        context.getExecutorsFaction().removeVassal(target.getName());
+        context.getExecutorsFaction().removeVassal(target.getID());
         
         // inform all players in that faction that they are now independent
         this.messageService.messageFaction(

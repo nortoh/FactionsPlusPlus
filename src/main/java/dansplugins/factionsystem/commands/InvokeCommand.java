@@ -12,6 +12,7 @@ import dansplugins.factionsystem.events.FactionWarStartEvent;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
@@ -38,13 +39,15 @@ public class InvokeCommand extends Command {
     private final LocaleService localeService;
     private final MessageService messageService;
     private final ConfigService configService;
+    private final FactionRepository factionRepository;
 
     @Inject
     public InvokeCommand(
         ConfigService configService,
         PersistentData persistentData,
         LocaleService localeService,
-        MessageService messageService
+        MessageService messageService,
+        FactionRepository factionRepository
     ) {
         super(
             new CommandBuilder()
@@ -76,6 +79,7 @@ public class InvokeCommand extends Command {
         this.persistentData = persistentData;
         this.localeService = localeService;
         this.messageService = messageService;
+        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {

@@ -11,6 +11,7 @@ import dansplugins.factionsystem.data.PersistentData;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.utils.TabCompleteTools;
@@ -33,12 +34,18 @@ public class BreakAllianceCommand extends Command {
     private final MessageService messageService;
     private final PersistentData persistentData;
     private final LocaleService localeService;
+    private final FactionRepository factionRepository;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public BreakAllianceCommand(MessageService messageService, PersistentData persistentData, LocaleService localeService) {
+    public BreakAllianceCommand(
+        MessageService messageService,
+        PersistentData persistentData,
+        LocaleService localeService,
+        FactionRepository factionRepository
+    ) {
         super(
             new CommandBuilder()
                 .withName("breakalliance")
@@ -60,6 +67,7 @@ public class BreakAllianceCommand extends Command {
         this.messageService = messageService;
         this.persistentData = persistentData;
         this.localeService = localeService;
+        this.factionRepository = factionRepository;
     }
 
 

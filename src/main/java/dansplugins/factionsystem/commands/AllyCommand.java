@@ -84,17 +84,17 @@ public class AllyCommand extends Command {
         }
 
         // no need to allow them to ally if they're already allies
-        if (this.faction.isAlly(otherFaction.getID())) {
+        if (context.getExecutorsFaction().isAlly(otherFaction.getID())) {
             context.replyWith("FactionAlreadyAlly");
             return;
         }
 
-        if (this.faction.isEnemy(otherFaction.getID())) {
+        if (context.getExecutorsFaction().isEnemy(otherFaction.getID())) {
             context.replyWith("FactionIsEnemy");
             return;
         }
 
-        if (this.faction.isRequestedAlly(otherFaction.getID())) {
+        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getID())) {
             context.replyWith("AlertAlreadyRequestedAlliance");
             return;
         }

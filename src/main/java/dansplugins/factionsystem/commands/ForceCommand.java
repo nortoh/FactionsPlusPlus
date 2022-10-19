@@ -519,7 +519,7 @@ public class ForceCommand extends Command {
     // "mf.force.renounce", "mf.force.*", "mf.admin"
     public void renounceCommand(CommandContext context) {
         final Faction faction = context.getFactionArgument("faction");
-        long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(faction.getName());
+        long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(faction.getID());
 
         if (faction.getLiege() != null) {
             faction.setLiege(null);
