@@ -4,7 +4,7 @@
  */
 package factionsplusplus.utils;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -22,7 +22,7 @@ import java.util.logging.Level;
  */
 @Singleton
 public class Logger {
-    @Inject private MedievalFactions medievalFactions;
+    @Inject private FactionsPlusPlus factionsPlusPlus;
 
     public Logger() { }
 
@@ -32,7 +32,7 @@ public class Logger {
      * @param message The message to log.
      */
     public void debug(String message) {
-        if (this.medievalFactions.isDebugEnabled()) {
+        if (this.factionsPlusPlus.isDebugEnabled()) {
             logToFile(message, "log.debug.txt");
         }
     }
@@ -62,7 +62,7 @@ public class Logger {
         String dateMessage = "[" + formattedDateTime + "] " + message;
 
         // append to file
-        File file = new File("plugins/MedievalFactions/" + fileName);
+        File file = new File("plugins/factionsPlusPlus/" + fileName);
         try {
             if (!file.exists()) {
                 file.createNewFile();

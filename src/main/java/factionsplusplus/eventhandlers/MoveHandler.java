@@ -7,7 +7,7 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
@@ -33,7 +33,7 @@ import static org.bukkit.Bukkit.getServer;
 public class MoveHandler implements Listener {
     private final PersistentData persistentData;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final DynmapIntegrationService dynmapService;
     private final FactionService factionService;
     private final MessageService messageService;
@@ -42,14 +42,14 @@ public class MoveHandler implements Listener {
     public MoveHandler(
         PersistentData persistentData,
         TerritoryOwnerNotifier territoryOwnerNotifier,
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         DynmapIntegrationService dynmapService,
         FactionService factionService,
         MessageService messageService
     ) {
         this.persistentData = persistentData;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.dynmapService = dynmapService;
         this.factionService = factionService;
         this.messageService = messageService;
@@ -123,7 +123,7 @@ public class MoveHandler implements Listener {
     }
 
     private void scheduleClaiming(Player player, Faction faction) {
-        getServer().getScheduler().runTaskLater(medievalFactions, () -> {
+        getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
             // add new chunk to claimed chunks
             this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), faction);
             this.dynmapService.updateClaimsIfAble();

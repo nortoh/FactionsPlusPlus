@@ -7,7 +7,7 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigOption;
@@ -34,10 +34,10 @@ public class ConfigCommand extends Command {
     private final ConfigService configService;
     private final LocaleService localeService;
     private final MessageService messageService;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
 
     @Inject
-    public ConfigCommand(ConfigService configService, LocaleService localeService, MessageService messageService, MedievalFactions medievalFactions) {
+    public ConfigCommand(ConfigService configService, LocaleService localeService, MessageService messageService, FactionsPlusPlus factionsPlusPlus) {
         super(
             new CommandBuilder()
                 .withName("config")
@@ -107,7 +107,7 @@ public class ConfigCommand extends Command {
         this.configService = configService;
         this.localeService = localeService;
         this.messageService = messageService;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
     }
 
     public void listCommand(CommandContext context) {
@@ -164,7 +164,7 @@ public class ConfigCommand extends Command {
     }
 
     public void reloadCommand(CommandContext context) {
-        this.medievalFactions.reloadConfig();
+        this.factionsPlusPlus.reloadConfig();
         this.localeService.reloadLanguage();
         context.reply(ChatColor.GREEN + "Config reloaded.");
     }

@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,27 +25,27 @@ import org.bukkit.configuration.InvalidConfigurationException;
  */
 @Singleton
 public class LocaleService {
-    private final Provider<MedievalFactions> medievalFactions;
+    private final Provider<FactionsPlusPlus> factionsPlusPlus;
     private final String dataPath;
 
     private File languageFile;
     private FileConfiguration language; 
 
     @Inject
-    public LocaleService(@Named("dataFolder") String dataPath, Provider<MedievalFactions> medievalFactions) {
-        this.medievalFactions = medievalFactions;
+    public LocaleService(@Named("dataFolder") String dataPath, Provider<FactionsPlusPlus> factionsPlusPlus) {
+        this.factionsPlusPlus = factionsPlusPlus;
         this.dataPath = dataPath;
         this.createLanguageFile();
     }
 
     public void createLanguageFile() {
         this.languageFile = new File(this.dataPath, "language.yml");
-        if (!this.languageFile.exists()) this.medievalFactions.get().saveResource("language.yml", false);
+        if (!this.languageFile.exists()) this.factionsPlusPlus.get().saveResource("language.yml", false);
         this.language = new YamlConfiguration();
         try {
             this.language.load(this.languageFile);
         } catch (IOException | InvalidConfigurationException e) {
-            this.medievalFactions.get().getLogger().log(Level.WARNING, e.getCause().toString());
+            this.factionsPlusPlus.get().getLogger().log(Level.WARNING, e.getCause().toString());
         }
     }
 

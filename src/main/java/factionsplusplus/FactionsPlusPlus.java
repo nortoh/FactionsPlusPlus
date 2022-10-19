@@ -9,7 +9,7 @@ import com.google.inject.Injector;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.di.PluginModule;
 import factionsplusplus.eventhandlers.*;
-import factionsplusplus.externalapi.MedievalFactionsAPI;
+import factionsplusplus.externalapi.FactionsPlusPlusAPI;
 import factionsplusplus.factories.WarFactory;
 import factionsplusplus.placeholders.PlaceholderAPI;
 import factionsplusplus.services.*;
@@ -32,7 +32,7 @@ import java.util.Arrays;
  * @author Daniel McCoy Stephenson
  * @since May 30th, 2020
  */
-public class MedievalFactions extends PonderBukkitPlugin {
+public class FactionsPlusPlus extends PonderBukkitPlugin {
 
     private final String pluginVersion = "v" + getDescription().getVersion();
     @Inject private ActionBarService actionBarService;
@@ -66,7 +66,7 @@ public class MedievalFactions extends PonderBukkitPlugin {
         this.handleIntegrations();
         this.makeSureEveryPlayerExperiencesPowerDecay();
         this.commandService.registerCommands();
-        getCommand("mf").setTabCompleter(commandService);
+        getCommand("fpp").setTabCompleter(commandService);
     }
 
     /**
@@ -120,8 +120,8 @@ public class MedievalFactions extends PonderBukkitPlugin {
      *
      * @return A reference to the external API.
      */
-    public MedievalFactionsAPI getAPI() {
-        return (MedievalFactionsAPI)this.getInjector().getInstance(MedievalFactionsAPI.class);
+    public FactionsPlusPlusAPI getAPI() {
+        return (FactionsPlusPlusAPI)this.getInjector().getInstance(FactionsPlusPlusAPI.class);
     }
 
     /**

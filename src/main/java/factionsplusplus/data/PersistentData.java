@@ -12,7 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.events.FactionClaimEvent;
 import factionsplusplus.events.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
@@ -61,7 +61,7 @@ import static org.bukkit.Material.LADDER;
 public class PersistentData {
     private final LocaleService localeService;
     private final ConfigService configService;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final PlayerService playerService;
     private final MessageService messageService;
     private final Messenger messenger;
@@ -86,7 +86,7 @@ public class PersistentData {
     public PersistentData(
         LocaleService localeService,
         ConfigService configService,
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         PlayerService playerService,
         MessageService messageService,
         Messenger messenger,
@@ -104,7 +104,7 @@ public class PersistentData {
     ) {
         this.localeService = localeService;
         this.configService = configService;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.playerService = playerService;
         this.messageService = messageService;
         this.messenger = messenger;
@@ -1282,7 +1282,7 @@ public class PersistentData {
             lockedBlockRepository.persist();
             warRepository.persist();
             if (configService.hasBeenAltered()) {
-                medievalFactions.saveConfig();
+                factionsPlusPlus.saveConfig();
             }
         }
 

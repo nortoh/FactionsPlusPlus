@@ -7,7 +7,7 @@ package factionsplusplus.utils.extended;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
@@ -33,7 +33,7 @@ import java.util.Random;
 public class Scheduler {
     @Inject private Logger logger;
     @Inject private LocaleService localeService;
-    @Inject private MedievalFactions medievalFactions;
+    @Inject private FactionsPlusPlus factionsPlusPlus;
     @Inject private PersistentData persistentData;
     @Inject private ConfigService configService;
     @Inject private PlayerService playerService;
@@ -47,7 +47,7 @@ public class Scheduler {
         if (delay == 0 || secondsUntilRepeat == 0) {
             return;
         }
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(medievalFactions, new Runnable() {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, new Runnable() {
             @Override
             public void run() {
                 logger.debug(localeService.get("ConsoleAlerts.HourlySaveAlert"));
@@ -60,7 +60,7 @@ public class Scheduler {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerIncrease"));
         int delay = this.configService.getInt("minutesBeforeInitialPowerIncrease") * 60; // 30 minutes
         int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerIncreases") * 60; // 1 hour
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(medievalFactions, new Runnable() {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, new Runnable() {
             @Override
             public void run() {
                 logger.debug(
@@ -77,7 +77,7 @@ public class Scheduler {
         this.logger.debug(localeService.get("ConsoleAlerts.SchedulingPowerDecrease"));
         int delay = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
         int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(medievalFactions, () -> {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, () -> {
             logger.debug(
                 localeService.get("ConsoleAlerts.DecreasingThePowerOfEveryPlayer")
                     .replace("#amount#", String.valueOf(configService.getInt("powerDecreaseAmount")))
@@ -90,7 +90,7 @@ public class Scheduler {
                 persistentData.disbandAllZeroPowerFactions();
             }
 
-            for (Player player : this.medievalFactions.getServer().getOnlinePlayers()) {
+            for (Player player : this.factionsPlusPlus.getServer().getOnlinePlayers()) {
                 informPlayerIfTheirLandIsInDanger(player);
             }
         }, delay * 20L, secondsUntilRepeat * 20L);
@@ -117,7 +117,7 @@ public class Scheduler {
                 .with("time", String.valueOf(teleport_delay))
         );
         DelayedTeleportTask delayedTeleportTask = new DelayedTeleportTask(player, destinationLocation);
-        delayedTeleportTask.runTaskLater(this.medievalFactions, (long) teleport_delay * this.getRandomNumberBetween(15, 25));
+        delayedTeleportTask.runTaskLater(this.factionsPlusPlus, (long) teleport_delay * this.getRandomNumberBetween(15, 25));
     }
 
     private int getRandomNumberBetween(int num1, int num2) {

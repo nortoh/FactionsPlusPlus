@@ -3,7 +3,7 @@ package factionsplusplus.integrators;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
@@ -32,7 +32,7 @@ public class DynmapIntegrator {
     public static boolean dynmapInitialized = false;
     private final Logger logger;
     private final LocaleService localeService;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final PersistentData persistentData;
     private final FactionService factionService;
     private final DataService dataService;
@@ -55,14 +55,14 @@ public class DynmapIntegrator {
     public DynmapIntegrator(
         Logger logger,
         LocaleService localeService,
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         PersistentData persistentData,
         FactionService factionService,
         DataService dataService
     ) {
         this.logger = logger;
         this.localeService = localeService;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.persistentData = persistentData;
         this.factionService = factionService;
         this.dataService = dataService;
@@ -115,7 +115,7 @@ public class DynmapIntegrator {
                     updateClaimsAreaMarkers = false;
                 }
             }
-        }.runTaskTimer(this.medievalFactions, 40, interval);
+        }.runTaskTimer(this.factionsPlusPlus, 40, interval);
     }
 
     /***

@@ -14,10 +14,10 @@ import java.util.UUID;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class MF_Faction {
+public class FPP_Faction {
     private final Faction faction;
 
-    public MF_Faction(Faction f) {
+    public FPP_Faction(Faction f) {
         faction = f;
     }
 

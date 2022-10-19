@@ -7,7 +7,7 @@ package factionsplusplus.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.repositories.ConfigOptionRepository;
 import factionsplusplus.utils.StringUtils;
@@ -29,15 +29,15 @@ import javax.inject.Provider;
  */
 @Singleton
 public class ConfigService {
-    private final Provider<MedievalFactions> medievalFactions;
+    private final Provider<FactionsPlusPlus> factionsPlusPlus;
     private final ConfigOptionRepository configOptionRepository;
     private final MessageService messageService;
 
     private boolean altered = false;
 
     @Inject
-    public ConfigService(Provider<MedievalFactions> medievalFactions, ConfigOptionRepository configOptionRepository, MessageService messageService) {
-        this.medievalFactions = medievalFactions;
+    public ConfigService(Provider<FactionsPlusPlus> factionsPlusPlus, ConfigOptionRepository configOptionRepository, MessageService messageService) {
+        this.factionsPlusPlus = factionsPlusPlus;
         this.configOptionRepository = configOptionRepository;
         this.messageService = messageService;
         this.registerCoreOptions();
@@ -48,7 +48,7 @@ public class ConfigService {
             new ConfigOptionBuilder()
                 .withName("version")
                 .withDescription("Current version of this plugin")
-                .setDefaultValue(this.medievalFactions.get().getVersion())
+                .setDefaultValue(this.factionsPlusPlus.get().getVersion())
                 .notUserSettable(),
             new ConfigOptionBuilder()
                 .withName("initialMaxPowerLevel")
@@ -303,7 +303,7 @@ public class ConfigService {
     public void saveConfigDefaults(Boolean onlySetIfMissing, Boolean deleteOldOptions) {
         for (ConfigOption configOption : this.configOptionRepository.all().values()) {
             // Special case for version, because we always want to set to the new version
-            if (configOption.getName().equals("version")) getConfig().set("version", this.medievalFactions.get().getVersion());
+            if (configOption.getName().equals("version")) getConfig().set("version", this.factionsPlusPlus.get().getVersion());
             Boolean optionExists = true;
             switch(configOption.getType()) {
                 case Integer:
@@ -327,7 +327,7 @@ public class ConfigService {
         }
         if (deleteOldOptions) this.deleteOldConfigOptionsIfPresent();
         getConfig().options().copyDefaults(true);
-        this.medievalFactions.get().saveConfig();
+        this.factionsPlusPlus.get().saveConfig();
     }
 
     public void handleVersionMismatch() {
@@ -497,7 +497,7 @@ public class ConfigService {
     }
 
     public FileConfiguration getConfig() {
-        return this.medievalFactions.get().getConfig();
+        return this.factionsPlusPlus.get().getConfig();
     }
 
     public int getInt(String option) {

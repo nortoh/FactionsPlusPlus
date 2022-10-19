@@ -7,7 +7,7 @@ package factionsplusplus.externalapi;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
@@ -24,8 +24,8 @@ import java.util.UUID;
  * @brief This class gives developers access to the external API for Medieval Factions.
  */
 @Singleton
-public class MedievalFactionsAPI {
-    private final MedievalFactions medievalFactions;
+public class FactionsPlusPlusAPI {
+    private final FactionsPlusPlus factionsPlusPlus;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final ConfigService configService;
@@ -34,8 +34,8 @@ public class MedievalFactionsAPI {
     private final String APIVersion = "v1.0.0"; // every time the external API is altered, this should be incremented
 
     @Inject
-    public MedievalFactionsAPI(FactionRepository factionRepository, MedievalFactions medievalFactions, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
-        this.medievalFactions = medievalFactions;
+    public FactionsPlusPlusAPI(FactionRepository factionRepository, FactionsPlusPlus factionsPlusPlus, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
+        this.factionsPlusPlus = factionsPlusPlus;
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.configService = configService;
@@ -47,31 +47,31 @@ public class MedievalFactionsAPI {
     }
 
     public String getVersion() {
-        return medievalFactions.getVersion();
+        return factionsPlusPlus.getVersion();
     }
 
-    public MF_Faction getFaction(String factionName) {
+    public FPP_Faction getFaction(String factionName) {
         Faction faction = this.factionRepository.get(factionName);
         if (faction == null) {
             return null;
         }
-        return new MF_Faction(faction);
+        return new FPP_Faction(faction);
     }
 
-    public MF_Faction getFaction(Player player) {
+    public FPP_Faction getFaction(Player player) {
         Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
         if (faction == null) {
             return null;
         }
-        return new MF_Faction(faction);
+        return new FPP_Faction(faction);
     }
 
-    public MF_Faction getFaction(UUID playerUUID) {
+    public FPP_Faction getFaction(UUID playerUUID) {
         Faction faction = this.persistentData.getPlayersFaction(playerUUID);
         if (faction == null) {
             return null;
         }
-        return new MF_Faction(faction);
+        return new FPP_Faction(faction);
     }
 
     public boolean isPlayerInFactionChat(Player player) {

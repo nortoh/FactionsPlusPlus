@@ -7,7 +7,7 @@ package factionsplusplus.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.constants.GateStatus;
 import factionsplusplus.constants.ErrorCodeAddCoord;
 import factionsplusplus.data.EphemeralData;
@@ -41,7 +41,7 @@ public class GateService {
     private final Provider<PersistentData> persistentData;
     private final EphemeralData ephemeralData;
     private final MessageService messageService;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
 
     @Inject
@@ -49,13 +49,13 @@ public class GateService {
         Provider<PersistentData> persistentData,
         EphemeralData ephemeralData,
         MessageService messageService,
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         ConfigService configService
     ) {
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.messageService = messageService;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
     }
 
@@ -256,7 +256,7 @@ public class GateService {
                 for (int y = bottomY; y <= topY; y++) {
                     c++;
                     final int blockY = y;
-                    Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                    Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                         Block b;
 
                         @Override
@@ -269,7 +269,7 @@ public class GateService {
                         }
                     }, c * 10L);
                 }
-                Bukkit.getScheduler().runTaskLater(medievalFactions, new Runnable() {
+                Bukkit.getScheduler().runTaskLater(factionsPlusPlus, new Runnable() {
                     @Override
                     public void run() {
                         gate.setStatus(GateStatus.Ready);
@@ -298,7 +298,7 @@ public class GateService {
                 for (int y = bottomY; y <= topY; y++) {
                     c++;
                     final int blockY = y;
-                    Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                    Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                         Block b;
 
                         @Override
@@ -311,7 +311,7 @@ public class GateService {
                         }
                     }, c * 10L);
                 }
-                Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                     @Override
                     public void run() {
                         gate.setStatus(GateStatus.Ready);
@@ -354,7 +354,7 @@ public class GateService {
                 for (int y = topY; y >= bottomY; y--) {
                     c++;
                     final int blockY = y;
-                    Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                    Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                         Block b;
 
                         @Override
@@ -367,7 +367,7 @@ public class GateService {
                         }
                     }, c * 10L);
                 }
-                Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                     @Override
                     public void run() {
                         gate.setStatus(GateStatus.Ready);
@@ -396,7 +396,7 @@ public class GateService {
                 for (int y = topY; y >= bottomY; y--) {
                     c++;
                     final int blockY = y;
-                    Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                    Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                         Block b;
 
                         @Override
@@ -410,7 +410,7 @@ public class GateService {
                         }
                     }, c * 10L);
                 }
-                Bukkit.getScheduler().runTaskLater(this.medievalFactions, new Runnable() {
+                Bukkit.getScheduler().runTaskLater(this.factionsPlusPlus, new Runnable() {
                     @Override
                     public void run() {
                         gate.setStatus(GateStatus.Ready);

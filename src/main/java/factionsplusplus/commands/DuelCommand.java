@@ -7,7 +7,7 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
@@ -33,14 +33,14 @@ import java.util.Objects;
 public class DuelCommand extends Command {
     private final EphemeralData ephemeralData;
     private final MessageService messageService;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final DeathService deathService;
 
     @Inject
     public DuelCommand(
         EphemeralData ephemeralData,
         MessageService messageService,
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         DeathService deathService
     ) {
         super(
@@ -96,7 +96,7 @@ public class DuelCommand extends Command {
         );
         this.ephemeralData = ephemeralData;
         this.messageService = messageService;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.deathService = deathService;
     }
 
@@ -199,7 +199,7 @@ public class DuelCommand extends Command {
             this.constructMessage("AlertChallengedToDuelPlusHowTo")
                 .with("name", player.getName())
         );
-        this.ephemeralData.getDuelingPlayers().add(new Duel(this.medievalFactions, this.ephemeralData, this.deathService, player, target, limit));
+        this.ephemeralData.getDuelingPlayers().add(new Duel(this.factionsPlusPlus, this.ephemeralData, this.deathService, player, target, limit));
     }
 
     /**

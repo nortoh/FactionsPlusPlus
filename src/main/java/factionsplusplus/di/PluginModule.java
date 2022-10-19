@@ -5,24 +5,24 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 
 public class PluginModule extends AbstractModule {
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
 
-    public PluginModule(MedievalFactions medievalFactions) {
-        this.medievalFactions = medievalFactions;
+    public PluginModule(FactionsPlusPlus factionsPlusPlus) {
+        this.factionsPlusPlus = factionsPlusPlus;
     }
 
     @Override
     protected void configure() {
-        bind(MedievalFactions.class).toInstance(medievalFactions);
+        bind(FactionsPlusPlus.class).toInstance(factionsPlusPlus);
         bind(String.class)
             .annotatedWith(Names.named("dataFolder"))
-            .toInstance(this.medievalFactions.getStoragePath());
+            .toInstance(this.factionsPlusPlus.getStoragePath());
         bind(String.class)
             .annotatedWith(Names.named("pluginVersion"))
-            .toInstance(this.medievalFactions.getVersion());
+            .toInstance(this.factionsPlusPlus.getVersion());
 
     }
 

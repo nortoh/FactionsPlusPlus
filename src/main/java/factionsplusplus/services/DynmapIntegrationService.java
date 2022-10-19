@@ -3,7 +3,7 @@ package factionsplusplus.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.integrators.DynmapIntegrator;
 
 import org.bukkit.Bukkit;
@@ -11,14 +11,14 @@ import org.bukkit.Bukkit;
 @Singleton
 public class DynmapIntegrationService {
     private final DynmapIntegrator dynmapIntegrator;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
 
     @Inject
-    public DynmapIntegrationService(MedievalFactions medievalFactions) {
-        this.medievalFactions = medievalFactions;
+    public DynmapIntegrationService(FactionsPlusPlus factionsPlusPlus) {
+        this.factionsPlusPlus = factionsPlusPlus;
 
         if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
-            this.dynmapIntegrator = this.medievalFactions.getInjector().getInstance(DynmapIntegrator.class);
+            this.dynmapIntegrator = this.factionsPlusPlus.getInjector().getInstance(DynmapIntegrator.class);
             this.dynmapIntegrator.scheduleClaimsUpdate(600);
             this.dynmapIntegrator.updateClaims();
         } else {

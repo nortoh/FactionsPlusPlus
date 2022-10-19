@@ -7,7 +7,7 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
@@ -35,13 +35,13 @@ import static org.bukkit.Bukkit.getServer;
 public class InviteCommand extends Command {
     private final MessageService messageService;
     private final PersistentData persistentData;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
 
     @Inject
     public InviteCommand(
         MessageService messageService,
         PersistentData persistentData,
-        MedievalFactions medievalFactions
+        FactionsPlusPlus factionsPlusPlus
     ) {
         super(
             new CommandBuilder()
@@ -60,7 +60,7 @@ public class InviteCommand extends Command {
         );
         this.messageService = messageService;
         this.persistentData = persistentData;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
     }
 
     public void execute(CommandContext context) {
@@ -92,7 +92,7 @@ public class InviteCommand extends Command {
         final long seconds = 1728000L;
         // make invitation expire in 24 hours, if server restarts it also expires since invites aren't saved
         final OfflinePlayer tmp = target;
-        getServer().getScheduler().runTaskLater(this.medievalFactions, () -> {
+        getServer().getScheduler().runTaskLater(this.factionsPlusPlus, () -> {
             faction.uninvite(playerUUID);
             if (tmp.isOnline() && tmp.getPlayer() != null) {
                 messageService.sendLocalizedMessage(

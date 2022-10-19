@@ -3,7 +3,7 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.utils.RelationChecker;
 import org.bukkit.Bukkit;
@@ -25,7 +25,7 @@ import java.util.List;
 @Singleton
 public class EffectHandler implements Listener {
     private final EphemeralData ephemeralData;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final RelationChecker relationChecker;
 
     private final List<PotionEffectType> BAD_POTION_EFFECTS = Arrays.asList(
@@ -43,9 +43,9 @@ public class EffectHandler implements Listener {
     private final List<PotionType> BAD_POTION_TYPES = new ArrayList<>();
 
     @Inject
-    public EffectHandler(EphemeralData ephemeralData, MedievalFactions medievalFactions, RelationChecker relationChecker) {
+    public EffectHandler(EphemeralData ephemeralData, FactionsPlusPlus factionsPlusPlus, RelationChecker relationChecker) {
         this.ephemeralData = ephemeralData;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.relationChecker = relationChecker;
         initializeBadPotionTypes();
     }
@@ -108,7 +108,7 @@ public class EffectHandler implements Listener {
 
     private void addScheduledTaskToRemoveCloudFromEphemeralData(AreaEffectCloud cloud, Pair<Player, AreaEffectCloud> storedCloudPair) {
         long delay = cloud.getDuration();
-        medievalFactions.getServer().getScheduler().scheduleSyncDelayedTask(medievalFactions, () -> ephemeralData.getActiveAOEClouds().remove(storedCloudPair), delay);
+        factionsPlusPlus.getServer().getScheduler().scheduleSyncDelayedTask(factionsPlusPlus, () -> ephemeralData.getActiveAOEClouds().remove(storedCloudPair), delay);
     }
 
     private void removePotionIntensityIfAnyVictimIsAnAlliedPlayer(PotionSplashEvent event, Player attacker) {

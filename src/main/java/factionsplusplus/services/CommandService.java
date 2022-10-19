@@ -7,7 +7,7 @@ package factionsplusplus.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
@@ -47,7 +47,7 @@ import java.util.Map;
 @Singleton
 public class CommandService implements TabCompleter {
     private final LocaleService localeService;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
     private final PlayerService playerService;
     private final MessageService messageService;
@@ -55,9 +55,9 @@ public class CommandService implements TabCompleter {
     private final DataService dataService;
 
     @Inject
-    public CommandService(LocaleService localeService, MedievalFactions medievalFactions, ConfigService configService, PlayerService playerService, MessageService messageService, CommandRepository commandRepository, DataService dataService) {
+    public CommandService(LocaleService localeService, FactionsPlusPlus factionsPlusPlus, ConfigService configService, PlayerService playerService, MessageService messageService, CommandRepository commandRepository, DataService dataService) {
         this.localeService = localeService;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
         this.playerService = playerService;
         this.messageService = messageService;
@@ -128,7 +128,7 @@ public class CommandService implements TabCompleter {
     }
 
     public Command registerCommand(Class commandClass) {
-        Command command = (Command)this.medievalFactions.getInjector().getInstance(commandClass);
+        Command command = (Command)this.factionsPlusPlus.getInjector().getInstance(commandClass);
         this.commandRepository.add(command);
         return command;
     }
@@ -153,7 +153,7 @@ public class CommandService implements TabCompleter {
     public boolean processCommand(Command parentCommand, Command command, CommandSender sender, ArrayList<String> arguments, CommandContext context) {
         // If context is null, create a new command context. This usually means we're a root command.
         if (context == null) {
-            context = this.medievalFactions.getInjector().getInstance(CommandContext.class);
+            context = this.factionsPlusPlus.getInjector().getInstance(CommandContext.class);
             context.setSender(sender);
             context.setRawArguments(Arrays.copyOf(arguments.toArray(), arguments.size(), String[].class));
         }
@@ -476,7 +476,7 @@ public class CommandService implements TabCompleter {
             if (args.length == 0) {
                 this.localeService.getStrings("PluginInfo")
                     .forEach(s -> {
-                        s = s.replace("#version", this.medievalFactions.getVersion()).replace("#dev", this.medievalFactions.getDescription().getAuthors().toString());
+                        s = s.replace("#version", this.factionsPlusPlus.getVersion()).replace("#dev", this.factionsPlusPlus.getDescription().getAuthors().toString());
                         this.messageService.send(sender, s);
                     });
                 return true;

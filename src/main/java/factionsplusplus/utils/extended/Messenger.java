@@ -7,7 +7,7 @@ package factionsplusplus.utils.extended;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
@@ -35,7 +35,7 @@ public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messen
     @Inject private LocaleService localeService;
     @Inject private PlayerService playerService;
     @Inject private MessageService messageService;
-    @Inject private MedievalFactions medievalFactions;
+    @Inject private FactionsPlusPlus factionsPlusPlus;
     @Inject private ConfigService configService;
     @Inject private FactionService factionService;
     @Inject private FactionRepository factionRepository;

@@ -7,7 +7,7 @@ package factionsplusplus.placeholders;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
@@ -27,7 +27,7 @@ import java.util.Objects;
 
 @Singleton
 public class PlaceholderAPI extends PlaceholderExpansion {
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final PersistentData persistentData;
     private final ConfigService configService;
     private final FactionService factionService;
@@ -36,14 +36,14 @@ public class PlaceholderAPI extends PlaceholderExpansion {
 
     @Inject
     public PlaceholderAPI(
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         PersistentData persistentData,
         ConfigService configService,
         FactionService factionService,
         DataService dataService,
         PlayerService playerService
     ) {
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.persistentData = persistentData;
         this.configService = configService;
         this.factionService = factionService;
@@ -53,17 +53,17 @@ public class PlaceholderAPI extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return medievalFactions.getName();
+        return factionsPlusPlus.getName();
     }
 
     @Override
     public @NotNull String getAuthor() {
-        return String.join(", ", medievalFactions.getDescription().getAuthors());
+        return String.join(", ", factionsPlusPlus.getDescription().getAuthors());
     }
 
     @Override
     public @NotNull String getVersion() {
-        return medievalFactions.getVersion();
+        return factionsPlusPlus.getVersion();
     }
 
     @Override

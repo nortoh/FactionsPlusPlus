@@ -4,7 +4,7 @@
  */
 package factionsplusplus.objects.domain;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.services.DeathService;
 
@@ -26,7 +26,7 @@ import java.util.Objects;
  * @author Daniel McCoy Stephenson
  */
 public class Duel {
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final EphemeralData ephemeralData;
     private final DeathService deathService;
 
@@ -44,14 +44,14 @@ public class Duel {
     private double timeDecrementAmount = 0;
 
     public Duel(
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         EphemeralData ephemeralData,
         DeathService deathService,
         Player challenger,
         Player challenged,
         int limit
     ) {
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.ephemeralData = ephemeralData;
         this.deathService = deathService;
         _challenger = challenger;
@@ -144,7 +144,7 @@ public class Duel {
         challengedHealth = _challenged.getHealth();
         duelState = DuelState.DUELLING;
         // Announce to nearby players that a duel has started.
-        for (Player other : medievalFactions.getServer().getOnlinePlayers()) {
+        for (Player other : factionsPlusPlus.getServer().getOnlinePlayers()) {
             if (other.getLocation().distance(_challenger.getLocation()) <= nearbyPlayerRadius ||
                     other.getLocation().distance(_challenged.getLocation()) <= nearbyPlayerRadius) {
                 other.sendMessage(String.format(ChatColor.AQUA + "%s has challenged %s to a duel!", _challenger.getName(), _challenged.getName()));
@@ -155,14 +155,14 @@ public class Duel {
             return;
         }
 
-        bar = medievalFactions.getServer().createBossBar(String.format(ChatColor.AQUA + "%s vs %s", _challenger.getName(), _challenged.getName())
+        bar = factionsPlusPlus.getServer().createBossBar(String.format(ChatColor.AQUA + "%s vs %s", _challenger.getName(), _challenged.getName())
                 , BarColor.WHITE, BarStyle.SEGMENTED_20);
         bar.setProgress(1);
         timeDecrementAmount = 1.0 / timeLimit;
         bar.addPlayer(_challenger);
         bar.addPlayer(_challenged);
 
-        repeatingTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(medievalFactions, new Runnable() {
+        repeatingTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, new Runnable() {
             @Override
             public void run() {
                 double progress = bar.getProgress() - timeDecrementAmount;
@@ -186,7 +186,7 @@ public class Duel {
 
         if (!tied) {
             // Announce winner to nearby players.
-            for (Player other : medievalFactions.getServer().getOnlinePlayers()) {
+            for (Player other : factionsPlusPlus.getServer().getOnlinePlayers()) {
                 if (other.getLocation().distance(_challenger.getLocation()) <= nearbyPlayerRadius ||
                         other.getLocation().distance(_challenged.getLocation()) <= nearbyPlayerRadius) {
                     other.sendMessage(String.format(ChatColor.AQUA + "%s has defeated %s in a duel!", winner.getName(), loser.getName()));
@@ -198,7 +198,7 @@ public class Duel {
                 getWinner().getWorld().dropItemNaturally(getWinner().getLocation(), Objects.requireNonNull(this.deathService.getHead(getLoser())));
             }
         } else {
-            for (Player other : medievalFactions.getServer().getOnlinePlayers()) {
+            for (Player other : factionsPlusPlus.getServer().getOnlinePlayers()) {
                 if (other.getLocation().distance(_challenger.getLocation()) <= nearbyPlayerRadius ||
                         other.getLocation().distance(_challenged.getLocation()) <= nearbyPlayerRadius) {
                     other.sendMessage(String.format(ChatColor.YELLOW + "%s and %s's duel has ended in a tie.", _challenger.getName(), _challenged.getName()));
@@ -209,7 +209,7 @@ public class Duel {
             return;
         }
         bar.removeAll();
-        medievalFactions.getServer().getScheduler().cancelTask(repeatingTaskId);
+        factionsPlusPlus.getServer().getScheduler().cancelTask(repeatingTaskId);
         ephemeralData.getDuelingPlayers().remove(this);
     }
 

@@ -7,7 +7,7 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.*;
@@ -38,7 +38,7 @@ import java.util.*;
  */
 @Singleton
 public class ForceCommand extends Command {
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final Logger logger;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
@@ -50,7 +50,7 @@ public class ForceCommand extends Command {
     public ForceCommand(
         PersistentData persistentData,
         EphemeralData ephemeralData,
-        MedievalFactions medievalFactions,
+        FactionsPlusPlus factionsPlusPlus,
         Logger logger,
         FactionRepository factionRepository,
         FactionService factionService,
@@ -381,7 +381,7 @@ public class ForceCommand extends Command {
         );        
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.logger = logger;
         this.factionRepository = factionRepository;
         this.factionService = factionService;
@@ -397,7 +397,7 @@ public class ForceCommand extends Command {
     // "mf.force.load", "mf.force.*", "mf.admin"
     public void loadCommand(CommandContext context) {
         this.persistentData.getLocalStorageService().load();
-        this.medievalFactions.reloadConfig();
+        this.factionsPlusPlus.reloadConfig();
         context.replyWith("AlertForcedLoad");
     }
 

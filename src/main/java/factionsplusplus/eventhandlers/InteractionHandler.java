@@ -7,7 +7,7 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.MedievalFactions;
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
@@ -51,18 +51,18 @@ public class InteractionHandler implements Listener {
     private final MessageService messageService;
     private final LocaleService localeService;
     private final BlockChecker blockChecker;
-    private final MedievalFactions medievalFactions;
+    private final FactionsPlusPlus factionsPlusPlus;
     private final LockService lockService;
     private final EphemeralData ephemeralData;
     private final GateService gateService;
 
     @Inject
-    public InteractionHandler(PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, MedievalFactions medievalFactions, LockService lockService, EphemeralData ephemeralData, GateService gateService, MessageService messageService) {
+    public InteractionHandler(PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, FactionsPlusPlus factionsPlusPlus, LockService lockService, EphemeralData ephemeralData, GateService gateService, MessageService messageService) {
         this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;
         this.localeService = localeService;
         this.blockChecker = blockChecker;
-        this.medievalFactions = medievalFactions;
+        this.factionsPlusPlus = factionsPlusPlus;
         this.lockService = lockService;
         this.ephemeralData = ephemeralData;
         this.gateService = gateService;
@@ -137,7 +137,7 @@ public class InteractionHandler implements Listener {
             }
 
             int seconds = 2;
-            medievalFactions.getServer().getScheduler().runTaskLater(medievalFactions, () -> {
+            factionsPlusPlus.getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
                 Block block = player.getWorld().getBlockAt(event.getBlock().getLocation());
 
                 if (!blockChecker.isChest(block)) {
@@ -299,7 +299,7 @@ public class InteractionHandler implements Listener {
             // get chunk that armor stand is in
             location = armorStand.getLocation();
         } else if (clickedEntity instanceof ItemFrame) {
-            if (medievalFactions.isDebugEnabled()) {
+            if (factionsPlusPlus.isDebugEnabled()) {
                 System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
             }
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
@@ -338,7 +338,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerBucketFillEvent event) {
-        if (medievalFactions.isDebugEnabled()) {
+        if (factionsPlusPlus.isDebugEnabled()) {
             System.out.println("DEBUG: A player is attempting to fill a bucket!");
         }
 
@@ -355,7 +355,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerBucketEmptyEvent event) {
-        if (medievalFactions.isDebugEnabled()) {
+        if (factionsPlusPlus.isDebugEnabled()) {
             System.out.println("DEBUG: A player is attempting to empty a bucket!");
         }
 
@@ -372,7 +372,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(EntityPlaceEvent event) {
-        if (medievalFactions.isDebugEnabled()) {
+        if (factionsPlusPlus.isDebugEnabled()) {
             System.out.println("DEBUG: A player is attempting to place an entity!");
         }
 
@@ -393,7 +393,7 @@ public class InteractionHandler implements Listener {
         Entity clickedEntity = event.getRightClicked();
 
         if (clickedEntity instanceof ItemFrame) {
-            if (medievalFactions.isDebugEnabled()) {
+            if (factionsPlusPlus.isDebugEnabled()) {
                 System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractEntityEvent!");
             }
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
