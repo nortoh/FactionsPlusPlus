@@ -8,9 +8,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import dansplugins.factionsystem.events.FactionWarStartEvent;
+import dansplugins.factionsystem.factories.WarFactory;
 import dansplugins.factionsystem.models.Command;
 import dansplugins.factionsystem.models.CommandContext;
 import dansplugins.factionsystem.models.Faction;
+import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.services.ConfigService;
 import dansplugins.factionsystem.services.MessageService;
@@ -29,12 +31,15 @@ public class DeclareIndependenceCommand extends Command {
     private final MessageService messageService;
     private final ConfigService configService;
     private final FactionRepository factionRepository;
+    private final WarFactory warFactory;
 
     @Inject
     public DeclareIndependenceCommand(
         MessageService messageService,
         ConfigService configService,
-        FactionRepository factionRepository
+        PersistentData persistentData,
+        FactionRepository factionRepository,
+        WarFactory warFactory
     ) {
         super(
             new CommandBuilder()
@@ -49,6 +54,7 @@ public class DeclareIndependenceCommand extends Command {
         this.messageService = messageService;
         this.configService = configService;
         this.factionRepository = factionRepository;
+        this.warFactory = warFactory;
     }
 
     public void execute(CommandContext context) {
@@ -73,6 +79,9 @@ public class DeclareIndependenceCommand extends Command {
             if (!warStartEvent.isCancelled()) {
                 faction.addEnemy(liege.getID());
                 liege.addEnemy(faction.getID());
+
+                // TODO: check if they're already at work (which would be weird since they were a previous vassal?)
+                this.warFactory.createWar(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
 
                 // break alliance if allied
                 if (faction.isAlly(liege.getID())) {

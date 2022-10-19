@@ -19,11 +19,12 @@ import dansplugins.factionsystem.models.ClaimedChunk;
 import dansplugins.factionsystem.models.LockedBlock;
 import dansplugins.factionsystem.models.PlayerRecord;
 import dansplugins.factionsystem.objects.domain.Duel;
-import dansplugins.factionsystem.objects.domain.War;
+import dansplugins.factionsystem.models.War;
 import dansplugins.factionsystem.repositories.ClaimedChunkRepository;
 import dansplugins.factionsystem.repositories.FactionRepository;
 import dansplugins.factionsystem.repositories.LockedBlockRepository;
 import dansplugins.factionsystem.repositories.PlayerRecordRepository;
+import dansplugins.factionsystem.repositories.WarRepository;
 import dansplugins.factionsystem.models.Faction;
 import dansplugins.factionsystem.models.Gate;
 import dansplugins.factionsystem.services.ConfigService;
@@ -58,7 +59,6 @@ import static org.bukkit.Material.LADDER;
  */
 @Singleton
 public class PersistentData {
-    final HashSet<War> wars = new HashSet<>();
     private final LocaleService localeService;
     private final ConfigService configService;
     private final MedievalFactions medievalFactions;
@@ -72,9 +72,10 @@ public class PersistentData {
     private final LockedBlockRepository lockedBlockRepository;
     private final PlayerRecordRepository playerRecordRepository;
     private final InteractionAccessChecker interactionAccessChecker;
+    private final WarRepository warRepository;
     private final ArrayList<LockedBlock> lockedBlocks = new ArrayList<>();
     private final ChunkDataAccessor chunkDataAccessor = new ChunkDataAccessor();
-    private final LocalStorageService localStorageService = new LocalStorageService(this);
+    private final LocalStorageService localStorageService = new LocalStorageService();
 
     private final DynmapIntegrationService dynmapService;
     private final BlockChecker blockChecker;
@@ -98,7 +99,8 @@ public class PersistentData {
         ClaimedChunkRepository claimedChunkRepository,
         LockedBlockRepository lockedBlockRepository,
         PlayerRecordRepository playerRecordRepository,
-        FactionService factionService
+        FactionService factionService,
+        WarRepository warRepository
     ) {
         this.localeService = localeService;
         this.configService = configService;
@@ -116,6 +118,7 @@ public class PersistentData {
         this.lockedBlockRepository = lockedBlockRepository;
         this.playerRecordRepository = playerRecordRepository;
         this.factionService = factionService;
+        this.warRepository = warRepository;
     }
 
     public BlockChecker getBlockChecker() {
@@ -330,8 +333,8 @@ public class PersistentData {
         }
     }
 
-    public void addWar(War war) {
-        wars.add(war);
+    public void addFaction(Faction faction) {
+        this.factionRepository.create(faction);
     }
 
     public void removePoliticalTiesToFaction(Faction targetFaction) {
@@ -1272,120 +1275,24 @@ public class PersistentData {
      * @author Pasarus
      */
     public class LocalStorageService {
-        private final static String FILE_PATH = "./plugins/MedievalFactions/";
-        private final static String FACTIONS_FILE_NAME = "factions.json";
-        private final static String CHUNKS_FILE_NAME = "claimedchunks.json";
-        private final static String PLAYERPOWER_FILE_NAME = "playerpowerrecords.json";
-        private final static String PLAYERACTIVITY_FILE_NAME = "playeractivityrecords.json";
-        private final static String LOCKED_BLOCKS_FILE_NAME = "lockedblocks.json";
-        private final PersistentData persistentData;
-        //        private final static String WARS_FILE_NAME = "wars.json";
-        private final Type LIST_MAP_TYPE = new TypeToken<ArrayList<HashMap<String, String>>>() {
-        }.getType();
-
-        private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        public LocalStorageService(PersistentData persistentData) {
-            this.persistentData = persistentData;
-        }
 
         public void save() {
-            saveFactions();
-            saveClaimedChunks();
-            savePlayerRecords();
-            saveLockedBlocks();
-            saveWars();
+            factionRepository.persist();
+            claimedChunkRepository.persist();
+            playerRecordRepository.persist();
+            lockedBlockRepository.persist();
+            warRepository.persist();
             if (configService.hasBeenAltered()) {
                 medievalFactions.saveConfig();
             }
         }
 
         public void load() {
-            loadFactions();
-            loadClaimedChunks();
-            loadPlayerRecords();
-            loadLockedBlocks();
-            loadWars();
-        }
-
-        private void saveFactions() {
-            factionRepository.persist();
-        }
-
-        private void saveClaimedChunks() {
-            claimedChunkRepository.persist();
-        }
-
-        private void savePlayerRecords() {
-            playerRecordRepository.persist();
-        }
-
-        private void saveLockedBlocks() {
-            lockedBlockRepository.persist();
-        }
-
-        private void saveWars() {
-//            List<Map<String, String>> warsToSave = new ArrayList<>();
-//            for (War war : wars) {
-//                warsToSave.add(war.save());
-//            }
-//
-//            File file = new File(FILE_PATH + WARS_FILE_NAME);
-//            writeOutFiles(file, warsToSave);
-        }
-
-        private void writeOutFiles(File file, List saveData) {
-            this.writeOutFiles(file, gson.toJson(saveData));
-        }
-
-        private void writeOutFiles(File file, String saveData) {
-            try {
-                file.createNewFile();
-                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-                outputStreamWriter.write(saveData);
-                outputStreamWriter.close();
-            } catch (IOException e) {
-                System.out.println("ERROR: " + e);
-            }
-        }
-
-        private void loadFactions() {
             factionRepository.load();
-        }
-
-        private void loadClaimedChunks() {
             claimedChunkRepository.load();
-        }
-
-        private void loadPlayerRecords() {
             playerRecordRepository.load();
-        }
-
-        private void loadLockedBlocks() {
             lockedBlockRepository.load();
+            warRepository.load();
         }
-
-        private void loadWars() {
-//            wars.clear();
-//
-//            ArrayList<HashMap<String, String>> data = loadDataFromFilename(FILE_PATH + WARS_FILE_NAME);
-//
-//            for (Map<String, String> warData : data) {
-//                War war = new War(warData);
-//                addWar(war);
-//            }
-        }
-
-        private ArrayList<HashMap<String, String>> loadDataFromFilename(String filename) {
-            try {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(filename), StandardCharsets.UTF_8));
-                return gson.fromJson(reader, LIST_MAP_TYPE);
-            } catch (FileNotFoundException ignored) {
-
-            }
-            return new ArrayList<>();
-        }
-
     }
 }
