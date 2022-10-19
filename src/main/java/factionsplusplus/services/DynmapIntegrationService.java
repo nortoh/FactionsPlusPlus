@@ -10,13 +10,16 @@ import org.bukkit.Bukkit;
 
 @Singleton
 public class DynmapIntegrationService {
-    private final DynmapIntegrator dynmapIntegrator;
+    private DynmapIntegrator dynmapIntegrator = null;
     private final FactionsPlusPlus factionsPlusPlus;
 
     @Inject
     public DynmapIntegrationService(FactionsPlusPlus factionsPlusPlus) {
         this.factionsPlusPlus = factionsPlusPlus;
+        this.checkForDynmap();
+    }
 
+    public void checkForDynmap() {
         if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
             this.dynmapIntegrator = this.factionsPlusPlus.getInjector().getInstance(DynmapIntegrator.class);
             this.dynmapIntegrator.scheduleClaimsUpdate(600);
@@ -31,6 +34,7 @@ public class DynmapIntegrationService {
     }
 
     public void updateClaimsIfAble() {
+        if (this.dynmapIntegrator == null) this.checkForDynmap();
         if (this.dynmapIntegrator != null) this.dynmapIntegrator.updateClaims();
     }
 }

@@ -40,6 +40,7 @@ public class ClaimCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the chunk radius to claim")
                         .expectsInteger()
+                        .isOptional()
                 )
         );
         this.persistentData = persistentData;
