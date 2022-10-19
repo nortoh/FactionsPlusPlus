@@ -87,7 +87,7 @@ public class CommandService implements TabCompleter {
             DuelCommand.class,
             EditLawCommand.class,
             FlagsCommand.class,
-            //ForceCommand.class,
+            ForceCommand.class,
             GateCommand.class,
             GrantAccessCommand.class,
             GrantIndependenceCommand.class,
@@ -547,9 +547,20 @@ public class CommandService implements TabCompleter {
                 if (subCommand == null) {
                     return null;
                 }
+                // Check if there's any subcommands we can tab complete
+                Boolean hadSubCommand = false;
+                if (subCommand.hasSubCommands()) {
+                    for (String commandName : subCommand.getSubCommands().keySet()) {
+                        if (commandName.startsWith(args[1].toLowerCase())) {
+                            result.add(commandName);
+                            hadSubCommand = true;
+                        }
+                    }
+                    return result;
+                }
                 // Pass response to subcommand handler
-                String[] arguments = new String[args.length - 1]; // Take first argument out of Array.
-                System.arraycopy(args, 1, arguments, 0, arguments.length);
+                String[] arguments = new String[args.length - (hadSubCommand ? 2 : 1)]; // Take first argument out of Array.
+                System.arraycopy(args, (hadSubCommand ? 2 : 1), arguments, 0, arguments.length);
                 return subCommand.onTabComplete(sender, arguments);
             }
         }

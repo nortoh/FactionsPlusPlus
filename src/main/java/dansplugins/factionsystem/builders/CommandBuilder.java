@@ -1,6 +1,7 @@
 package dansplugins.factionsystem.builders;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class CommandBuilder {
 
@@ -16,7 +17,7 @@ public class CommandBuilder {
     public Boolean requiresFactionOfficership = false;
     public Boolean requiresSubCommand = false;
     public Boolean requiresNoFactionMembership = false;
-    public HashMap<String, ArgumentBuilder> arguments = new HashMap<>();
+    public LinkedHashMap<String, ArgumentBuilder> arguments = new LinkedHashMap<>();
     public HashMap<String, CommandBuilder> subcommands = new HashMap<>();
 
     public CommandBuilder withName(String name) {

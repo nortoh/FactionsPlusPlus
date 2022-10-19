@@ -105,6 +105,10 @@ public class Command implements ColorTranslator {
         return this.subcommands.size() > 0;
     }
 
+    public HashMap<String, Command> getSubCommands() {
+        return this.subcommands;
+    }
+
     public Command getSubCommand(String name) {
         // TODO: search both name and aliases
         return this.subcommands.get(name);
@@ -136,10 +140,12 @@ public class Command implements ColorTranslator {
             }
         }
         for (Map.Entry<String, CommandArgument> entry : this.arguments.entrySet()) {
+            String encapsulationCharacter = "";
+            if (entry.getValue().expectsDoubleQuotes()) encapsulationCharacter = "\"";
             if (entry.getValue().isRequired()) {
-                output.add(String.format("<%s>", entry.getKey()));
+                output.add(String.format("<%s%s%s>", encapsulationCharacter, entry.getKey(), encapsulationCharacter));
             } else {
-                output.add(String.format("[<%s>]", entry.getKey()));
+                output.add(String.format("[<%s%s%s>]", encapsulationCharacter, entry.getKey(), encapsulationCharacter));
             }
         }
         return output.toString();
