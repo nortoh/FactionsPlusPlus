@@ -16,7 +16,6 @@ import dansplugins.factionsystem.services.LocaleService;
 import dansplugins.factionsystem.services.MessageService;
 import dansplugins.factionsystem.services.PlayerService;
 import dansplugins.factionsystem.utils.Logger;
-import dansplugins.factionsystem.utils.PlayerTeleporter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,7 +35,6 @@ public class Scheduler {
     @Inject private MedievalFactions medievalFactions;
     @Inject private PersistentData persistentData;
     @Inject private ConfigService configService;
-    @Inject private PlayerTeleporter playerTeleporter;
     @Inject private PlayerService playerService;
     @Inject private MessageService messageService;
     @Inject private FactionService factionService;
@@ -143,7 +141,7 @@ public class Scheduler {
         }
 
         private void teleportPlayer() {
-            playerTeleporter.teleportPlayer(player, destinationLocation);
+            this.player.teleport(this.destinationLocation);
         }
     }
 }
