@@ -9,8 +9,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
@@ -109,9 +112,18 @@ public class Command implements ColorTranslator {
         return this.subcommands;
     }
 
-    public Command getSubCommand(String name) {
-        // TODO: search both name and aliases
-        return this.subcommands.get(name);
+    public Command getSubCommand(String nameSearch, boolean onlySearchRootNames) {
+        // Look for exact first
+        if (this.subcommands.containsKey(nameSearch.toLowerCase())) return this.subcommands.get(nameSearch.toLowerCase());
+        if (onlySearchRootNames) return null; // we're not going to do any alias searching here
+        Optional<Command> command = this.subcommands.values().stream()
+            .filter(c -> Arrays.asList(c.getAliases()).contains(nameSearch))
+            .findFirst();
+        return command.isPresent() ? command.get() : null;
+    }
+
+    public Command getSubCommand(String nameSearch) {
+        return this.getSubCommand(nameSearch, false);
     }
     
     public LinkedHashMap<String, CommandArgument> getArguments() {
