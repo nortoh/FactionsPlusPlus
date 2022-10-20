@@ -697,7 +697,6 @@ public class PersistentData {
                     counter++;
                 }
             }
-            System.out.println("getChunksClaimed: "+counter);
             return counter;
         }
 
