@@ -45,6 +45,7 @@ public class CommandContext {
     }
 
     public String getStringArgument(String name) {
+        if (this.arguments.get(name) == null) return null; // String.valueOf will return null as a string...
         return String.valueOf(this.arguments.get(name));
     }
 

@@ -182,12 +182,8 @@ public class GateCommand extends Command {
         // Require officer
         String gateName = context.getStringArgument("gate name");
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
-        this.startCreatingGate(player, gateName);
+        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(gateName));
         context.replyWith("CreatingGateClickWithHoe");
-    }
-
-    private void startCreatingGate(Player player, String name) {
-        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(name));
     }
 
     /**

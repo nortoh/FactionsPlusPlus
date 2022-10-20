@@ -220,7 +220,7 @@ public class CommandService implements TabCompleter {
 
         // Check if we have a subcommand
         if (command.hasSubCommands()) {
-            Command newCommand = command.getSubCommand(arguments.get(0));
+            Command newCommand = arguments.size() > 0 ? command.getSubCommand(arguments.get(0)) : null;
             if (newCommand == null) {
                 // If a subcommand is required, we bail now.
                 if (command.shouldRequireSubCommand()) {
