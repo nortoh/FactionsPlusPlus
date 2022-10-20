@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.utils.Logger;
@@ -26,10 +27,12 @@ import org.bukkit.entity.Player;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandArgument;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.models.ConfigOption;
 import factionsplusplus.repositories.CommandRepository;
 
 import factionsplusplus.builders.MessageBuilder;
 
+import java.util.Collection;
 import java.util.Arrays;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -40,6 +43,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -53,9 +58,19 @@ public class CommandService implements TabCompleter {
     private final MessageService messageService;
     private final CommandRepository commandRepository;
     private final DataService dataService;
+    private final FactionService factionService;
 
     @Inject
-    public CommandService(LocaleService localeService, FactionsPlusPlus factionsPlusPlus, ConfigService configService, PlayerService playerService, MessageService messageService, CommandRepository commandRepository, DataService dataService) {
+    public CommandService(
+        LocaleService localeService,
+        FactionsPlusPlus factionsPlusPlus,
+        ConfigService configService,
+        PlayerService playerService,
+        MessageService messageService,
+        CommandRepository commandRepository,
+        FactionService factionService,
+        DataService dataService
+    ) {
         this.localeService = localeService;
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
@@ -63,6 +78,7 @@ public class CommandService implements TabCompleter {
         this.messageService = messageService;
         this.commandRepository = commandRepository;
         this.dataService = dataService;
+        this.factionService = factionService;
     }
 
     public void registerCommands() {
@@ -222,11 +238,11 @@ public class CommandService implements TabCompleter {
 
         // Check if we have a subcommand
         if (command.hasSubCommands()) {
-            Command newCommand = command.getSubCommand(arguments.get(0));
+            Command newCommand = arguments.size() > 0 ? command.getSubCommand(arguments.get(0)) : null;
             if (newCommand == null) {
                 // If a subcommand is required, we bail now.
                 if (command.shouldRequireSubCommand()) {
-                    this.messageService.sendInvalidSyntaxMessage(sender, command.getName(), command.buildSyntax());
+                    this.messageService.sendInvalidSyntaxMessage(sender, context.getCommandNames(), command.buildSyntax());
                     return false;
                 }
                 // Otherwise, we execute the normal executor with the remaining parameters.
@@ -264,13 +280,13 @@ public class CommandService implements TabCompleter {
             }
 
             // If argument should consume the remainder of arguments, so be it. We can't handle any arguments after this.
-            if (argument.shouldConsumeAllArguments()) {
-                context.addArgument(argumentName, String.join(" ", arguments));
-                break;
+            if (argument.shouldConsumeAllArguments() && arguments.size() > 0) {
+                String newArguments = String.join(" ", (ArrayList)arguments.clone());
+                arguments.clear();
+                arguments.add(newArguments);
             }
 
             // Pop the next argument (what we should be using)
-            // TODO: handle errors
             if (arguments.size() > 0) {
                 String argumentData = arguments.remove(0);
                 // Check if the argument should start and end with double quotes, if so, append all other arguments until we get another double quote
@@ -279,7 +295,7 @@ public class CommandService implements TabCompleter {
                     // Remove the opening quote
                     argumentData = argumentData.substring(1);
                     while (arguments.size() > 0) {
-                        if (arguments.get(0).startsWith("\"")) foundEnd = true;
+                        if (arguments.get(0).endsWith("\"")) foundEnd = true;
                         argumentData = argumentData + " " + arguments.remove(0);
                     }
                     // Remove the closing quote
@@ -292,14 +308,16 @@ public class CommandService implements TabCompleter {
                 Object parsedArgumentData = null;
                 Faction faction = null;
                 OfflinePlayer player = null;
+                boolean sendInvalidMessage = false;
                 switch(argument.getType()) {
                     case Faction:
                         faction = this.getAnyFaction(context, argumentData);
                         if (faction != null) break;
                         return false;
                     case ConfigOptionName:
-                        if (this.configService.getConfigOption(argumentData) != null) {
-                            parsedArgumentData = argumentData;
+                        ConfigOption option = this.configService.getConfigOption(argumentData);
+                        if (option != null) {
+                            parsedArgumentData = option;
                             break;
                         }
                         context.replyWith(
@@ -350,14 +368,36 @@ public class CommandService implements TabCompleter {
                         }
                         return false;
                     case Integer:
-                        parsedArgumentData = Integer.parseInt(argumentData);
+                        Integer intValue = StringUtils.parseAsInteger(argumentData);
+                        if (intValue != null) {
+                            parsedArgumentData = intValue;
+                            break;
+                        }
+                        sendInvalidMessage = true;
                         break;
                     case Double:
-                        parsedArgumentData = Double.parseDouble(argumentData);
+                        Double doubleValue = StringUtils.parseAsDouble(argumentData);
+                        if (doubleValue != null) {
+                            parsedArgumentData = doubleValue;
+                            break;
+                        }
+                        sendInvalidMessage = true;
+                        break;
+                    case Boolean:
+                        Boolean boolValue = StringUtils.parseAsBoolean(argumentData);
+                        if (boolValue != null) {
+                            parsedArgumentData = boolValue;
+                            break;
+                        }
+                        sendInvalidMessage = true;
                         break;
                     default:
                         parsedArgumentData = argumentData;
                         break;
+                }
+                if (sendInvalidMessage) {
+                    this.messageService.sendInvalidSyntaxMessage(sender, context.getCommandNames(), command.buildSyntax());
+                    return false;
                 }
                 if (player != null) parsedArgumentData = player;
                 if (faction != null) parsedArgumentData = faction;
@@ -378,7 +418,7 @@ public class CommandService implements TabCompleter {
         }
     }
 
-    public FactionFlag getFactionFlag(CommandContext context, String argumentData) {
+    private FactionFlag getFactionFlag(CommandContext context, String argumentData) {
         final FactionFlag flag = context.getExecutorsFaction().getFlag(argumentData);
         if (flag == null) {
             context.replyWith(
@@ -388,7 +428,8 @@ public class CommandService implements TabCompleter {
         }
         return flag;
     }
-    public Faction getAnyFaction(CommandContext context, String argumentData) {
+
+    private Faction getAnyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.dataService.getFaction(argumentData);
         if (faction == null) {
             context.replyWith(
@@ -399,7 +440,7 @@ public class CommandService implements TabCompleter {
         return faction;
     }
 
-    public Faction getAllyFaction(CommandContext context, String argumentData) {
+    private Faction getAllyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
             if (context.getExecutorsFaction().isAlly(faction.getID())) {
@@ -413,7 +454,7 @@ public class CommandService implements TabCompleter {
         return null;
     }
 
-    public Faction getEnemyFaction(CommandContext context, String argumentData) {
+    private Faction getEnemyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
             if (context.getExecutorsFaction().isEnemy(faction.getID())) {
@@ -424,7 +465,7 @@ public class CommandService implements TabCompleter {
         return null;
     }
 
-    public Faction getVassaledFaction(CommandContext context, String argumentData) {
+    private Faction getVassaledFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
             if (faction.isLiege(context.getExecutorsFaction().getID())) {
@@ -435,7 +476,7 @@ public class CommandService implements TabCompleter {
         return null;
     }
 
-    public OfflinePlayer getPlayer(CommandContext context, String argumentData) {
+    private OfflinePlayer getPlayer(CommandContext context, String argumentData) {
         final OfflinePlayer player = StringUtils.parseAsPlayer(argumentData);
         if (player == null) {
             context.replyWith(
@@ -446,7 +487,7 @@ public class CommandService implements TabCompleter {
         return player;
     }
 
-    public OfflinePlayer getFactionMember(CommandContext context, String argumentData) {
+    private OfflinePlayer getFactionMember(CommandContext context, String argumentData) {
         final OfflinePlayer player = this.getPlayer(context, argumentData);
         if (player != null) {
             if (context.getExecutorsFaction().isMember(player.getUniqueId())) {
@@ -457,7 +498,7 @@ public class CommandService implements TabCompleter {
         return null;
     }
 
-    public OfflinePlayer getFactionOfficer(CommandContext context, String argumentData) {
+    private OfflinePlayer getFactionOfficer(CommandContext context, String argumentData) {
         final OfflinePlayer player = this.getFactionMember(context, argumentData);
         if (player != null) {
             if (context.getExecutorsFaction().isOfficer(player.getUniqueId())) {
@@ -482,7 +523,7 @@ public class CommandService implements TabCompleter {
                 return true;
             }
 
-            // Convert arguments to a stack
+            // Convert arguments to an array list
             ArrayList<String> argumentList = new ArrayList<>();
             argumentList.addAll(Arrays.asList(args));
 
@@ -507,49 +548,276 @@ public class CommandService implements TabCompleter {
     private ArrayList<String> getSubCommandNamesForSender(CommandSender sender) {
         ArrayList<String> commandNames = new ArrayList<String>();
         for (Command subCommand : this.commandRepository.all().values()) {
-            if (this.checkPermissions(sender, subCommand.getRequiredPermissions()).size() == 0) commandNames.add(subCommand.getName().toLowerCase());
+            if (this.senderCanAccessCommand(sender, subCommand)) commandNames.add(subCommand.getName().toLowerCase());
         }
         return commandNames;
     }
 
-    @Override
-	public List<String> onTabComplete(CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
-        List<String> result = new ArrayList<String>();
+    private boolean senderCanAccessCommand(CommandSender sender, Command command) {
+        // Can console use this command?
+        if (!(sender instanceof Player)) {
+            if (command.shouldRequirePlayerExecution()) return false;
+            return true; // no need to check permissions for console
+        }
+        if (this.checkPermissions(sender, command.getRequiredPermissions()).size() == 0) return true;
+        return false;
+    }
 
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
+    private ArrayList<String> findCommandsStartingWith(String string, ArrayList<String> commandNames) {
+        ArrayList<String> result = new ArrayList<String>();
+        for (String commandName : commandNames) {
+            if (commandName.startsWith(string.toLowerCase())) result.add(commandName);
+        }
+        return result;
+    }
 
-            // Auto-complete subcommands
-            if (args.length == 1) {
-                ArrayList<String> accessibleCommands = this.getSubCommandNamesForSender(sender);
-                for (String commandName : accessibleCommands) {
-                    if (commandName.startsWith(args[0].toLowerCase())) result.add(commandName);
+    public List<String> handleTabCompletionForCommand(CommandSender sender, List<Command> commandStack, ArrayList<String> argumentList, int argumentIndex) {
+        ArrayList<String> results = new ArrayList<>();
+        if (argumentList.isEmpty()) return results; // nothing left to do
+        Command currentCommand = null;
+        if (commandStack.isEmpty()) {
+            // We're at the root
+            String rootCommandName = argumentList.remove(0);
+            if (argumentList.size() == 0) return this.findCommandsStartingWith(rootCommandName, this.getSubCommandNamesForSender(sender));
+            currentCommand = this.commandRepository.get(rootCommandName);
+            if (currentCommand == null) return results;
+            commandStack.add(currentCommand);
+        } else currentCommand = commandStack.get(commandStack.size() - 1);
+        // Bail if nothing left to do
+        if (!currentCommand.hasSubCommands() && currentCommand.getArguments().isEmpty()) return results;
+        // Look for subcommands first
+        if (currentCommand.hasSubCommands()) {
+            String nextArg = argumentList.get(0); // we don't remove here because it could be a consumes all argument
+            // Look for exact matches first
+            Command subCommand = currentCommand.getSubCommand(nextArg);
+            if (subCommand != null) {
+                argumentList.remove(0); // remove subcommand
+                commandStack.add(subCommand);
+                return this.handleTabCompletionForCommand(sender, commandStack, argumentList, argumentIndex);
+            }
+            if (currentCommand.shouldRequireSubCommand() && argumentList.size() > 1) return results;
+            for (Command commandObj : currentCommand.getSubCommands().values()) {
+                if (
+                    this.senderCanAccessCommand(sender, commandObj) &&
+                    commandObj.getName().toLowerCase().startsWith(nextArg.toLowerCase())
+                ) { 
+                    results.add(commandObj.getName().toLowerCase());
                 }
-                return result;
-            } else {
-                // Attempt to find subcommand based on first argument
-                Command subCommand = this.commandRepository.get(args[0]);
-                // Bail if no command found (can't autocomplete something we don't know about)
-                if (subCommand == null) {
-                    return null;
-                }
-                // Check if there's any subcommands we can tab complete
-                Boolean hadSubCommand = false;
-                if (subCommand.hasSubCommands()) {
-                    for (String commandName : subCommand.getSubCommands().keySet()) {
-                        if (commandName.startsWith(args[1].toLowerCase())) {
-                            result.add(commandName);
-                            hadSubCommand = true;
-                        }
-                    }
-                    return result;
-                }
-                // Pass response to subcommand handler
-                String[] arguments = new String[args.length - (hadSubCommand ? 2 : 1)]; // Take first argument out of Array.
-                System.arraycopy(args, (hadSubCommand ? 2 : 1), arguments, 0, arguments.length);
-                return subCommand.onTabComplete(sender, arguments);
             }
         }
-        return null;
+
+        // now process arguments
+        // TODO: come back to this logic, I think it may be running too much when extra parameters are given past the expected amount
+        if (currentCommand.getArguments().size() >= argumentIndex+1) {
+            String argumentName = (String)currentCommand.getArguments().keySet().toArray()[argumentIndex];
+            final CommandArgument argument = currentCommand.getArguments().get(argumentName);
+            if (argument.shouldConsumeAllArguments()) {
+                String newArguments = String.join(" ", (ArrayList)argumentList.clone());
+                argumentList.clear();
+                argumentList.add(newArguments);
+            }
+            String argumentData = argumentList.remove(0);
+            boolean moveToNextArgumentIfPresent = true;
+            if (argumentData.startsWith("\"") && argument.expectsDoubleQuotes()) {
+                Boolean foundEnd = false;
+                // Remove the opening quote
+                argumentData = argumentData.substring(1);
+                // Hanlde one word with double quotes
+                if (argumentData.endsWith("\"")) foundEnd = true;
+                while (!argumentList.isEmpty() && !foundEnd) {
+                    if (argumentList.get(0).endsWith("\"")) foundEnd = true;
+                    argumentData = argumentData + " " + argumentList.remove(0);
+                }
+                if (!foundEnd) moveToNextArgumentIfPresent = false;
+                else argumentData = argumentData.substring(0, argumentData.length() - 1); // remove closing quote
+            }
+
+            // Go to next argument, no need to generate results for arguments already present. The command will validate them.
+            if (moveToNextArgumentIfPresent && ! argumentList.isEmpty()) {
+                // Bail if no more arguments for command
+                argumentIndex++;
+                if (argumentIndex >= currentCommand.getArguments().size()) return results;
+                return this.handleTabCompletionForCommand(sender, commandStack, argumentList, argumentIndex);
+            }
+
+            // Handle (sub)commands wanting to handle their own tab completion
+            if (argument.getTabCompletionHandler() != null) {
+                try {
+                    Method executor = argument.getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, ArrayList.class);
+                    return (List<String>)executor.invoke(sender, argumentList);
+                } catch(Exception e) {
+                    return results;
+                }
+            }
+
+            // Lambdas need "effectively final" variables so we need a copy of argumentData that is final
+            final String argumentText = argumentData.toLowerCase();
+            // Try to get players faction (not always going to be a player)
+            Faction playersFaction = null;
+            Player player = null;
+            if (sender instanceof Player) {
+                player = (Player)sender;
+                playersFaction = this.dataService.getFactionRepository().getForPlayer(player);
+            }
+
+            // Console types
+            switch(argument.getType()) {
+                case ConfigOptionName:
+                    results.addAll(this.configService.getConfigOptions().keySet());
+                    return results;
+                case FactionFlagName:
+                    results.addAll(this.factionService.getDefaultFlags().keySet());
+                    return results;
+                case Faction:
+                    return this.applyFactionFilters(
+                            this.dataService.getFactionRepository().all().values().stream()
+                                .filter(faction -> faction.getName().toLowerCase().startsWith(argumentText)),
+                            playersFaction,
+                            argument
+                        )
+                        .map(Faction::getName)
+                        .map(name -> this.quoteifyIfNeeded(name, argument))
+                        .collect(Collectors.toList());
+                case OnlinePlayer:
+                    return this.applyPlayerFilters(
+                            Bukkit.getOnlinePlayers().stream()
+                                .filter(p -> p.getName().toLowerCase().startsWith(argumentText)),
+                            player,
+                            playersFaction,
+                            argument
+                        )
+                        .map(OfflinePlayer::getName)
+                        .map(name -> this.quoteifyIfNeeded(name, argument))
+                        .collect(Collectors.toList());
+                case Player:
+                    return this.applyPlayerFilters(
+                            this.dataService.getPlayerRecordRepository().all().stream()
+                                .map(record -> Bukkit.getOfflinePlayer(record.getPlayerUUID()))
+                                .filter(p -> p.getName().toLowerCase().startsWith(argumentText)),
+                            player,
+                            playersFaction,
+                            argument
+                        )
+                        .map(OfflinePlayer::getName)
+                        .collect(Collectors.toList());
+                case Boolean:
+                    results.add("true");
+                    results.add("false");
+                case String:
+                case Integer:
+                case Double:
+                case Any:
+                    return results;
+                default:
+                    break;
+            }
+
+            // Player types
+            if (!(sender instanceof Player)) return results;
+            if (playersFaction == null) return results;
+
+            switch(argument.getType()) {
+                case AlliedFaction:
+                    return playersFaction.getAllies().stream()
+                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .filter(name -> name.startsWith(argumentText))
+                        .collect(Collectors.toList());
+                case EnemyFaction:
+                    return playersFaction.getAllies().stream()
+                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .filter(name -> name.startsWith(argumentText))
+                        .collect(Collectors.toList());
+                case VassaledFaction:
+                    return playersFaction.getVassals().stream()
+                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .filter(name -> name.startsWith(argumentText))
+                        .collect(Collectors.toList());
+                case FactionMember:
+                    return playersFaction.getMembers().stream()
+                        .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
+                        .filter(name -> name.startsWith(argumentText))
+                        .collect(Collectors.toList());
+                case FactionOfficer:
+                    return playersFaction.getOfficerList().stream()
+                        .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
+                        .filter(name -> name.startsWith(argumentText))
+                        .collect(Collectors.toList());
+                default:
+                    break;
+            }
+        }
+        return results;
+    }
+
+    private Stream<Faction> applyFactionFilters(Stream<Faction> input, Faction faction, CommandArgument argument) {
+        if (faction == null) return input;
+        for (ArgumentFilterType type : argument.getFilters()) {
+            switch(type) {
+                case Allied:
+                    input = input.filter(f -> faction.isAlly(f.getID()));
+                    break;
+                case NotAllied:
+                    input = input.filter(f -> !faction.isAlly(f.getID()));
+                    break;
+                case NotOwnFaction:
+                    input = input.filter(f -> !faction.equals(f));
+                    break;
+                case Enemy:
+                    input = input.filter(f -> faction.isEnemy(f.getID()));
+                    break;
+                case NotEnemy:
+                    input = input.filter(f -> !faction.isEnemy(f.getID()));
+                    break;
+                case Vassal:
+                    input = input.filter(f -> faction.isVassal(f.getID()));
+                    break;
+                case NotVassal:
+                    input = input.filter(f -> !faction.isVassal(f.getID()));
+                    break;
+                case OfferedVassalization:
+                    input = input.filter(f -> f.hasBeenOfferedVassalization(faction.getID()));
+                    break;
+                default:
+                    break;
+            }
+        }
+        return input;
+    }
+
+    private Stream<? extends OfflinePlayer> applyPlayerFilters(Stream<? extends OfflinePlayer> input, Player player, Faction faction, CommandArgument argument) {
+        if (faction == null || player == null) return input;
+        for (ArgumentFilterType type : argument.getFilters()) {
+            switch(type) {
+                case ExcludeOfficers:
+                    input = input.filter(p -> !faction.isOfficer(p.getUniqueId()));
+                    break;
+                case ExcludeSelf:
+                    input = input.filter(p -> !p.equals(player));
+                    break;
+                case NotInExecutorsFaction:
+                    input = input.filter(p -> !faction.isMember(p.getUniqueId()));
+                    break;
+                case NotInAnyFaction:
+                    input = input.filter(p -> this.dataService.getFactionRepository().getForPlayer(p.getUniqueId()) == null);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return input;
+    }
+
+    private String quoteifyIfNeeded(String option, CommandArgument argument) {
+        if (argument.expectsDoubleQuotes()) return String.format("\"%s\"", option);
+        return option;
+    }
+
+    @Override
+	public List<String> onTabComplete(CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
+        // Bail if we have 0 arguments
+        if (args.length == 0) return null;
+
+        // Go!
+        return this.handleTabCompletionForCommand(sender, new ArrayList<>(), new ArrayList<>(Arrays.asList(args)), 0);
     }
 }

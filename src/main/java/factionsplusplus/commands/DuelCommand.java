@@ -15,12 +15,12 @@ import factionsplusplus.objects.domain.Duel;
 import factionsplusplus.objects.domain.Duel.DuelState;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.services.DeathService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.List;
@@ -62,6 +62,7 @@ public class DuelCommand extends Command {
                             new ArgumentBuilder()
                                 .setDescription("the player to challenge")
                                 .expectsOnlinePlayer()
+                                .addFilters(ArgumentFilterType.ExcludeSelf)
                                 .isRequired()
                         )
                         .addArgument(
@@ -200,21 +201,5 @@ public class DuelCommand extends Command {
                 .with("name", player.getName())
         );
         this.ephemeralData.getDuelingPlayers().add(new Duel(this.factionsPlusPlus, this.ephemeralData, this.deathService, player, target, limit));
-    }
-
-    /**
-     * Method to handle tab completion.
-     *
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (args.length == 1) {
-            return TabCompleteTools.completeMultipleOptions(args[0], "challenge", "accept", "cancel");
-        } else if (args.length == 2) {
-            if (args[0] == "challenge") return TabCompleteTools.allOnlinePlayersMatching(args[1]);
-        }
-        return null;
     }
 }

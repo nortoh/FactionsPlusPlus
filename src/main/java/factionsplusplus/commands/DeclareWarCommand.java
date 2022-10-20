@@ -7,7 +7,6 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionWarStartEvent;
 import factionsplusplus.factories.WarFactory;
 import factionsplusplus.models.Command;
@@ -16,12 +15,12 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.FactionService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ import java.util.UUID;
 public class DeclareWarCommand extends Command {
 
     private final ConfigService configService;
-    private final PersistentData persistentData;
     private final WarFactory warFactory;
     private final FactionRepository factionRepository;
     private final FactionService factionService;
@@ -44,7 +42,6 @@ public class DeclareWarCommand extends Command {
     @Inject
     public DeclareWarCommand(
         ConfigService configService,
-        PersistentData persistentData,
         WarFactory warFactory,
         FactionRepository factionRepository,
         FactionService factionService
@@ -63,6 +60,7 @@ public class DeclareWarCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to declare war on")
                         .expectsFaction()
+                        .addFilters(ArgumentFilterType.NotAllied, ArgumentFilterType.NotEnemy, ArgumentFilterType.NotOwnFaction)
                         .expectsDoubleQuotes()
                         .isRequired()
                 )
@@ -76,7 +74,6 @@ public class DeclareWarCommand extends Command {
                 )
         );
         this.configService = configService;
-        this.persistentData = persistentData;
         this.warFactory = warFactory;
         this.factionRepository = factionRepository;
         this.factionService = factionService;
@@ -143,29 +140,5 @@ public class DeclareWarCommand extends Command {
             opponent.addEnemy(faction.getID());
             warFactory.createWar(faction, opponent, context.getStringArgument("reason"));
         }
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            final List<String> factionsAllowedtoWar = new ArrayList<>();
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<UUID> playerEnemies = playerFaction.getEnemyFactions();
-            ArrayList<UUID> playerAllies = playerFaction.getAllies();
-            for(Faction faction : this.persistentData.getFactions()) {
-                // If the faction is not an ally and they are not already enemied to them
-                if(!playerAllies.contains(faction.getID()) && !playerEnemies.contains(faction.getID()) && !faction.getID().equals(playerFaction.getID())) {
-                    factionsAllowedtoWar.add(faction.getName());
-                }
-            }
-            return TabCompleteTools.filterStartingWithAddQuotes(args[0], factionsAllowedtoWar);
-        }
-        return null;
     }
 }

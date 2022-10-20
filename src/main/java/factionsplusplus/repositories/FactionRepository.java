@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.bukkit.entity.Player;
+
 import factionsplusplus.models.Faction;
 
 @Singleton
@@ -87,13 +89,25 @@ public class FactionRepository {
 
     // Retrieve a faction by name
     public Faction get(String factionName) {
-        Optional<Map.Entry<UUID, Faction>> mapEntry = this.factionStore
-            .entrySet()
+        Optional<Faction> faction = this.factionStore
+            .values()
             .stream()
-            .filter(entry -> entry.getValue().getName().equalsIgnoreCase(factionName))
+            .filter(entry -> entry.getName().equalsIgnoreCase(factionName))
             .findFirst();
-        if (mapEntry.isPresent()) return mapEntry.get().getValue();
-        return null;
+        return faction.isPresent() ? faction.get() : null;
+    }
+
+    // Retrieve a faction by a member
+    public Faction getForPlayer(UUID playerUUID) {
+        Optional<Faction> faction = this.factionStore
+            .values()
+            .stream()
+            .filter(entry -> entry.isMember(playerUUID))
+            .findFirst();
+        return faction.isPresent() ? faction.get() : null;
+    }
+    public Faction getForPlayer(Player player) {
+        return this.getForPlayer(player.getUniqueId());
     }
 
     public Faction getByID(UUID uuid) {

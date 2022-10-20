@@ -7,16 +7,16 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
@@ -31,12 +31,12 @@ import java.util.UUID;
 public class VassalizeCommand extends Command {
 
     private final Logger logger;
-    private final PersistentData persistentData;
+    private final FactionRepository factionRepository;
 
     
     @Inject
     public VassalizeCommand(
-        PersistentData persistentData,
+        FactionRepository factionRepository,
         Logger logger
     ) {
         super(
@@ -53,11 +53,12 @@ public class VassalizeCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to attempt vassalization")
                         .expectsFaction()
+                        .addFilters(ArgumentFilterType.NotVassal, ArgumentFilterType.NotOwnFaction)
                         .consumesAllLaterArguments()
                         .isRequired()
                 )
         );
-        this.persistentData = persistentData;
+        this.factionRepository = factionRepository;
         this.logger = logger;
     }
 
@@ -109,31 +110,9 @@ public class VassalizeCommand extends Command {
             UUID liegeID = current.getLiege();
             if (liegeID == null) return 0;
             if (liegeID.equals(potentialVassal.getID())) return 1;
-            current = this.persistentData.getFactionByID(liegeID);
+            current = this.factionRepository.getByID(liegeID);
             steps++;
         }
         return 2; // We don't know :/
     }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> vassalizeableFactions = new ArrayList<>();
-            for (Faction faction : this.persistentData.getFactions()) {
-                if (!playerFaction.getVassals().contains(faction.getID())) {
-                    vassalizeableFactions.add(faction.getName());
-                }
-            }
-            return TabCompleteTools.filterStartingWith(args[0], vassalizeableFactions);
-        }
-        return null;
-    }
-    
 }

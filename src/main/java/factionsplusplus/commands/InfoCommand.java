@@ -7,12 +7,10 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.DataService;
-import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.utils.extended.Messenger;
 import org.bukkit.command.CommandSender;
 
@@ -28,13 +26,11 @@ import java.util.List;
 public class InfoCommand extends Command {
     private final Messenger messenger;
     private final DataService dataService;
-    private final PersistentData persistentData;
 
     @Inject
     public InfoCommand(
         Messenger messenger,
-        DataService dataService,
-        PersistentData persistentData
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -53,7 +49,6 @@ public class InfoCommand extends Command {
         );
         this.messenger = messenger;
         this.dataService = dataService;
-        this.persistentData = persistentData;
     }
 
     public void execute(CommandContext context) {
@@ -72,16 +67,5 @@ public class InfoCommand extends Command {
             target = context.getFactionArgument("faction name");
         }
         this.messenger.sendFactionInfo(context.getSender(), target, this.dataService.getClaimedChunksForFaction(target).size());
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

@@ -10,11 +10,11 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.List;
@@ -49,6 +49,7 @@ public class GrantAccessCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the player to grant access to")
                         .expectsAnyPlayer()
+                        .addFilters(ArgumentFilterType.ExcludeSelf)
                         .isRequired()
                 )
         );
@@ -78,16 +79,5 @@ public class GrantAccessCommand extends Command {
             this.ephemeralData.getPlayersGrantingAccess().remove(context.getPlayer().getUniqueId());
             context.replyWith("CommandCancelled");
         }
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.allOnlinePlayersMatching(args[0]);
     }
 }

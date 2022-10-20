@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -67,12 +68,10 @@ public class PlayerRecordRepository {
 
     // Retrieve a record by uuid
     public PlayerRecord get(UUID playerUUID) {
-        for (PlayerRecord record : this.playerStore) {
-            if (record.getPlayerUUID().equals(playerUUID)) {
-                return record;
-            }
-        }
-        return null;
+        Optional<PlayerRecord> record = this.playerStore.stream()
+            .filter(r -> r.getPlayerUUID().equals(playerUUID))
+            .findFirst();
+        return record.isPresent() ? record.get() : null;
     }
 
     // Retrieve all records

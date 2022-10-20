@@ -16,6 +16,7 @@ import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.PlayerService;
 import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.entity.Player;
 
@@ -58,6 +59,7 @@ public class AllyCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to request as an ally")
                         .expectsFaction()
+                        .addFilters(ArgumentFilterType.NotAllied, ArgumentFilterType.NotOwnFaction)
                         .consumesAllLaterArguments()
                         .isRequired() 
                 )

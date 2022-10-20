@@ -49,39 +49,44 @@ public class CommandContext {
     }
 
     public Integer getIntegerArgument(String name) {
-        Object possibleArgument = this.arguments.get(name);
-        return Integer.parseInt(this.getStringArgument(name));
+        return (Integer)this.arguments.get(name);
+    }
+
+    public Double getDoubleArgument(String name) {
+        return (Double)this.arguments.get(name);
+    }
+
+    public Boolean getBooleanArgument(String name) {
+        return (Boolean)this.arguments.get(name);
     }
 
     public Faction getFactionArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
-        if (possibleArgument != null) {
-            return (Faction)possibleArgument;
-        }
+        if (possibleArgument != null) return (Faction)possibleArgument;
         return null;
     }
 
     public OfflinePlayer getOfflinePlayerArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
-        if (possibleArgument != null) {
-            return (OfflinePlayer)possibleArgument;
-        }
+        if (possibleArgument != null) return (OfflinePlayer)possibleArgument;
         return null;
     }
 
     public Player getPlayerArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
-        if (possibleArgument != null) {
-            return (Player)possibleArgument;
-        }
+        if (possibleArgument != null) return (Player)possibleArgument;
         return null;
     }
 
     public FactionFlag getFactionFlagArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
-        if (possibleArgument != null) {
-            return (FactionFlag)possibleArgument;
-        }
+        if (possibleArgument != null) return (FactionFlag)possibleArgument;
+        return null;
+    }
+
+    public ConfigOption getConfigOptionArgument(String name) {
+        Object possibleArgument = this.arguments.get(name);
+        if (possibleArgument != null) return (ConfigOption)possibleArgument;
         return null;
     }
 

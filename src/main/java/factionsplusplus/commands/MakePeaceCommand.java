@@ -7,7 +7,6 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionWarEndEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
@@ -15,7 +14,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.repositories.WarRepository;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -33,13 +31,11 @@ import java.util.UUID;
 @Singleton
 public class MakePeaceCommand extends Command {
 
-    private final PersistentData persistentData;
     private final FactionRepository factionRepository;
     private final WarRepository warRepository;
 
     @Inject
     public MakePeaceCommand(
-        PersistentData persistentData,
         FactionRepository factionRepository,
         WarRepository warRepository
     ) {
@@ -61,7 +57,6 @@ public class MakePeaceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
         this.warRepository = warRepository;
     }
@@ -121,22 +116,5 @@ public class MakePeaceCommand extends Command {
                 vassal.removeEnemy(faction.getID());
             }
         }
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> factionEnemies = new ArrayList<>();
-            for (UUID factionID : playerFaction.getEnemyFactions()) factionEnemies.add(this.factionRepository.getByID(factionID).getName());
-            return TabCompleteTools.filterStartingWith(args[0], factionEnemies);
-        }
-        return null;
     }
 }

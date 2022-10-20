@@ -7,10 +7,10 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.repositories.ClaimedChunkRepository;
 import factionsplusplus.services.PlayerService;
 import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.utils.extended.Messenger;
@@ -29,13 +29,13 @@ import java.util.UUID;
 @Singleton
 public class WhoCommand extends Command {
     private final PlayerService playerService;
-    private final PersistentData persistentData;
+    private final ClaimedChunkRepository claimedChunkRepository;
     private final Messenger messenger;
 
     @Inject
     public WhoCommand(
         PlayerService playerService,
-        PersistentData persistentData,
+        ClaimedChunkRepository claimedChunkRepository,
         Messenger messenger
     ) {
         super(
@@ -53,14 +53,13 @@ public class WhoCommand extends Command {
                         .isRequired()
                 )
         );
+        this.claimedChunkRepository = claimedChunkRepository;
         this.playerService = playerService;
-        this.persistentData = persistentData;
         this.messenger = messenger;
     }
 
     public void execute(CommandContext context) {
-        final UUID targetUUID = context.getOfflinePlayerArgument("player").getUniqueId();
-        final Faction temp = this.playerService.getPlayerFaction(targetUUID);
+        final Faction temp = this.playerService.getPlayerFaction(context.getOfflinePlayerArgument("player").getUniqueId());
         if (temp == null) {
             context.replyWith("PlayerIsNotInAFaction");
             return;
@@ -68,18 +67,7 @@ public class WhoCommand extends Command {
         this.messenger.sendFactionInfo(
             context.getPlayer(), 
             temp,
-            this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getID())
+            this.claimedChunkRepository.getAllForFaction(temp).size()
         );
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.allOnlinePlayersMatching(args[0]);
     }
 }

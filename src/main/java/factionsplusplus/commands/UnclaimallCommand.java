@@ -7,13 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.FactionService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -28,13 +26,11 @@ import java.util.List;
 @Singleton
 public class UnclaimallCommand extends Command {
 
-    private PersistentData persistentData;
     private FactionRepository factionRepository;
     private FactionService factionService;
 
     @Inject
     public UnclaimallCommand(
-        PersistentData persistentData,
         FactionService factionService,
         FactionRepository factionRepository
     ) {
@@ -53,7 +49,6 @@ public class UnclaimallCommand extends Command {
                         .requiresPermissionsIfNotNull("mf.unclaimall.others", "mf.admin")
                 )
         );
-        this.persistentData = persistentData;
         this.factionService = factionService;
         this.factionRepository = factionRepository;
     }
@@ -91,16 +86,5 @@ public class UnclaimallCommand extends Command {
 
         // remove locks associated with this faction
         this.factionService.removeAllOwnedLocks(faction);
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }
