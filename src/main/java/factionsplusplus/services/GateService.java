@@ -134,7 +134,7 @@ public class GateService {
         if (player.hasPermission("mf.gate")) {
             // TODO: Check if a gate already exists here, and if it does, print out some info of that existing gate instead of trying to create a new one.
             ArrayList<String> messagesToSend = new ArrayList<>();
-            Boolean removeFromCreatingPlayers = true;
+            boolean removeFromCreatingPlayers = true;
             if (
                 ephemeralData.getCreatingGatePlayers().containsKey(event.getPlayer().getUniqueId()) && 
                 ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord1() == null
@@ -160,6 +160,7 @@ public class GateService {
                         messagesToSend.add("CancelledGatePlacement1");
                         break;
                 }
+
             } else if (ephemeralData.getCreatingGatePlayers().containsKey(event.getPlayer().getUniqueId()) 
                     && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord1() != null
                     && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord2() == null
@@ -217,7 +218,7 @@ public class GateService {
                 }
             }
             for (String localizationKey : messagesToSend) this.messageService.sendLocalizedMessage(event.getPlayer(), localizationKey);
-            if (removeFromCreatingPlayers) this.ephemeralData.getCreatingGatePlayers().remove(event.getPlayer().getUniqueId());
+            if (removeFromCreatingPlayers == true) this.ephemeralData.getCreatingGatePlayers().remove(event.getPlayer().getUniqueId());
             return;
         }
         this.messageService.sendLocalizedMessage(event.getPlayer(), new MessageBuilder("PermissionNeeded").with("permission", "mf.gate"));

@@ -44,6 +44,7 @@ public class LawsCommand extends Command {
                         .setDescription("the faction to get a list of laws")
                         .consumesAllLaterArguments()
                         .expectsFaction()
+                        .isOptional()
                 )
         );
         this.persistentData = persistentData;

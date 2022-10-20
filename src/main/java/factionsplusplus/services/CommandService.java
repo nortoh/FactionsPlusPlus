@@ -67,7 +67,6 @@ public class CommandService implements TabCompleter {
 
     public void registerCommands() {
         Class[] coreCommands = new Class[]{
-            AddLawCommand.class,
             AllyCommand.class,
             AutoClaimCommand.class,
             BreakAllianceCommand.class,
@@ -84,7 +83,6 @@ public class CommandService implements TabCompleter {
             DescCommand.class,
             DisbandCommand.class,
             DuelCommand.class,
-            EditLawCommand.class,
             FlagsCommand.class,
             ForceCommand.class,
             GateCommand.class,
@@ -97,6 +95,7 @@ public class CommandService implements TabCompleter {
             InvokeCommand.class,
             JoinCommand.class,
             KickCommand.class,
+            LawCommand.class,
             LawsCommand.class,
             LeaveCommand.class,
             ListCommand.class,
@@ -107,7 +106,6 @@ public class CommandService implements TabCompleter {
             PowerCommand.class,
             PrefixCommand.class,
             PromoteCommand.class,
-            RemoveLawCommand.class,
             RenameCommand.class,
             ResetPowerLevelsCommand.class,
             RevokeAccessCommand.class,
@@ -222,7 +220,7 @@ public class CommandService implements TabCompleter {
 
         // Check if we have a subcommand
         if (command.hasSubCommands()) {
-            Command newCommand = command.getSubCommand(arguments.get(0));
+            Command newCommand = arguments.size() > 0 ? command.getSubCommand(arguments.get(0)) : null;
             if (newCommand == null) {
                 // If a subcommand is required, we bail now.
                 if (command.shouldRequireSubCommand()) {
@@ -264,9 +262,10 @@ public class CommandService implements TabCompleter {
             }
 
             // If argument should consume the remainder of arguments, so be it. We can't handle any arguments after this.
-            if (argument.shouldConsumeAllArguments()) {
-                context.addArgument(argumentName, String.join(" ", arguments));
-                break;
+            if (argument.shouldConsumeAllArguments() && arguments.size() > 0) {
+                String newArguments = String.join(" ", (ArrayList)arguments.clone());
+                arguments.clear();
+                arguments.add(newArguments);
             }
 
             // Pop the next argument (what we should be using)

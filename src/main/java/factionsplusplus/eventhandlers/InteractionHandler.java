@@ -35,6 +35,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.InventoryHolder;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
@@ -181,6 +182,9 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerInteractEvent event) {
+        // Ignore events for offhand
+        if (event.getHand() == EquipmentSlot.OFF_HAND) return;
+        
         Player player = event.getPlayer();
 
         Block clickedBlock = event.getClickedBlock();
