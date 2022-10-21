@@ -4,9 +4,6 @@
  */
 package factionsplusplus.models;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import factionsplusplus.objects.helper.GateCoord;
 import factionsplusplus.constants.GateStatus;
 import factionsplusplus.constants.ErrorCodeAddCoord;
 import org.bukkit.Bukkit;
@@ -16,15 +13,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.bukkit.Bukkit.getServer;
 
-import factionsplusplus.jsonadapters.GateCoordAdapter;
-import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 
 /**
  * @author Caibinus
@@ -39,14 +31,11 @@ public class Gate {
     @Expose
     private boolean vertical = true;
     @Expose
-    @JsonAdapter(GateCoordAdapter.class)
-    private GateCoord coord1 = null;
+    private LocationData coord1 = null;
     @Expose
-    @JsonAdapter(GateCoordAdapter.class)
-    private GateCoord coord2 = null;
+    private LocationData coord2 = null;
     @Expose
-    @JsonAdapter(GateCoordAdapter.class)
-    private GateCoord trigger = null;
+    private LocationData trigger = null;
     @Expose
     private Material material = Material.IRON_BARS;
     private World _world = null;
@@ -54,34 +43,12 @@ public class Gate {
     private String world = "";
     private GateStatus gateStatus = GateStatus.Ready;
 
-    public Gate() { }
-
-    public Gate(String name) {
-        setName(name);
+    public Gate() {
+        this.gateStatus = GateStatus.Ready;
     }
 
-    public Gate load(String jsonData) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Gate newGate = new Gate();
-
-        try {
-            Gate.GateJson data = gson.fromJson(jsonData, Gate.GateJson.class);
-
-            newGate.world = data.world;
-            newGate.coord1 = new GateCoord();
-            newGate.coord1 = GateCoord.fromString(data.coord1);
-            newGate.coord2 = new GateCoord();
-            newGate.coord2 = GateCoord.fromString(data.coord2);
-            newGate.trigger = new GateCoord();
-            newGate.trigger = GateCoord.fromString(data.triggerCoord);
-            newGate.material = Material.getMaterial(data.material);
-            newGate.open = Boolean.parseBoolean(data.open);
-            newGate.vertical = Boolean.parseBoolean(data.vertical);
-        } catch (Exception e) {
-            System.out.println("ERROR: Could not load faction gate.\n");
-        }
-
-        return newGate;
+    public Gate(String name) {
+        this.name = name;
     }
 
     public World getWorld() {
@@ -117,15 +84,15 @@ public class Gate {
         return this.material;
     }
 
-    public void setCoord1(GateCoord coord) {
+    public void setCoord1(LocationData coord) {
         this.coord1 = coord;
     }
 
-    public void setCoord2(GateCoord coord) {
+    public void setCoord2(LocationData coord) {
         this.coord2 = coord;
     }
 
-    public void setTrigger(GateCoord coord) {
+    public void setTrigger(LocationData coord) {
         this.trigger = coord;
     }
 
@@ -135,10 +102,6 @@ public class Gate {
 
     public void setVertical(boolean vertical) {
         this.vertical = vertical;
-    }
-    
-    public JsonElement toJson() {
-        return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create().toJsonTree(this);
     }
 
     public boolean isIntersecting(Gate gate) {
@@ -242,15 +205,15 @@ public class Gate {
         return this.gateStatus;
     }
 
-    public GateCoord getTrigger() {
+    public LocationData getTrigger() {
         return trigger;
     }
 
-    public GateCoord getCoord1() {
+    public LocationData getCoord1() {
         return coord1;
     }
 
-    public GateCoord getCoord2() {
+    public LocationData getCoord2() {
         return coord2;
     }
 
@@ -334,8 +297,8 @@ public class Gate {
         return getDimZ(coord1, coord2);
     }
 
-    public int getDimX(GateCoord first, GateCoord second) {
-        GateCoord tmp;
+    public int getDimX(LocationData first, LocationData second) {
+        LocationData tmp;
         if (first.getX() > second.getX()) {
             tmp = second;
             second = first;
@@ -344,8 +307,8 @@ public class Gate {
         return second.getX() - first.getX();
     }
 
-    public int getDimY(GateCoord first, GateCoord second) {
-        GateCoord tmp;
+    public int getDimY(LocationData first, LocationData second) {
+        LocationData tmp;
         if (first.getY() > second.getY()) {
             tmp = second;
             second = first;
@@ -354,8 +317,8 @@ public class Gate {
         return second.getY() - first.getY();
     }
 
-    public int getDimZ(GateCoord first, GateCoord second) {
-        GateCoord tmp;
+    public int getDimZ(LocationData first, LocationData second) {
+        LocationData tmp;
         if (first.getZ() > second.getZ()) {
             tmp = second;
             second = first;
@@ -476,18 +439,5 @@ public class Gate {
 
         return String.format("(%d, %d, %d to %d, %d, %d) Trigger (%d, %d, %d)", coord1.getX(), coord1.getY(), coord1.getZ(), coord2.getX(), coord2.getY(), coord2.getZ(),
                 trigger.getX(), trigger.getY(), trigger.getZ());
-    }
-
-    @SuppressWarnings("unused")
-    private static class GateJson {
-        public String name;
-        public String factionName;
-        public String open;
-        public String vertical;
-        public String material;
-        public String world;
-        public String coord1;
-        public String coord2;
-        public String triggerCoord;
     }
 }

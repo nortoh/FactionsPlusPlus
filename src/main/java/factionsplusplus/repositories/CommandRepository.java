@@ -5,10 +5,11 @@ import com.google.inject.Singleton;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Map;
 
 @Singleton
 public class CommandRepository {
-    private final HashMap<String, Command> commandStore = new HashMap<>();
+    private final Map<String, Command> commandStore = new HashMap<>();
 
     public Command get(String nameSearch, boolean onlySearchRootNames) {
         // Look for exact first
@@ -17,7 +18,7 @@ public class CommandRepository {
         Optional<Command> command = this.commandStore.values().stream()
             .filter(c -> Arrays.asList(c.getAliases()).contains(nameSearch))
             .findFirst();
-        return command.isPresent() ? command.get() : null;
+        return command.orElse(null);
     }
 
     public Command get(String nameSearch) {
@@ -28,7 +29,7 @@ public class CommandRepository {
         this.commandStore.put(command.getName().toLowerCase(), command);
     }
 
-    public HashMap<String, Command> all() {
+    public Map<String, Command> all() {
         return this.commandStore;
     }
 }

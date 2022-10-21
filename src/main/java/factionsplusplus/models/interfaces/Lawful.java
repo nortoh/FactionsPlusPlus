@@ -4,7 +4,7 @@
  */
 package factionsplusplus.models.interfaces;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -20,5 +20,5 @@ public interface Lawful {
 
     int getNumLaws();
 
-    ArrayList<String> getLaws();
+    List<String> getLaws();
 }

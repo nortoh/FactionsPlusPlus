@@ -20,71 +20,125 @@ public class CommandContext {
     private CommandSender sender = null;
     private HashMap<String, Object> arguments = new HashMap<>();
     private String[] rawArguments = new String[]{};
-    private ArrayList<String> commandNames = new ArrayList<>();
+    private List<String> commandNames = new ArrayList<>();
     @Inject private MessageService messageService;
     @Inject private LocaleService localeService;
 
+    /*
+     * Retrieves the Faction instance the executor of this command is a member of, if any.
+     * 
+     * @return the Faction the executors belongs to, if any
+     */
     public Faction getExecutorsFaction() {
         return this.faction;
     }
 
+    /*
+     * Retrieves the CommandSender of the executor.
+     * 
+     * @return a CommandSender instance
+     */
     public CommandSender getSender() {
         return this.sender;
     }
 
+    /*
+     * Retrieves the Player instance of the executor of this command, if availiable.
+     * 
+     * @returns a Player instance of executor, or null if executed from console
+     */
     public Player getPlayer() {
+        if (this.isConsole()) return null;
         return (Player)this.sender;
     }
 
+    /*
+     * Determines if this command was executed from the console.
+     * 
+     * @return a boolean indicating if this command was executed from the console.
+     */
     public boolean isConsole() {
         return !(this.sender instanceof Player);
     }
 
+
+    /*
+     * Retrieves a raw argument.
+     * 
+     * @return an Object of the argument, intended to be cast as something else
+     */
     public Object getArgument(String name) {
         return this.arguments.get(name);
     }
 
+    /*
+     * Retrieves an argument as a string.
+     */
     public String getStringArgument(String name) {
         if (this.arguments.get(name) == null) return null; // String.valueOf will return null as a string...
         return String.valueOf(this.arguments.get(name));
     }
 
+    /*
+     * Retrieves an argument as an Integer.
+     */
     public Integer getIntegerArgument(String name) {
         return (Integer)this.arguments.get(name);
     }
 
+    /*
+     * Retrieves an argument as a Double.
+     */
     public Double getDoubleArgument(String name) {
         return (Double)this.arguments.get(name);
     }
 
+    /*
+     * Retrieves an argument as a Boolean.
+     */
     public Boolean getBooleanArgument(String name) {
         return (Boolean)this.arguments.get(name);
     }
 
+    /*
+     * Retrieves an argument as a Faction, if able.
+     */
     public Faction getFactionArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
         if (possibleArgument != null) return (Faction)possibleArgument;
         return null;
     }
 
+    /*
+     * Retrieves an argument as an OfflinePlayer, if able.
+     */
     public OfflinePlayer getOfflinePlayerArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
         if (possibleArgument != null) return (OfflinePlayer)possibleArgument;
         return null;
     }
 
+    /*
+     * Retrieves an argument as a Player, if able.
+     */
     public Player getPlayerArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
         if (possibleArgument != null) return (Player)possibleArgument;
         return null;
     }
 
+    /*
+     * Retrieves an argument as a FactionFlag, if able.
+     */
     public FactionFlag getFactionFlagArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
         if (possibleArgument != null) return (FactionFlag)possibleArgument;
         return null;
     }
 
+    /*
+     * Retrieves an argument as a ConfigOption, if able.
+     */
     public ConfigOption getConfigOptionArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
         if (possibleArgument != null) return (ConfigOption)possibleArgument;
@@ -115,18 +169,34 @@ public class CommandContext {
         this.commandNames.add(command);
     }
 
-    public ArrayList<String> getCommandNames() {
+    public List<String> getCommandNames() {
         return this.commandNames;
     }
 
+
+    /*
+     * Sends a raw message to a sender. This will go through colorization in MessageService but no translations will happen.
+     * 
+     * @param message the message to send
+     */
     public void reply(String message) {
         this.messageService.send(this.sender, message);
     }
 
+    /*
+     * Sends a localized message without parameters.
+     * 
+     * @param localizationKey the language key as defined in the language YAML file to send
+     */
     public void replyWith(String localizationKey) {
         this.messageService.sendLocalizedMessage(this.sender, localizationKey);
     }
 
+    /*
+     * Sends a localized message using a MessageBuilder instance.
+     * 
+     * @param builder the MessageBuilder instance
+     */
     public void replyWith(MessageBuilder builder) {
         this.messageService.sendLocalizedMessage(this.sender, builder);
     }

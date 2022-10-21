@@ -4,21 +4,11 @@
  */
 package factionsplusplus.models;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import org.bukkit.Bukkit;
-
+import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
-import factionsplusplus.jsonadapters.UUIDAdapter;
-import factionsplusplus.jsonadapters.ArrayListUUIDAdapter;
-
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -27,13 +17,11 @@ public class LockedBlock {
     @Expose
     private final LocationData block;
     @Expose
-    @JsonAdapter(UUIDAdapter.class)
     private UUID owner = UUID.randomUUID();
     @Expose
     private UUID faction = null;
     @Expose
-    @JsonAdapter(ArrayListUUIDAdapter.class)
-    private ArrayList<UUID> accessList = new ArrayList<>();
+    private List<UUID> accessList = new ArrayList<>();
 
     public LockedBlock(
         UUID owner,
@@ -87,7 +75,7 @@ public class LockedBlock {
         return this.accessList.contains(playerName);
     }
 
-    public ArrayList<UUID> getAccessList() {
+    public List<UUID> getAccessList() {
         return this.accessList;
     }
 
@@ -97,14 +85,5 @@ public class LockedBlock {
 
     public UUID getFactionID() {
         return this.faction;
-    }
-
-    // Tools
-    public JsonElement toJsonTree() {
-        return new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .serializeNulls()
-            .create()
-            .toJsonTree(this);
     }
 }

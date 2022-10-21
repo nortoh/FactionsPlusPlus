@@ -11,7 +11,7 @@ public class ConfigOptionBuilder {
     public String description = null;
     public Object defaultValue = null;
     public ConfigOptionType type = ConfigOptionType.String;
-    public Boolean userSettable = true;
+    public boolean userSettable = true;
 
     public ConfigOptionBuilder withName(String name) {
         this.name = name;

@@ -29,7 +29,7 @@ public class FactionService {
     private final Provider<DynmapIntegrationService> dynmapService;
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
-    private final HashMap<String, FactionFlag> defaultFlags = new HashMap<>();
+    private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
 
     @Inject
     public FactionService(
@@ -85,7 +85,7 @@ public class FactionService {
         for (Faction faction : this.factionRepository.all().values()) faction.getFlags().remove(flagName);
     }
 
-    public HashMap<String, FactionFlag> getDefaultFlags() {
+    public Map<String, FactionFlag> getDefaultFlags() {
         return this.defaultFlags;
     }
 

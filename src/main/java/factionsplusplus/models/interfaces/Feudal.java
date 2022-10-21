@@ -1,6 +1,6 @@
 package factionsplusplus.models.interfaces;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,7 +31,7 @@ public interface Feudal {
 
     int getNumVassals();
 
-    ArrayList<UUID> getVassals();
+    List<UUID> getVassals();
 
     String getVassalsSeparatedByCommas();
 

@@ -15,7 +15,7 @@ import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
-import factionsplusplus.objects.helper.GateCoord;
+import factionsplusplus.models.LocationData;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -425,7 +425,7 @@ public class GateService {
     public ErrorCodeAddCoord addCoord(Gate gate, Block clickedBlock) {
         if (gate.getCoord1() == null) {
             gate.setWorld(clickedBlock.getWorld().getName());
-            gate.setCoord1(new GateCoord(clickedBlock));
+            gate.setCoord1(new LocationData(clickedBlock));
             gate.setMaterial(clickedBlock.getType());
         } else if (gate.getCoord2() == null) {
             if (!gate.getCoord1().getWorld().equalsIgnoreCase(clickedBlock.getWorld().getName())) {
@@ -435,7 +435,7 @@ public class GateService {
                 return ErrorCodeAddCoord.MaterialMismatch;
             }
             // GetDim methods use coord2 object.
-            gate.setCoord2(new GateCoord(clickedBlock));
+            gate.setCoord2(new LocationData(clickedBlock));
             if (gate.getDimX() > 1 && gate.getDimY() > 1 && gate.getDimZ() > 1) {
                 // No cuboids.
                 gate.setCoord2(null);
@@ -469,7 +469,7 @@ public class GateService {
                 return ErrorCodeAddCoord.MaterialMismatch;
             }
         } else {
-            gate.setTrigger(new GateCoord(clickedBlock));
+            gate.setTrigger(new LocationData(clickedBlock));
         }
         return ErrorCodeAddCoord.None;
     }

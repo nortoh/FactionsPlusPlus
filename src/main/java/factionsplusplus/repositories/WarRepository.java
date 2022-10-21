@@ -11,10 +11,10 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -22,16 +22,18 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.reflect.Type;
 
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
 
 @Singleton
 public class WarRepository {
-    private final ArrayList<War> warStore = new ArrayList<>();
+    private List<War> warStore = new ArrayList<>();
     private final String dataPath;
     private final static String FILE_NAME = "wars.json";
+    private final static Type JSON_TYPE = new TypeToken<List<War>>() { }.getType();
+
 
     @Inject
     public WarRepository(@Named("dataFolder") String dataPath) {
@@ -47,7 +49,7 @@ public class WarRepository {
                 .serializeNulls()
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.warStore.addAll(Arrays.asList(gson.fromJson(reader, War[].class)));
+            this.warStore = gson.fromJson(reader, WarRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
@@ -64,7 +66,7 @@ public class WarRepository {
     }
 
     // Retrieve a list of wars a faction is involved in
-    public ArrayList<War> getAllForFaction(UUID factionUUID) {
+    public List<War> getAllForFaction(UUID factionUUID) {
         ArrayList<War> results = new ArrayList<>();
         for (War war : this.warStore) {
             if (war.getAttacker().equals(factionUUID) || war.getDefender().equals(factionUUID)) results.add(war); 
@@ -87,16 +89,12 @@ public class WarRepository {
     }
 
     // Retrieve all wars
-    public ArrayList<War> all() {
+    public List<War> all() {
         return this.warStore;
     }
 
     // Write to file
     public void persist() {
-        List<JsonElement> warsToSave = new ArrayList<>();
-        for (War war : this.warStore) {
-            warsToSave.add(war.toJsonTree());
-        }
         File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
@@ -105,7 +103,7 @@ public class WarRepository {
                 .create();
             file.createNewFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(warsToSave));
+            outputStreamWriter.write(gson.toJson(this.warStore, WarRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
             // TODO: log here

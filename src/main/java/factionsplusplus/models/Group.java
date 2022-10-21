@@ -6,9 +6,8 @@ package factionsplusplus.models;
 
 import org.bukkit.entity.Player;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
-import factionsplusplus.jsonadapters.UUIDAdapter;
-import factionsplusplus.jsonadapters.ArrayListUUIDAdapter;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -21,20 +20,17 @@ import com.google.gson.annotations.JsonAdapter;
  * @author Daniel McCoy Stephenson
  */
 public class Group {
-    private final ArrayList<UUID> invited = new ArrayList<>();
+    private final List<UUID> invited = new ArrayList<>();
     @Expose
     protected String name = "defaultName";
     @Expose
     protected String description = "defaultDescription";
     @Expose
-    @JsonAdapter(UUIDAdapter.class)
     protected UUID owner = UUID.randomUUID();
     @Expose
-    @JsonAdapter(ArrayListUUIDAdapter.class)
-    protected ArrayList<UUID> members = new ArrayList<>();
+    protected List<UUID> members = new ArrayList<>();
     @Expose
-    @JsonAdapter(ArrayListUUIDAdapter.class)
-    protected ArrayList<UUID> officers = new ArrayList<>();
+    protected List<UUID> officers = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -76,20 +72,20 @@ public class Group {
         return members.contains(uuid);
     }
 
-    public ArrayList<UUID> getMembers() {
+    public List<UUID> getMembers() {
         return members;
     }
 
-    public ArrayList<UUID> getMemberList() {
+    public List<UUID> getMemberList() {
         return members;
     }
 
-    public ArrayList<UUID> getMemberArrayList() {
+    public List<UUID> getMemberArrayList() {
         return members;
     }
 
     public String getMemberListSeparatedByCommas() {
-        ArrayList<UUID> uuids = getMemberList();
+        List<UUID> uuids = getMemberList();
         String players = "";
         for (UUID uuid : uuids) {
             UUIDChecker uuidChecker = new UUIDChecker();
@@ -122,7 +118,7 @@ public class Group {
         return officers.size();
     }
 
-    public ArrayList<UUID> getOfficerList() {
+    public List<UUID> getOfficerList() {
         return officers;
     }
 
