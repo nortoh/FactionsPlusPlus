@@ -32,8 +32,7 @@ public class LockedBlock {
     @Expose
     private UUID faction = null;
     @Expose
-    @JsonAdapter(ArrayListUUIDAdapter.class)
-    private ArrayList<UUID> accessList = new ArrayList<>();
+    private AccessList accessList;
 
     public LockedBlock(
         UUID owner,
@@ -46,7 +45,8 @@ public class LockedBlock {
         this.block = new LocationData(xCoord, yCoord, zCoord, worldName);
         this.owner = owner;
         this.faction = faction;
-        this.accessList.add(owner);
+        this.accessList = new AccessList();
+        this.accessList.addPlayerToAccessList(owner);
     }
 
     public String getWorld() {
@@ -73,21 +73,35 @@ public class LockedBlock {
         this.owner = owner;
     }
 
-    public void addToAccessList(UUID playerName) {
-        if (!this.accessList.contains(playerName)) {
-            this.accessList.add(playerName);
-        }
+    public void addToAccessList(UUID player) {
+        this.accessList.addPlayerToAccessList(player);
     }
 
-    public void removeFromAccessList(UUID playerName) {
-        this.accessList.remove(playerName);
+    public void removeFromAccessList(UUID player) {
+        this.accessList.removePlayerFromAccessList(player);
     }
 
-    public boolean hasAccess(UUID playerName) {
-        return this.accessList.contains(playerName);
+    public boolean hasAccess(UUID player) {
+        return this.accessList.playerOnAccessList(player);
     }
 
-    public ArrayList<UUID> getAccessList() {
+    public void allowAllies() {
+        this.accessList.addAlliesToAccessList();
+    }
+
+    public void denyAllies() {
+        this.accessList.removeAlliesFromAccessList();
+    }
+
+    public void allowFactionMembers() {
+        this.accessList.addFactionMembersToAccessList();
+    }
+
+    public void denyFactionMembers() {
+        this.accessList.removeFactionMembersFromAccessList();
+    }
+
+    public AccessList getAccessList() {
         return this.accessList;
     }
 

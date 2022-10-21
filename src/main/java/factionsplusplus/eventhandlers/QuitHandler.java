@@ -28,11 +28,7 @@ public class QuitHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerQuitEvent event) {
-        ephemeralData.getLockingPlayers().remove(event.getPlayer().getUniqueId());
-        ephemeralData.getUnlockingPlayers().remove(event.getPlayer().getUniqueId());
-        ephemeralData.getPlayersGrantingAccess().remove(event.getPlayer().getUniqueId());
-        ephemeralData.getPlayersCheckingAccess().remove(event.getPlayer().getUniqueId());
-        ephemeralData.getPlayersRevokingAccess().remove(event.getPlayer().getUniqueId());
+        this.ephemeralData.getPlayersPendingInteraction().remove(event.getPlayer().getUniqueId());
 
         PlayerRecord record = this.persistentData.getPlayerRecord(event.getPlayer().getUniqueId());
         if (record != null) {

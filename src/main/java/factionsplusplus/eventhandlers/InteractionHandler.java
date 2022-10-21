@@ -11,6 +11,8 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
+import factionsplusplus.models.Faction;
+import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.InteractionAccessChecker;
@@ -50,24 +52,34 @@ public class InteractionHandler implements Listener {
     private final PersistentData persistentData;
     private final InteractionAccessChecker interactionAccessChecker;
     private final MessageService messageService;
-    private final LocaleService localeService;
     private final BlockChecker blockChecker;
     private final FactionsPlusPlus factionsPlusPlus;
     private final LockService lockService;
     private final EphemeralData ephemeralData;
     private final GateService gateService;
+    private final DataService dataService;
 
     @Inject
-    public InteractionHandler(PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, FactionsPlusPlus factionsPlusPlus, LockService lockService, EphemeralData ephemeralData, GateService gateService, MessageService messageService) {
+    public InteractionHandler(
+        PersistentData persistentData,
+        InteractionAccessChecker interactionAccessChecker,
+        BlockChecker blockChecker,
+        FactionsPlusPlus factionsPlusPlus,
+        LockService lockService,
+        EphemeralData ephemeralData,
+        GateService gateService,
+        MessageService messageService,
+        DataService dataService
+    ) {
         this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;
-        this.localeService = localeService;
         this.blockChecker = blockChecker;
         this.factionsPlusPlus = factionsPlusPlus;
         this.lockService = lockService;
         this.ephemeralData = ephemeralData;
         this.gateService = gateService;
         this.messageService = messageService;
+        this.dataService = dataService;
     }
 
     @EventHandler()
@@ -192,17 +204,23 @@ public class InteractionHandler implements Listener {
             return;
         }
 
-        if (playerIsAttemptingToLockABlock(player)) {
-            lockService.handleLockingBlock(event, player, clickedBlock);
-        }
-
-        if (playerIsAttemptingToUnlockABlock(player)) {
-            lockService.handleUnlockingBlock(event, player, clickedBlock);
+        InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
+        
+        if (context != null) {
+            if (context.isLockedBlockLock()) this.lockService.handleLockingBlock(event, player, clickedBlock);
+            if (context.isLockedBlockUnlock()) this.lockService.handleUnlockingBlock(event, player, clickedBlock);
         }
 
         LockedBlock lockedBlock = persistentData.getLockedBlock(clickedBlock);
         if (lockedBlock != null) {
-            boolean playerHasAccess = lockedBlock.hasAccess(player.getUniqueId());
+            boolean playerHasAccess = false;
+            Faction playersFaction = this.dataService.getFactionRepository().getForPlayer(player);
+            Faction ownersFaction = this.dataService.getFactionRepository().getForPlayer(lockedBlock.getOwner());
+            if (playersFaction != null && ownersFaction != null) {
+                if (lockedBlock.getAccessList().factionMembersPermitted() && playersFaction.equals(ownersFaction)) playerHasAccess = true;
+                if (lockedBlock.getAccessList().alliesPermitted() && ownersFaction.isAlly(playersFaction.getID())) playerHasAccess = true;
+            }
+            if (lockedBlock.getAccessList().playerOnAccessList(player.getUniqueId())) playerHasAccess = true;
             boolean isPlayerBypassing = ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
             if (!playerHasAccess && !isPlayerBypassing) {
                 UUIDChecker uuidChecker = new UUIDChecker();
@@ -216,16 +234,10 @@ public class InteractionHandler implements Listener {
                 return;
             }
 
-            if (playerIsAttemptingToGrantAccess(player)) {
-                lockService.handleGrantingAccess(event, clickedBlock, player);
-            }
-
-            if (playerIsAttemptingToCheckAccess(player)) {
-                lockService.handleCheckingAccess(event, lockedBlock, player);
-            }
-
-            if (playerIsAttemptingToRevokeAccess(player)) {
-                lockService.handleRevokingAccess(event, clickedBlock, player);
+            if (context != null) {
+                if (context.isLockedBlockGrant()) this.lockService.handleGrantingAccess(event, clickedBlock, player);
+                if (context.isLockedBlockInquiry()) this.lockService.handleCheckingAccess(event, lockedBlock, player);
+                if (context.isLockedBlockRevoke()) this.lockService.handleRevokingAccess(event, clickedBlock, player);
             }
 
             if (playerHasAccess) {
@@ -238,7 +250,7 @@ public class InteractionHandler implements Listener {
             }
 
         } else {
-            if (isPlayerUsingAnAccessCommand(player)) {
+            if (context != null && context.isLockedBlockAccessCommand()) {
                 messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
             }
         }
@@ -257,37 +269,13 @@ public class InteractionHandler implements Listener {
             persistentData.getChunkDataAccessor().handleClaimedChunkInteraction(event, chunk);
         }
 
-        if (playerCreatingGate(player) && playerHoldingGoldenHoe(player)) {
+        if (context.isGateCreating() && playerHoldingGoldenHoe(player)) {
             gateService.handleCreatingGate(clickedBlock, player, event);
         }
     }
 
-    private boolean playerIsAttemptingToRevokeAccess(Player player) {
-        return ephemeralData.getPlayersRevokingAccess().containsKey(player.getUniqueId());
-    }
-
     private boolean playerHoldingGoldenHoe(Player player) {
         return player.getInventory().getItemInMainHand().getType().equals(Material.GOLDEN_HOE);
-    }
-
-    private boolean playerCreatingGate(Player player) {
-        return ephemeralData.getCreatingGatePlayers().containsKey(player.getUniqueId());
-    }
-
-    private boolean playerIsAttemptingToCheckAccess(Player player) {
-        return ephemeralData.getPlayersCheckingAccess().contains(player.getUniqueId());
-    }
-
-    private boolean playerIsAttemptingToGrantAccess(Player player) {
-        return ephemeralData.getPlayersGrantingAccess().containsKey(player.getUniqueId());
-    }
-
-    private boolean playerIsAttemptingToUnlockABlock(Player player) {
-        return ephemeralData.getUnlockingPlayers().contains(player.getUniqueId());
-    }
-
-    private boolean playerIsAttemptingToLockABlock(Player player) {
-        return ephemeralData.getLockingPlayers().contains(player.getUniqueId());
     }
 
     @EventHandler()
@@ -417,11 +405,5 @@ public class InteractionHandler implements Listener {
     public void handle(BlockRedstoneEvent event) {
         Block block = event.getBlock();
         gateService.handlePotentialGateInteraction(block, event);
-    }
-
-    private boolean isPlayerUsingAnAccessCommand(Player player) {
-        return ephemeralData.getPlayersGrantingAccess().containsKey(player.getUniqueId()) ||
-                ephemeralData.getPlayersCheckingAccess().contains(player.getUniqueId()) ||
-                ephemeralData.getPlayersRevokingAccess().containsKey(player.getUniqueId());
     }
 }

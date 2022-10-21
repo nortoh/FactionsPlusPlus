@@ -15,6 +15,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.models.War;
 import factionsplusplus.repositories.FactionRepository;
@@ -597,27 +598,24 @@ public class ForceCommand extends Command {
 
     // "mf.force.unlock", "mf.force.*", "mf.admin"
     public void unlockCommand(CommandContext context) {
-        Player player = context.getPlayer();
-        if (!this.ephemeralData.getUnlockingPlayers().contains(player.getUniqueId())) {
-            // add player to playersAboutToLockSomething list
-            this.ephemeralData.getUnlockingPlayers().add(player.getUniqueId());
-        }
-
-        if (!this.ephemeralData.getForcefullyUnlockingPlayers().contains(player.getUniqueId())) {
-            // add player to playersAboutToLockSomething list
-            this.ephemeralData.getForcefullyUnlockingPlayers().add(player.getUniqueId());
-        }
-
-        this.ephemeralData.getLockingPlayers().remove(player.getUniqueId()); // Remove from locking
-
-        // inform them they need to right-click the block that they want to lock or type /mf lock cancel to cancel it
-        context.replyWith("RightClickForceUnlock");
+        InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
+        if (interactionContext == null) {
+            this.ephemeralData.getPlayersPendingInteraction().put(
+                context.getPlayer().getUniqueId(), 
+                new InteractionContext(InteractionContext.Type.LockedBlockForceUnlock)
+            );
+            context.replyWith("RightClickForceUnlock");
+        };
     }
 
     public void cancelUnlockCommand(CommandContext context) {
-        this.ephemeralData.getUnlockingPlayers().remove(context.getPlayer().getUniqueId());
-        this.ephemeralData.getForcefullyUnlockingPlayers().remove(context.getPlayer().getUniqueId());
-        context.replyWith("AlertUnlockingCancelled");
+        InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
+        if (interactionContext != null) {
+            if (interactionContext.isLockedBlockUnlock() || interactionContext.isLockedBlockForceUnlock()) {
+                this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
+                context.replyWith("AlertUnlockingCancelled");
+            }
+        }
     }
 
     // "mf.force.create", "mf.force.*", "mf.admin"
