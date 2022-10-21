@@ -11,27 +11,28 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.lang.reflect.Type;
 
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 
 @Singleton
 public class ClaimedChunkRepository {
-    private final ArrayList<ClaimedChunk> claimedChunksStore = new ArrayList<>();
+    private List<ClaimedChunk> claimedChunksStore = new ArrayList<>();
     private final String dataPath;
     private final static String FILE_NAME = "claimedchunks.json";
+    private final static Type JSON_TYPE = new TypeToken<List<ClaimedChunk>>() { }.getType();
 
     @Inject
     public ClaimedChunkRepository(@Named("dataFolder") String dataPath) {
@@ -47,7 +48,7 @@ public class ClaimedChunkRepository {
                 .serializeNulls()
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.claimedChunksStore.addAll(Arrays.asList(gson.fromJson(reader, ClaimedChunk[].class)));
+            this.claimedChunksStore = gson.fromJson(reader, ClaimedChunkRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
@@ -85,16 +86,12 @@ public class ClaimedChunkRepository {
     }
 
     // Retrieve all claimed chunks
-    public ArrayList<ClaimedChunk> all() {
+    public List<ClaimedChunk> all() {
         return this.claimedChunksStore;
     }
 
     // Write to file
     public void persist() {
-        List<JsonElement> chunksToSave = new ArrayList<>();
-        for (ClaimedChunk chunk : this.claimedChunksStore) {
-            chunksToSave.add(chunk.toJsonTree());
-        }
         File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
@@ -103,7 +100,7 @@ public class ClaimedChunkRepository {
                 .create();
             file.createNewFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(chunksToSave));
+            outputStreamWriter.write(gson.toJson(this.claimedChunksStore, JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
             // TODO: log here

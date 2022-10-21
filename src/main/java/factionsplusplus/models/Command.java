@@ -10,10 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
@@ -24,13 +22,13 @@ public class Command implements ColorTranslator {
     private String[] aliases;
     private String[] requiredPermissions;
     private String description;
-    private Boolean subCommand;
-    private Boolean requiresPlayerExecution;
-    private Boolean requiresFactionMembership;
-    private Boolean requiresFactionOwnership;
-    private Boolean requiresFactionOfficership;
-    private Boolean requiresSubCommand;
-    private Boolean requiresNoFactionMembership;
+    private boolean subCommand;
+    private boolean requiresPlayerExecution;
+    private boolean requiresFactionMembership;
+    private boolean requiresFactionOwnership;
+    private boolean requiresFactionOfficership;
+    private boolean requiresSubCommand;
+    private boolean requiresNoFactionMembership;
     private String executorMethod;
     private LinkedHashMap<String, CommandArgument> arguments = new LinkedHashMap<>();
     private HashMap<String, Command> subcommands = new HashMap<>();
@@ -72,31 +70,31 @@ public class Command implements ColorTranslator {
         return this.requiredPermissions;
     }
 
-    public Boolean isSubCommand() {
+    public boolean isSubCommand() {
         return this.subCommand;
     }
 
-    public Boolean shouldRequirePlayerExecution() {
+    public boolean shouldRequirePlayerExecution() {
         return this.requiresPlayerExecution;
     }
 
-    public Boolean shouldRequireFactionMembership() {
+    public boolean shouldRequireFactionMembership() {
         return this.requiresFactionMembership;
     }
 
-    public Boolean shouldRequireFactionOfficership() {
+    public boolean shouldRequireFactionOfficership() {
         return this.requiresFactionOfficership;
     }
 
-    public Boolean shouldRequireFactionOwnership() {
+    public boolean shouldRequireFactionOwnership() {
         return this.requiresFactionOwnership;
     }
 
-    public Boolean shouldRequireNoFactionMembership() {
+    public boolean shouldRequireNoFactionMembership() {
         return this.requiresNoFactionMembership;
     }
 
-    public Boolean shouldRequireSubCommand() {
+    public boolean shouldRequireSubCommand() {
         return this.requiresSubCommand;
     }
 
@@ -104,7 +102,7 @@ public class Command implements ColorTranslator {
         return this.executorMethod;
     }
 
-    public Boolean hasSubCommands() {
+    public boolean hasSubCommands() {
         return this.subcommands.size() > 0;
     }
 
@@ -119,7 +117,7 @@ public class Command implements ColorTranslator {
         Optional<Command> command = this.subcommands.values().stream()
             .filter(c -> Arrays.asList(c.getAliases()).contains(nameSearch))
             .findFirst();
-        return command.isPresent() ? command.get() : null;
+        return command.orElse(null);
     }
 
     public Command getSubCommand(String nameSearch) {
@@ -178,7 +176,7 @@ public class Command implements ColorTranslator {
         return this;
     }
 
-    public Command setIsSubCommand(Boolean isSubCommand) {
+    public Command setIsSubCommand(boolean isSubCommand) {
         this.subCommand = isSubCommand;
         return this;
     }
@@ -188,32 +186,32 @@ public class Command implements ColorTranslator {
         return this;
     }
 
-    public Command setRequiresPlayerExecution(Boolean value) {
+    public Command setRequiresPlayerExecution(boolean value) {
         this.requiresPlayerExecution = value;
         return this;
     }
 
-    public Command setRequiresFactionMembership(Boolean value) {
+    public Command setRequiresFactionMembership(boolean value) {
         this.requiresFactionMembership = value;
         return this;
     }
 
-    public Command setRequiresFactionOwnership(Boolean value) {
+    public Command setRequiresFactionOwnership(boolean value) {
         this.requiresFactionOwnership = value;
         return this;
     }
 
-    public Command setRequiresFactionOfficership(Boolean value) {
+    public Command setRequiresFactionOfficership(boolean value) {
         this.requiresFactionOfficership = value;
         return this;
     }
 
-    public Command setRequiresNoFactionMembership(Boolean value) {
+    public Command setRequiresNoFactionMembership(boolean value) {
         this.requiresNoFactionMembership = value;
         return this;
     }
 
-    public Command setRequiresSubCommand(Boolean value) {
+    public Command setRequiresSubCommand(boolean value) {
         this.requiresSubCommand = value;
         return this;
     }
@@ -237,28 +235,7 @@ public class Command implements ColorTranslator {
         return this.description;
     }
 
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return new ArrayList<>();
-    }
-
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return new ArrayList<>();
-    }
-
     public MessageBuilder constructMessage(String localizationKey) {
         return new MessageBuilder(localizationKey);
-    }
-
-    /**
-     * Parent method to conduct tab completion. This will check permissions first, then hand to the child.
-     */
-    public List<String> onTabComplete(CommandSender sender, String[] args) {
-        if (this.requiresPlayerExecution) {
-            if (!(sender instanceof Player)) {
-                return this.handleTabComplete((Player)sender, args);
-            }
-            return null;
-        }
-        return this.handleTabComplete(sender, args);
     }
 }

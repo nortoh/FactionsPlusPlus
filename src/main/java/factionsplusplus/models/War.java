@@ -36,7 +36,7 @@ public class War {
     @JsonAdapter(ZonedDateTimeAdapter.class)
     private ZonedDateTime ended;
     @Expose
-    private Boolean active;
+    private boolean active;
 
     public War(Faction attacker, Faction defender, String reason) {
         this.attacker = attacker.getID();
@@ -66,7 +66,7 @@ public class War {
         return this.ended;
     }
 
-    public Boolean isActive() {
+    public boolean isActive() {
         return this.active;
     }
 

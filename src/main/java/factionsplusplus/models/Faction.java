@@ -1,22 +1,11 @@
 package factionsplusplus.models;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.JsonElement;
 import factionsplusplus.jsonadapters.LocationAdapter;
-import factionsplusplus.jsonadapters.ArrayListGateAdapter;
-import factionsplusplus.jsonadapters.UUIDAdapter;
 import factionsplusplus.models.interfaces.Feudal;
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 
-import java.lang.reflect.Type;
 import java.util.*;
-
-import static org.bukkit.Bukkit.getServer;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
@@ -26,15 +15,11 @@ import com.google.gson.annotations.SerializedName;
 // TODO: updateDate function to handle renames
 public class Faction extends Nation implements Feudal {
     @Expose
-    @JsonAdapter(UUIDAdapter.class)
-    private final UUID id;
+    private final List<Gate> gates = new ArrayList<>();
     @Expose
-    @JsonAdapter(ArrayListGateAdapter.class)
-    private final ArrayList<Gate> gates = new ArrayList<>();
+    private final Map<String, FactionFlag> flags;
     @Expose
-    private final HashMap<String, FactionFlag> flags;
-    @Expose
-    private ArrayList<UUID> vassals = new ArrayList<>();
+    private List<UUID> vassals = new ArrayList<>();
     @Expose
     private UUID liege = null;
     @Expose
@@ -47,29 +32,32 @@ public class Faction extends Nation implements Feudal {
     private int bonusPower = 0;
 
     private boolean autoclaim = false;
-    private final ArrayList<UUID> attemptedVassalizations = new ArrayList<>();
+    private final List<UUID> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
-    public Faction(String factionName, HashMap<String, FactionFlag> flags) {
-        this.id = UUID.randomUUID();
+    public Faction(String factionName, Map<String, FactionFlag> flags) {
         this.name = factionName;
         this.flags = flags;
     }
 
-    public Faction(String factionName, UUID owner, HashMap<String, FactionFlag> flags) {
-        this.id = UUID.randomUUID();
+    public Faction(String factionName, UUID owner, Map<String, FactionFlag> flags) {
         this.name = factionName;
         this.owner = owner;
         this.flags = flags;
     }
 
-    // ID
+    /*
+     * Retrieves the factions UUID.
+     * 
+     * @Deprecated Use getUUID()
+     * @returns the factions UUID
+     */
     public UUID getID() {
-        return this.id;
+        return this.uuid;
     }
 
     // Flags
-    public HashMap<String, FactionFlag> getFlags() {
+    public Map<String, FactionFlag> getFlags() {
         return this.flags;
     }
 
@@ -155,7 +143,7 @@ public class Faction extends Nation implements Feudal {
         this.gates.remove(gate);
     }
 
-    public ArrayList<Gate> getGates() {
+    public List<Gate> getGates() {
         return this.gates;
     }
 
@@ -169,7 +157,7 @@ public class Faction extends Nation implements Feudal {
         return false;
     }
 
-    public ArrayList<Gate> getGatesForTrigger(Block block) {
+    public List<Gate> getGatesForTrigger(Block block) {
         ArrayList<Gate> gateList = new ArrayList<>();
         for (Gate g : this.gates) {
             if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
@@ -201,7 +189,7 @@ public class Faction extends Nation implements Feudal {
         return this.vassals.size();
     }
 
-    public ArrayList<UUID> getVassals() {
+    public List<UUID> getVassals() {
         return this.vassals;
     }
 
@@ -226,34 +214,5 @@ public class Faction extends Nation implements Feudal {
 
     public void removeAttemptedVassalization(UUID uuid) {
         if (this.hasBeenOfferedVassalization(uuid)) this.attemptedVassalizations.remove(uuid);
-    }
-
-    // Tools
-    public JsonElement toJsonTree() {
-        return new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .serializeNulls()
-            .create()
-            .toJsonTree(this);
-    }
-
-    private boolean containsIgnoreCase(ArrayList<String> list, String str) {
-        for (String string : list) {
-            if (string.equalsIgnoreCase(str)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void removeIfContainsIgnoreCase(ArrayList<String> list, String str) {
-        String toRemove = "";
-        for (String string : list) {
-            if (string.equalsIgnoreCase(str)) {
-                toRemove = string;
-                break;
-            }
-        }
-        list.remove(toRemove);
     }
 }

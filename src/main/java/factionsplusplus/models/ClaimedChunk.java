@@ -1,17 +1,10 @@
 package factionsplusplus.models;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
 import org.bukkit.Chunk;
 
 import factionsplusplus.jsonadapters.ChunkAdapter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -43,14 +36,5 @@ public class ClaimedChunk extends Territory {
 
     public String getWorldName() {
         return this.chunk.getWorld().getName();
-    }
-
-    // Tools
-    public JsonElement toJsonTree() {
-        return new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .serializeNulls()
-            .create()
-            .toJsonTree(this);
     }
 }

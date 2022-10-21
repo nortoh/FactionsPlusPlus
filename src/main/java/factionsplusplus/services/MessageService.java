@@ -109,7 +109,7 @@ public class MessageService {
         );
     }
 
-    public void sendInvalidSyntaxMessage(CommandSender sender, ArrayList<String> commandNameList, String commandSyntax) {
+    public void sendInvalidSyntaxMessage(CommandSender sender, List<String> commandNameList, String commandSyntax) {
         this.sendInvalidSyntaxMessage(sender, String.join(" ", commandNameList), commandSyntax);
     }
 

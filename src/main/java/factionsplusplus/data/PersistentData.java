@@ -472,7 +472,7 @@ public class PersistentData {
         return this.factionRepository.all().values();
     }
 
-    public ArrayList<PlayerRecord> getPlayerRecords() {
+    public List<PlayerRecord> getPlayerRecords() {
         return this.playerRecordRepository.all();
     }
 

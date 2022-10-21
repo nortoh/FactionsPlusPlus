@@ -4,7 +4,7 @@
  */
 package factionsplusplus.models.interfaces;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,7 +19,7 @@ public interface Diplomatic {
 
     boolean isAlly(UUID uuid);
 
-    ArrayList<UUID> getAllies();
+    List<UUID> getAllies();
 
     String getAlliesSeparatedByCommas();
 
@@ -37,7 +37,7 @@ public interface Diplomatic {
 
     boolean isEnemy(UUID uuid);
 
-    ArrayList<UUID> getEnemyFactions();
+    List<UUID> getEnemyFactions();
 
     String getEnemiesSeparatedByCommas();
 

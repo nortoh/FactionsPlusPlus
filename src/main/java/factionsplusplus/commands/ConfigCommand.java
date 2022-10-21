@@ -175,13 +175,12 @@ public class ConfigCommand extends Command {
      * @param sender who sent the command.
      * @param args   of the command.
      */
-    @Override
     public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
         } else if (args.length == 2) {
             if (args[0] == "show") return TabCompleteTools.completeMultipleOptions(args[1], "1", "2");
-            if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
+            //if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
         }
         return null;
     }
