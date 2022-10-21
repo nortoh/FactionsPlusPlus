@@ -10,11 +10,14 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.models.InteractionContext;
+
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -44,17 +47,51 @@ public class CheckAccessCommand extends Command {
         this.ephemeralData = ephemeralData;
     }
 
-    public void execute(CommandContext context) {
-        if (this.ephemeralData.getPlayersCheckingAccess().contains(context.getPlayer().getUniqueId())) {
-            context.replyWith("AlreadyEnteredCheckAccess");
-            return;
+    public boolean doCommonChecks(CommandContext context) {
+        UUID playerUUID = context.getPlayer().getUniqueId();
+        if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
+            InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
+            if (interactionContext.isLockedBlockGrant()) {
+                context.replyWith("AlertAlreadyGrantingAccess");
+                return false;
+            }
+            context.replyWith(
+                this.constructMessage("CancelInteraction")
+                    .with("type", interactionContext.toString())
+            );
         }
-        this.ephemeralData.getPlayersCheckingAccess().add(context.getPlayer().getUniqueId());
+        return true;
+    }
+
+    public void execute(CommandContext context) {
+        UUID playerUUID = context.getPlayer().getUniqueId();
+        if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
+            InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
+            if (interactionContext.isLockedBlockInquiry()) {
+                context.replyWith("AlreadyEnteredCheckAccess");
+                return;
+            }
+            context.replyWith(
+                this.constructMessage("CancelInteraction")
+                    .with("type", interactionContext.toString())
+            );
+            this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
+        }
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            playerUUID,
+            new InteractionContext(InteractionContext.Type.LockedBlockInquiry)
+        );
         context.replyWith("RightClickCheckAccess");
     }
 
     public void cancelCommand(CommandContext context) {
-        this.ephemeralData.getPlayersCheckingAccess().remove(context.getPlayer().getUniqueId());
-        context.replyWith("Cancelled");
+        UUID playerUUID = context.getPlayer().getUniqueId();
+        if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
+            InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
+            if (interactionContext.isLockedBlockInquiry()) {
+                this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
+                context.replyWith("Cancelled");
+            }
+        }
     }
 }
