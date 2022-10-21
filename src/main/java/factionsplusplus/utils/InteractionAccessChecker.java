@@ -12,6 +12,8 @@ import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
+
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -28,13 +30,15 @@ public class InteractionAccessChecker {
     private final ConfigService configService;
     private final EphemeralData ephemeralData;
     private final Logger logger;
+    private final DataService dataService;
 
     @Inject
-    public InteractionAccessChecker(Provider<PersistentData> persistentData, ConfigService configService, EphemeralData ephemeralData, Logger logger) {
+    public InteractionAccessChecker(Provider<PersistentData> persistentData, ConfigService configService, EphemeralData ephemeralData, Logger logger, DataService dataService) {
         this.persistentData = persistentData;
         this.configService = configService;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
+        this.dataService = dataService;
     }
 
     public boolean shouldEventBeCancelled(ClaimedChunk claimedChunk, Player player) {
@@ -50,7 +54,7 @@ public class InteractionAccessChecker {
             return false;
         }
 
-        Faction playersFaction = this.persistentData.get().getPlayersFaction(player.getUniqueId());
+        Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {
             return true;
         }
@@ -75,7 +79,7 @@ public class InteractionAccessChecker {
             return true;
         }
 
-        final Faction chunkHolder = this.persistentData.get().getFactionByID(chunk.getHolder());
+        final Faction chunkHolder = this.dataService.getFaction(chunk.getHolder());
 
         boolean inVassalageTree = this.persistentData.get().isPlayerInFactionInVassalageTree(player, chunkHolder);
         boolean isAlly = playersFaction.isAlly(chunk.getHolder());
@@ -95,7 +99,7 @@ public class InteractionAccessChecker {
     }
 
     public boolean isPlayerAttemptingToPlaceLadderInEnemyTerritoryAndIsThisAllowed(Block blockPlaced, Player player, ClaimedChunk claimedChunk) {
-        Faction playersFaction = this.persistentData.get().getPlayersFaction(player.getUniqueId());
+        Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
 
         if (playersFaction == null) {
             return false;

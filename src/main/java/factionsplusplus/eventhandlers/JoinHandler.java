@@ -63,7 +63,7 @@ public class JoinHandler implements Listener {
     public void handle(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (dataExistsForPlayer(player)) {
-            PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+            PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
             record.incrementLogins();
             handlePowerDecay(record, player, event);
         } else {
@@ -100,7 +100,7 @@ public class JoinHandler implements Listener {
     }
 
     private double getNewPower(Player player) {
-        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
 
         double newPower = record.getPower();
         if (newPower < 0) {
@@ -117,11 +117,11 @@ public class JoinHandler implements Listener {
 
     private void createRecordsForPlayer(Player player) {
         PlayerRecord record = new PlayerRecord(player.getUniqueId(), 1, this.configService.getInt("initialPowerLevel"));
-        this.persistentData.addPlayerRecord(record);
+        this.dataService.getPlayerRecordRepository().create(record);
     }
 
     private boolean dataExistsForPlayer(Player player) {
-        return this.persistentData.hasPlayerRecord(player.getUniqueId());
+        return this.dataService.hasPlayerRecord(player);
     }
 
     private void assignPlayerToRandomFaction(Player player) {
@@ -150,8 +150,8 @@ public class JoinHandler implements Listener {
     private void setPlayerActionBarTerritoryInfo(Player player) {
         if (configService.getBoolean("territoryIndicatorActionbar")) {
             if (chunkIsClaimed(player)) {
-                UUID factionUUID = persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk()).getHolder();
-                Faction holder = persistentData.getFactionByID(factionUUID);
+                UUID factionUUID = dataService.getClaimedChunk(player.getLocation().getChunk()).getHolder();
+                Faction holder = dataService.getFaction(factionUUID);
                 territoryOwnerNotifier.sendPlayerTerritoryAlert(player, holder);
                 return;
             }
@@ -161,11 +161,11 @@ public class JoinHandler implements Listener {
     }
 
     private boolean chunkIsClaimed(Player player) {
-        return persistentData.getChunkDataAccessor().isClaimed(player.getLocation().getChunk());
+        return this.dataService.isChunkClaimed(player.getLocation().getChunk());
     }
 
     private void informPlayerIfTheirFactionIsWeakened(Player player) {
-        Faction playersFaction = persistentData.getPlayersFaction(player.getUniqueId());
+        Faction playersFaction = dataService.getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {
             return;
         }

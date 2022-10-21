@@ -85,7 +85,7 @@ public class Messenger extends preponderous.ponder.minecraft.bukkit.tools.Messen
 
     private void sendLiegeInfoIfVassal(Faction faction, CommandSender sender) {
         if (faction.hasLiege()) {
-            Faction factionLiege = this.factionRepository.getByID(faction.getLiege());
+            Faction factionLiege = this.factionRepository.get(faction.getLiege());
             messageService.sendLocalizedMessage(
                 sender,
                 new MessageBuilder("Liege")

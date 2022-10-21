@@ -4,7 +4,7 @@
  */
 package factionsplusplus.utils;
 
-import factionsplusplus.data.PersistentData;
+import factionsplusplus.services.DataService;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,9 +23,9 @@ public class TabCompleteTools {
 		return Bukkit.getOnlinePlayers().stream().map(OfflinePlayer::getName);
 	}
 
-    public static List<String> getAllFactions(PersistentData persistentData) {
+    public static List<String> getAllFactions(DataService dataService) {
         List<String> factionNames = new ArrayList<String>();
-        persistentData.getFactions().forEach(faction -> factionNames.add(faction.getName()));
+        dataService.getFactions().forEach(faction -> factionNames.add(faction.getName()));
         return factionNames;
     }
 
@@ -78,8 +78,8 @@ public class TabCompleteTools {
         return filterStartingWith(arg, onlinePlayers.stream());
     }
 
-    public static List<String> allFactionsMatching(String arg, PersistentData persistentData) {
-        return filterStartingWith(arg, getAllFactions(persistentData));
+    public static List<String> allFactionsMatching(String arg, DataService dataService) {
+        return filterStartingWith(arg, getAllFactions(dataService));
     }
 
     public static List<String> completeMultipleOptions(String arg, String... parameters) {

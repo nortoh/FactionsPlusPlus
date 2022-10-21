@@ -198,7 +198,7 @@ public class CommandService implements TabCompleter {
         // Check if this command should require faction specific stuff
         Faction playerFaction = null;
         if (! context.isConsole()) {
-            playerFaction = this.playerService.getPlayerFaction(sender);
+            playerFaction = this.dataService.getPlayersFaction((OfflinePlayer)sender);
             context.setExecutorsFaction(playerFaction);
         }
         if (command.shouldRequireFactionMembership()) {
@@ -711,17 +711,17 @@ public class CommandService implements TabCompleter {
             switch(argument.getType()) {
                 case AlliedFaction:
                     return playersFaction.getAllies().stream()
-                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case EnemyFaction:
                     return playersFaction.getAllies().stream()
-                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case VassaledFaction:
                     return playersFaction.getVassals().stream()
-                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionMember:

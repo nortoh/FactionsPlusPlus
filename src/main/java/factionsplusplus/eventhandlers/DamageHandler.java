@@ -8,10 +8,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.objects.domain.Duel;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
@@ -30,22 +30,22 @@ import org.bukkit.projectiles.ProjectileSource;
 @Singleton
 public class DamageHandler implements Listener {
     private final Logger logger;
-    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final LocaleService localeService;
     private final ConfigService configService;
     private final RelationChecker relationChecker;
     private final MessageService messageService;
+    private final DataService dataService;
 
     @Inject
-    public DamageHandler(Logger logger, PersistentData persistentData, EphemeralData ephemeralData, LocaleService localeService, ConfigService configService, RelationChecker relationChecker, MessageService messageService) {
+    public DamageHandler(Logger logger, EphemeralData ephemeralData, LocaleService localeService, ConfigService configService, RelationChecker relationChecker, MessageService messageService, DataService dataService) {
         this.logger = logger;
-        this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.localeService = localeService;
         this.configService = configService;
         this.relationChecker = relationChecker;
         this.messageService = messageService;
+        this.dataService = dataService;
     }
 
     /**
@@ -85,7 +85,7 @@ public class DamageHandler implements Listener {
         }
 
         // case 2
-        if (relationChecker.playerNotInFaction(attacker) || relationChecker.playerNotInFaction(victim)) {
+        if (!this.dataService.isPlayerInFaction(attacker) || !this.dataService.isPlayerInFaction(victim)) {
             logger.debug("Attacker or victim is not in a faction. Returning.");
             // allow since factionless don't have PVP restrictions
             return;
@@ -122,13 +122,15 @@ public class DamageHandler implements Listener {
         if (entity instanceof ArmorStand || entity instanceof ItemFrame) return true;
 
         // If entity isn't on claimed chunk, return false
-        if (!persistentData.getChunkDataAccessor().isClaimed(entity.getLocation().getChunk())) {
+        if (!this.dataService.isChunkClaimed(entity.getLocation().getChunk())) {
             logger.debug("Chunk isn't claimed");
             return false;
         }
 
-        final Faction chunkHolder = persistentData.getFactionByID(persistentData.getChunkDataAccessor().getClaimedChunk(entity.getLocation().getChunk()).getHolder());
-        final Faction attackerFaction = this.persistentData.getPlayersFaction(attacker.getUniqueId());
+        final Faction chunkHolder = this.dataService.getFaction(this.dataService.getClaimedChunk(entity.getLocation().getChunk()).getHolder());
+        System.out.println("Checking entity protection for player: "+attacker);
+        System.out.println("\t and entity: "+entity);
+        final Faction attackerFaction = this.dataService.getPlayersFaction(attacker.getUniqueId());
 
         if (!chunkHolder.getFlag("enableMobProtection").toBoolean()) {
             logger.debug("Mob Protection is disabled");
@@ -142,7 +144,7 @@ public class DamageHandler implements Listener {
         }
 
         // If attacker is in faction which owns the chunk, return false
-        if (persistentData.getPlayersFaction(attacker.getUniqueId()) == chunkHolder) {
+        if (this.dataService.getPlayersFaction(attacker.getUniqueId()) == chunkHolder) {
             logger.debug("Attacker is in same faction as Chunkholder");
             return false;
         }
@@ -234,7 +236,7 @@ public class DamageHandler implements Listener {
      * This method is intended to prevent friendly fire if it is not allowed in the faction.
      */
     private void handleFriendlyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
-        Faction faction = persistentData.getPlayersFaction(attacker.getUniqueId());
+        Faction faction = this.dataService.getPlayersFaction(attacker.getUniqueId());
         boolean friendlyFireAllowed = faction.getFlag("allowFriendlyFire").toBoolean();
         if (!friendlyFireAllowed) {
             event.setCancelled(true);

@@ -12,6 +12,7 @@ import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -35,13 +36,13 @@ import static org.bukkit.Bukkit.getServer;
 @Singleton
 public class InviteCommand extends Command {
     private final MessageService messageService;
-    private final PersistentData persistentData;
+    private final DataService dataService;
     private final FactionsPlusPlus factionsPlusPlus;
 
     @Inject
     public InviteCommand(
         MessageService messageService,
-        PersistentData persistentData,
+        DataService dataService,
         FactionsPlusPlus factionsPlusPlus
     ) {
         super(
@@ -61,7 +62,7 @@ public class InviteCommand extends Command {
                 )
         );
         this.messageService = messageService;
-        this.persistentData = persistentData;
+        this.dataService = dataService;
         this.factionsPlusPlus = factionsPlusPlus;
     }
 
@@ -77,7 +78,7 @@ public class InviteCommand extends Command {
         }
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID playerUUID = target.getUniqueId();
-        if (this.persistentData.isInFaction(playerUUID)) {
+        if (this.dataService.isPlayerInFaction(target)) {
             context.replyWith("PlayerAlreadyInFaction");
             return;
         }

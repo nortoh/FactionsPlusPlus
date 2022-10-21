@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Random;
+import java.util.Collection;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
+import org.bukkit.Chunk;
 
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
@@ -26,6 +31,7 @@ public class DataService {
     private final PlayerRecordRepository playerRecordRepository;
     private final CommandRepository commandRepository;
     private final ConfigOptionRepository configOptionRepository;
+    private final WarRepository warRepository;
 
     @Inject
     public DataService(
@@ -34,7 +40,8 @@ public class DataService {
         LockedBlockRepository lockedBlockRepository,
         PlayerRecordRepository playerRecordRepository,
         CommandRepository commandRepository,
-        ConfigOptionRepository configOptionRepository
+        ConfigOptionRepository configOptionRepository,
+        WarRepository warRepository
     ) {
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
@@ -42,6 +49,24 @@ public class DataService {
         this.playerRecordRepository = playerRecordRepository;
         this.commandRepository = commandRepository;
         this.configOptionRepository = configOptionRepository;
+        this.warRepository = warRepository;
+    }
+
+    public void save() {
+        this.factionRepository.persist();
+        this.claimedChunkRepository.persist();
+        this.playerRecordRepository.persist();
+        this.lockedBlockRepository.persist();
+        this.warRepository.persist();
+        // TODO save config if it's been altered 
+    }
+
+    public void load() {
+        this.factionRepository.load();
+        this.claimedChunkRepository.load();
+        this.playerRecordRepository.load();
+        this.lockedBlockRepository.load();
+        this.warRepository.load();
     }
 
     public FactionRepository getFactionRepository() {
@@ -52,12 +77,36 @@ public class DataService {
         return this.factionRepository.get(name);
     }
 
-    public Faction getFactionByID(UUID uuid) {
-        return this.factionRepository.getByID(uuid);
+    public Faction getFaction(UUID uuid) {
+        return this.factionRepository.get(uuid);
+    }
+
+    public Faction getPlayersFaction(OfflinePlayer player) {
+        return this.factionRepository.getForPlayer(player);
+    }
+
+    public Faction getPlayersFaction(UUID playerUUID) {
+        return this.factionRepository.getForPlayer(playerUUID);
+    }
+
+    public boolean isPlayerInFaction(OfflinePlayer player) {
+        return this.factionRepository.getForPlayer(player) != null;
+    }
+
+    public boolean isFactionPrefixTaken(String prefix) {
+        return this.factionRepository.getByPrefix(prefix) != null;
     }
 
     public Faction getRandomFaction() {
         return this.factionRepository.all().get(new Random().nextInt(this.factionRepository.all().size()));
+    }
+
+    public int getNumberOfFactions() {
+        return this.factionRepository.count();
+    }
+
+    public Collection<Faction> getFactions() {
+        return this.factionRepository.all().values();
     }
 
     public ClaimedChunkRepository getClaimedChunkRepository() {
@@ -68,12 +117,44 @@ public class DataService {
         return this.claimedChunkRepository.get(x, z, world);
     }
 
-    public LockedBlockRepository getLockedRepository() {
+    public ClaimedChunk getClaimedChunk(Block block) {
+        return this.claimedChunkRepository.get(block.getX(), block.getZ(), block.getWorld().getName());
+    }
+
+    public ClaimedChunk getClaimedChunk(Chunk chunk) {
+        return this.claimedChunkRepository.get(chunk.getX(), chunk.getZ(), chunk.getWorld().getName());
+    }
+
+    public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
+        return this.claimedChunkRepository.getAllForFaction(faction);
+    }
+
+    public boolean isChunkClaimed(double x, double z, String world) {
+        return this.getClaimedChunk(x, z, world) != null;
+    }
+
+    public boolean isChunkClaimed(Chunk chunk) {
+        return this.getClaimedChunk(chunk) != null;
+    }
+
+    public LockedBlockRepository getLockedBlockRepository() {
         return this.lockedBlockRepository;
     }
 
     public LockedBlock getLockedBlock(int x, int y, int z, String world) {
         return this.lockedBlockRepository.get(x, y, z, world);
+    }
+
+    public LockedBlock getLockedBlock(Block block) {
+        return this.lockedBlockRepository.get(block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
+    }
+
+    public boolean isBlockLocked(Block block) {
+        return this.getLockedBlock(block) != null;
+    }
+
+    public boolean isBlockLocked(int x, int y, int z, String world) {
+        return this.getLockedBlock(x, y, z, world) != null;
     }
 
     public PlayerRecordRepository getPlayerRecordRepository() {
@@ -84,8 +165,20 @@ public class DataService {
         return this.playerRecordRepository.get(playerUUID);
     }
 
-    public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
-        return this.claimedChunkRepository.getAllForFaction(faction);
+    public boolean hasPlayerRecord(OfflinePlayer player) {
+        return this.getPlayerRecord(player.getUniqueId()) != null;
+    }
+
+    public boolean hasPlayerRecord(UUID uuid) {
+        return this.getPlayerRecord(uuid) != null;
+    }
+
+    public int getNumberOfPlayers() {
+        return this.playerRecordRepository.count();
+    }
+
+    public Collection<PlayerRecord> getPlayerRecords() {
+        return this.playerRecordRepository.all();
     }
 
     public CommandRepository getCommandRepository() {
@@ -102,5 +195,9 @@ public class DataService {
 
     public ConfigOption getConfigOption(String optionName) {
         return this.configOptionRepository.get(optionName);
+    }
+
+    public WarRepository getWarRepository() {
+        return this.warRepository;
     }
 }

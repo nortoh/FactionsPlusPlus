@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
@@ -28,7 +27,6 @@ import java.util.Objects;
 @Singleton
 public class PlaceholderAPI extends PlaceholderExpansion {
     private final FactionsPlusPlus factionsPlusPlus;
-    private final PersistentData persistentData;
     private final ConfigService configService;
     private final FactionService factionService;
     private final DataService dataService;
@@ -37,14 +35,12 @@ public class PlaceholderAPI extends PlaceholderExpansion {
     @Inject
     public PlaceholderAPI(
         FactionsPlusPlus factionsPlusPlus,
-        PersistentData persistentData,
         ConfigService configService,
         FactionService factionService,
         DataService dataService,
         PlayerService playerService
     ) {
         this.factionsPlusPlus = factionsPlusPlus;
-        this.persistentData = persistentData;
         this.configService = configService;
         this.factionService = factionService;
         this.dataService = dataService;
@@ -81,8 +77,8 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         id = id.toLowerCase(); // I'm unsure if PlaceholderAPI enforces case, but let's just do it to make sure.
         if (player == null) return null; // We only want to handle Player-Placeholders here.
 
-        final boolean hasFaction = persistentData.isInFaction(player.getUniqueId());
-        final Faction faction = persistentData.getPlayersFaction(player.getUniqueId());
+        final boolean hasFaction = this.dataService.isPlayerInFaction(player);
+        final Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
 
         // Prerequisites.
         if (id.startsWith("faction_") && !hasFaction && !id.equalsIgnoreCase("faction_at_location")) {
@@ -133,7 +129,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         if (id.equalsIgnoreCase("faction_liege")) {
             // The Liege for the Faction or N/A that the Player is in.
 
-            return faction.hasLiege() ? this.dataService.getFactionByID(faction.getLiege()).getName() : "N/A";
+            return faction.hasLiege() ? this.dataService.getFaction(faction.getLiege()).getName() : "N/A";
         }
         if (id.equalsIgnoreCase("faction_leader")) {
             // The Leader of the Faction that the Player is in.
@@ -159,7 +155,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_player_power")) {
             // The player-specific power which counts toward their Faction's power.
-            return String.valueOf(persistentData.getPlayerRecord(player.getUniqueId()).getPower());
+            return String.valueOf(this.dataService.getPlayerRecord(player.getUniqueId()).getPower());
         }
         if (id.equalsIgnoreCase("faction_player_max_power")) {
             // The player-specific max_power which is their total contribute-able power toward their Faction's power.
@@ -167,7 +163,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_player_power_full")) {
             // The formatted version of the 'power' and 'max_power' placeholders, 10/10 for example.
-            final PlayerRecord playersPowerRecord = persistentData.getPlayerRecord(player.getUniqueId());
+            final PlayerRecord playersPowerRecord = this.dataService.getPlayerRecord(player.getUniqueId());
             return playersPowerRecord.getPower() + "/" + this.playerService.getMaxPower(player.getUniqueId());
         }
 
@@ -192,17 +188,17 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("player_total_logins")) {
             // The total amount of times a Player has logged in.
-            return String.valueOf(persistentData.getPlayerRecord(player.getUniqueId()).getLogins());
+            return String.valueOf(this.dataService.getPlayerRecord(player.getUniqueId()).getLogins());
         }
         if (id.equalsIgnoreCase("player_session_length")) {
             // The total time since their current login. (Days:Hours:Minutes:Seconds) or (Hours:Minutes:Seconds).
-            return persistentData.getPlayerRecord(player.getUniqueId()).getActiveSessionLength();
+            return this.dataService.getPlayerRecord(player.getUniqueId()).getActiveSessionLength();
         }
         if (id.equalsIgnoreCase("faction_at_location")) {
             // The Faction at the Player's current location. (Wilderness if nothing).
-            ClaimedChunk claim = persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk());
+            ClaimedChunk claim = this.dataService.getClaimedChunk(player.getLocation().getChunk());
             if (claim == null) return "Wilderness";
-            else return this.dataService.getFactionByID(claim.getHolder()).getName();
+            else return this.dataService.getFaction(claim.getHolder()).getName();
         }
 
         return null; // This is required by PlaceholderAPI if there is no matching Placeholder.

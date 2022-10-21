@@ -135,7 +135,7 @@ public class FactionRepository {
      * @param uuid the UUID of the faction to search for
      * @return Faction instance if found, null otherwise
      */
-    public Faction getByID(UUID uuid) {
+    public Faction get(UUID uuid) {
         return this.factionStore.get(uuid);
     }
 

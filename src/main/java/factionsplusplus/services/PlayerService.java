@@ -4,11 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.constants.FactionRank;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
-import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.repositories.PlayerRecordRepository;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -26,42 +23,10 @@ import java.util.UUID;
 @Singleton
 public class PlayerService {
     @Inject private ConfigService configService;
-    @Inject private PersistentData persistentData;
-    @Inject private FactionRepository factionRepository;
-    @Inject private PlayerRecordRepository playerRecordRepository;
-
-    /**
-     * Method to obtain a Player faction from an object.
-     * <p>
-     * This method can accept a UUID, Player, OfflinePlayer and a String (name or UUID).<br>
-     * If the type isn't found, an exception is thrown.
-     * </p>
-     *
-     * @param object to obtain the Player faction from.
-     * @return {@link Faction}
-     * @throws IllegalArgumentException when the object isn't compatible.
-     */
-    @SuppressWarnings("deprecation")
-    public Faction getPlayerFaction(Object object) {
-        if (object instanceof OfflinePlayer) {
-            return this.persistentData.getPlayersFaction(((OfflinePlayer) object).getUniqueId());
-        } else if (object instanceof UUID) {
-            return this.persistentData.getPlayersFaction((UUID) object);
-        } else if (object instanceof String) {
-            try {
-                return this.persistentData.getPlayersFaction(UUID.fromString((String) object));
-            } catch (Exception e) {
-                OfflinePlayer player = Bukkit.getOfflinePlayer((String) object);
-                if (player.hasPlayedBefore()) {
-                    return this.persistentData.getPlayersFaction(player.getUniqueId());
-                }
-            }
-        }
-        throw new IllegalArgumentException(object + " cannot be transferred into a Player");
-    }
+    @Inject private DataService dataService;
 
     public FactionRank getFactionRank(UUID playerUUID) {
-        Faction playerFaction = this.getPlayerFaction(playerUUID);
+        Faction playerFaction = this.dataService.getPlayersFaction(playerUUID);
         if (playerFaction != null) {
             if (playerFaction.getOwner().equals(playerUUID)) {
                 return FactionRank.Owner;
@@ -93,7 +58,7 @@ public class PlayerService {
     }
 
     public double increasePowerBy(UUID playerUUID, double increaseAmount) {
-        PlayerRecord playerRecord = this.playerRecordRepository.get(playerUUID);
+        PlayerRecord playerRecord = this.dataService.getPlayerRecord(playerUUID);
         if (playerRecord == null) return 0;
         double currentPowerLevel = playerRecord.getPower();
         double maxPowerLevel = this.getMaxPower(playerUUID);
@@ -109,7 +74,7 @@ public class PlayerService {
     }
 
     public double decreasePowerBy(UUID playerUUID, double decreaseAmount) {
-        PlayerRecord playerRecord = this.playerRecordRepository.get(playerUUID);
+        PlayerRecord playerRecord = this.dataService.getPlayerRecord(playerUUID);
         if (playerRecord == null) return 0;
         double currentPowerLevel = playerRecord.getPower();
         if (currentPowerLevel > 0) {
@@ -136,6 +101,11 @@ public class PlayerService {
         double powerLost = this.configService.getDouble("powerLostOnDeath");
         this.decreasePowerBy(playerUUID, powerLost);
         return powerLost;
+    }
+
+    public void resetPowerLevels() {
+        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
+        this.dataService.getPlayerRecordRepository().all().forEach(record -> record.setPower(initialPowerLevel));
     }
 
 }

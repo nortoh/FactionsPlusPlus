@@ -11,6 +11,7 @@ import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.ChatColor;
@@ -30,6 +31,7 @@ public class ChatHandler implements Listener {
     private final ConfigService configService;
     private final EphemeralData ephemeralData;
     private final MessageService messageService;
+    private final DataService dataService;
 
     private String factionChatColor;
     private String prefixColor;
@@ -37,16 +39,17 @@ public class ChatHandler implements Listener {
     private String message;
 
     @Inject
-    public ChatHandler(PersistentData persistentData, ConfigService configService, EphemeralData ephemeralData, MessageService messageService) {
+    public ChatHandler(PersistentData persistentData, ConfigService configService, EphemeralData ephemeralData, MessageService messageService, DataService dataService) {
         this.persistentData = persistentData;
         this.configService = configService;
         this.ephemeralData = ephemeralData;
         this.messageService = messageService;
+        this.dataService = dataService;
     }
 
     @EventHandler()
     public void handle(AsyncPlayerChatEvent event) {
-        Faction playersFaction = persistentData.getPlayersFaction(event.getPlayer().getUniqueId());
+        Faction playersFaction = this.dataService.getPlayersFaction(event.getPlayer().getUniqueId());
         if (playersFaction == null) {
             return;
         }

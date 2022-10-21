@@ -12,8 +12,9 @@ import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
+
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 
@@ -29,17 +30,17 @@ public class FactionsPlusPlusAPI {
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final ConfigService configService;
-    private final FactionRepository factionRepository;
+    private final DataService dataService;
 
     private final String APIVersion = "v1.0.0"; // every time the external API is altered, this should be incremented
 
     @Inject
-    public FactionsPlusPlusAPI(FactionRepository factionRepository, FactionsPlusPlus factionsPlusPlus, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
+    public FactionsPlusPlusAPI(DataService dataService, FactionsPlusPlus factionsPlusPlus, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
         this.factionsPlusPlus = factionsPlusPlus;
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.configService = configService;
-        this.factionRepository = factionRepository;
+        this.dataService = dataService;
     }
 
     public String getAPIVersion() {
@@ -51,7 +52,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public FPP_Faction getFaction(String factionName) {
-        Faction faction = this.factionRepository.get(factionName);
+        Faction faction = this.dataService.getFaction(factionName);
         if (faction == null) {
             return null;
         }
@@ -59,7 +60,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public FPP_Faction getFaction(Player player) {
-        Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
+        Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction == null) {
             return null;
         }
@@ -67,7 +68,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public FPP_Faction getFaction(UUID playerUUID) {
-        Faction faction = this.persistentData.getPlayersFaction(playerUUID);
+        Faction faction = this.dataService.getPlayersFaction(playerUUID);
         if (faction == null) {
             return null;
         }
@@ -83,15 +84,15 @@ public class FactionsPlusPlusAPI {
     }
 
     public boolean isChunkClaimed(Chunk chunk) {
-        return (persistentData.getChunkDataAccessor().getClaimedChunk(chunk) != null);
+        return (this.dataService.getClaimedChunk(chunk) != null);
     }
 
     public double getPower(Player player) {
-        return this.persistentData.getPlayerRecord(player.getUniqueId()).getPower();
+        return this.dataService.getPlayerRecord(player.getUniqueId()).getPower();
     }
 
     public double getPower(UUID playerUUID) {
-        return this.persistentData.getPlayerRecord(playerUUID).getPower();
+        return this.dataService.getPlayerRecord(playerUUID).getPower();
     }
 
     public void forcePlayerToLeaveFactionChat(UUID uuid) {
@@ -99,14 +100,14 @@ public class FactionsPlusPlusAPI {
     }
 
     public void increasePower(Player player, int amount) {
-        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
         double originalPower = record.getPower();
         double newPower = originalPower + amount;
         record.setPower(newPower);
     }
 
     public void decreasePower(Player player, int amount) {
-        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
         double originalPower = record.getPower();
         double newPower = originalPower - amount;
         if (newPower >= 0) {

@@ -7,10 +7,10 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.PlayerService;
 import org.bukkit.command.CommandSender;
 
@@ -27,13 +27,13 @@ import java.util.UUID;
 @Singleton
 public class PowerCommand extends Command {
 
-    private final PersistentData persistentData;
     private final PlayerService playerService;
+    private final DataService dataService;
 
     @Inject
     public PowerCommand(
-        PersistentData persistentData,
-        PlayerService playerService
+        PlayerService playerService,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -49,8 +49,8 @@ public class PowerCommand extends Command {
                         .isOptional()
                 )
         );
-        this.persistentData = persistentData;
         this.playerService = playerService;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -61,7 +61,7 @@ public class PowerCommand extends Command {
                 context.replyWith("OnlyPlayersCanUseCommand");
                 return;
             }
-            record = this.persistentData.getPlayerRecord(context.getPlayer().getUniqueId());
+            record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
             maxPower = this.playerService.getMaxPower(context.getPlayer().getUniqueId());
             context.replyWith(
                 this.constructMessage("AlertCurrentPowerLevel")
@@ -71,7 +71,7 @@ public class PowerCommand extends Command {
             return;
         }
         final UUID target = context.getOfflinePlayerArgument("player").getUniqueId();
-        record = this.persistentData.getPlayerRecord(target);
+        record = this.dataService.getPlayerRecord(target);
         maxPower = this.playerService.getMaxPower(target);
         context.replyWith(
             this.constructMessage("CurrentPowerLevel")

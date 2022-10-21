@@ -7,11 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionRenameEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.utils.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -24,15 +24,15 @@ import factionsplusplus.builders.ArgumentBuilder;
  */
 @Singleton
 public class RenameCommand extends Command {
-    private final PersistentData persistentData;
     private final ConfigService configService;
     private final Logger logger;
+    private final DataService dataService;
 
     @Inject
     public RenameCommand(
-        PersistentData persistentData,
         ConfigService configService,
-        Logger logger
+        Logger logger,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -53,9 +53,9 @@ public class RenameCommand extends Command {
                         
                 )
         );
-        this.persistentData = persistentData;
         this.configService = configService;
         this.logger = logger;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -69,7 +69,7 @@ public class RenameCommand extends Command {
             return;
         }
         final String oldName = context.getExecutorsFaction().getName();
-        if (this.persistentData.getFaction(newName) != null) {
+        if (this.dataService.getFaction(newName) != null) {
             context.replyWith(
                 this.constructMessage("FactionAlreadyExists")
                     .with("name", newName)
@@ -91,6 +91,6 @@ public class RenameCommand extends Command {
         if (context.getExecutorsFaction().getPrefix().equalsIgnoreCase(oldName)) context.getExecutorsFaction().setPrefix(newName);
 
         // Save again to overwrite current data
-        this.persistentData.getLocalStorageService().save();
+        this.dataService.save();
     }
 }

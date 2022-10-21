@@ -11,6 +11,7 @@ import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.ChatColor;
@@ -25,11 +26,13 @@ public class ListCommand extends Command {
 
     private final PersistentData persistentData;
     private final FactionService factionService;
+    private final DataService dataService;
 
     @Inject
     public ListCommand(
         PersistentData persistentData,
-        FactionService factionService
+        FactionService factionService,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -40,10 +43,11 @@ public class ListCommand extends Command {
         );
         this.persistentData = persistentData;
         this.factionService = factionService;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
-        if (this.persistentData.getNumFactions() == 0) {
+        if (this.dataService.getNumberOfFactions() == 0) {
             context.replyWith("CurrentlyNoFactions");
             return;
         }
@@ -55,7 +59,7 @@ public class ListCommand extends Command {
             final Faction temp = sortableFaction.getFaction();
             context.reply(ChatColor.AQUA + String.format("%-25s %10s %10s %10s", temp.getName(), "P: " +
                     this.factionService.getCumulativePowerLevel(temp), "M: " + temp.getPopulation(), "L: " +
-                    this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(temp.getID())));
+                    this.dataService.getClaimedChunksForFaction(temp).size()));
         }
     }
 }

@@ -41,6 +41,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     @Inject private ActionBarService actionBarService;
     @Inject private ConfigService configService;
     @Inject private Logger logger;
+    @Inject private DataService dataService;
     @Inject private PersistentData persistentData;
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;
@@ -78,7 +79,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
      */
     @Override
     public void onDisable() {
-        this.persistentData.getLocalStorageService().save();
+        this.dataService.save();
         this.localeService.saveLanguage();
     }
 
@@ -172,7 +173,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
      * Loads stored data into Persistent Data.
      */
     private void load() {
-        this.persistentData.getLocalStorageService().load();
+        this.dataService.load();
     }
 
     /**

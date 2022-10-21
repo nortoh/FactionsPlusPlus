@@ -17,8 +17,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.models.War;
-import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.repositories.WarRepository;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import org.bukkit.Bukkit;
@@ -40,9 +39,8 @@ public class ForceCommand extends Command {
     private final Logger logger;
     private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
-    private final FactionRepository factionRepository;
     private final FactionService factionService;
-    private final WarRepository warRepository;
+    private final DataService dataService;
 
     @Inject
     public ForceCommand(
@@ -50,9 +48,8 @@ public class ForceCommand extends Command {
         EphemeralData ephemeralData,
         FactionsPlusPlus factionsPlusPlus,
         Logger logger,
-        FactionRepository factionRepository,
         FactionService factionService,
-        WarRepository warRepository
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -366,20 +363,19 @@ public class ForceCommand extends Command {
         this.ephemeralData = ephemeralData;
         this.factionsPlusPlus = factionsPlusPlus;
         this.logger = logger;
-        this.factionRepository = factionRepository;
         this.factionService = factionService;
-        this.warRepository = warRepository;
+        this.dataService = dataService;
     }
 
     // "mf.force.save", "mf.force.*", "mf.admin"
     public void saveCommand(CommandContext context) {
-        this.persistentData.getLocalStorageService().save();
+        this.dataService.save();
         context.replyWith("AlertForcedSave");
     }
 
     // "mf.force.load", "mf.force.*", "mf.admin"
     public void loadCommand(CommandContext context) {
-        this.persistentData.getLocalStorageService().load();
+        this.dataService.load();
         this.factionsPlusPlus.reloadConfig();
         context.replyWith("AlertForcedLoad");
     }
@@ -394,7 +390,7 @@ public class ForceCommand extends Command {
             if (former.isEnemy(latter.getID())) former.removeEnemy(latter.getID());
             if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
 
-            War war = this.warRepository.getActiveWarsBetween(former.getID(), latter.getID());
+            War war = this.dataService.getWarRepository().getActiveWarsBetween(former.getID(), latter.getID());
             war.end();
 
             // announce peace to all players on server.
@@ -409,7 +405,7 @@ public class ForceCommand extends Command {
     // "mf.force.demote", "mf.force.*", "mf.admin"
     public void demoteCommand(CommandContext context) {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
-        final Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
+        final Faction faction = this.dataService.getPlayersFaction(player);
         if (faction == null) {
             context.replyWith("PlayerIsNotInAFaction");
             return;
@@ -429,7 +425,7 @@ public class ForceCommand extends Command {
     public void joinCommand(CommandContext context) {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Faction faction = context.getFactionArgument("faction");
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
+        if (this.dataService.isPlayerInFaction(player)) {
             context.replyWith("PlayerAlreadyInFaction");
             return;
         }
@@ -455,7 +451,7 @@ public class ForceCommand extends Command {
     // "mf.force.kick", "mf.force.*", "mf.admin"
     public void kickCommand(CommandContext context) {
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
-        final Faction faction = this.persistentData.getPlayersFaction(target.getUniqueId());
+        final Faction faction = this.dataService.getPlayersFaction(target);
         if (faction == null) {
             context.replyWith("PlayerIsNotInAFaction");
             return;
@@ -495,7 +491,7 @@ public class ForceCommand extends Command {
     public void powerCommand(CommandContext context) {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Integer desiredPower = context.getIntegerArgument("desired power");
-        final PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        final PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
         record.setPower(desiredPower); // Set power :)
         context.replyWith(
             this.constructMessage("PowerLevelHasBeenSetTo")
@@ -563,7 +559,7 @@ public class ForceCommand extends Command {
         final String oldName = faction.getName();
         final String newName = context.getStringArgument("name");
         // rename faction
-        if (this.persistentData.getFaction(newName) != null) {
+        if (this.dataService.getFaction(newName) != null) {
             context.replyWith("FactionAlreadyExists");
             return;
         }
@@ -582,7 +578,7 @@ public class ForceCommand extends Command {
         if (faction.getPrefix().equalsIgnoreCase(oldName)) faction.setPrefix(newName);
 
         // Save again to overwrite current data
-        this.persistentData.getLocalStorageService().save();
+        this.dataService.save();
     }
 
     // "mf.force.bonuspower", "mf.force.*", "mf.admin"
@@ -624,7 +620,7 @@ public class ForceCommand extends Command {
     public void createCommand(CommandContext context) {
         String newFactionName = context.getStringArgument("name");
 
-        if (this.factionRepository.get(newFactionName) != null) {
+        if (this.dataService.getFactionRepository().get(newFactionName) != null) {
             context.replyWith("FactionAlreadyExists");
             return;
         }
@@ -633,7 +629,7 @@ public class ForceCommand extends Command {
         FactionCreateEvent createEvent = new FactionCreateEvent(faction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {
-            this.factionRepository.create(faction);
+            this.dataService.getFactionRepository().create(faction);
             context.replyWith("FactionCreated");
         }
     }

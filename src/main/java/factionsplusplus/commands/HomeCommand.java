@@ -7,11 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.utils.extended.Scheduler;
 import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.Chunk;
@@ -22,12 +22,12 @@ import org.bukkit.Chunk;
 @Singleton
 public class HomeCommand extends Command {
     private final Scheduler scheduler;
-    private final PersistentData persistentData;
+    private final DataService dataService;
 
     @Inject
     public HomeCommand(
-        PersistentData persistentData,
-        Scheduler scheduler
+        Scheduler scheduler,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -39,7 +39,7 @@ public class HomeCommand extends Command {
                 .requiresPermissions("mf.home")
         );
         this.scheduler = scheduler;
-        this.persistentData = persistentData;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -49,11 +49,11 @@ public class HomeCommand extends Command {
             return;
         }
         final Chunk home_chunk;
-        if (!this.persistentData.getChunkDataAccessor().isClaimed(home_chunk = faction.getFactionHome().getChunk())) {
+        if (!this.dataService.isChunkClaimed(home_chunk = faction.getFactionHome().getChunk())) {
             context.replyWith("HomeIsInUnclaimedChunk");
             return;
         }
-        ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(home_chunk);
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(home_chunk);
         if (chunk == null || chunk.getHolder() == null) {
             context.replyWith("HomeIsInUnclaimedChunk");
             return;

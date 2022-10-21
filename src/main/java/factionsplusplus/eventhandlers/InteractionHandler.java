@@ -56,9 +56,11 @@ public class InteractionHandler implements Listener {
     private final LockService lockService;
     private final EphemeralData ephemeralData;
     private final GateService gateService;
+    private final DataService dataService;
 
     @Inject
-    public InteractionHandler(PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, FactionsPlusPlus factionsPlusPlus, LockService lockService, EphemeralData ephemeralData, GateService gateService, MessageService messageService) {
+    public InteractionHandler(DataService dataService, PersistentData persistentData, InteractionAccessChecker interactionAccessChecker, LocaleService localeService, BlockChecker blockChecker, FactionsPlusPlus factionsPlusPlus, LockService lockService, EphemeralData ephemeralData, GateService gateService, MessageService messageService) {
+        this.dataService = dataService;
         this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;
         this.localeService = localeService;
@@ -74,7 +76,7 @@ public class InteractionHandler implements Listener {
     public void handle(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(block.getLocation().getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(block.getLocation().getChunk());
 
         if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
@@ -86,15 +88,15 @@ public class InteractionHandler implements Listener {
             return;
         }
 
-        if (persistentData.isBlockLocked(block)) {
-            boolean isOwner = persistentData.getLockedBlock(block).getOwner().equals(player.getUniqueId());
+        if (this.dataService.isBlockLocked(block)) {
+            boolean isOwner = this.dataService.getLockedBlock(block).getOwner().equals(player.getUniqueId());
             if (!isOwner) {
                 event.setCancelled(true);
                 messageService.sendLocalizedMessage(player, "AlertNonOwnership");
                 return;
             }
 
-            persistentData.removeLockedBlock(block);
+            this.dataService.getLockedBlockRepository().delete(block);
 
             if (blockChecker.isDoor(block)) {
                 removeLocksAboveAndBelowTheOriginalBlockAsWell(block);
@@ -107,10 +109,10 @@ public class InteractionHandler implements Listener {
         Block relativeUp = block.getRelative(BlockFace.UP);
         Block relativeDown = block.getRelative(BlockFace.DOWN);
         if (blockChecker.isDoor(relativeUp)) {
-            persistentData.removeLockedBlock(relativeUp);
+            this.dataService.getLockedBlockRepository().delete(relativeUp);
         }
         if (blockChecker.isDoor(relativeDown)) {
-            persistentData.removeLockedBlock(relativeDown);
+            this.dataService.getLockedBlockRepository().delete(relativeDown);
         }
     }
 
@@ -118,7 +120,7 @@ public class InteractionHandler implements Listener {
     public void handle(BlockPlaceEvent event) {
         Player player = event.getPlayer();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(event.getBlock().getLocation().getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(event.getBlock().getLocation().getChunk());
 
         if (interactionAccessChecker.isPlayerAttemptingToPlaceLadderInEnemyTerritoryAndIsThisAllowed(event.getBlockPlaced(), player, claimedChunk)) {
             return;
@@ -153,15 +155,15 @@ public class InteractionHandler implements Listener {
                     Block leftChest = ((Chest) Objects.requireNonNull(doubleChest.getLeftSide())).getBlock();
                     Block rightChest = ((Chest) Objects.requireNonNull(doubleChest.getRightSide())).getBlock();
 
-                    if (persistentData.isBlockLocked(leftChest)) {
+                    if (this.dataService.isBlockLocked(leftChest)) {
                         // lock right chest
-                        LockedBlock right = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getName());
-                        persistentData.addLockedBlock(right);
+                        LockedBlock right = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getName());
+                        this.dataService.getLockedBlockRepository().create(right);
                     } else {
-                        if (persistentData.isBlockLocked(rightChest)) {
+                        if (this.dataService.isBlockLocked(rightChest)) {
                             // lock left chest
-                            LockedBlock left = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
-                            persistentData.addLockedBlock(left);
+                            LockedBlock left = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
+                            this.dataService.getLockedBlockRepository().create(left);
                         }
                     }
 
@@ -200,7 +202,7 @@ public class InteractionHandler implements Listener {
             lockService.handleUnlockingBlock(event, player, clickedBlock);
         }
 
-        LockedBlock lockedBlock = persistentData.getLockedBlock(clickedBlock);
+        LockedBlock lockedBlock = this.dataService.getLockedBlock(clickedBlock);
         if (lockedBlock != null) {
             boolean playerHasAccess = lockedBlock.hasAccess(player.getUniqueId());
             boolean isPlayerBypassing = ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
@@ -252,7 +254,7 @@ public class InteractionHandler implements Listener {
         // pgarner Sep 2, 2020: Moved this to after test to see if the block is locked because it could be a block they have been granted
         // access to (or in future, a 'public' locked block), so if they're not in the faction whose territory the block exists in we want that
         // check to be handled before the interaction is rejected for not being a faction member.
-        ClaimedChunk chunk = persistentData.getChunkDataAccessor().getClaimedChunk(event.getClickedBlock().getLocation().getChunk());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(event.getClickedBlock().getLocation().getChunk());
         if (chunk != null) {
             persistentData.getChunkDataAccessor().handleClaimedChunkInteraction(event, chunk);
         }
@@ -314,7 +316,7 @@ public class InteractionHandler implements Listener {
 
         if (location != null) {
             Chunk chunk = location.getChunk();
-            ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(chunk);
+            ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(chunk);
 
             if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
                 event.setCancelled(true);
@@ -333,7 +335,7 @@ public class InteractionHandler implements Listener {
         Entity entity = event.getEntity();
 
         // get chunk that entity is in
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(entity.getLocation().getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(entity.getLocation().getChunk());
 
         if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
@@ -350,7 +352,7 @@ public class InteractionHandler implements Listener {
 
         Block clickedBlock = event.getBlockClicked();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
 
         if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
@@ -367,7 +369,7 @@ public class InteractionHandler implements Listener {
 
         Block clickedBlock = event.getBlockClicked();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
 
         if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
@@ -384,7 +386,7 @@ public class InteractionHandler implements Listener {
 
         Block clickedBlock = event.getBlock();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
 
         if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
@@ -405,7 +407,7 @@ public class InteractionHandler implements Listener {
             // get chunk that armor stand is in
             Location location = itemFrame.getLocation();
             Chunk chunk = location.getChunk();
-            ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(chunk);
+            ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(chunk);
 
             if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
                 event.setCancelled(true);

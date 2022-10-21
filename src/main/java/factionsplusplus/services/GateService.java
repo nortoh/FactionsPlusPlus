@@ -43,6 +43,7 @@ public class GateService {
     private final MessageService messageService;
     private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
+    private final DataService dataService;
 
     @Inject
     public GateService(
@@ -50,23 +51,25 @@ public class GateService {
         EphemeralData ephemeralData,
         MessageService messageService,
         FactionsPlusPlus factionsPlusPlus,
-        ConfigService configService
+        ConfigService configService,
+        DataService dataService
     ) {
         this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.messageService = messageService;
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
+        this.dataService = dataService;
     }
 
     public void handlePotentialGateInteraction(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        if (!persistentData.get().getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
+        if (!this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
             return;
         }
 
-        ClaimedChunk claim = persistentData.get().getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
-        Faction faction = persistentData.get().getFactionByID(claim.getHolder());
-        Faction playersFaction = persistentData.get().getPlayersFaction(player.getUniqueId());
+        ClaimedChunk claim = this.dataService.getClaimedChunk(clickedBlock.getChunk());
+        Faction faction = this.dataService.getFaction(claim.getHolder());
+        Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
 
         if (!faction.getName().equals(playersFaction.getName())) {
             return;
@@ -94,9 +97,9 @@ public class GateService {
     }
 
     public void handlePotentialGateInteraction(Block block, BlockRedstoneEvent event) {
-        if (persistentData.get().getChunkDataAccessor().isClaimed(block.getChunk())) {
-            ClaimedChunk claim = persistentData.get().getChunkDataAccessor().getClaimedChunk(block.getChunk());
-            Faction faction = persistentData.get().getFactionByID(claim.getHolder());
+        if (this.dataService.isChunkClaimed(block.getChunk())) {
+            ClaimedChunk claim = this.dataService.getClaimedChunk(block.getChunk());
+            Faction faction = this.dataService.getFaction(claim.getHolder());
 
             if (faction.hasGateTrigger(block)) {
                 for (Gate g : faction.getGatesForTrigger(block)) {
@@ -113,18 +116,18 @@ public class GateService {
     }
 
     public void handleCreatingGate(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        if (!persistentData.get().getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
+        if (!this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
             this.messageService.sendLocalizedMessage(player, "CanOnlyCreateGatesInClaimedTerritory");
             return;
         } else {
-            ClaimedChunk claimedChunk = persistentData.get().getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+            ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
             if (claimedChunk != null) {
-                if (!persistentData.get().getFactionByID(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
+                if (!this.dataService.getFaction(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
                     this.messageService.sendLocalizedMessage(player, "AlertMustBeMemberToCreateGate");
                     return;
                 }
-                if (!persistentData.get().getFactionByID(claimedChunk.getHolder()).isOwner(player.getUniqueId())
-                            && !persistentData.get().getFactionByID(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
+                if (!this.dataService.getFaction(claimedChunk.getHolder()).isOwner(player.getUniqueId())
+                            && !this.dataService.getFaction(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
                     this.messageService.sendLocalizedMessage(player, "AlertMustBeOwnerOrOfficerToCreateGate");
                     return;
                 }
@@ -196,13 +199,13 @@ public class GateService {
                     && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getTrigger() == null
                     && !ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord2().equals(clickedBlock)) {
                 if (clickedBlock.getBlockData() instanceof Powerable) {
-                    if (persistentData.get().getChunkDataAccessor().isClaimed(clickedBlock.getChunk())) {
+                    if (this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
                         Gate g = ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId());
                         ErrorCodeAddCoord e = this.addCoord(g, clickedBlock);
                         switch(e) {
                             case None:
-                                ClaimedChunk claim = persistentData.get().getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
-                                this.persistentData.get().getFactionByID(claim.getHolder()).addGate(g);
+                                ClaimedChunk claim = this.dataService.getClaimedChunk(clickedBlock.getChunk());
+                                this.dataService.getFaction(claim.getHolder()).addGate(g);
                                 messagesToSend.add("Point4TriggeredSuccessfully");
                                 messagesToSend.add("GateCreated");
                                 break;

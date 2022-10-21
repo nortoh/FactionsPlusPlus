@@ -118,7 +118,7 @@ public class FactionService {
         int vassalContribution = 0;
         double percentage = this.configService.getDouble("vassalContributionPercentageMultiplier");
         for (UUID factionUUID : faction.getVassals()) {
-            Faction vassalFaction = this.factionRepository.getByID(factionUUID);
+            Faction vassalFaction = this.factionRepository.get(factionUUID);
             if (vassalFaction != null) {
                 vassalContribution += this.getCumulativePowerLevel(vassalFaction) * percentage;
             }
@@ -157,9 +157,9 @@ public class FactionService {
     public UUID getTopLiege(Faction faction) 
     {
         UUID liegeUUID = faction.getLiege();
-        Faction topLiege = this.factionRepository.getByID(liegeUUID);
+        Faction topLiege = this.factionRepository.get(liegeUUID);
         while (topLiege != null) {
-            topLiege = this.factionRepository.getByID(liegeUUID);
+            topLiege = this.factionRepository.get(liegeUUID);
             if (topLiege != null) {
                 liegeUUID = topLiege.getID();
             }

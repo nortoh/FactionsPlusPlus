@@ -112,7 +112,7 @@ public class MakePeaceCommand extends Command {
             for (UUID vassalID : target.getVassals()) {
                 faction.removeEnemy(vassalID);
 
-                Faction vassal = this.factionRepository.getByID(vassalID);
+                Faction vassal = this.factionRepository.get(vassalID);
                 vassal.removeEnemy(faction.getID());
             }
         }

@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.utils.BlockUtils;
@@ -32,9 +31,9 @@ import java.util.UUID;
  */
 @Singleton
 public class LockService {
-    private final PersistentData persistentData;
     private final MessageService messageService;
     private final EphemeralData ephemeralData;
+    private final DataService dataService;
     private final static GenericBlockType[] LOCKABLE_BLOCKS = {
       GenericBlockType.Door,
       GenericBlockType.Chest,
@@ -46,26 +45,26 @@ public class LockService {
     };
 
     @Inject
-    public LockService(PersistentData persistentData, MessageService messageService, EphemeralData ephemeralData) {
-        this.persistentData = persistentData;
+    public LockService(MessageService messageService, EphemeralData ephemeralData, DataService dataService) {
         this.messageService = messageService;
         this.ephemeralData = ephemeralData;
+        this.dataService = dataService;
     }
 
     public void handleLockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
         // if chunk is claimed
-        ClaimedChunk chunk = persistentData.getChunkDataAccessor().getClaimedChunk(Objects.requireNonNull(event.getClickedBlock()).getLocation().getChunk());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(Objects.requireNonNull(event.getClickedBlock()).getLocation().getChunk());
         if (chunk != null) {
 
             // if claimed by other faction
-            if (!chunk.getHolder().equals(persistentData.getPlayersFaction(player.getUniqueId()).getID())) {
+            if (!chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getID())) {
                 this.messageService.sendLocalizedMessage(player, "CanOnlyLockInFactionTerritory");
                 event.setCancelled(true);
                 return;
             }
 
             // if already locked
-            if (persistentData.isBlockLocked(clickedBlock)) {
+            if (this.dataService.isBlockLocked(clickedBlock)) {
                 this.messageService.sendLocalizedMessage(player, "BlockAlreadyLocked");
                 event.setCancelled(true);
                 return;
@@ -87,10 +86,10 @@ public class LockService {
     }
 
     public void lockBlock(Player player, Block block) {
-        this.persistentData.addLockedBlock(
+        this.dataService.getLockedBlockRepository().create(
             new LockedBlock(
                 player.getUniqueId(),
-                this.persistentData.getPlayersFaction(player.getUniqueId()).getID(),
+                this.dataService.getPlayersFaction(player.getUniqueId()).getID(),
                 block.getX(),
                 block.getY(),
                 block.getZ(),
@@ -101,12 +100,12 @@ public class LockService {
 
     public void handleUnlockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
         // if locked
-        if (this.persistentData.isBlockLocked(clickedBlock)) {
+        if (this.dataService.isBlockLocked(clickedBlock)) {
             if (
-                this.persistentData.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) || 
+                this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) || 
                 this.ephemeralData.getForcefullyUnlockingPlayers().contains(player.getUniqueId())
             ) {
-                for (Block blockToUnlock : this.getAllRelatedBlocks(clickedBlock)) this.persistentData.removeLockedBlock(blockToUnlock);
+                for (Block blockToUnlock : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlockRepository().delete(blockToUnlock);
                 this.messageService.sendLocalizedMessage(player, "Unlocked");
                 this.ephemeralData.getUnlockingPlayers().remove(player.getUniqueId());
 
@@ -123,13 +122,13 @@ public class LockService {
 
     public void handleGrantingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
         // if not owner
-        if (! persistentData.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
+        if (! this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
             this.messageService.sendLocalizedMessage(player, "NotTheOwnerOfThisBlock");
             return;
         }
 
         final UUID targetUUID = this.ephemeralData.getPlayersGrantingAccess().get(player.getUniqueId());
-        for (Block block : this.getAllRelatedBlocks(clickedBlock)) this.persistentData.getLockedBlock(block).addToAccessList(targetUUID);
+        for (Block block : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlock(block).addToAccessList(targetUUID);
         final OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
 
         this.messageService.sendLocalizedMessage(
@@ -159,13 +158,13 @@ public class LockService {
 
     public void handleRevokingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
         // if not owner
-        if (! this.persistentData.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
+        if (! this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
             this.messageService.sendLocalizedMessage(player, "NotTheOwnerOfThisBlock");
             return;
         }
 
         UUID targetUUID = this.ephemeralData.getPlayersRevokingAccess().get(player.getUniqueId());
-        for (Block block : this.getAllRelatedBlocks(clickedBlock)) this.persistentData.getLockedBlock(block).removeFromAccessList(targetUUID);
+        for (Block block : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlock(block).removeFromAccessList(targetUUID);
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
 
         this.messageService.sendLocalizedMessage(
