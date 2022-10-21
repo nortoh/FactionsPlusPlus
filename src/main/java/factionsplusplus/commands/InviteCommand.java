@@ -13,7 +13,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.MessageService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -22,6 +21,8 @@ import org.bukkit.entity.Player;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import factionsplusplus.builders.MessageBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -55,6 +56,7 @@ public class InviteCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the player to invite")
                         .expectsAnyPlayer()
+                        .addFilters(ArgumentFilterType.NotInAnyFaction)
                         .isRequired()
                 )
         );
@@ -102,16 +104,5 @@ public class InviteCommand extends Command {
                 );
             }
         }, seconds);
-    }
-
-    /*
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.allOnlinePlayersMatching(args[0]);
     }
 }

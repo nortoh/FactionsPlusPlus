@@ -31,8 +31,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.*;
 
-// TODO: re-implement autocomplete 
-
 /**
  * @author Callum Johnson
  */

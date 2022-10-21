@@ -7,13 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.services.ConfigService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
 
@@ -23,20 +21,18 @@ import factionsplusplus.builders.ArgumentBuilder;
 import java.util.List;
 import java.util.HashMap;
 
+// TODO: implement tab complete for basic values (i.e. true/false for boolean)
+
 /**
  * @author Callum Johnson
  */
 @Singleton
 public class FlagsCommand extends Command {
 
-    private final PersistentData persistentData;
     private final ConfigService configService;
 
     @Inject
-    public FlagsCommand(
-        PersistentData persistentData,
-        ConfigService configService
-    ) {
+    public FlagsCommand(ConfigService configService) {
         super(
             new CommandBuilder()
                 .withName("flags")
@@ -76,7 +72,6 @@ public class FlagsCommand extends Command {
                         )
                 )
         );
-        this.persistentData = persistentData;
         this.configService = configService;
     }
     
@@ -88,7 +83,6 @@ public class FlagsCommand extends Command {
     }
 
     public void showCommand(CommandContext context) {
-        // TODO: move the logic for this into this class
         HashMap<String, FactionFlag> flagList = (HashMap<String, FactionFlag>)context.getExecutorsFaction().getFlags().clone();
         if (!this.configService.getBoolean("allowNeutrality")) flagList.remove("neutral");
         if (!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) flagList.remove("prefixColor");
@@ -98,26 +92,5 @@ public class FlagsCommand extends Command {
             .map(flagKey -> String.format("%s: %s", flagKey, flagList.get(flagKey).toString()))
             .collect(Collectors.joining(", "));
         context.reply(ChatColor.AQUA + "" + flagOutput);
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (args.length == 1) {
-            return TabCompleteTools.completeMultipleOptions(args[0], "set", "show");
-        } else if (args.length == 2) {
-            if (args[0] == "set") {
-                if (this.persistentData.isInFaction(player.getUniqueId())) {
-                    Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
-                    return TabCompleteTools.filterStartingWith(args[1], faction.getFlagNames().stream());
-                }
-            }
-        }
-        return null;
     }
 }

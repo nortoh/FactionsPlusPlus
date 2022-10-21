@@ -8,18 +8,17 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionKickEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.ArrayList;
@@ -32,14 +31,12 @@ import java.util.UUID;
  */
 @Singleton
 public class KickCommand extends Command {
-    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final Logger logger;
 
     @Inject
     public KickCommand(
         EphemeralData ephemeralData,
-        PersistentData persistentData,
         Logger logger
     ) {
         super(
@@ -56,11 +53,11 @@ public class KickCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the player to kick from your faction")
                         .expectsFactionMember()
+                        .addFilters(ArgumentFilterType.ExcludeSelf)
                         .isRequired()
                 )
         );
         this.ephemeralData = ephemeralData;
-        this.persistentData = persistentData;
         this.logger = logger;
     }
 
@@ -99,27 +96,5 @@ public class KickCommand extends Command {
                     .with("name", player.getName())
             );
         }
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        final List<String> membersInFaction = new ArrayList<>();
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            for (UUID uuid : playerFaction.getMemberList()) {
-                Player member = Bukkit.getPlayer(uuid);
-                if (member != null) {
-                    membersInFaction.add(member.getName());
-                }
-            }
-            return TabCompleteTools.filterStartingWith(args[0], membersInFaction);
-        }
-        return null;
     }
 }

@@ -22,8 +22,10 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import factionsplusplus.models.ClaimedChunk;
+import factionsplusplus.models.Faction;
 
 @Singleton
 public class ClaimedChunkRepository {
@@ -73,6 +75,13 @@ public class ClaimedChunkRepository {
             }
         }
         return null;
+    }
+
+    // Retrieve a list of all claimed chunks for a faction
+    public List<ClaimedChunk> getAllForFaction(Faction faction) {
+        return this.claimedChunksStore.stream()
+            .filter(chunk -> chunk.getHolder().equals(faction.getID()))
+            .collect(Collectors.toList());
     }
 
     // Retrieve all claimed chunks

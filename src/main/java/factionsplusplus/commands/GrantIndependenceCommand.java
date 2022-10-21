@@ -7,12 +7,10 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -29,14 +27,10 @@ import java.util.UUID;
 @Singleton
 public class GrantIndependenceCommand extends Command {
 
-    private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
-    public GrantIndependenceCommand(
-        PersistentData persistentData,
-        FactionRepository factionRepository
-    ) {
+    public GrantIndependenceCommand(FactionRepository factionRepository) {
         super(
             new CommandBuilder()
                 .withName("grantindependence")
@@ -55,7 +49,6 @@ public class GrantIndependenceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
 
@@ -75,22 +68,5 @@ public class GrantIndependenceCommand extends Command {
             this.constructMessage("AlertNoLongerVassalFaction")
                 .with("name", target.getName())
         );
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> vassalNames = new ArrayList<>();
-            for (UUID factionUUID : playerFaction.getVassals()) vassalNames.add(this.factionRepository.getByID(factionUUID).getName());
-            return TabCompleteTools.filterStartingWith(args[0], vassalNames);
-        }
-        return null;
     }
 }

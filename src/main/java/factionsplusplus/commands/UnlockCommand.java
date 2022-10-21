@@ -10,7 +10,6 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -60,16 +59,5 @@ public class UnlockCommand extends Command {
         this.ephemeralData.getUnlockingPlayers().remove(context.getPlayer().getUniqueId());
         this.ephemeralData.getForcefullyUnlockingPlayers().remove(context.getPlayer().getUniqueId()); // just in case the player tries to cancel a forceful unlock without using the force command
         context.replyWith("AlertUnlockingCancelled");
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.completeSingleOption(args[0], "cancel");
     }
 }

@@ -7,13 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionJoinEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -30,13 +28,9 @@ import java.util.Objects;
 @Singleton
 public class JoinCommand extends Command {
     private final Logger logger;
-    private final PersistentData persistentData;
 
     @Inject
-    public JoinCommand(
-        PersistentData persistentData,
-        Logger logger
-    ) {
+    public JoinCommand(Logger logger) {
         super(
             new CommandBuilder()
                 .withName("join")
@@ -54,7 +48,6 @@ public class JoinCommand extends Command {
                         .isRequired()
                 )
         );
-        this.persistentData = persistentData;
         this.logger = logger;
     }
 
@@ -79,16 +72,5 @@ public class JoinCommand extends Command {
         target.addMember(context.getPlayer().getUniqueId());
         target.uninvite(context.getPlayer().getUniqueId());
         context.replyWith("AlertJoinedFaction");
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

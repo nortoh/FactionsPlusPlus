@@ -13,7 +13,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -184,19 +183,5 @@ public class GateCommand extends Command {
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(gateName));
         context.replyWith("CreatingGateClickWithHoe");
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (args.length == 1) {
-            return TabCompleteTools.completeMultipleOptions(args[0], "cancel", "create", "list", "remove", "name");
-        }
-        return null;
     }
 }

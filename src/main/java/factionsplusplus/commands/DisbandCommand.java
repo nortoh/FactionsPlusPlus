@@ -8,16 +8,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionDisbandEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.TabCompleteTools;
-import factionsplusplus.builders.*;
+import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -33,18 +31,14 @@ import java.util.Objects;
 @Singleton
 public class DisbandCommand extends Command {
 
-    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final Logger logger;
-    private final FactionRepository factionRepository;
     private final FactionService factionService;
 
     @Inject
     public DisbandCommand(
         Logger logger,
-        PersistentData persistentData,
         EphemeralData ephemeralData,
-        FactionRepository factionRepository,
         FactionService factionService
     ) {
         super(
@@ -63,9 +57,7 @@ public class DisbandCommand extends Command {
                 )
         );
         this.logger = logger;
-        this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
-        this.factionRepository = factionRepository;
         this.factionService = factionService;
     }
 
@@ -119,16 +111,5 @@ public class DisbandCommand extends Command {
             return;
         }
         this.factionService.removeFaction(faction);
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

@@ -1,28 +1,41 @@
 package factionsplusplus.models;
 
+import java.util.Set;
+
 import factionsplusplus.builders.ArgumentBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.ArgumentType;
 
 public class CommandArgument {
     private String description;
-    private Boolean required;
+    private boolean required;
     private ArgumentType type;
-    private Boolean shouldConsumeRestOfArguments;
-    private Boolean requiresDoubleQuotes;
+    private boolean shouldConsumeRestOfArguments;
+    private boolean requiresDoubleQuotes;
     private String[] permissionsIfNull = new String[]{};
     private String[] permissionsIfNotNull = new String[]{};
     private Object defaultValue;
+    private String tabCompletionHandler;
+    private Set<ArgumentFilterType> filters;
 
     public String getDescription() {
         return this.description;
     }
 
-    public Boolean isRequired() {
+    public boolean isRequired() {
         return this.required;
     }
 
-    public Boolean expectsDoubleQuotes() {
+    public boolean expectsDoubleQuotes() {
         return this.requiresDoubleQuotes;
+    }
+
+    public String getTabCompletionHandler() {
+        return this.tabCompletionHandler;
+    }
+
+    public Set<ArgumentFilterType> getFilters() {
+        return this.filters;
     }
 
     public ArgumentType getType() {
@@ -41,7 +54,7 @@ public class CommandArgument {
         return this.permissionsIfNotNull;
     }
 
-    public Boolean shouldConsumeAllArguments() {
+    public boolean shouldConsumeAllArguments() {
         return this.shouldConsumeRestOfArguments;
     }
 
@@ -50,7 +63,7 @@ public class CommandArgument {
         return this;
     }
 
-    public CommandArgument setRequired(Boolean value) {
+    public CommandArgument setRequired(boolean value) {
         this.required = value;
         return this;
     }
@@ -65,7 +78,7 @@ public class CommandArgument {
         return this;
     }
 
-    public CommandArgument setShouldConsumeRestOfArguments(Boolean value) {
+    public CommandArgument setShouldConsumeRestOfArguments(boolean value) {
         this.shouldConsumeRestOfArguments = value;
         return this;
     }
@@ -80,8 +93,18 @@ public class CommandArgument {
         return this;
     }
 
-    public CommandArgument setRequiresDoubleQuotes(Boolean value) {
+    public CommandArgument setRequiresDoubleQuotes(boolean value) {
         this.requiresDoubleQuotes = value;
+        return this;
+    }
+
+    public CommandArgument setTabCompletionHandler(String method) {
+        this.tabCompletionHandler = method;
+        return this;
+    }
+
+    public CommandArgument setFilters(Set<ArgumentFilterType> filters) {
+        this.filters = filters;
         return this;
     }
 
@@ -94,6 +117,8 @@ public class CommandArgument {
             .setNullPermissions(builder.permissionsIfNull)
             .setNotNullPermissions(builder.permissionsIfNotNull)
             .setRequiresDoubleQuotes(builder.requiresDoubleQuotes)
+            .setTabCompletionHandler(builder.tabCompletionHandler)
+            .setFilters(builder.filters)
             .setShouldConsumeRestOfArguments(builder.shouldConsumeRestOfArguments);
     }
 }

@@ -7,11 +7,9 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -30,10 +28,8 @@ import java.util.UUID;
 @Singleton
 public class DemoteCommand extends Command {
 
-    private final PersistentData persistentData;
-
     @Inject
-    public DemoteCommand(PersistentData persistentData) {
+    public DemoteCommand() {
         super(
             new CommandBuilder()
                 .withName("demote")
@@ -51,7 +47,6 @@ public class DemoteCommand extends Command {
                         .isRequired()
                 )
         );
-        this.persistentData = persistentData;
     }
 
     public void execute(CommandContext context) {
@@ -71,27 +66,5 @@ public class DemoteCommand extends Command {
             this.constructMessage("PlayerDemoted")
                 .with("name", playerToBeDemoted.getName())
         );
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        final List<String> officersInFaction = new ArrayList<>();
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            for (UUID uuid : playerFaction.getOfficerList()) {
-                Player officer = Bukkit.getPlayer(uuid);
-                if (officer != null) {
-                    officersInFaction.add(officer.getName());
-                }
-            }
-            return TabCompleteTools.filterStartingWith(args[0], officersInFaction);
-        }
-        return null;
     }
 }

@@ -7,12 +7,10 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -29,17 +27,13 @@ import java.util.UUID;
 @Singleton
 public class BreakAllianceCommand extends Command {
 
-    private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public BreakAllianceCommand(
-        PersistentData persistentData,
-        FactionRepository factionRepository
-    ) {
+    public BreakAllianceCommand(FactionRepository factionRepository) {
         super(
             new CommandBuilder()
                 .withName("breakalliance")
@@ -58,7 +52,6 @@ public class BreakAllianceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
 
@@ -82,23 +75,5 @@ public class BreakAllianceCommand extends Command {
             this.constructMessage("AlertAllianceHasBeenBroken")
                 .with("faction", context.getExecutorsFaction().getName())
         );
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        final List<String> factionsAllowedtoAlly = new ArrayList<>();
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<String> factionAllyNames = new ArrayList<>();
-            for (UUID uuid : playerFaction.getAllies()) factionAllyNames.add(this.factionRepository.getByID(uuid).getName());
-            return TabCompleteTools.filterStartingWith(args[0], factionAllyNames);
-        }
-        return null;
     }
 }

@@ -7,15 +7,14 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.List;
@@ -27,14 +26,10 @@ import java.util.Objects;
 @Singleton
 public class SwearFealtyCommand extends Command {
 
-    private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
-    public SwearFealtyCommand(
-        PersistentData persistentData,
-        FactionRepository factionRepository
-    ) {
+    public SwearFealtyCommand(FactionRepository factionRepository) {
         super(
             new CommandBuilder()
                 .withName("swearfelty")
@@ -49,11 +44,11 @@ public class SwearFealtyCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the faction to swear fealty to")
                         .expectsFaction()
+                        .addFilters(ArgumentFilterType.OfferedVassalization)
                         .consumesAllLaterArguments()
                         .isRequired() 
                 )
         );
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
 
@@ -83,16 +78,5 @@ public class SwearFealtyCommand extends Command {
             this.constructMessage("AlertFactionHasBeenVassalized")
                 .with("name", target.getName())
         );
-    }
-
-     /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

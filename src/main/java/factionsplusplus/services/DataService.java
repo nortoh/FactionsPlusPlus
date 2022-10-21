@@ -17,6 +17,8 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.repositories.*;
 
+import java.util.stream.Collectors;
+
 
 @Singleton
 public class DataService {
@@ -85,13 +87,7 @@ public class DataService {
     }
 
     public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
-        List<ClaimedChunk> chunks = new ArrayList<>();
-        for (ClaimedChunk chunk : this.claimedChunkRepository.all()) {
-            if (chunk.getHolder().equals(faction.getID())) {
-                chunks.add(chunk);
-            }
-        }
-        return chunks;
+        return this.claimedChunkRepository.getAllForFaction(faction);
     }
 
     public CommandRepository getCommandRepository() {

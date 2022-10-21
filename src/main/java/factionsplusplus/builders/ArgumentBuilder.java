@@ -1,16 +1,22 @@
 package factionsplusplus.builders;
 
+import java.util.EnumSet;
+import java.util.Set;
+
+import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.ArgumentType;
 
 public class ArgumentBuilder {
     public String description = null;
-    public Boolean required = true;
+    public boolean required = true;
     public ArgumentType type = ArgumentType.Any;
-    public Boolean shouldConsumeRestOfArguments = false;
-    public Boolean requiresDoubleQuotes = false;
+    public boolean shouldConsumeRestOfArguments = false;
+    public boolean requiresDoubleQuotes = false;
     public String[] permissionsIfNull = new String[]{};
     public String[] permissionsIfNotNull = new String[]{};
     public Object defaultValue = null;
+    public String tabCompletionHandler = null;
+    public Set<ArgumentFilterType> filters = EnumSet.noneOf(ArgumentFilterType.class);
 
     public ArgumentBuilder setDescription(String description) {
         this.description = description;
@@ -19,6 +25,16 @@ public class ArgumentBuilder {
     
     public ArgumentBuilder setType(ArgumentType type) {
         this.type = type;
+        return this;
+    }
+
+    public ArgumentBuilder setTabCompletionHandler(String method) {
+        this.tabCompletionHandler = method;
+        return this;
+    }
+
+    public ArgumentBuilder addFilters(ArgumentFilterType... filters) {
+        this.filters = EnumSet.of(filters[0], filters);
         return this;
     }
 
@@ -64,11 +80,6 @@ public class ArgumentBuilder {
 
     public ArgumentBuilder expectsBoolean() {
         this.type = ArgumentType.Boolean;
-        return this;
-    }
-
-    public ArgumentBuilder expectsFloat() {
-        this.type = ArgumentType.Float;
         return this;
     }
 
@@ -119,11 +130,6 @@ public class ArgumentBuilder {
 
     public ArgumentBuilder expectsVassaledFaction() {
         this.type = ArgumentType.VassaledFaction;
-        return this;
-    }
-
-    public ArgumentBuilder expectsColor() {
-        this.type = ArgumentType.Color;
         return this;
     }
 

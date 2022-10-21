@@ -10,7 +10,6 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -57,16 +56,5 @@ public class CheckAccessCommand extends Command {
     public void cancelCommand(CommandContext context) {
         this.ephemeralData.getPlayersCheckingAccess().remove(context.getPlayer().getUniqueId());
         context.replyWith("Cancelled");
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        return TabCompleteTools.completeSingleOption(args[0], "cancel");
     }
 }

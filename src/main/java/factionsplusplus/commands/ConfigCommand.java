@@ -125,37 +125,37 @@ public class ConfigCommand extends Command {
     }
 
     public void getCommand(CommandContext context) {
-        final String configOption = context.getStringArgument("config option");
+        final ConfigOption configOption = context.getConfigOptionArgument("config option");
         context.replyWith(
             this.constructMessage("CurrentConfigValue")
-                .with("option", configOption)
-                .with("value", this.configService.getString(configOption))
+                .with("option", configOption.getName())
+                .with("value", this.configService.getString(configOption.getName()))
         );
     }
 
     public void setCommand(CommandContext context) {
-        final String configOption = context.getStringArgument("config option");
+        final ConfigOption configOption = context.getConfigOptionArgument("config option");
         final String configValue = context.getStringArgument("config value");
-        AbstractMap.SimpleEntry<SetConfigResult, String> result = this.configService.setConfigOption(configOption, configValue);
+        AbstractMap.SimpleEntry<SetConfigResult, String> result = this.configService.setConfigOption(configOption.getName(), configValue);
         switch(result.getKey()) {
             case ValueSet:
                 context.replyWith(
                     this.constructMessage("ConfigValueSet")
-                        .with("option", configOption)
+                        .with("option", configOption.getName())
                         .with("value", result.getValue())
                 );
                 break;
             case NotExpectedType:
                 context.replyWith(
                     this.constructMessage("ConfigValueInvalid")
-                        .with("option", configOption)
+                        .with("option", configOption.getName())
                         .with("type", result.getValue())
                 );
                 break;
             case NotUserSettable:
                 context.replyWith(
                     this.constructMessage("ConfigValueNotUserSettable")
-                        .with("option", configOption)
+                        .with("option", configOption.getName())
                 );
                 break;
             default:

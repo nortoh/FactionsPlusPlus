@@ -7,14 +7,13 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.PlayerService;
-import factionsplusplus.utils.TabCompleteTools;
-import factionsplusplus.builders.*;
+import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
@@ -28,13 +27,11 @@ import java.util.Objects;
 public class MembersCommand extends Command {
 
     private final PlayerService playerService;
-    private final PersistentData persistentData;
     private final FactionRepository factionRepository;
 
     @Inject
     public MembersCommand(
         PlayerService playerService,
-        PersistentData persistentData,
         FactionRepository factionRepository
     ) {
         super(
@@ -53,7 +50,6 @@ public class MembersCommand extends Command {
                 )
         );
         this.playerService = playerService;
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
 
@@ -81,15 +77,15 @@ public class MembersCommand extends Command {
         faction.getMembers().stream()
                 .map(Bukkit::getOfflinePlayer)
                 .forEach(player -> {
-                    String rank = context.getLocalizedString("MembersFaction.Member.Rank");
-                    String color = context.getLocalizedString("MembersFaction.Member.Color");
+                    String rank = context.getLocalizedString("MembersFaction.Rank.Member.Rank");
+                    String color = context.getLocalizedString("MembersFaction.Rank.Member.Color");
                     if (faction.isOfficer(player.getUniqueId())) {
-                        rank = context.getLocalizedString("MembersFaction.Officer.Rank");
-                        color = context.getLocalizedString("MembersFaction.Officer.Color");
+                        rank = context.getLocalizedString("MembersFaction.Rank.Officer.Rank");
+                        color = context.getLocalizedString("MembersFaction.Rank.Officer.Color");
                     }
                     if (faction.isOwner(player.getUniqueId())) {
-                        rank = context.getLocalizedString("MembersFaction.Owner.Rank");
-                        color = context.getLocalizedString("MembersFaction.Owner.Color");
+                        rank = context.getLocalizedString("MembersFaction.Rank.Owner.Rank");
+                        color = context.getLocalizedString("MembersFaction.Rank.Owner.Color");
                     }
                     context.replyWith(
                         this.constructMessage("MembersFaction.Message")
@@ -102,16 +98,5 @@ public class MembersCommand extends Command {
             this.constructMessage("MembersFaction.SubTitle")
                 .with("faction", faction.getName())
         );
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.allFactionsMatching(args[0], this.persistentData);
     }
 }

@@ -7,14 +7,12 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionWarStartEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -33,14 +31,12 @@ import java.util.UUID;
 @Singleton
 public class InvokeCommand extends Command {
 
-    private final PersistentData persistentData;
     private final ConfigService configService;
     private final FactionRepository factionRepository;
 
     @Inject
     public InvokeCommand(
         ConfigService configService,
-        PersistentData persistentData,
         FactionRepository factionRepository
     ) {
         super(
@@ -70,7 +66,6 @@ public class InvokeCommand extends Command {
                 )
         );
         this.configService = configService;
-        this.persistentData = persistentData;
         this.factionRepository = factionRepository;
     }
 
@@ -118,28 +113,5 @@ public class InvokeCommand extends Command {
                     .with("f2", warringFaction.getName())
             );
         }
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            if (args.length == 1) {
-                ArrayList<String> allyFactionNames = new ArrayList<>();
-                for (UUID uuid : playerFaction.getAllies()) allyFactionNames.add(this.factionRepository.getByID(uuid).getName());
-                return TabCompleteTools.filterStartingWithAddQuotes(args[0], allyFactionNames);
-            } else if (args.length == 2) {
-                ArrayList<String> enemyFactionNames = new ArrayList<>();
-                for (UUID uuid : playerFaction.getEnemyFactions()) enemyFactionNames.add(this.factionRepository.getByID(uuid).getName());
-                return TabCompleteTools.filterStartingWithAddQuotes(args[0], enemyFactionNames);
-            }
-        }
-        return null;
     }
 }

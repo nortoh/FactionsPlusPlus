@@ -12,7 +12,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.PlayerService;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -80,16 +79,5 @@ public class PowerCommand extends Command {
                 .with("max", String.valueOf(maxPower))
                 .with("name", context.getOfflinePlayerArgument("player").getName())
         );
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.allOnlinePlayersMatching(args[0]);
     }
 }

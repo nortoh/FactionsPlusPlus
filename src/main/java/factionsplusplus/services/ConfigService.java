@@ -19,6 +19,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.HashMap;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -344,6 +345,10 @@ public class ConfigService {
 
     public ConfigOption getConfigOption(String name) {
         return this.configOptionRepository.get(name);
+    }
+
+    public HashMap<String, ConfigOption> getConfigOptions() {
+        return this.configOptionRepository.all();
     }
 
     public AbstractMap.SimpleEntry<SetConfigResult, String> setConfigOption(String optionName, String value) {
