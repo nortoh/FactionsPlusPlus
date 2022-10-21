@@ -32,6 +32,6 @@ public class VersionCommand extends Command {
     }
     
     public void execute(CommandContext context) {
-        context.getSender().sendMessage(this.translate("&bMedieval-Factions-" + this.pluginVerson));
+        context.getSender().sendMessage(this.translate("&bFactions-Plus-Plus-" + this.pluginVerson));
     }
 }

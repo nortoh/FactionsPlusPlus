@@ -83,7 +83,6 @@ public class CommandService implements TabCompleter {
 
     public void registerCommands() {
         Class[] coreCommands = new Class[]{
-            AddLawCommand.class,
             AllyCommand.class,
             AutoClaimCommand.class,
             BreakAllianceCommand.class,
@@ -100,7 +99,6 @@ public class CommandService implements TabCompleter {
             DescCommand.class,
             DisbandCommand.class,
             DuelCommand.class,
-            EditLawCommand.class,
             FlagsCommand.class,
             ForceCommand.class,
             GateCommand.class,
@@ -113,6 +111,7 @@ public class CommandService implements TabCompleter {
             InvokeCommand.class,
             JoinCommand.class,
             KickCommand.class,
+            LawCommand.class,
             LawsCommand.class,
             LeaveCommand.class,
             ListCommand.class,
@@ -123,7 +122,6 @@ public class CommandService implements TabCompleter {
             PowerCommand.class,
             PrefixCommand.class,
             PromoteCommand.class,
-            RemoveLawCommand.class,
             RenameCommand.class,
             ResetPowerLevelsCommand.class,
             RevokeAccessCommand.class,

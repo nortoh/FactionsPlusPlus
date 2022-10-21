@@ -52,7 +52,7 @@ public class UnlockCommand extends Command {
         this.ephemeralData.getLockingPlayers().remove(context.getPlayer().getUniqueId());
 
         // inform them they need to right click the block that they want to lock or type /mf lock cancel to cancel it
-        context.replyWith("RighClickUnlock");
+        context.replyWith("RightClickUnlock");
     }
 
     public void cancelCommand(CommandContext context) {
