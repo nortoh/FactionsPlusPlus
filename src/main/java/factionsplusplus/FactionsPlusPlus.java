@@ -93,7 +93,8 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        return commandService.interpretCommand(sender, label, args);
+        if (cmd.getName().equalsIgnoreCase("mf")) return false; // ignore commands not meant for us
+        return this.commandService.interpretCommand(sender, label, args);
     }
 
     /**

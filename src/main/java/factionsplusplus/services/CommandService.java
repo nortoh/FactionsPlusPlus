@@ -508,39 +508,33 @@ public class CommandService implements TabCompleter {
     }
 
     public boolean interpretCommand(CommandSender sender, String label, String[] args) {
-        // mf commands
-        if (label.equalsIgnoreCase("mf")) {
-
-            // no arguments check
-            if (args.length == 0) {
-                this.localeService.getStrings("PluginInfo")
-                    .forEach(s -> {
-                        s = s.replace("#version", this.factionsPlusPlus.getVersion()).replace("#dev", this.factionsPlusPlus.getDescription().getAuthors().toString());
-                        this.messageService.send(sender, s);
-                    });
-                return true;
-            }
-
-            // Convert arguments to an array list
-            ArrayList<String> argumentList = new ArrayList<>();
-            argumentList.addAll(Arrays.asList(args));
-
-            // Get & remove command name
-            String commandName = argumentList.remove(0);
-
-            // Try to find the command
-            Command command = this.commandRepository.get(commandName);
-
-            // Let the user know it wasn't found, if it wasn't found
-            if (command == null) {
-                this.messageService.sendLocalizedMessage(sender, "CommandNotRecognized");
-                return false;
-            }
-
-            return this.processCommand(command, command, sender, argumentList, null);
-
+        // no arguments check
+        if (args.length == 0) {
+            this.localeService.getStrings("PluginInfo")
+                .forEach(s -> {
+                    s = s.replace("#version", this.factionsPlusPlus.getVersion()).replace("#dev", this.factionsPlusPlus.getDescription().getAuthors().toString());
+                    this.messageService.send(sender, s);
+                });
+            return true;
         }
-        return false;
+
+        // Convert arguments to an array list
+        ArrayList<String> argumentList = new ArrayList<>();
+        argumentList.addAll(Arrays.asList(args));
+
+        // Get & remove command name
+        String commandName = argumentList.remove(0);
+
+        // Try to find the command
+        Command command = this.commandRepository.get(commandName);
+
+        // Let the user know it wasn't found, if it wasn't found
+        if (command == null) {
+            this.messageService.sendLocalizedMessage(sender, "CommandNotRecognized");
+            return false;
+        }
+
+        return this.processCommand(command, command, sender, argumentList, null);
     }
 
     private ArrayList<String> getSubCommandNamesForSender(CommandSender sender) {

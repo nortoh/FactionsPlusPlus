@@ -136,26 +136,4 @@ public class AllyCommand extends Command {
             otherFaction.removeAllianceRequest(context.getExecutorsFaction().getID());
         }
     }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param player who sent the command.
-     * @param args   of the command.
-     */
-    @Override
-    public List<String> handleTabComplete(Player player, String[] args) {
-        final List<String> factionsAllowedtoAlly = new ArrayList<>();
-        if (this.persistentData.isInFaction(player.getUniqueId())) {
-            Faction playerFaction = this.persistentData.getPlayersFaction(player.getUniqueId());
-            ArrayList<UUID> playerAllies = playerFaction.getAllies();
-            for(Faction faction : this.persistentData.getFactions()) {
-                if(!playerAllies.contains(faction.getID()) && !faction.getID().equals(playerFaction.getID())) {
-                    factionsAllowedtoAlly.add(faction.getName());
-                }
-            }
-            return TabCompleteTools.filterStartingWith(args[0], factionsAllowedtoAlly);
-        }
-        return null;
-    }
 }

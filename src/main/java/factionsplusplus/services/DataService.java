@@ -17,8 +17,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.repositories.*;
 
-import java.util.stream.Collectors;
-
 
 @Singleton
 public class DataService {

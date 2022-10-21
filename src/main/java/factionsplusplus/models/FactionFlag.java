@@ -1,18 +1,9 @@
-/*
-  Copyright (c) 2022 Daniel McCoy Stephenson
-  GPL3 License
- */
 package factionsplusplus.models;
-
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.utils.ColorConversion;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.google.gson.annotations.Expose;
 

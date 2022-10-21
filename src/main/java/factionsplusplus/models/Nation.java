@@ -5,8 +5,10 @@
 package factionsplusplus.models;
 
 import factionsplusplus.models.interfaces.Diplomatic;
+import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.models.interfaces.Lawful;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -15,15 +17,17 @@ import com.google.gson.annotations.Expose;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class Nation extends Group implements Diplomatic, Lawful {
+public class Nation extends Group implements Diplomatic, Lawful, Identifiable {
     @Expose
-    protected ArrayList<UUID> allyFactions = new ArrayList<>();
-    protected ArrayList<UUID> attemptedAlliances = new ArrayList<>();
+    protected final UUID uuid = UUID.randomUUID();
     @Expose
-    protected ArrayList<UUID> enemyFactions = new ArrayList<>();
-    protected ArrayList<UUID> attemptedTruces = new ArrayList<>();
+    protected final List<UUID> allyFactions = new ArrayList<>();
+    protected final List<UUID> attemptedAlliances = new ArrayList<>();
     @Expose
-    protected ArrayList<String> laws = new ArrayList<>();
+    protected final List<UUID> enemyFactions = new ArrayList<>();
+    protected final List<UUID> attemptedTruces = new ArrayList<>();
+    @Expose
+    protected final List<String> laws = new ArrayList<>();
 
     @Override
     public void addAlly(UUID allyUUID) {
@@ -41,8 +45,13 @@ public class Nation extends Group implements Diplomatic, Lawful {
     }
 
     @Override
-    public ArrayList<UUID> getAllies() {
+    public List<UUID> getAllies() {
         return this.allyFactions;
+    }
+
+    @Override
+    public UUID getUUID() {
+        return this.uuid;
     }
 
     @Override
@@ -88,7 +97,7 @@ public class Nation extends Group implements Diplomatic, Lawful {
     }
 
     @Override
-    public ArrayList<UUID> getEnemyFactions() {
+    public List<UUID> getEnemyFactions() {
         return this.enemyFactions;
     }
 
@@ -157,13 +166,13 @@ public class Nation extends Group implements Diplomatic, Lawful {
     }
 
     @Override
-    public ArrayList<String> getLaws() {
+    public List<String> getLaws() {
         return laws;
     }
 
     // helper methods ---------------
 
-    private boolean containsIgnoreCase(ArrayList<String> list, String str) {
+    private boolean containsIgnoreCase(List<String> list, String str) {
         for (String string : list) {
             if (string.equalsIgnoreCase(str)) {
                 return true;
@@ -172,7 +181,7 @@ public class Nation extends Group implements Diplomatic, Lawful {
         return false;
     }
 
-    private void removeIfContainsIgnoreCase(ArrayList<String> list, String str) {
+    private void removeIfContainsIgnoreCase(List<String> list, String str) {
         String toRemove = "";
         for (String string : list) {
             if (string.equalsIgnoreCase(str)) {

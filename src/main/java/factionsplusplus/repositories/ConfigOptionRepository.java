@@ -4,11 +4,13 @@ import factionsplusplus.models.ConfigOption;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Singleton
 public class ConfigOptionRepository {
-    private final HashMap<String, ConfigOption> optionStore = new HashMap<>();
-    private final ArrayList<String> deprecatedOptionNames = new ArrayList<>();
+    private final Map<String, ConfigOption> optionStore = new HashMap<>();
+    private final List<String> deprecatedOptionNames = new ArrayList<>();
 
     public ConfigOption get(String nameSearch) {
         return this.optionStore.get(nameSearch);
@@ -22,11 +24,11 @@ public class ConfigOptionRepository {
         this.deprecatedOptionNames.add(name);
     }
 
-    public ArrayList<String> allDeprecatedOptions() {
+    public List<String> allDeprecatedOptions() {
         return this.deprecatedOptionNames;
     }
 
-    public HashMap<String, ConfigOption> all() {
+    public Map<String, ConfigOption> all() {
         return this.optionStore;
     }
 }

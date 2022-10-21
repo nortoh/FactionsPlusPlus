@@ -11,25 +11,27 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.reflect.Type;
 
 import factionsplusplus.models.LockedBlock;
 
 @Singleton
 public class LockedBlockRepository {
-    private final ArrayList<LockedBlock> lockedBlockStore = new ArrayList<>();
+    private List<LockedBlock> lockedBlockStore = new ArrayList<>();
     private final String dataPath;
     private final static String FILE_NAME = "lockedblocks.json";
+    private final static Type JSON_TYPE = new TypeToken<List<LockedBlock>>() { }.getType();
+
 
     @Inject
     public LockedBlockRepository(@Named("dataFolder") String dataPath) {
@@ -45,7 +47,7 @@ public class LockedBlockRepository {
                 .serializeNulls()
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.lockedBlockStore.addAll(Arrays.asList(gson.fromJson(reader, LockedBlock[].class)));
+            this.lockedBlockStore = gson.fromJson(reader, LockedBlockRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
@@ -77,16 +79,12 @@ public class LockedBlockRepository {
     }
 
     // Retrieve all locked blocks
-    public ArrayList<LockedBlock> all() {
+    public List<LockedBlock> all() {
         return this.lockedBlockStore;
     }
 
     // Write to file
     public void persist() {
-        List<JsonElement> blocksToSave = new ArrayList<>();
-        for (LockedBlock block : this.lockedBlockStore) {
-            blocksToSave.add(block.toJsonTree());
-        }
         File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
@@ -95,7 +93,7 @@ public class LockedBlockRepository {
                 .create();
             file.createNewFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(blocksToSave));
+            outputStreamWriter.write(gson.toJson(this.lockedBlockStore, LockedBlockRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
             // TODO: log here

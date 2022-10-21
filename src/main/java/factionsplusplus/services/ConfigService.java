@@ -19,10 +19,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
 import javax.inject.Provider;
 
 /**
@@ -337,8 +335,8 @@ public class ConfigService {
     
     private void deleteOldConfigOptionsIfPresent() {
         for (String optionName : this.configOptionRepository.allDeprecatedOptions()) {
-            if (getConfig().isSet(optionName)) {
-                getConfig().set(optionName, null);
+            if (this.getConfig().isSet(optionName)) {
+                this.getConfig().set(optionName, null);
             }
         }
     }
@@ -347,7 +345,7 @@ public class ConfigService {
         return this.configOptionRepository.get(name);
     }
 
-    public HashMap<String, ConfigOption> getConfigOptions() {
+    public Map<String, ConfigOption> getConfigOptions() {
         return this.configOptionRepository.all();
     }
 
@@ -444,59 +442,6 @@ public class ConfigService {
                 + ", secondsBetweenAutosaves: " + getInt("secondsBetweenAutosaves"));
     }
 
-    public ArrayList<String> getStringConfigOptions()
-    {
-        final ArrayList<String> configOptions = new ArrayList<>();
-        Collections.addAll(configOptions,
-                "initialMaxPowerLevel",
-                "initialPowerLevel",
-                "powerIncreaseAmount",
-                "minutesBeforeInitialPowerIncrease",
-                "minutesBetweenPowerIncreases",
-                "officerLimit",
-                "officerPerMemberCount",
-                "minutesBetweenPowerDecreases",
-                "minutesBeforePowerDecrease",
-                "powerDecreaseAmount",
-                "factionMaxNameLength",
-                "factionMaxNumberGates",
-                "factionMaxGateArea",
-                "maxClaimRadius",
-                "teleportDelay",
-                "mobsSpawnInFactionTerritory",
-                "laddersPlaceableInEnemyFactionTerritory",
-                "warsRequiredForPVP",
-                "powerDecreases",
-                "surroundedChunksProtected",
-                "zeroPowerFactionsGetDisbanded",
-                "nonMembersCanInteractWithDoors",
-                "playersChatWithPrefixes",
-                "chatSharedInVassalageTrees",
-                "allowAllyInteraction",
-                "allowVassalageTreeInteraction",
-                "territoryAlertPopUp",
-                "territoryIndicatorActionbar",
-                "randomFactionAssignment",
-                "allowNeutrality",
-                "showPrefixesInFactionChat",
-                "debugMode",
-                "factionProtectionsEnabled",
-                "limitLand",
-                "factionsCanSetPrefixColors",
-                "playersLosePowerOnDeath",
-                "bonusPowerEnabled",
-                "factionOwnerMultiplier",
-                "factionOfficerMultiplier",
-                "vassalContributionPercentageMultiplier",
-                "powerLostOnDeath",
-                "powerGainedOnKill",
-                "factionless",
-                "useNewLanguageFile",
-                "secondsBeforeInitialAutosave",
-                "secondsBetweenAutosaves");
-        return configOptions;
-    }
-
     public boolean hasBeenAltered() {
         return this.altered;
     }
@@ -506,18 +451,18 @@ public class ConfigService {
     }
 
     public int getInt(String option) {
-        return getConfig().getInt(option);
+        return this.getConfig().getInt(option);
     }
 
     public boolean getBoolean(String option) {
-        return getConfig().getBoolean(option);
+        return this.getConfig().getBoolean(option);
     }
 
     public double getDouble(String option) {
-        return getConfig().getDouble(option);
+        return this.getConfig().getDouble(option);
     }
 
     public String getString(String option) {
-        return getConfig().getString(option);
+        return this.getConfig().getString(option);
     }
 }

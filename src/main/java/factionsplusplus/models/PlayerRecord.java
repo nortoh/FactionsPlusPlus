@@ -6,12 +6,7 @@ package factionsplusplus.models;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
-
-import com.google.gson.JsonElement;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -83,15 +78,4 @@ public class PlayerRecord {
     public void increasePowerLostBy(double amount) {
         this.stats.increasePowerLostBy(amount);
     }
-
-    // Tools
-    public JsonElement toJsonTree() {
-        return new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .serializeNulls()
-            .create()
-            .toJsonTree(this);
-    }
-
-
 }

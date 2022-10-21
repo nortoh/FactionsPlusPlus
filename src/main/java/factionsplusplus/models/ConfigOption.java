@@ -1,7 +1,5 @@
 package factionsplusplus.models;
 
-import java.lang.reflect.Type;
-
 import factionsplusplus.constants.ConfigOptionType;
 
 public class ConfigOption {
@@ -9,9 +7,9 @@ public class ConfigOption {
     private String description;
     private Object defaultValue;
     private ConfigOptionType type;
-    private Boolean userSettable;
+    private boolean userSettable;
 
-    public ConfigOption(String name, String description, ConfigOptionType type, Object defaultValue, Boolean userSettable) {
+    public ConfigOption(String name, String description, ConfigOptionType type, Object defaultValue, boolean userSettable) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
@@ -35,7 +33,7 @@ public class ConfigOption {
         return this.defaultValue;
     }
 
-    public Boolean isUserSettable() {
+    public boolean isUserSettable() {
         return this.userSettable;
     }
 }

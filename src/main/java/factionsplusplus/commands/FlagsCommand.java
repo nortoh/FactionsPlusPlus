@@ -83,13 +83,16 @@ public class FlagsCommand extends Command {
     }
 
     public void showCommand(CommandContext context) {
-        HashMap<String, FactionFlag> flagList = (HashMap<String, FactionFlag>)context.getExecutorsFaction().getFlags().clone();
-        if (!this.configService.getBoolean("allowNeutrality")) flagList.remove("neutral");
-        if (!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) flagList.remove("prefixColor");
-        String flagOutput = flagList
+        String flagOutput = context.getExecutorsFaction().getFlags()
             .keySet()
             .stream()
-            .map(flagKey -> String.format("%s: %s", flagKey, flagList.get(flagKey).toString()))
+            .filter(flagKey -> {
+                return (
+                    (!this.configService.getBoolean("allowNeutrality") && !flagKey.equalsIgnoreCase("neutral")) &&
+                    ((!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) && !flagKey.equalsIgnoreCase("prefixColor"))
+                );
+            })
+            .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsFaction().getFlags().get(flagKey).toString()))
             .collect(Collectors.joining(", "));
         context.reply(ChatColor.AQUA + "" + flagOutput);
     }

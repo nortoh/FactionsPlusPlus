@@ -10,13 +10,13 @@ public class CommandBuilder {
     public String[] requiredPermissions = new String[]{};
     public String description = null;
     public String executorMethod = "execute";
-    public Boolean subCommand = false;
-    public Boolean requiresPlayerExecution = false;
-    public Boolean requiresFactionMembership = false;
-    public Boolean requiresFactionOwnership = false;
-    public Boolean requiresFactionOfficership = false;
-    public Boolean requiresSubCommand = false;
-    public Boolean requiresNoFactionMembership = false;
+    public boolean subCommand = false;
+    public boolean requiresPlayerExecution = false;
+    public boolean requiresFactionMembership = false;
+    public boolean requiresFactionOwnership = false;
+    public boolean requiresFactionOfficership = false;
+    public boolean requiresSubCommand = false;
+    public boolean requiresNoFactionMembership = false;
     public LinkedHashMap<String, ArgumentBuilder> arguments = new LinkedHashMap<>();
     public HashMap<String, CommandBuilder> subcommands = new HashMap<>();
 
