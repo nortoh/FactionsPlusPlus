@@ -201,7 +201,7 @@ public class CommandService implements TabCompleter {
             playerFaction = this.dataService.getPlayersFaction((OfflinePlayer)sender);
             context.setExecutorsFaction(playerFaction);
         }
-        if (command.shouldRequireFactionMembership()) {
+        if (command.shouldRequireFactionMembership() || command.shouldRequireFactionOfficership() || command.shouldRequireFactionOwnership()) {
             if (playerFaction == null) {
                 context.replyWith("AlertMustBeInFactionToUseCommand");
                 return false;
@@ -289,19 +289,20 @@ public class CommandService implements TabCompleter {
                 String argumentData = arguments.remove(0);
                 // Check if the argument should start and end with double quotes, if so, append all other arguments until we get another double quote
                 if (argumentData.startsWith("\"") && argument.expectsDoubleQuotes()) {
-                    Boolean foundEnd = false;
+                    boolean foundEnd = false;
                     // Remove the opening quote
                     argumentData = argumentData.substring(1);
-                    while (arguments.size() > 0) {
+                    // Handle one word with double quotes
+                    if (argumentData.endsWith("\"")) foundEnd = true;
+                    while (!arguments.isEmpty() && !foundEnd) {
                         if (arguments.get(0).endsWith("\"")) foundEnd = true;
                         argumentData = argumentData + " " + arguments.remove(0);
                     }
-                    // Remove the closing quote
-                    argumentData = argumentData.substring(0, argumentData.length() - 1);
                     if (!foundEnd) {
                         this.messageService.sendInvalidSyntaxMessage(sender, context.getCommandNames(), command.buildSyntax());
                         return false;
                     }
+                    argumentData = argumentData.substring(0, argumentData.length() - 1); // remove closing quote
                 }
                 Object parsedArgumentData = null;
                 Faction faction = null;
@@ -405,6 +406,7 @@ public class CommandService implements TabCompleter {
                 continue;
             }
         }
+
 
         // Execute!
         try {
@@ -611,10 +613,10 @@ public class CommandService implements TabCompleter {
             String argumentData = argumentList.remove(0);
             boolean moveToNextArgumentIfPresent = true;
             if (argumentData.startsWith("\"") && argument.expectsDoubleQuotes()) {
-                Boolean foundEnd = false;
+                boolean foundEnd = false;
                 // Remove the opening quote
                 argumentData = argumentData.substring(1);
-                // Hanlde one word with double quotes
+                // Handle one word with double quotes
                 if (argumentData.endsWith("\"")) foundEnd = true;
                 while (!argumentList.isEmpty() && !foundEnd) {
                     if (argumentList.get(0).endsWith("\"")) foundEnd = true;
