@@ -8,8 +8,9 @@ import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 public class MultiMessageBuilder implements GenericMessageBuilder {
     private final List<MessageBuilder> messages = new ArrayList<>();
 
-    public void add(MessageBuilder builder) {
+    public MultiMessageBuilder add(MessageBuilder builder) {
         this.messages.add(builder);
+        return this;
     }
 
     public List<MessageBuilder> getMessageBuilders() {
