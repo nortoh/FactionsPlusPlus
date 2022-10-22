@@ -5,15 +5,26 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-
+import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
+
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Singleton
 public class LawCommand extends Command {
 
+    private final DataService dataService;
+
     @Inject
-    public LawCommand() {
+    public LawCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("law")
@@ -51,6 +62,7 @@ public class LawCommand extends Command {
                             new ArgumentBuilder()
                                 .setDescription("the id of the law to remove")
                                 .expectsInteger()
+                                .setTabCompletionHandler("autocompleteLawNumbers")
                                 .isRequired()
                         )
                 )
@@ -65,6 +77,7 @@ public class LawCommand extends Command {
                             "law to edit",
                             new ArgumentBuilder()
                                 .setDescription("the id of the law to remove")
+                                .setTabCompletionHandler("autocompleteLawNumbers")
                                 .expectsInteger()
                                 .isRequired()
                         )
@@ -78,6 +91,7 @@ public class LawCommand extends Command {
                         )
                 )
         );
+        this.dataService = dataService;
     }
 
     public void createCommand(CommandContext context) {
@@ -94,10 +108,9 @@ public class LawCommand extends Command {
             context.replyWith("LawNotFound");
             return;
         }
-        if (context.getExecutorsFaction().removeLaw(lawToRemove)) {
-            context.replyWith("LawRemoved");
-        }
-        // TODO: handle this returning false
+        // Technically this returns a bool if we actually removed the law, but the checks it does are already done above.
+        context.getExecutorsFaction().removeLaw(lawToRemove);
+        context.replyWith("LawRemoved");
     }
 
     public void editCommand(CommandContext context) {
@@ -107,9 +120,16 @@ public class LawCommand extends Command {
             return;
         }
         final String editedLaw = context.getStringArgument("new law text");
-        if (context.getExecutorsFaction().editLaw(lawToEdit, editedLaw)) context.replyWith("LawEdited");
-        // TODO: handle this returning false
+        context.getExecutorsFaction().editLaw(lawToEdit, editedLaw);
+        context.replyWith("LawEdited");
     }
 
-    // TODO: reimplement autocomplete
+    public List<String> autocompleteLawNumbers(CommandSender sender, String argument) {
+        if (! (sender instanceof Player)) return List.of();
+        Faction playersFaction = this.dataService.getPlayersFaction((Player)sender);
+        if (playersFaction == null || playersFaction.getLaws().size() == 0) return List.of();
+        List<String> completions = new ArrayList<>();
+        org.bukkit.util.StringUtil.copyPartialMatches(argument, IntStream.range(1, playersFaction.getLaws().size()+1).mapToObj(String::valueOf).collect(Collectors.toList()), completions);
+        return completions;
+    }
 }

@@ -648,8 +648,8 @@ public class CommandService implements TabCompleter {
             // Handle (sub)commands wanting to handle their own tab completion
             if (argument.getTabCompletionHandler() != null) {
                 try {
-                    Method executor = currentCommand.getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, String.class);
-                    return (List<String>)executor.invoke(currentCommand, sender, argumentData);
+                    Method executor = commandStack.get(0).getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, String.class);
+                    return (List<String>)executor.invoke(commandStack.get(0), sender, argumentData);
                 } catch(Exception e) {
                     return results;
                 }

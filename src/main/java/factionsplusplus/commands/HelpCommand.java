@@ -120,7 +120,12 @@ public class HelpCommand extends Command {
 
     public List<String> autocompletePage(CommandSender sender, String argument) {
         List<String> completions = new ArrayList<>();
-        org.bukkit.util.StringUtil.copyPartialMatches(argument, IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf).collect(Collectors.toList()), completions);
+        List<String> argsToCompare = IntStream.range(1, this.generateHelpPages().size()+1).mapToObj(String::valueOf).collect(Collectors.toList());
+        if (argument.length() == 0 || StringUtils.parseAsInteger(argument) == null) {
+            if (argument.length() != 0) argsToCompare.clear();
+            argsToCompare.addAll(this.commandRepository.all().keySet());
+        }
+        org.bukkit.util.StringUtil.copyPartialMatches(argument, argsToCompare, completions);
         return completions;
     }
 }
