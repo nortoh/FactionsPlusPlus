@@ -288,6 +288,13 @@ ConfigOptionInfo:
   Description: "&aDescription: #desc#"
   DefaultValue: "&aDefault Value: #value#"
   Value: "&aCurrent Value: #value#"
+CommandInfo:
+  Title: "&a==== /mf #name# ===="
+  Description: "&aDescription: #desc#"
+  Aliases: "&aAliases: #aliases#"
+  SubcommandHeader: "&a= Subcommands ="
+  Subcommand: "&b - #command#"
+  Permissions: "&aPermissions Needed: #permissions#"
 FactionInfo:
   Title: "&bFaction Info"
   Name: "&bName: #name#"

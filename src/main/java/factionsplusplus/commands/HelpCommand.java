@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.Arrays;
@@ -54,6 +55,7 @@ public class HelpCommand extends Command {
                         .isOptional()
                         .expectsString()
                         .setDefaultValue(1)
+                        .consumesAllLaterArguments()
                 )
         );
         this.commandRepository = commandRepository;
@@ -64,7 +66,23 @@ public class HelpCommand extends Command {
         if (requestedPage == null) {
             String requestedCommand = context.getStringArgument("page or command");
             Command command = this.commandRepository.get(requestedCommand);
-            // TODO: implement this
+            if (command == null) {
+                context.replyWith("CommandNotRecognized");
+                return;
+            }
+            MultiMessageBuilder builder = new MultiMessageBuilder();
+            builder
+                .add(this.constructMessage("CommandInfo.Title").with("name", command.getName()))
+                .add(this.constructMessage("CommandInfo.Description").with("desc", command.getDescription()));
+            if (command.getAliases().length > 0) builder.add(this.constructMessage("CommandInfo.Aliases").with("aliases", String.join(", ", command.getAliases())));
+            if (command.hasSubCommands()) {
+                builder.add(this.constructMessage("CommandInfo.SubcommandHeader"));
+                for (Command subCommand : command.getSubCommands().values()) {
+                    builder.add(this.constructMessage("CommandInfo.Subcommand").with("command", subCommand.getName()));
+                }
+            }
+            if (command.getRequiredPermissions().length > 0) builder.add(this.constructMessage("CommandInfo.Permissions").with("permissions", String.join(", ", command.getRequiredPermissions())));
+            context.replyWith(builder);
             return;
         }
         final ArrayList<ArrayList<Command>> partitionedList = this.generateHelpPages();
