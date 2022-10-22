@@ -7,10 +7,11 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.FactionJoinEvent;
+import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
@@ -32,47 +33,47 @@ import java.util.UUID;
  */
 @Singleton
 public class JoinHandler implements Listener {
-    private final PersistentData persistentData;
     private final ConfigService configService;
     private final Logger logger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
     private final FactionService factionService;
     private final DataService dataService;
     private final MessageService messageService;
+    private final ClaimService claimService;
 
     @Inject
     public JoinHandler(
-        PersistentData persistentData,
         ConfigService configService,
         Logger logger,
         TerritoryOwnerNotifier territoryOwnerNotifier,
         FactionService factionService,
         DataService dataService,
-        MessageService messageService
+        MessageService messageService,
+        ClaimService claimService
     ) {
-        this.persistentData = persistentData;
         this.configService = configService;
         this.logger = logger;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.factionService = factionService;
         this.dataService = dataService;
         this.messageService = messageService;
+        this.claimService = claimService;
     }
 
     @EventHandler()
     public void handle(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (dataExistsForPlayer(player)) {
+        if (this.dataExistsForPlayer(player)) {
             PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
             record.incrementLogins();
-            handlePowerDecay(record, player, event);
+            this.handlePowerDecay(record, player, event);
         } else {
-            createRecordsForPlayer(player);
-            handleRandomFactionAssignmentIfNecessary(player);
+            this.createRecordsForPlayer(player);
+            this.handleRandomFactionAssignmentIfNecessary(player);
         }
-        setPlayerActionBarTerritoryInfo(event.getPlayer());
-        persistentData.getChunkDataAccessor().informPlayerIfTheirLandIsInDanger(player);
-        informPlayerIfTheirFactionIsWeakened(player);
+        this.setPlayerActionBarTerritoryInfo(event.getPlayer());
+        this.claimService.informPlayerIfTheirLandIsInDanger(player);
+        this.informPlayerIfTheirFactionIsWeakened(player);
     }
 
     private void handlePowerDecay(PlayerRecord record, Player player, PlayerJoinEvent event) {
@@ -110,8 +111,8 @@ public class JoinHandler implements Listener {
     }
 
     private void handleRandomFactionAssignmentIfNecessary(Player player) {
-        if (configService.getBoolean("randomFactionAssignment")) {
-            assignPlayerToRandomFaction(player);
+        if (this.configService.getBoolean("randomFactionAssignment")) {
+            this.assignPlayerToRandomFaction(player);
         }
     }
 
@@ -141,22 +142,21 @@ public class JoinHandler implements Listener {
             );
             faction.addMember(player.getUniqueId());
             this.messageService.sendLocalizedMessage(player, "AssignedToRandomFaction");
-            logger.debug(player.getName() + " has been randomly assigned to " + faction.getName() + "!");
+            this.logger.debug(player.getName() + " has been randomly assigned to " + faction.getName() + "!");
         } else {
-            logger.debug("Attempted to assign " + player.getName() + " to a random faction, but no factions are existent.");
+            this.logger.debug("Attempted to assign " + player.getName() + " to a random faction, but no factions are existent.");
         }
     }
 
     private void setPlayerActionBarTerritoryInfo(Player player) {
-        if (configService.getBoolean("territoryIndicatorActionbar")) {
-            if (chunkIsClaimed(player)) {
-                UUID factionUUID = dataService.getClaimedChunk(player.getLocation().getChunk()).getHolder();
-                Faction holder = dataService.getFaction(factionUUID);
-                territoryOwnerNotifier.sendPlayerTerritoryAlert(player, holder);
+        if (this.configService.getBoolean("territoryIndicatorActionbar")) {
+            ClaimedChunk chunk = this.dataService.getClaimedChunk(player.getLocation().getChunk());
+            if (chunk != null) {
+                this.territoryOwnerNotifier.sendPlayerTerritoryAlert(player, this.dataService.getFaction(chunk.getHolder()));
                 return;
             }
 
-            territoryOwnerNotifier.sendPlayerTerritoryAlert(player, null);
+            this.territoryOwnerNotifier.sendPlayerTerritoryAlert(player, null);
         }
     }
 
@@ -165,7 +165,7 @@ public class JoinHandler implements Listener {
     }
 
     private void informPlayerIfTheirFactionIsWeakened(Player player) {
-        Faction playersFaction = dataService.getPlayersFaction(player.getUniqueId());
+        Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {
             return;
         }

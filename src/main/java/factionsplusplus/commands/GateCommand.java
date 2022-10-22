@@ -8,11 +8,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
+import factionsplusplus.services.DataService;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -30,13 +31,10 @@ import java.util.Objects;
 public class GateCommand extends Command {
 
     private final EphemeralData ephemeralData;
-    private final PersistentData persistentData;
+    private final DataService dataService;
 
     @Inject
-    public GateCommand(
-        EphemeralData ephemeralData,
-        PersistentData persistentData
-    ) {
+    public GateCommand(EphemeralData ephemeralData, DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("gate")
@@ -101,7 +99,7 @@ public class GateCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
-        this.persistentData = persistentData;
+        this.dataService = dataService;
     }
 
     public Gate doCommonBlockChecks(CommandContext context) {
@@ -110,12 +108,12 @@ public class GateCommand extends Command {
             context.replyWith("NoBlockDetectedToCheckForGate");
             return null;
         }
-        if (!this.persistentData.isGateBlock(targetBlock)) {
+        final Gate gate = this.dataService.getGate(targetBlock);
+        if (gate == null) {
             context.replyWith("TargetBlockNotPartOfGate");
             return null;
         }
-        final Gate gate = this.persistentData.getGate(targetBlock);
-        final Faction gateFaction = this.persistentData.getGateFaction(gate);
+        final Faction gateFaction = this.dataService.getGatesFaction(gate);
         if (gateFaction == null) {
             context.replyWith(
                 this.constructMessage("ErrorCouldNotFindGatesFaction")
@@ -129,7 +127,7 @@ public class GateCommand extends Command {
     public void removeCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
-            final Faction gateFaction = this.persistentData.getGateFaction(targetGate);
+            final Faction gateFaction = this.dataService.getGatesFaction(targetGate);
             gateFaction.removeGate(targetGate);
             context.replyWith(
                 this.constructMessage("RemovedGate")
@@ -141,7 +139,7 @@ public class GateCommand extends Command {
     public void renameCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
-            final Faction gateFaction = this.persistentData.getGateFaction(targetGate);
+            final Faction gateFaction = this.dataService.getGatesFaction(targetGate);
             final String newName = context.getStringArgument("new name");
             targetGate.setName(newName);
             context.replyWith(

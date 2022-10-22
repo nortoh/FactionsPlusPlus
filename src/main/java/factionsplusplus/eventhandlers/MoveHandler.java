@@ -8,9 +8,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
@@ -32,31 +32,31 @@ import static org.bukkit.Bukkit.getServer;
  */
 @Singleton
 public class MoveHandler implements Listener {
-    private final PersistentData persistentData;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
     private final FactionsPlusPlus factionsPlusPlus;
     private final DynmapIntegrationService dynmapService;
     private final FactionService factionService;
     private final MessageService messageService;
     private final DataService dataService;
+    private final ClaimService claimService;
 
     @Inject
     public MoveHandler(
-        PersistentData persistentData,
         TerritoryOwnerNotifier territoryOwnerNotifier,
         FactionsPlusPlus factionsPlusPlus,
         DynmapIntegrationService dynmapService,
         FactionService factionService,
         MessageService messageService,
-        DataService dataService
+        DataService dataService,
+        ClaimService claimService
     ) {
-        this.persistentData = persistentData;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.factionsPlusPlus = factionsPlusPlus;
         this.dynmapService = dynmapService;
         this.factionService = factionService;
         this.messageService = messageService;
         this.dataService = dataService;
+        this.claimService = claimService;
     }
 
     @EventHandler()
@@ -129,7 +129,7 @@ public class MoveHandler implements Listener {
     private void scheduleClaiming(Player player, Faction faction) {
         getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
             // add new chunk to claimed chunks
-            this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), faction);
+            this.claimService.claimChunkAtLocation(player, player.getLocation(), faction);
             this.dynmapService.updateClaimsIfAble();
         }, 1); // delayed by 1 tick (1/20th of a second) because otherwise players will claim the chunk they just left
     }

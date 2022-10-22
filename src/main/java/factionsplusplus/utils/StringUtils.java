@@ -1,6 +1,8 @@
 package factionsplusplus.utils;
 
 import java.util.Arrays;
+import java.util.UUID;
+
 import org.bukkit.ChatColor;
 
 import org.bukkit.Bukkit;
@@ -34,6 +36,12 @@ public class StringUtils {
     @SuppressWarnings("deprecation")
     public static OfflinePlayer parseAsPlayer(String playerName) {
         final OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+        if (player.hasPlayedBefore() || Bukkit.getPlayer(player.getUniqueId()) != null) return player;
+        return null;
+    }
+
+    public static OfflinePlayer parseAsPlayer(UUID playerUUID) {
+        final OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         if (player.hasPlayedBefore() || Bukkit.getPlayer(player.getUniqueId()) != null) return player;
         return null;
     }

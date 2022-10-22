@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 
 import com.google.inject.Inject;
 
-import factionsplusplus.builders.MessageBuilder;
+import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.StringUtils;
@@ -197,7 +197,7 @@ public class CommandContext {
      * 
      * @param builder the MessageBuilder instance
      */
-    public void replyWith(MessageBuilder builder) {
+    public void replyWith(GenericMessageBuilder builder) {
         this.messageService.sendLocalizedMessage(this.sender, builder);
     }
 
@@ -205,7 +205,7 @@ public class CommandContext {
         this.messageService.sendLocalizedMessage(player, localizationKey);
     }
 
-    public void messagePlayer(Player player, MessageBuilder builder) {
+    public void messagePlayer(Player player, GenericMessageBuilder builder) {
         this.messageService.sendLocalizedMessage(player, builder);
     }
 
@@ -213,7 +213,7 @@ public class CommandContext {
         this.messageService.sendFactionLocalizedMessage(faction, localizationKey);
     }
 
-    public void messageFaction(Faction faction, MessageBuilder builder) {
+    public void messageFaction(Faction faction, GenericMessageBuilder builder) {
         this.messageService.sendFactionLocalizedMessage(faction, builder);
     }
 
@@ -221,11 +221,11 @@ public class CommandContext {
         this.messageFaction(this.getExecutorsFaction(), localizationKey);
     }
 
-    public void messagePlayersFaction(MessageBuilder builder) {
+    public void messagePlayersFaction(GenericMessageBuilder builder) {
         this.messageFaction(this.getExecutorsFaction(), builder);
     }
 
-    public void messageAllPlayers(MessageBuilder builder) {
+    public void messageAllPlayers(GenericMessageBuilder builder) {
         this.messageService.sendAllPlayersLocalizedMessage(builder);
     }
 

@@ -22,6 +22,8 @@ import java.io.FileNotFoundException;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
@@ -137,6 +139,64 @@ public class FactionRepository {
      */
     public Faction get(UUID uuid) {
         return this.factionStore.get(uuid);
+    }
+
+
+    // TODO: refactor this, it's a bit bloated
+    /*
+     * Retrieves factions in a factions vassalage tree
+     * 
+     * @param the faction you wish to get the vassalage tree for
+     * @return a List of Faction instances that are in the vassalage tree
+     */
+    public List<Faction> getInVassalageTree(Faction initialFaction) {
+        List<Faction> foundFactions = new ArrayList<>();
+
+        foundFactions.add(initialFaction);
+
+        boolean newFactionsFound = true;
+
+        int numFactionsFound;
+
+        while (newFactionsFound) {
+            List<Faction> toAdd = new ArrayList<>();
+            for (Faction current : foundFactions) {
+
+                // record number of factions
+                numFactionsFound = foundFactions.size();
+
+                Faction liege = this.get(current.getLiege());
+                if (liege != null) {
+                    if (!toAdd.contains(liege) && !foundFactions.contains(liege)) {
+                        toAdd.add(liege);
+                        numFactionsFound++;
+                    }
+
+                    for (UUID vassalID : liege.getVassals()) {
+                        Faction vassal = this.get(vassalID);
+                        if (!toAdd.contains(vassal) && !foundFactions.contains(vassal)) {
+                            toAdd.add(vassal);
+                            numFactionsFound++;
+                        }
+                    }
+                }
+
+                for (UUID vassalID : current.getVassals()) {
+                    Faction vassal = this.get(vassalID);
+                    if (!toAdd.contains(vassal) && !foundFactions.contains(vassal)) {
+                        toAdd.add(vassal);
+                        numFactionsFound++;
+                    }
+                }
+                // if number of factions not different then break loop
+                if (numFactionsFound == foundFactions.size()) {
+                    newFactionsFound = false;
+                }
+            }
+            foundFactions.addAll(toAdd);
+            toAdd.clear();
+        }
+        return foundFactions;
     }
 
     // Retrieve all factions

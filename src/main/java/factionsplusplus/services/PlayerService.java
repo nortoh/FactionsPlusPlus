@@ -14,8 +14,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.Arrays;
+import java.util.Objects;
+
+import static org.bukkit.Bukkit.getServer;
+
 
 /**
  * Sends messages to players and the console.
@@ -106,6 +112,49 @@ public class PlayerService {
     public void resetPowerLevels() {
         final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
         this.dataService.getPlayerRecordRepository().all().forEach(record -> record.setPower(initialPowerLevel));
+    }
+
+    public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
+        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
+        Arrays.stream(Bukkit.getOfflinePlayers())
+            .filter(player -> this.dataService.getPlayerRecord(player.getUniqueId()) == null)
+            .forEach(player -> {
+                PlayerRecord newRecord = new PlayerRecord(player.getUniqueId(), 1, initialPowerLevel);
+                newRecord.setLastLogout(ZonedDateTime.now());
+                this.dataService.getPlayerRecordRepository().create(newRecord);
+            });
+    }
+
+    public void initiatePowerIncreaseForAllPlayers() {
+        this.dataService.getPlayerRecordRepository()
+            .all()
+            .stream()
+            .forEach(record -> this.initiatePowerIncrease(record));
+    }
+
+    private void initiatePowerIncrease(PlayerRecord record) {
+        double maxPower = this.getMaxPower(record.getPlayerUUID());
+        if (record.getPower() < maxPower && Objects.requireNonNull(getServer().getPlayer(record.getPlayerUUID())).isOnline()) {
+            this.increasePower(record.getPlayerUUID());
+            // TODO: re-implement messaging ALertPowerLevelIncreasedBY with amount being the config option as int "powerIncreaseAmount"
+        }
+    }
+
+    public void decreasePowerForInactivePlayers() {
+        if (! this.configService.getBoolean("powerDecreases")) return;
+        final int minutesBeforePowerDecrease = this.configService.getInt("minutesBeforePowerDecrease");
+        this.dataService.getPlayerRecords()
+            .stream()
+            .filter(record -> {
+                Player player = getServer().getPlayer(record.getPlayerUUID());
+                if (player == null || ! player.isOnline()) {
+                    if (record.getMinutesSinceLastLogout() > minutesBeforePowerDecrease) return true;
+                }
+                return false;
+            })
+            .forEach(record -> {
+                this.decreasePower(record.getPlayerUUID());
+            });
     }
 
 }

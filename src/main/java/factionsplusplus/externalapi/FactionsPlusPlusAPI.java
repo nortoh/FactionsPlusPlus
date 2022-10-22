@@ -9,7 +9,6 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ConfigService;
@@ -27,7 +26,6 @@ import java.util.UUID;
 @Singleton
 public class FactionsPlusPlusAPI {
     private final FactionsPlusPlus factionsPlusPlus;
-    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final ConfigService configService;
     private final DataService dataService;
@@ -35,9 +33,8 @@ public class FactionsPlusPlusAPI {
     private final String APIVersion = "v1.0.0"; // every time the external API is altered, this should be incremented
 
     @Inject
-    public FactionsPlusPlusAPI(DataService dataService, FactionsPlusPlus factionsPlusPlus, PersistentData persistentData, EphemeralData ephemeralData, ConfigService configService) {
+    public FactionsPlusPlusAPI(DataService dataService, FactionsPlusPlus factionsPlusPlus, EphemeralData ephemeralData, ConfigService configService) {
         this.factionsPlusPlus = factionsPlusPlus;
-        this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.configService = configService;
         this.dataService = dataService;

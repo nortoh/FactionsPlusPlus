@@ -7,7 +7,6 @@ package factionsplusplus.factories;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
 import factionsplusplus.repositories.WarRepository;

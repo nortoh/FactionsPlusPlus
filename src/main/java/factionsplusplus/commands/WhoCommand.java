@@ -11,7 +11,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.DataService;
-import factionsplusplus.utils.extended.Messenger;
+import factionsplusplus.services.FactionService;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -26,12 +26,12 @@ import java.util.UUID;
  */
 @Singleton
 public class WhoCommand extends Command {
-    private final Messenger messenger;
+    private final FactionService factionService;
     private final DataService dataService;
 
     @Inject
     public WhoCommand(
-        Messenger messenger,
+        FactionService factionService,
         DataService dataService
     ) {
         super(
@@ -50,7 +50,7 @@ public class WhoCommand extends Command {
                 )
         );
         this.dataService = dataService;
-        this.messenger = messenger;
+        this.factionService = factionService;
     }
 
     public void execute(CommandContext context) {
@@ -59,10 +59,6 @@ public class WhoCommand extends Command {
             context.replyWith("PlayerIsNotInAFaction");
             return;
         }
-        this.messenger.sendFactionInfo(
-            context.getPlayer(), 
-            temp,
-            this.dataService.getClaimedChunkRepository().getAllForFaction(temp).size()
-        );
+        context.replyWith(this.factionService.generateFactionInfo(temp));
     }
 }

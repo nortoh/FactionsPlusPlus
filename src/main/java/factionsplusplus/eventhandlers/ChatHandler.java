@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
@@ -20,14 +19,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import preponderous.ponder.minecraft.bukkit.tools.ColorChecker;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Daniel McCoy Stephenson
  */
 @Singleton
 public class ChatHandler implements Listener {
-    private final PersistentData persistentData;
     private final ConfigService configService;
     private final EphemeralData ephemeralData;
     private final MessageService messageService;
@@ -39,8 +37,7 @@ public class ChatHandler implements Listener {
     private String message;
 
     @Inject
-    public ChatHandler(PersistentData persistentData, ConfigService configService, EphemeralData ephemeralData, MessageService messageService, DataService dataService) {
-        this.persistentData = persistentData;
+    public ChatHandler(ConfigService configService, EphemeralData ephemeralData, MessageService messageService, DataService dataService) {
         this.configService = configService;
         this.ephemeralData = ephemeralData;
         this.messageService = messageService;
@@ -84,7 +81,7 @@ public class ChatHandler implements Listener {
     }
 
     private void sendMessageToVassalageTree(Faction playersFaction, String prefixColor, String prefix, AsyncPlayerChatEvent event, String factionChatColor, String message) {
-        ArrayList<Faction> factionsInVassalageTree = persistentData.getFactionsInVassalageTree(playersFaction);
+        List<Faction> factionsInVassalageTree = this.dataService.getFactionsInVassalageTree(playersFaction);
         ColorChecker colorChecker = new ColorChecker();
         for (Faction faction : factionsInVassalageTree) {
             if (configService.getBoolean("showPrefixesInFactionChat")) {

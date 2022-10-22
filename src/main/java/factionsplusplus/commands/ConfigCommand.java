@@ -14,7 +14,6 @@ import factionsplusplus.models.ConfigOption;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
-import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.builders.*;
 import factionsplusplus.constants.SetConfigResult;
 
@@ -175,7 +174,7 @@ public class ConfigCommand extends Command {
      * @param sender who sent the command.
      * @param args   of the command.
      */
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    /*public List<String> handleTabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
             return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
         } else if (args.length == 2) {
@@ -183,5 +182,5 @@ public class ConfigCommand extends Command {
             //if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
         }
         return null;
-    }
+    }*/
 }

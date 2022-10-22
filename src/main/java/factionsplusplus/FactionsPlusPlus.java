@@ -6,7 +6,6 @@ package factionsplusplus;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.di.PluginModule;
 import factionsplusplus.eventhandlers.*;
 import factionsplusplus.externalapi.FactionsPlusPlusAPI;
@@ -42,11 +41,11 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     @Inject private ConfigService configService;
     @Inject private Logger logger;
     @Inject private DataService dataService;
-    @Inject private PersistentData persistentData;
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;
     @Inject private LocaleService localeService;
     @Inject private Provider<DynmapIntegrationService> dynmapService;
+    @Inject private PlayerService playerService;
 
     private Injector injector;
 
@@ -140,7 +139,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     }
 
     private void makeSureEveryPlayerExperiencesPowerDecay() {
-        persistentData.createActivityRecordForEveryOfflinePlayer();
+        this.playerService.createActivityRecordForEveryOfflinePlayer();
     }
 
     /**

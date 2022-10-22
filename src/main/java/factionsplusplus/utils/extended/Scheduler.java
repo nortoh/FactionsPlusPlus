@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
@@ -35,7 +34,6 @@ public class Scheduler {
     @Inject private Logger logger;
     @Inject private LocaleService localeService;
     @Inject private FactionsPlusPlus factionsPlusPlus;
-    @Inject private PersistentData persistentData;
     @Inject private ConfigService configService;
     @Inject private PlayerService playerService;
     @Inject private MessageService messageService;
@@ -70,7 +68,7 @@ public class Scheduler {
                         .replace("#amount#", String.valueOf(configService.getInt("powerIncreaseAmount")))
                         .replace("#frequency#", String.valueOf(configService.getInt("minutesBetweenPowerIncreases")))
                 );
-                persistentData.initiatePowerIncreaseForAllPlayers();
+                playerService.initiatePowerIncreaseForAllPlayers();
             }
         }, delay * 20L, secondsUntilRepeat * 20L);
     }
@@ -86,10 +84,10 @@ public class Scheduler {
                     .replace("#frequency#", String.valueOf(configService.getInt("minutesBetweenPowerDecreases")))
             );
 
-            persistentData.decreasePowerForInactivePlayers();
+            playerService.decreasePowerForInactivePlayers();
 
-            if (configService.getBoolean("zeroPowerFactionsGetDisbanded")) {
-                persistentData.disbandAllZeroPowerFactions();
+            if (this.configService.getBoolean("zeroPowerFactionsGetDisbanded")) {
+                this.factionService.disbandAllZeroPowerFactions();
             }
 
             for (Player player : this.factionsPlusPlus.getServer().getOnlinePlayers()) {

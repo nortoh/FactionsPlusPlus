@@ -11,7 +11,6 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.constants.GateStatus;
 import factionsplusplus.constants.ErrorCodeAddCoord;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
@@ -38,7 +37,6 @@ import javax.inject.Provider;
  */
 @Singleton
 public class GateService {
-    private final Provider<PersistentData> persistentData;
     private final EphemeralData ephemeralData;
     private final MessageService messageService;
     private final FactionsPlusPlus factionsPlusPlus;
@@ -47,14 +45,12 @@ public class GateService {
 
     @Inject
     public GateService(
-        Provider<PersistentData> persistentData,
         EphemeralData ephemeralData,
         MessageService messageService,
         FactionsPlusPlus factionsPlusPlus,
         ConfigService configService,
         DataService dataService
     ) {
-        this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.messageService = messageService;
         this.factionsPlusPlus = factionsPlusPlus;

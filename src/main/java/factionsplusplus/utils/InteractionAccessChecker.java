@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
@@ -26,15 +25,13 @@ import javax.inject.Provider;
  */
 @Singleton
 public class InteractionAccessChecker {
-    private final Provider<PersistentData> persistentData;
     private final ConfigService configService;
     private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DataService dataService;
 
     @Inject
-    public InteractionAccessChecker(Provider<PersistentData> persistentData, ConfigService configService, EphemeralData ephemeralData, Logger logger, DataService dataService) {
-        this.persistentData = persistentData;
+    public InteractionAccessChecker(ConfigService configService, EphemeralData ephemeralData, Logger logger, DataService dataService) {
         this.configService = configService;
         this.ephemeralData = ephemeralData;
         this.logger = logger;
@@ -81,7 +78,7 @@ public class InteractionAccessChecker {
 
         final Faction chunkHolder = this.dataService.getFaction(chunk.getHolder());
 
-        boolean inVassalageTree = this.persistentData.get().isPlayerInFactionInVassalageTree(player, chunkHolder);
+        boolean inVassalageTree = this.dataService.isPlayerInVassalageTree(player, chunkHolder);
         boolean isAlly = playersFaction.isAlly(chunk.getHolder());
         boolean allyInteractionAllowed = chunkHolder.getFlag("alliesCanInteractWithLand").toBoolean();
         boolean vassalageTreeInteractionAllowed = chunkHolder.getFlag("vassalageTreeCanInteractWithLand").toBoolean();

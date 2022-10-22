@@ -8,10 +8,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DynmapIntegrationService;
 import org.bukkit.entity.Player;
 
@@ -26,13 +26,13 @@ public class UnclaimCommand extends Command {
 
     private final EphemeralData ephemeralData;
     private final DynmapIntegrationService dynmapService;
-    private final PersistentData persistentData;
+    private final ClaimService claimService;
 
     @Inject
     public UnclaimCommand(
         EphemeralData ephemeralData,
         DynmapIntegrationService dynmapService,
-        PersistentData persistentData
+        ClaimService claimService
     ) {
         super(
             new CommandBuilder()
@@ -50,8 +50,8 @@ public class UnclaimCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
-        this.persistentData = persistentData;
         this.dynmapService = dynmapService;
+        this.claimService = claimService;
     }
 
     public void execute(CommandContext context) {
@@ -66,7 +66,7 @@ public class UnclaimCommand extends Command {
             }
         }
         if (context.getRawArguments().length == 0) {
-            this.persistentData.getChunkDataAccessor().removeChunkAtPlayerLocation(player, faction);
+            this.claimService.removeChunkAtPlayerLocation(player, faction);
             this.dynmapService.updateClaimsIfAble();
             context.replyWith("UnClaimed");
             return;
@@ -75,7 +75,7 @@ public class UnclaimCommand extends Command {
         if (radius <= 0) {
             radius = 1;
         }
-        this.persistentData.getChunkDataAccessor().radiusUnclaimAtLocation(radius, player, faction);
+        this.claimService.radiusUnclaimAtLocation(radius, player, faction);
         context.replyWith(
             this.constructMessage("UnClaimedRadius")
                 .with("number", String.valueOf(radius))

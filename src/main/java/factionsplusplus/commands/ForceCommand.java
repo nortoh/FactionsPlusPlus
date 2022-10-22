@@ -9,7 +9,6 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.events.*;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
@@ -17,6 +16,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.models.War;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
@@ -37,19 +37,19 @@ import java.util.*;
 public class ForceCommand extends Command {
     private final FactionsPlusPlus factionsPlusPlus;
     private final Logger logger;
-    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final FactionService factionService;
     private final DataService dataService;
+    private final ClaimService claimService;
 
     @Inject
     public ForceCommand(
-        PersistentData persistentData,
         EphemeralData ephemeralData,
         FactionsPlusPlus factionsPlusPlus,
         Logger logger,
         FactionService factionService,
-        DataService dataService
+        DataService dataService,
+        ClaimService claimService
     ) {
         super(
             new CommandBuilder()
@@ -358,8 +358,8 @@ public class ForceCommand extends Command {
                                 .isRequired()
                         )
                 )
-        );        
-        this.persistentData = persistentData;
+        );
+        this.claimService = claimService;
         this.ephemeralData = ephemeralData;
         this.factionsPlusPlus = factionsPlusPlus;
         this.logger = logger;
@@ -502,7 +502,7 @@ public class ForceCommand extends Command {
     // "mf.force.renounce", "mf.force.*", "mf.admin"
     public void renounceCommand(CommandContext context) {
         final Faction faction = context.getFactionArgument("faction");
-        long changes = this.persistentData.removeLiegeAndVassalReferencesToFaction(faction.getID());
+        long changes = this.factionService.removeLiegeAndVassalReferencesToFaction(faction.getID());
 
         if (faction.getLiege() != null) {
             faction.setLiege(null);
@@ -637,7 +637,7 @@ public class ForceCommand extends Command {
     // "mf.force.claim", "mf.force.*", "mf.admin"
     public void claimCommand(CommandContext context) {
         final Faction faction = context.getFactionArgument("faction");
-        this.persistentData.getChunkDataAccessor().forceClaimAtPlayerLocation(context.getPlayer(), faction);
+        this.claimService.forceClaimAtPlayerLocation(context.getPlayer(), faction);
         context.replyWith("Done");
     }
 

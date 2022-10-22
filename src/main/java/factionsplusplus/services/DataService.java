@@ -20,6 +20,7 @@ import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.ConfigOption;
+import factionsplusplus.models.Gate;
 import factionsplusplus.repositories.*;
 
 
@@ -89,6 +90,24 @@ public class DataService {
         return this.factionRepository.getForPlayer(playerUUID);
     }
 
+    public List<Faction> getFactionsInVassalageTree(Faction faction) {
+        return this.factionRepository.getInVassalageTree(faction);
+    }
+
+    public Faction getGatesFaction(Gate gate) {
+        return this.getFactions()
+            .stream()
+            .filter(faction -> faction.getGates().contains(gate))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public boolean isPlayerInVassalageTree(OfflinePlayer player, Faction faction) {
+        return this.getFactionsInVassalageTree(faction)
+            .stream()
+            .anyMatch(f -> f.isMember(player.getUniqueId()));
+    }
+
     public boolean isPlayerInFaction(OfflinePlayer player) {
         return this.factionRepository.getForPlayer(player) != null;
     }
@@ -107,6 +126,19 @@ public class DataService {
 
     public Collection<Faction> getFactions() {
         return this.factionRepository.all().values();
+    }
+
+    public Gate getGate(Block targetBlock) {
+        return this.getFactions()
+            .stream()
+            .flatMap(faction -> faction.getGates().stream())
+            .filter(gate -> gate.hasBlock(targetBlock))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public boolean isGateBlock(Block targetBlock) {
+        return this.getGate(targetBlock) != null;
     }
 
     public ClaimedChunkRepository getClaimedChunkRepository() {

@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.builders.MessageBuilder;
+import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.utils.StringUtils;
 import factionsplusplus.models.Faction;
 
@@ -38,30 +39,40 @@ public class MessageService {
         this.send(sender, this.localeService.get(localizationKey));
     }
 
-    public void sendLocalizedMessage(CommandSender sender, MessageBuilder builder) {
-        this.send(
-            sender,
-            builder.toString(
-                this.localeService.get(builder.getLocalizationKey())
-            )
-        );
+    public void sendLocalizedMessage(CommandSender sender, GenericMessageBuilder builder) {
+        for (MessageBuilder mBuilder : builder.getMessageBuilders()) {
+            this.send(
+                sender,
+                mBuilder.toString(
+                    this.localeService.get(mBuilder.getLocalizationKey())
+                )
+            );
+        }
     }
 
-    public void sendAllPlayersLocalizedMessage(MessageBuilder builder) {
-        this.sendToAllPlayers(builder.toString(this.localeService.get(builder.getLocalizationKey())));
+    public void sendAllPlayersLocalizedMessage(GenericMessageBuilder builder) {
+        for (MessageBuilder mBuilder : builder.getMessageBuilders()) {
+            this.sendToAllPlayers(
+                mBuilder.toString(
+                    this.localeService.get(mBuilder.getLocalizationKey())
+                )
+            );
+        }
     }
 
     public void sendFactionLocalizedMessage(Faction faction, String localizationKey) {
         this.sendToFaction(faction, localizationKey);
     }
 
-    public void sendFactionLocalizedMessage(Faction faction, MessageBuilder builder) {
-        this.sendToFaction(
-            faction, 
-            builder.toString(
-                this.localeService.get(builder.getLocalizationKey())
-            )
-        );
+    public void sendFactionLocalizedMessage(Faction faction, GenericMessageBuilder builder) {
+        for (MessageBuilder mBuilder : builder.getMessageBuilders()) {
+            this.sendToFaction(
+                faction, 
+                mBuilder.toString(
+                    this.localeService.get(mBuilder.getLocalizationKey())
+                )
+            );
+        }
     }
 
     public void sendPermissionMissingMessage(CommandSender sender, List<String> missingPermissions) {

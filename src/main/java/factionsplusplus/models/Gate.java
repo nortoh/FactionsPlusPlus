@@ -25,7 +25,7 @@ import com.google.gson.annotations.Expose;
 public class Gate {
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
     @Expose
-    private String name = "gateName";
+    private String name = null;
     @Expose
     private boolean open = false;
     @Expose

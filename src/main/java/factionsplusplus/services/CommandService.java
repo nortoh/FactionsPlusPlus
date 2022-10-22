@@ -15,7 +15,6 @@ import factionsplusplus.models.FactionFlag;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.RelationChecker;
 import factionsplusplus.utils.StringUtils;
-import factionsplusplus.utils.extended.Messenger;
 import factionsplusplus.utils.extended.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
