@@ -19,6 +19,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
+import org.bukkit.block.Block;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.reflect.Type;
@@ -61,6 +63,10 @@ public class LockedBlockRepository {
     // Delete a locked block
     public void delete(LockedBlock block) {
         this.lockedBlockStore.remove(block);
+    }
+    public void delete(Block b) {
+        LockedBlock block = this.get(b.getX(), b.getY(), b.getZ(), b.getWorld().getName());
+        if (block != null) this.delete(block);
     }
 
     // Retrieve a locked block by location

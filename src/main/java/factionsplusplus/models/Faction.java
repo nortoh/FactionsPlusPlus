@@ -215,4 +215,8 @@ public class Faction extends Nation implements Feudal {
     public void removeAttemptedVassalization(UUID uuid) {
         if (this.hasBeenOfferedVassalization(uuid)) this.attemptedVassalizations.remove(uuid);
     }
+
+    public String toString() {
+        return this.name;
+    }
 }

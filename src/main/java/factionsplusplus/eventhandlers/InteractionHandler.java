@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
+import factionsplusplus.models.Gate;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.InteractionContext;
@@ -49,7 +49,6 @@ import java.util.Objects;
  */
 @Singleton
 public class InteractionHandler implements Listener {
-    private final PersistentData persistentData;
     private final InteractionAccessChecker interactionAccessChecker;
     private final MessageService messageService;
     private final BlockChecker blockChecker;
@@ -58,10 +57,10 @@ public class InteractionHandler implements Listener {
     private final EphemeralData ephemeralData;
     private final GateService gateService;
     private final DataService dataService;
+    private final ClaimService claimService;
 
     @Inject
     public InteractionHandler(
-        PersistentData persistentData,
         InteractionAccessChecker interactionAccessChecker,
         BlockChecker blockChecker,
         FactionsPlusPlus factionsPlusPlus,
@@ -69,9 +68,9 @@ public class InteractionHandler implements Listener {
         EphemeralData ephemeralData,
         GateService gateService,
         MessageService messageService,
-        DataService dataService
+        DataService dataService,
+        ClaimService claimService
     ) {
-        this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;
         this.blockChecker = blockChecker;
         this.factionsPlusPlus = factionsPlusPlus;
@@ -79,6 +78,7 @@ public class InteractionHandler implements Listener {
         this.ephemeralData = ephemeralData;
         this.gateService = gateService;
         this.messageService = messageService;
+        this.claimService = claimService;
         this.dataService = dataService;
     }
 
@@ -86,29 +86,35 @@ public class InteractionHandler implements Listener {
     public void handle(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(block.getLocation().getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(block.getLocation().getChunk());
 
-        if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+        if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
             return;
         }
 
-        if (persistentData.isBlockInGate(block, player)) {
+        final Gate gate = this.dataService.getGate(block);
+        if (gate != null) {
             event.setCancelled(true);
+            this.messageService.sendLocalizedMessage(
+                player,
+                new MessageBuilder("BlockIsPartOfGateMustRemoveGate")
+                    .with("name", gate.getName())
+            );
             return;
         }
 
-        if (persistentData.isBlockLocked(block)) {
-            boolean isOwner = persistentData.getLockedBlock(block).getOwner().equals(player.getUniqueId());
+        if (this.dataService.isBlockLocked(block)) {
+            boolean isOwner = this.dataService.getLockedBlock(block).getOwner().equals(player.getUniqueId());
             if (!isOwner) {
                 event.setCancelled(true);
-                messageService.sendLocalizedMessage(player, "AlertNonOwnership");
+                this.messageService.sendLocalizedMessage(player, "AlertNonOwnership");
                 return;
             }
 
-            persistentData.removeLockedBlock(block);
+            this.dataService.getLockedBlockRepository().delete(block);
 
-            if (blockChecker.isDoor(block)) {
+            if (this.blockChecker.isDoor(block)) {
                 removeLocksAboveAndBelowTheOriginalBlockAsWell(block);
             }
         }
@@ -118,11 +124,11 @@ public class InteractionHandler implements Listener {
 
         Block relativeUp = block.getRelative(BlockFace.UP);
         Block relativeDown = block.getRelative(BlockFace.DOWN);
-        if (blockChecker.isDoor(relativeUp)) {
-            persistentData.removeLockedBlock(relativeUp);
+        if (this.blockChecker.isDoor(relativeUp)) {
+            this.dataService.getLockedBlockRepository().delete(relativeUp);
         }
-        if (blockChecker.isDoor(relativeDown)) {
-            persistentData.removeLockedBlock(relativeDown);
+        if (this.blockChecker.isDoor(relativeDown)) {
+            this.dataService.getLockedBlockRepository().delete(relativeDown);
         }
     }
 
@@ -130,21 +136,21 @@ public class InteractionHandler implements Listener {
     public void handle(BlockPlaceEvent event) {
         Player player = event.getPlayer();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(event.getBlock().getLocation().getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(event.getBlock().getLocation().getChunk());
 
-        if (interactionAccessChecker.isPlayerAttemptingToPlaceLadderInEnemyTerritoryAndIsThisAllowed(event.getBlockPlaced(), player, claimedChunk)) {
+        if (this.interactionAccessChecker.isPlayerAttemptingToPlaceLadderInEnemyTerritoryAndIsThisAllowed(event.getBlockPlaced(), player, claimedChunk)) {
             return;
         }
 
-        if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+        if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
             return;
         }
 
         if (blockChecker.isChest(event.getBlock())) {
-            boolean isNextToNonOwnedLockedChest = blockChecker.isNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
+            boolean isNextToNonOwnedLockedChest = this.blockChecker.isNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest) {
-                messageService.sendLocalizedMessage(player, "CannotPlaceChestsNextToUnownedLockedChests");
+                this.messageService.sendLocalizedMessage(player, "CannotPlaceChestsNextToUnownedLockedChests");
                 event.setCancelled(true);
                 return;
             }
@@ -153,7 +159,7 @@ public class InteractionHandler implements Listener {
             factionsPlusPlus.getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
                 Block block = player.getWorld().getBlockAt(event.getBlock().getLocation());
 
-                if (!blockChecker.isChest(block)) {
+                if (!this.blockChecker.isChest(block)) {
                     // There has been 2 seconds since we last confirmed this was a chest, double-checking isn't ever bad :)
                     return;
                 }
@@ -165,15 +171,15 @@ public class InteractionHandler implements Listener {
                     Block leftChest = ((Chest) Objects.requireNonNull(doubleChest.getLeftSide())).getBlock();
                     Block rightChest = ((Chest) Objects.requireNonNull(doubleChest.getRightSide())).getBlock();
 
-                    if (persistentData.isBlockLocked(leftChest)) {
+                    if (this.dataService.isBlockLocked(leftChest)) {
                         // lock right chest
-                        LockedBlock right = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getName());
-                        persistentData.addLockedBlock(right);
+                        LockedBlock right = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getName());
+                        this.dataService.getLockedBlockRepository().create(right);
                     } else {
-                        if (persistentData.isBlockLocked(rightChest)) {
+                        if (this.dataService.isBlockLocked(rightChest)) {
                             // lock left chest
-                            LockedBlock left = new LockedBlock(player.getUniqueId(), persistentData.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
-                            persistentData.addLockedBlock(left);
+                            LockedBlock left = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
+                            this.dataService.getLockedBlockRepository().create(left);
                         }
                     }
 
@@ -183,11 +189,11 @@ public class InteractionHandler implements Listener {
 
         // if hopper
         if (event.getBlock().getType() == Material.HOPPER) {
-            boolean isNextToNonOwnedLockedChest = blockChecker.isNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
-            boolean isUnderOrAboveNonOwnedLockedChest = blockChecker.isUnderOrAboveNonOwnedLockedChest(event.getPlayer(), event.getBlock());
+            boolean isNextToNonOwnedLockedChest = this.blockChecker.isNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
+            boolean isUnderOrAboveNonOwnedLockedChest = this.blockChecker.isUnderOrAboveNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest || isUnderOrAboveNonOwnedLockedChest) {
                 event.setCancelled(true);
-                messageService.sendLocalizedMessage(player, "CannotPlaceHoppersNextToUnownedLockedChests");
+                this.messageService.sendLocalizedMessage(player, "CannotPlaceHoppersNextToUnownedLockedChests");
             }
         }
     }
@@ -211,7 +217,7 @@ public class InteractionHandler implements Listener {
             if (context.isLockedBlockUnlock()) this.lockService.handleUnlockingBlock(event, player, clickedBlock);
         }
 
-        LockedBlock lockedBlock = persistentData.getLockedBlock(clickedBlock);
+        LockedBlock lockedBlock = this.dataService.getLockedBlock(clickedBlock);
         if (lockedBlock != null) {
             boolean playerHasAccess = false;
             Faction playersFaction = this.dataService.getFactionRepository().getForPlayer(player);
@@ -225,7 +231,7 @@ public class InteractionHandler implements Listener {
             if (!playerHasAccess && !isPlayerBypassing) {
                 UUIDChecker uuidChecker = new UUIDChecker();
                 String owner = uuidChecker.findPlayerNameBasedOnUUID(lockedBlock.getOwner());
-                messageService.sendLocalizedMessage(
+                this.messageService.sendLocalizedMessage(
                     player,
                     new MessageBuilder("LockedBy")
                         .with("name", owner)
@@ -258,17 +264,17 @@ public class InteractionHandler implements Listener {
         // Check if it's a lever, and if it is and it's connected to a gate in the faction territory then open/close the gate.
         boolean playerClickedLever = clickedBlock.getType().equals(Material.LEVER);
         if (playerClickedLever) {
-            gateService.handlePotentialGateInteraction(clickedBlock, player, event);
+            this.gateService.handlePotentialGateInteraction(clickedBlock, player, event);
         }
 
         // pgarner Sep 2, 2020: Moved this to after test to see if the block is locked because it could be a block they have been granted
         // access to (or in future, a 'public' locked block), so if they're not in the faction whose territory the block exists in we want that
         // check to be handled before the interaction is rejected for not being a faction member.
-        ClaimedChunk chunk = persistentData.getChunkDataAccessor().getClaimedChunk(event.getClickedBlock().getLocation().getChunk());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(event.getClickedBlock().getLocation().getChunk());
         if (chunk != null) {
-            persistentData.getChunkDataAccessor().handleClaimedChunkInteraction(event, chunk);
+            this.claimService.handleClaimedChunkInteraction(event, chunk);
         }
-
+        
         if (context.isGateCreating() && playerHoldingGoldenHoe(player)) {
             gateService.handleCreatingGate(clickedBlock, player, event);
         }
@@ -291,7 +297,7 @@ public class InteractionHandler implements Listener {
             // get chunk that armor stand is in
             location = armorStand.getLocation();
         } else if (clickedEntity instanceof ItemFrame) {
-            if (factionsPlusPlus.isDebugEnabled()) {
+            if (this.factionsPlusPlus.isDebugEnabled()) {
                 System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
             }
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
@@ -302,9 +308,9 @@ public class InteractionHandler implements Listener {
 
         if (location != null) {
             Chunk chunk = location.getChunk();
-            ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(chunk);
+            ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(chunk);
 
-            if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+            if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
                 event.setCancelled(true);
             }
         }
@@ -321,16 +327,16 @@ public class InteractionHandler implements Listener {
         Entity entity = event.getEntity();
 
         // get chunk that entity is in
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(entity.getLocation().getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(entity.getLocation().getChunk());
 
-        if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+        if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler()
     public void handle(PlayerBucketFillEvent event) {
-        if (factionsPlusPlus.isDebugEnabled()) {
+        if (this.factionsPlusPlus.isDebugEnabled()) {
             System.out.println("DEBUG: A player is attempting to fill a bucket!");
         }
 
@@ -338,16 +344,16 @@ public class InteractionHandler implements Listener {
 
         Block clickedBlock = event.getBlockClicked();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
 
-        if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+        if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler()
     public void handle(PlayerBucketEmptyEvent event) {
-        if (factionsPlusPlus.isDebugEnabled()) {
+        if (this.factionsPlusPlus.isDebugEnabled()) {
             System.out.println("DEBUG: A player is attempting to empty a bucket!");
         }
 
@@ -355,16 +361,16 @@ public class InteractionHandler implements Listener {
 
         Block clickedBlock = event.getBlockClicked();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
 
-        if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+        if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler()
     public void handle(EntityPlaceEvent event) {
-        if (factionsPlusPlus.isDebugEnabled()) {
+        if (this.factionsPlusPlus.isDebugEnabled()) {
             System.out.println("DEBUG: A player is attempting to place an entity!");
         }
 
@@ -372,9 +378,9 @@ public class InteractionHandler implements Listener {
 
         Block clickedBlock = event.getBlock();
 
-        ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(clickedBlock.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
 
-        if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+        if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
             event.setCancelled(true);
         }
     }
@@ -385,7 +391,7 @@ public class InteractionHandler implements Listener {
         Entity clickedEntity = event.getRightClicked();
 
         if (clickedEntity instanceof ItemFrame) {
-            if (factionsPlusPlus.isDebugEnabled()) {
+            if (this.factionsPlusPlus.isDebugEnabled()) {
                 System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractEntityEvent!");
             }
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
@@ -393,9 +399,9 @@ public class InteractionHandler implements Listener {
             // get chunk that armor stand is in
             Location location = itemFrame.getLocation();
             Chunk chunk = location.getChunk();
-            ClaimedChunk claimedChunk = persistentData.getChunkDataAccessor().getClaimedChunk(chunk);
+            ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(chunk);
 
-            if (interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
+            if (this.interactionAccessChecker.shouldEventBeCancelled(claimedChunk, player)) {
                 event.setCancelled(true);
             }
         }
@@ -404,6 +410,6 @@ public class InteractionHandler implements Listener {
     @EventHandler()
     public void handle(BlockRedstoneEvent event) {
         Block block = event.getBlock();
-        gateService.handlePotentialGateInteraction(block, event);
+        this.gateService.handlePotentialGateInteraction(block, event);
     }
 }

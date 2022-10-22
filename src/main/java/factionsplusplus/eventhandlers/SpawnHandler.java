@@ -3,8 +3,9 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
+
 import org.bukkit.entity.Monster;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,12 +14,12 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 @Singleton
 public class SpawnHandler implements Listener {
     private final ConfigService configService;
-    private final PersistentData persistentData;
+    private final DataService dataService;
 
     @Inject
-    public SpawnHandler(ConfigService configService, PersistentData persistentData) {
+    public SpawnHandler(ConfigService configService, DataService dataService) {
         this.configService = configService;
-        this.persistentData = persistentData;
+        this.dataService = dataService;
     }
 
     @EventHandler()
@@ -29,6 +30,6 @@ public class SpawnHandler implements Listener {
     }
 
     private boolean isLandClaimed(EntitySpawnEvent event) {
-        return persistentData.getChunkDataAccessor().isClaimed(event.getLocation().getChunk());
+        return this.dataService.isChunkClaimed(event.getLocation().getChunk());
     }
 }

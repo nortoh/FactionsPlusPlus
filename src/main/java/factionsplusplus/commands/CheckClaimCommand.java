@@ -7,9 +7,9 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.builders.CommandBuilder;
 
 /**
@@ -18,10 +18,10 @@ import factionsplusplus.builders.CommandBuilder;
 @Singleton
 public class CheckClaimCommand extends Command {
 
-    private final PersistentData persistentData;
+    private final ClaimService claimService;
 
     @Inject
-    public CheckClaimCommand(PersistentData persistentData) {
+    public CheckClaimCommand(ClaimService claimService) {
         super(
             new CommandBuilder()
                 .withName("checkclaim")
@@ -30,11 +30,11 @@ public class CheckClaimCommand extends Command {
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.checkclaim")
         );
-        this.persistentData = persistentData;
+        this.claimService = claimService;
     }
 
     public void execute(CommandContext context) {
-        final String result = this.persistentData.getChunkDataAccessor().checkOwnershipAtPlayerLocation(context.getPlayer());
+        final String result = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
 
         if (result.equals("unclaimed")) {
             context.replyWith("LandIsUnclaimed");

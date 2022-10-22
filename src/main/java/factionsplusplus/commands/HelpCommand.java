@@ -12,7 +12,6 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.repositories.CommandRepository;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.utils.StringUtils;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -106,7 +105,7 @@ public class HelpCommand extends Command {
      * @param sender who sent the command.
      * @param args   of the command.
      */
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
+    /*public List<String> handleTabComplete(CommandSender sender, String[] args) {
         return TabCompleteTools.filterStartingWith(args[0], IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf));
-    }
+    }*/
 }

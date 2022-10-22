@@ -14,8 +14,8 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.RelationChecker;
+import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.StringUtils;
-import factionsplusplus.utils.extended.Messenger;
 import factionsplusplus.utils.extended.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -198,7 +198,7 @@ public class CommandService implements TabCompleter {
         // Check if this command should require faction specific stuff
         Faction playerFaction = null;
         if (! context.isConsole()) {
-            playerFaction = this.playerService.getPlayerFaction(sender);
+            playerFaction = this.dataService.getPlayersFaction((OfflinePlayer)sender);
             context.setExecutorsFaction(playerFaction);
         }
         if (command.shouldRequireFactionMembership()) {
@@ -475,7 +475,7 @@ public class CommandService implements TabCompleter {
     }
 
     private OfflinePlayer getPlayer(CommandContext context, String argumentData) {
-        final OfflinePlayer player = StringUtils.parseAsPlayer(argumentData);
+        final OfflinePlayer player = PlayerUtils.parseAsPlayer(argumentData);
         if (player == null) {
             context.replyWith(
                 new MessageBuilder("PlayerNotFound")
@@ -711,17 +711,17 @@ public class CommandService implements TabCompleter {
             switch(argument.getType()) {
                 case AlliedFaction:
                     return playersFaction.getAllies().stream()
-                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case EnemyFaction:
                     return playersFaction.getAllies().stream()
-                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case VassaledFaction:
                     return playersFaction.getVassals().stream()
-                        .map(id -> this.dataService.getFactionByID(id).getName().toLowerCase())
+                        .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionMember:

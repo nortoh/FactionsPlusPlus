@@ -3,7 +3,7 @@ package factionsplusplus.utils;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.PlayerService;
 
 import org.bukkit.entity.Player;
@@ -13,25 +13,25 @@ import java.util.UUID;
 
 @Singleton
 public class RelationChecker {
-    private final PersistentData persistentData;
     private final PlayerService playerService;
+    private final DataService dataService;
 
     @Inject
-    public RelationChecker(PersistentData persistentData, PlayerService playerService) {
-        this.persistentData = persistentData;
+    public RelationChecker(PlayerService playerService, DataService dataService) {
         this.playerService = playerService;
+        this.dataService = dataService;
     }
 
     public boolean arePlayersInAFaction(Player player1, Player player2) {
-        return persistentData.isInFaction(player1.getUniqueId()) && persistentData.isInFaction(player2.getUniqueId());
+        return this.dataService.isPlayerInFaction(player1) && this.dataService.isPlayerInFaction(player2);
     }
 
-    public boolean playerNotInFaction(Player player) {
-        return persistentData.getPlayersFaction(player.getUniqueId()) == null;
+    private boolean playerNotInFaction(Player player) {
+        return this.dataService.getPlayersFaction(player.getUniqueId()) == null;
     }
 
-    public boolean playerInFaction(Player player) {
-        return persistentData.isInFaction(player.getUniqueId());
+    private boolean playerInFaction(Player player) {
+        return this.dataService.isPlayerInFaction(player);
     }
 
     public boolean arePlayersInSameFaction(Player player1, Player player2) {
@@ -46,11 +46,11 @@ public class RelationChecker {
         UUID attackersFactionIndex = factionIndices.getLeft();
         UUID victimsFactionIndex = factionIndices.getRight();
 
-        return !(persistentData.getFactionByID(attackersFactionIndex).isEnemy(persistentData.getFactionByID(victimsFactionIndex).getID())) &&
-                !(persistentData.getFactionByID(victimsFactionIndex).isEnemy(persistentData.getFactionByID(attackersFactionIndex).getID()));
+        return !(dataService.getFaction(attackersFactionIndex).isEnemy(dataService.getFaction(victimsFactionIndex).getID())) &&
+                !(dataService.getFaction(victimsFactionIndex).isEnemy(dataService.getFaction(attackersFactionIndex).getID()));
     }
 
     private Pair<UUID, UUID> getFactionIndices(Player player1, Player player2) {
-        return new Pair<>(this.playerService.getPlayerFaction(player1).getID(), this.playerService.getPlayerFaction(player2).getID());
+        return new Pair<>(this.dataService.getPlayersFaction(player1).getID(), this.dataService.getPlayersFaction(player2).getID());
     }
 }

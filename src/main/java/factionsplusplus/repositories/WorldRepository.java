@@ -19,74 +19,77 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.Optional;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.lang.reflect.Type;
+import java.util.Optional;
 
-import factionsplusplus.models.PlayerRecord;
+import org.bukkit.Bukkit;
+
+import factionsplusplus.models.World;
 
 @Singleton
-public class PlayerRecordRepository {
-    private List<PlayerRecord> playerStore = new ArrayList<>();
+public class WorldRepository {
+    private Map<UUID, World> worldStore = new HashMap<>();
     private final String dataPath;
-    private final static String FILE_NAME = "players.json";
-    private final static Type JSON_TYPE = new TypeToken<List<PlayerRecord>>() { }.getType();
+    private final static String FILE_NAME = "worlds.json";
+    private final static Type JSON_TYPE = new TypeToken<Map<UUID, World>>() { }.getType();
 
     @Inject
-    public PlayerRecordRepository(@Named("dataFolder") String dataPath) {
+    public WorldRepository(@Named("dataFolder") String dataPath) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
     }
 
-    // Load records
+    // Load worlds
     public void load() {
-        this.playerStore.clear();
+        this.worldStore.clear();
         try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .serializeNulls()
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.playerStore = gson.fromJson(reader, PlayerRecordRepository.JSON_TYPE);
+            this.worldStore = gson.fromJson(reader, WorldRepository.JSON_TYPE);
+            // TODO: check if world no longer exists
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
     }
 
-    // Save a record after creating
-    public void create(PlayerRecord record) {
-        this.playerStore.add(record);
-    }
-
-    // Delete a record
-    public void delete(PlayerRecord record) {
-        this.playerStore.remove(record);
-    }
-    public void delete(UUID playerUUID) {
-        this.delete(this.get(playerUUID));
-    }
-
-    // Retrieve a record by uuid
-    public PlayerRecord get(UUID playerUUID) {
-        Optional<PlayerRecord> record = this.playerStore.stream()
-            .filter(r -> r.getPlayerUUID().equals(playerUUID))
-            .findFirst();
-        return record.orElse(null);
-    }
-
-    // Retrieve all records
-    public List<PlayerRecord> all() {
-        return this.playerStore;
+    // Save a world after creating
+    public void create(World world) {
+        this.worldStore.put(world.getUUID(), world);
     }
 
     /*
-     * Retrieves the number of players currently stored
+     * Retrieves a World by the underlying Bukkit World obect
      * 
-     * @return the number of players currently stored
+     * @param world The Bukkit World
+     * @return an instance of World if found, otherwise null
      */
-    public int count() {
-        return this.playerStore.size();
+    public World get(org.bukkit.World world) {
+        return this.worldStore.get(world.getUID());
+    }
+
+    /*
+     * Retrieves a World by name
+     * 
+     * @param name The name of the world
+     * @return an instance of World if found, otherwise null
+     */
+    public World get(String name) {
+        return this.get(Bukkit.getWorld(name));
+    }
+
+    /*
+     * Retrieves a World by UUID
+     * 
+     * @param uuid The UUID of the world
+     * @return an instance of World if found, otherwise null
+     */
+    public World get(UUID uuid) {
+        return this.get(Bukkit.getWorld(uuid));
     }
 
     // Write to file
@@ -99,11 +102,10 @@ public class PlayerRecordRepository {
                 .create();
             file.createNewFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(this.playerStore, PlayerRecordRepository.JSON_TYPE));
+            outputStreamWriter.write(gson.toJson(this.worldStore, WorldRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
             // TODO: log here
         }
     }
-    
 }

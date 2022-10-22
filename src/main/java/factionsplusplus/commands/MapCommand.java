@@ -8,11 +8,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.commands.abs.FontMetrics;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
+
 import org.bukkit.Chunk;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -29,10 +30,10 @@ import java.util.UUID;
 public class MapCommand extends Command {
     private final char[] map_keys = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789abcdeghjmnopqrsuvwxyz?".toCharArray();
 
-    private final PersistentData persistentData;
+    private final DataService dataService;
 
     @Inject
-    public MapCommand(PersistentData persistentData) {
+    public MapCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("map")
@@ -41,7 +42,7 @@ public class MapCommand extends Command {
                 .expectsPlayerExecution()
                 .requiresPermissions("mf.map")
         );
-        this.persistentData = persistentData;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -63,9 +64,9 @@ public class MapCommand extends Command {
             final StringBuilder line = new StringBuilder();
             for (int x = topLeftX; x <= bottomRightX; x++) {
                 Chunk tmp = center.getWorld().getChunkAt(x, z);
-                if (this.persistentData.getChunkDataAccessor().isClaimed(tmp)) {
-                    ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(tmp);
-                    Faction chunkHolder = this.persistentData.getFactionByID(chunk.getHolder());
+                if (this.dataService.isChunkClaimed(tmp)) {
+                    ClaimedChunk chunk = this.dataService.getClaimedChunk(tmp);
+                    Faction chunkHolder = this.dataService.getFaction(chunk.getHolder());
                     printedHolders.put(chunkHolder.getName(), printedHolders.getOrDefault(chunkHolder.getName(), 0) + 1);
                     int index = this.getIndex(chunkHolder.getName(), printedHolders);
                     char map_key = index == -1 ? '§' : map_keys[index];

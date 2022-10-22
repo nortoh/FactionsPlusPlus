@@ -1,10 +1,9 @@
 package factionsplusplus.utils;
 
 import java.util.Arrays;
-import org.bukkit.ChatColor;
+import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.ChatColor;
 
 public class StringUtils {
     public static Integer parseAsInteger(String string) {
@@ -28,13 +27,6 @@ public class StringUtils {
         final String[] falseValues = {"no", "off", "false", "n"};
         if (Arrays.asList(trueValues).contains(string.toLowerCase())) return true;
         if (Arrays.asList(falseValues).contains(string.toLowerCase())) return false;
-        return null;
-    }
-
-    @SuppressWarnings("deprecation")
-    public static OfflinePlayer parseAsPlayer(String playerName) {
-        final OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player.hasPlayedBefore() || Bukkit.getPlayer(player.getUniqueId()) != null) return player;
         return null;
     }
 

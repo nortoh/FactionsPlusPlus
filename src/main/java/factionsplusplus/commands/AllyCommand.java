@@ -7,14 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.PlayerService;
-import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
@@ -30,8 +27,6 @@ import java.util.UUID;
  */
 @Singleton
 public class AllyCommand extends Command {
-    protected final PlayerService playerService;
-    protected final PersistentData persistentData;
     protected final LocaleService localeService;
     protected final FactionRepository factionRepository;
 
@@ -40,9 +35,7 @@ public class AllyCommand extends Command {
      */
     @Inject
     public AllyCommand(
-        PlayerService playerService,
         LocaleService localeService,
-        PersistentData persistentData,
         FactionRepository factionRepository
     ) {
         super(
@@ -64,8 +57,6 @@ public class AllyCommand extends Command {
                         .isRequired() 
                 )
         );
-        this.playerService = playerService;
-        this.persistentData = persistentData;
         this.localeService = localeService;
         this.factionRepository = factionRepository;
     }

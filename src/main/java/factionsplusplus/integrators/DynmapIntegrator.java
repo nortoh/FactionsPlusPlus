@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
@@ -32,7 +31,6 @@ public class DynmapIntegrator {
     private final Logger logger;
     private final LocaleService localeService;
     private final FactionsPlusPlus factionsPlusPlus;
-    private final PersistentData persistentData;
     private final FactionService factionService;
     private final DataService dataService;
 
@@ -55,14 +53,12 @@ public class DynmapIntegrator {
         Logger logger,
         LocaleService localeService,
         FactionsPlusPlus factionsPlusPlus,
-        PersistentData persistentData,
         FactionService factionService,
         DataService dataService
     ) {
         this.logger = logger;
         this.localeService = localeService;
         this.factionsPlusPlus = factionsPlusPlus;
-        this.persistentData = persistentData;
         this.factionService = factionService;
         this.dataService = dataService;
         PluginManager pm = getServer().getPluginManager();
@@ -188,9 +184,9 @@ public class DynmapIntegrator {
 
         /* Loop through realms and build area markers coloured in the same colour
             as each faction's liege's colour. */
-        for (Faction f : this.persistentData.getFactions()) {
+        for (Faction f : this.dataService.getFactions()) {
             UUID liegeID = this.factionService.getTopLiege(f);
-            Faction liege = this.persistentData.getFactionByID(liegeID);
+            Faction liege = this.dataService.getFaction(liegeID);
             String liegeName;
             String liegeColor;
             String popupText;
@@ -226,7 +222,7 @@ public class DynmapIntegrator {
         Map<String, Marker> newmark = new HashMap<>(); /* Build new map */
 
         /* Loop through factions and build coloured faction area markers. */
-        for (Faction f : this.persistentData.getFactions()) {
+        for (Faction f : this.dataService.getFactions()) {
             this.dynmapUpdateFaction(f, this.claims, newmap, "claims", f.getName(), buildNationPopupText(f), f.getFlag("dynmapTerritoryColor").toString(), newmap);
         }
 
@@ -250,7 +246,7 @@ public class DynmapIntegrator {
                 "<div style='display: inline;' title='" + f.getMemberListSeparatedByCommas() + "'>Population: " + f.getMemberList().size() + "</div><br/>";
 
         if (f.hasLiege()) {
-            message += "Liege: " + this.dataService.getFactionByID(f.getLiege()).getName() + "<br/>";
+            message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";
         }
         if (f.isLiege()) {
             message += "Vassals: " + f.getVassalsSeparatedByCommas() + "<br/>";
@@ -259,7 +255,7 @@ public class DynmapIntegrator {
                 "At War With: " + f.getEnemiesSeparatedByCommas() + "<br/>" +
                 "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
-                this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(f.getID()),
+                this.dataService.getClaimedChunksForFaction(f).size(),
                 this.factionService.getCumulativePowerLevel(f));
         return message;
     }
@@ -486,10 +482,10 @@ public class DynmapIntegrator {
             String setid = this.getDynmapFactionSetId(holder);
             MarkerAPI markerapi = this.getMarkerAPI();
             Set<String> plids = new HashSet<>();
-            Faction f = this.persistentData.getFaction(holder);
+            Faction f = this.dataService.getFaction(holder);
             if (f != null) {
-                for (PlayerRecord record : this.persistentData.getPlayerRecords()) {
-                    Faction pf = this.persistentData.getPlayersFaction(record.getPlayerUUID());
+                for (PlayerRecord record : this.dataService.getPlayerRecords()) {
+                    Faction pf = this.dataService.getPlayersFaction(record.getPlayerUUID());
                     if (pf != null && pf.getName().equalsIgnoreCase(holder)) {
                         UUIDChecker uuidChecker = new UUIDChecker();
                         plids.add(uuidChecker.findPlayerNameBasedOnUUID(record.getPlayerUUID()));

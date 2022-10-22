@@ -8,9 +8,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
@@ -34,11 +34,11 @@ public class Scheduler {
     @Inject private Logger logger;
     @Inject private LocaleService localeService;
     @Inject private FactionsPlusPlus factionsPlusPlus;
-    @Inject private PersistentData persistentData;
     @Inject private ConfigService configService;
     @Inject private PlayerService playerService;
     @Inject private MessageService messageService;
     @Inject private FactionService factionService;
+    @Inject private DataService dataService;
 
     public void scheduleAutosave() {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingHourlyAutoSave"));
@@ -51,7 +51,7 @@ public class Scheduler {
             @Override
             public void run() {
                 logger.debug(localeService.get("ConsoleAlerts.HourlySaveAlert"));
-                persistentData.getLocalStorageService().save();
+                dataService.save();
             }
         }, delay * 20L, secondsUntilRepeat * 20L);
     }
@@ -68,7 +68,7 @@ public class Scheduler {
                         .replace("#amount#", String.valueOf(configService.getInt("powerIncreaseAmount")))
                         .replace("#frequency#", String.valueOf(configService.getInt("minutesBetweenPowerIncreases")))
                 );
-                persistentData.initiatePowerIncreaseForAllPlayers();
+                playerService.initiatePowerIncreaseForAllPlayers();
             }
         }, delay * 20L, secondsUntilRepeat * 20L);
     }
@@ -84,10 +84,10 @@ public class Scheduler {
                     .replace("#frequency#", String.valueOf(configService.getInt("minutesBetweenPowerDecreases")))
             );
 
-            persistentData.decreasePowerForInactivePlayers();
+            playerService.decreasePowerForInactivePlayers();
 
-            if (configService.getBoolean("zeroPowerFactionsGetDisbanded")) {
-                persistentData.disbandAllZeroPowerFactions();
+            if (this.configService.getBoolean("zeroPowerFactionsGetDisbanded")) {
+                this.factionService.disbandAllZeroPowerFactions();
             }
 
             for (Player player : this.factionsPlusPlus.getServer().getOnlinePlayers()) {
@@ -97,7 +97,7 @@ public class Scheduler {
     }
 
     private void informPlayerIfTheirLandIsInDanger(Player player) {
-        Faction faction = this.persistentData.getPlayersFaction(player.getUniqueId());
+        Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction != null) {
             if (this.isFactionExceedingTheirDemesneLimit(faction)) {
                 this.messageService.sendLocalizedMessage(player, "AlertMoreClaimedChunksThanPower");
@@ -106,7 +106,7 @@ public class Scheduler {
     }
 
     private boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (this.persistentData.getChunkDataAccessor().getChunksClaimedByFaction(faction.getID()) > this.factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {

@@ -61,7 +61,7 @@ public class DeclareIndependenceCommand extends Command {
             return;
         }
 
-        final Faction liege = this.factionRepository.getByID(faction.getLiege());
+        final Faction liege = this.factionRepository.get(faction.getLiege());
 
         // break vassal agreement.
         liege.removeVassal(faction.getID());

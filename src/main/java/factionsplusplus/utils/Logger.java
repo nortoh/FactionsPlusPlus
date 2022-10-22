@@ -24,8 +24,6 @@ import java.util.logging.Level;
 public class Logger {
     @Inject private FactionsPlusPlus factionsPlusPlus;
 
-    public Logger() { }
-
     /**
      * Log a debug message to the debug log file if the debug flag is enabled.
      *
