@@ -8,7 +8,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.models.AccessList;
 import factionsplusplus.models.ClaimedChunk;
+import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.BlockUtils.GenericBlockType;
@@ -25,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -78,7 +82,7 @@ public class LockService {
             }
             for (Block blockToLock : this.getAllRelatedBlocks(clickedBlock)) this.lockBlock(player, blockToLock);
             this.messageService.sendLocalizedMessage(player, "Locked");
-            this.ephemeralData.getLockingPlayers().remove(player.getUniqueId());
+            this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         } else {
             this.messageService.sendLocalizedMessage(player, "CanOnlyLockBlocksInClaimedTerritory");
         }
@@ -100,24 +104,22 @@ public class LockService {
 
     public void handleUnlockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
         // if locked
+        InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
+        if (context == null) return;
         if (this.dataService.isBlockLocked(clickedBlock)) {
             if (
-                this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) || 
-                this.ephemeralData.getForcefullyUnlockingPlayers().contains(player.getUniqueId())
+                this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) ||
+                context.isLockedBlockForceUnlock()
             ) {
                 for (Block blockToUnlock : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlockRepository().delete(blockToUnlock);
                 this.messageService.sendLocalizedMessage(player, "Unlocked");
-                this.ephemeralData.getUnlockingPlayers().remove(player.getUniqueId());
-
-                // remove player from forcefully unlocking players list if they are in it
-                this.ephemeralData.getForcefullyUnlockingPlayers().remove(player.getUniqueId());
-
+                this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
                 event.setCancelled(true);
             }
-        } else {
-            this.messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
-            event.setCancelled(true);
+            return;
         }
+        this.messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
+        event.setCancelled(true);
     }
 
     public void handleGrantingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
@@ -126,25 +128,37 @@ public class LockService {
             this.messageService.sendLocalizedMessage(player, "NotTheOwnerOfThisBlock");
             return;
         }
-
-        final UUID targetUUID = this.ephemeralData.getPlayersGrantingAccess().get(player.getUniqueId());
-        for (Block block : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlock(block).addToAccessList(targetUUID);
-        final OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-
+        InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
+        if (context == null) return;
+        String grantedName = null;
+        List<LockedBlock> lockedBlocks = this.getAllRelatedBlocks(clickedBlock).stream().map(b -> this.dataService.getLockedBlock(b)).collect(Collectors.toList());
+        switch(context.getTargetType()) {
+            case Player:
+                lockedBlocks.forEach(b -> b.addToAccessList(context.getUUID()));
+                grantedName = Bukkit.getOfflinePlayer(context.getUUID()).getName();
+                break;
+            case Allies:
+                lockedBlocks.forEach(b -> b.allowAllies());
+                grantedName = "all allied factions";
+                break;
+            case FactionMembers:
+                lockedBlocks.forEach(b -> b.allowFactionMembers());
+                grantedName = "all members of your faction";
+                break;
+        }
         this.messageService.sendLocalizedMessage(
             player,
             new MessageBuilder("AlertAccessGrantedTo")
-                .with("name", target.getName())
+                .with("name", grantedName)
         );
-
-        this.ephemeralData.getPlayersGrantingAccess().remove(player.getUniqueId());
-
+        this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         event.setCancelled(true);
     }
 
     public void handleCheckingAccess(PlayerInteractEvent event, LockedBlock lockedBlock, Player player) {
         this.messageService.sendLocalizedMessage(player, "FollowingPlayersHaveAccess");
-        for (UUID playerUUID : lockedBlock.getAccessList()) {
+        AccessList acl = lockedBlock.getAccessList();
+        for (UUID playerUUID : acl.getPlayers()) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(playerUUID);
             this.messageService.sendLocalizedMessage(
                 player, 
@@ -152,7 +166,9 @@ public class LockService {
                     .with("name", target.getName())
             );
         }
-        this.ephemeralData.getPlayersCheckingAccess().remove(player.getUniqueId());
+        if (acl.alliesPermitted()) this.messageService.sendLocalizedMessage(player, "FPHAAllies");
+        if (acl.factionMembersPermitted()) this.messageService.sendLocalizedMessage(player, "FPHAMembers");
+        this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         event.setCancelled(true);
     }
 
@@ -163,17 +179,32 @@ public class LockService {
             return;
         }
 
-        UUID targetUUID = this.ephemeralData.getPlayersRevokingAccess().get(player.getUniqueId());
-        for (Block block : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlock(block).removeFromAccessList(targetUUID);
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
+        InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
+        if (context == null) return;
+        String revokedName = null;
+        List<LockedBlock> lockedBlocks = this.getAllRelatedBlocks(clickedBlock).stream().map(b -> this.dataService.getLockedBlock(b)).collect(Collectors.toList());
+        switch(context.getTargetType()) {
+            case Player:
+                lockedBlocks.forEach(b -> b.removeFromAccessList(context.getUUID()));
+                revokedName = Bukkit.getOfflinePlayer(context.getUUID()).getName();
+                break;
+            case Allies:
+                lockedBlocks.forEach(b -> b.denyAllies());
+                revokedName = "all allied factions";
+                break;
+            case FactionMembers:
+                lockedBlocks.forEach(b -> b.denyFactionMembers());
+                revokedName = "all members of your faction";
+                break;
+        }
 
         this.messageService.sendLocalizedMessage(
             player,
             new MessageBuilder("AlertAccessRevokedFor")
-                .with("name", target.getName())
+                .with("name", revokedName)
         );
 
-        this.ephemeralData.getPlayersRevokingAccess().remove(player.getUniqueId());
+        this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
 
         event.setCancelled(true);
     }

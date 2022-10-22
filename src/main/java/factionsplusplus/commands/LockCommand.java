@@ -10,6 +10,8 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.models.InteractionContext;
+
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -47,15 +49,23 @@ public class LockCommand extends Command {
 
     public void execute(CommandContext context) {
         // TODO: handle if already locking?
-        this.ephemeralData.getLockingPlayers().add(context.getPlayer().getUniqueId());
-        this.ephemeralData.getUnlockingPlayers().remove(context.getPlayer().getUniqueId());
-        context.replyWith("RightClickLock");
+        InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
+        if (interactionContext == null) {
+            this.ephemeralData.getPlayersPendingInteraction().put(
+                context.getPlayer().getUniqueId(), 
+                new InteractionContext(InteractionContext.Type.LockedBlockLock)
+            );
+            context.replyWith("RightClickLock");
+        };
     }
 
     public void cancelCommand(CommandContext context) {
-        if (this.ephemeralData.getLockingPlayers().remove(context.getPlayer().getUniqueId())) { // Remove them
-            context.replyWith("LockingCancelled");
+        InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
+        if (interactionContext != null) {
+            if (interactionContext.isLockedBlockLock()) {
+                this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
+                context.replyWith("CommandCancelled");
+            }
         }
-        // TODO: handle if no active locking?
     }
 }

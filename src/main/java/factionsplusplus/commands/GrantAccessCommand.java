@@ -10,6 +10,8 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.models.InteractionContext;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -37,6 +39,7 @@ public class GrantAccessCommand extends Command {
                 .withDescription("Grants access to a player for a locked block.")
                 .requiresPermissions("mf.grantaccess")
                 .expectsPlayerExecution()
+                .requiresSubCommand()
                 .addSubCommand(
                     new CommandBuilder()
                         .withName("cancel")
@@ -44,40 +47,113 @@ public class GrantAccessCommand extends Command {
                         .withDescription("Cancels pending grant access request")
                         .setExecutorMethod("cancelCommand")
                 )
-                .addArgument(
-                    "player",
-                    new ArgumentBuilder()
-                        .setDescription("the player to grant access to")
-                        .expectsAnyPlayer()
-                        .addFilters(ArgumentFilterType.ExcludeSelf)
-                        .isRequired()
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("allies")
+                        .withAliases(LOCALE_PREFIX + "CmdGrantAccessAllies")
+                        .withDescription("Allow allies to access a locked block")
+                        .setExecutorMethod("alliesCommand")
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("faction")
+                        .withAliases(LOCALE_PREFIX + "CmdGrantAccessFaction")
+                        .withDescription("Allow faction members to access a locked block")
+                        .setExecutorMethod("factionCommand")
+                )
+                .addSubCommand(
+                    new CommandBuilder()
+                        .withName("player")
+                        .withAliases(LOCALE_PREFIX + "CmdGrantAccessPlayer")
+                        .withDescription("Allow a player to access a locked block")
+                        .setExecutorMethod("playerCommand")
+                        .addArgument(
+                            "player",
+                            new ArgumentBuilder()
+                                .setDescription("the player to grant access to")
+                                .expectsAnyPlayer()
+                                .addFilters(ArgumentFilterType.ExcludeSelf)
+                                .isRequired()
+                        )
                 )
         );
         this.ephemeralData = ephemeralData;
     }
 
-    public void execute(CommandContext context) {
-        if (this.ephemeralData.getPlayersGrantingAccess().containsKey(context.getPlayer().getUniqueId())) {
-            context.replyWith("AlertAlreadyGrantingAccess");
-            return;
+    public boolean doCommonChecks(CommandContext context) {
+        UUID playerUUID = context.getPlayer().getUniqueId();
+        if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
+            InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
+            if (interactionContext.isLockedBlockGrant()) {
+                context.replyWith("AlertAlreadyGrantingAccess");
+                return false;
+            }
+            context.replyWith(
+                this.constructMessage("CancelInteraction")
+                    .with("type", interactionContext.toString())
+            );
         }
+        return true;
+    }
+
+    public void finalizeGrantRequest(CommandContext context, String target) {
+        context.replyWith(
+            this.constructMessage("RightClickGrantAccess")
+                .with("name", target)
+        );
+    }
+
+    public void playerCommand(CommandContext context) {
+        if (!this.doCommonChecks(context)) return;
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID targetUUID = target.getUniqueId();
         if (targetUUID.equals(context.getPlayer().getUniqueId())) {
             context.replyWith("CannotGrantAccessToSelf");
             return;
         }
-        this.ephemeralData.getPlayersGrantingAccess().put(context.getPlayer().getUniqueId(), targetUUID);
-        context.replyWith(
-            this.constructMessage("RightClickGrantAccess")
-                .with("name", target.getName())
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            new InteractionContext(
+                InteractionContext.Type.LockedBlockGrant,
+                InteractionContext.TargetType.Player,
+                targetUUID
+            )
         );
+        this.finalizeGrantRequest(context, target.getName());
+    }
+
+    public void alliesCommand(CommandContext context) {
+        if (!this.doCommonChecks(context)) return;
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            new InteractionContext(
+                InteractionContext.Type.LockedBlockGrant,
+                InteractionContext.TargetType.Allies
+            )
+        );
+        this.finalizeGrantRequest(context, "all allied factions");
+    }
+
+    public void factionCommand(CommandContext context) {
+        if (!this.doCommonChecks(context)) return;
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            new InteractionContext(
+                InteractionContext.Type.LockedBlockGrant,
+                InteractionContext.TargetType.FactionMembers
+            )
+        );
+        this.finalizeGrantRequest(context, "all members of your faction");
     }
 
     public void cancelCommand(CommandContext context) {
-        if (this.ephemeralData.getPlayersGrantingAccess().containsKey(context.getPlayer().getUniqueId())) {
-            this.ephemeralData.getPlayersGrantingAccess().remove(context.getPlayer().getUniqueId());
-            context.replyWith("CommandCancelled");
+        UUID playerUUID = context.getPlayer().getUniqueId();
+        if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
+            InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
+            if (interactionContext.isLockedBlockGrant()) {
+                this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
+                context.replyWith("CommandCancelled");
+            }
         }
     }
 }

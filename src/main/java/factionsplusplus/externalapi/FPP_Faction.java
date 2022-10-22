@@ -4,11 +4,13 @@
  */
 package factionsplusplus.externalapi;
 
+import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -17,40 +19,68 @@ import java.util.UUID;
 public class FPP_Faction {
     private final Faction faction;
 
-    public FPP_Faction(Faction f) {
-        faction = f;
+    public FPP_Faction(Faction faction) {
+        this.faction = faction;
+    }
+
+    public UUID getID() {
+        return this.faction.getID();
     }
 
     public String getName() {
-        return faction.getName();
+        return this.faction.getName();
+    }
+
+    public String getDescription() {
+        return this.faction.getDescription();
     }
 
     public String getPrefix() {
-        return faction.getPrefix();
+        return this.faction.getPrefix();
     }
 
     public UUID getOwner() {
-        return faction.getOwner();
+        return this.faction.getOwner();
     }
 
     public boolean isMember(Player player) {
-        return faction.isMember(player.getUniqueId());
+        return this.faction.isMember(player.getUniqueId());
     }
 
     public boolean isOfficer(Player player) {
-        return faction.isOfficer(player.getUniqueId());
-    }
-
-    public FactionFlag getFlag(String flag) {
-        return faction.getFlag(flag);
+        return this.faction.isOfficer(player.getUniqueId());
     }
 
     public boolean isAlly(UUID factionUUID) {
-        return faction.isAlly(factionUUID);
+        return this.faction.isAlly(factionUUID);
     }
 
     public boolean isEnemy(UUID factionUUID) {
-        return faction.isEnemy(factionUUID);
+        return this.faction.isEnemy(factionUUID);
+    }
+
+    public List<UUID> getEnemies() {
+        return this.faction.getEnemyFactions();
+    }
+
+    public List<UUID> getAllies() {
+        return this.faction.getAllies();
+    }
+
+    public List<UUID> getOfficers() {
+        return this.faction.getOfficerList();
+    }
+
+    public List<UUID> getMembers() {
+        return this.faction.getMembers();
+    }
+
+    public boolean hasFlag(String flagName) {
+        return this.faction.getFlags().containsKey(flagName);
+    }
+
+    public FactionFlag getFlag(String flagName) {
+        return this.faction.getFlag(flagName);
     }
 
     /**
@@ -60,6 +90,6 @@ public class FPP_Faction {
      */
     @Deprecated
     public Faction getUnderlyingImplementation() {
-        return faction;
+        return this.faction;
     }
 }

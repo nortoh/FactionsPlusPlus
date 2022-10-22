@@ -14,6 +14,7 @@ import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
+import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LocationData;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.ChatColor;
@@ -134,12 +135,13 @@ public class GateService {
             // TODO: Check if a gate already exists here, and if it does, print out some info of that existing gate instead of trying to create a new one.
             ArrayList<String> messagesToSend = new ArrayList<>();
             boolean removeFromCreatingPlayers = true;
+            InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(event.getPlayer().getUniqueId());
+            if (context == null) return;
             if (
-                ephemeralData.getCreatingGatePlayers().containsKey(event.getPlayer().getUniqueId()) && 
-                ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord1() == null
+                context.isGateCreating() &&
+                context.getGate().getCoord1() == null
             ) {
-                Gate g = ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId());
-                ErrorCodeAddCoord e = this.addCoord(g, clickedBlock);
+                ErrorCodeAddCoord e = this.addCoord(context.getGate(), clickedBlock);
                 switch(e) {
                     case None:
                         messagesToSend.add("Point1PlacementSuccessful");
@@ -160,14 +162,13 @@ public class GateService {
                         break;
                 }
 
-            } else if (ephemeralData.getCreatingGatePlayers().containsKey(event.getPlayer().getUniqueId()) 
-                    && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord1() != null
-                    && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord2() == null
-                    && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getTrigger() == null
+            } else if (context.isGateCreating()
+                    && context.getGate().getCoord1() != null
+                    && context.getGate().getCoord2() == null
+                    && context.getGate().getTrigger() == null
                 ) {
-                if (!ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord1().equals(clickedBlock)) {
-                    Gate g = ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId());
-                    ErrorCodeAddCoord e = this.addCoord(g, clickedBlock);
+                if (!context.getGate().getCoord1().equals(clickedBlock)) {
+                    ErrorCodeAddCoord e = this.addCoord(context.getGate(), clickedBlock);
                     switch(e) {
                         case None:
                             messagesToSend.add("Point2PlacementSuccessful");
@@ -191,9 +192,9 @@ public class GateService {
                             break;
                     }
                 }
-            } else if (ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord2() != null
-                    && ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getTrigger() == null
-                    && !ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId()).getCoord2().equals(clickedBlock)) {
+            } else if (context.getGate().getCoord2() != null
+                    && context.getGate().getTrigger() == null
+                    && !context.getGate().getCoord2().equals(clickedBlock)) {
                 if (clickedBlock.getBlockData() instanceof Powerable) {
                     if (this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
                         Gate g = ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId());
@@ -217,7 +218,7 @@ public class GateService {
                 }
             }
             for (String localizationKey : messagesToSend) this.messageService.sendLocalizedMessage(event.getPlayer(), localizationKey);
-            if (removeFromCreatingPlayers == true) this.ephemeralData.getCreatingGatePlayers().remove(event.getPlayer().getUniqueId());
+            if (removeFromCreatingPlayers == true) this.ephemeralData.getPlayersPendingInteraction().remove(event.getPlayer().getUniqueId());
             return;
         }
         this.messageService.sendLocalizedMessage(event.getPlayer(), new MessageBuilder("PermissionNeeded").with("permission", "mf.gate"));

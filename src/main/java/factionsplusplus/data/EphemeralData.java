@@ -8,6 +8,8 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.objects.domain.Duel;
 import factionsplusplus.models.Gate;
+import factionsplusplus.models.InteractionContext;
+
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Player;
 import preponderous.ponder.misc.Pair;
@@ -21,18 +23,9 @@ import java.util.UUID;
  */
 @Singleton
 public class EphemeralData {
-    private final HashMap<UUID, Gate> creatingGatePlayers = new HashMap<>();
+    // Left user, right interaction context (anything that requires clicking a block)
+    private final HashMap<UUID, InteractionContext> playersPendingInteraction = new HashMap<>();
 
-    private final ArrayList<UUID> lockingPlayers = new ArrayList<>();
-    private final ArrayList<UUID> unlockingPlayers = new ArrayList<>();
-    private final ArrayList<UUID> forcefullyUnlockingPlayers = new ArrayList<>();
-
-    // Left user granting access, right user receiving access;
-    private final HashMap<UUID, UUID> playersGrantingAccess = new HashMap<>();
-    private final ArrayList<UUID> playersCheckingAccess = new ArrayList<>();
-
-    // Left user granting access, right user receiving access;
-    private final HashMap<UUID, UUID> playersRevokingAccess = new HashMap<>();
     private final ArrayList<UUID> playersInFactionChat = new ArrayList<>();
     private final ArrayList<UUID> adminsBypassingProtections = new ArrayList<>();
 
@@ -44,28 +37,8 @@ public class EphemeralData {
 
     // arraylist getters ---
 
-    public HashMap<UUID, Gate> getCreatingGatePlayers() {
-        return creatingGatePlayers;
-    }
-
-    public ArrayList<UUID> getLockingPlayers() {
-        return lockingPlayers;
-    }
-
-    public ArrayList<UUID> getUnlockingPlayers() {
-        return unlockingPlayers;
-    }
-
-    public HashMap<UUID, UUID> getPlayersGrantingAccess() {
-        return playersGrantingAccess;
-    }
-
-    public ArrayList<UUID> getPlayersCheckingAccess() {
-        return playersCheckingAccess;
-    }
-
-    public HashMap<UUID, UUID> getPlayersRevokingAccess() {
-        return playersRevokingAccess;
+    public HashMap<UUID, InteractionContext> getPlayersPendingInteraction() {
+        return this.playersPendingInteraction;
     }
 
     public ArrayList<UUID> getPlayersInFactionChat() {
@@ -82,10 +55,6 @@ public class EphemeralData {
 
     public ArrayList<Duel> getDuelingPlayers() {
         return duelingPlayers;
-    }
-
-    public ArrayList<UUID> getForcefullyUnlockingPlayers() {
-        return forcefullyUnlockingPlayers;
     }
 
     // specific getters ---

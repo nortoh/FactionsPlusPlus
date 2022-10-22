@@ -13,6 +13,7 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
 import factionsplusplus.services.DataService;
+import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -150,8 +151,12 @@ public class GateCommand extends Command {
     }
 
     public void cancelCommand(CommandContext context) {
-        if (this.ephemeralData.getCreatingGatePlayers().remove(context.getPlayer().getUniqueId()) != null) {
-            context.replyWith("CreatingGateCancelled");
+        InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
+        if (interactionContext != null) {
+            if (interactionContext.isGateCreating()) {
+                this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
+                context.replyWith("CreatingGateCancelled");
+            }
         }
     }
 
@@ -171,15 +176,26 @@ public class GateCommand extends Command {
     }
 
     public void createCommand(CommandContext context) {
-        final Player player = context.getPlayer();
-        if (this.ephemeralData.getCreatingGatePlayers().containsKey(player.getUniqueId())) {
-            context.replyWith("AlertAlreadyCreatingGate");
-            return;
+        InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
+        if (interactionContext != null) {
+            if (interactionContext.isGateCreating()) {
+                context.replyWith("AlertAlreadyCreatingGate");
+                return;
+            }
+            context.replyWith(
+                this.constructMessage("CancelInteraction")
+                    .with("type", interactionContext.toString())
+            );
         }
-        // Require officer
         String gateName = context.getStringArgument("gate name");
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
-        this.ephemeralData.getCreatingGatePlayers().putIfAbsent(player.getUniqueId(), new Gate(gateName));
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            new InteractionContext(
+                InteractionContext.Type.GateCreating,
+                new Gate(gateName)
+            )
+        );
         context.replyWith("CreatingGateClickWithHoe");
     }
 }
