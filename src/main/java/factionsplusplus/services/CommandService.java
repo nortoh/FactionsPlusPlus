@@ -14,6 +14,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.RelationChecker;
+import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.StringUtils;
 import factionsplusplus.utils.extended.Scheduler;
 import org.bukkit.Bukkit;
@@ -474,7 +475,7 @@ public class CommandService implements TabCompleter {
     }
 
     private OfflinePlayer getPlayer(CommandContext context, String argumentData) {
-        final OfflinePlayer player = StringUtils.parseAsPlayer(argumentData);
+        final OfflinePlayer player = PlayerUtils.parseAsPlayer(argumentData);
         if (player == null) {
             context.replyWith(
                 new MessageBuilder("PlayerNotFound")

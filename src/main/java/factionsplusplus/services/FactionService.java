@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.utils.Pair;
-import factionsplusplus.utils.StringUtils;
+import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.Comparators;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
@@ -274,7 +274,7 @@ public class FactionService {
         // Faction name
         builder.add(new MessageBuilder("FactionInfo.Name").with("name", faction.getName()));
         // Owner
-        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", StringUtils.parseAsPlayer(faction.getOwner()).getName()));
+        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner()).getName()));
         // Description (if applicable)
         if (faction.getDescription() != null) builder.add(new MessageBuilder("FactionInfo.Description").with("desc", faction.getDescription()));
         // Population
