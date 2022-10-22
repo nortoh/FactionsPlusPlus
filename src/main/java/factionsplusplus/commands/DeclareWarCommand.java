@@ -48,7 +48,7 @@ public class DeclareWarCommand extends Command {
     ) {
         super(
             new CommandBuilder()
-                .withName("grantindependence")
+                .withName("declarewar")
                 .withAliases("dw", LOCALE_PREFIX + "CmdDeclareWar")
                 .withDescription("Declare war on a faction.")
                 .requiresPermissions("mf.declarewar")

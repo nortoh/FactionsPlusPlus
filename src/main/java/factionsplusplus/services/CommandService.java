@@ -208,7 +208,7 @@ public class CommandService implements TabCompleter {
             }
         }
 
-        if (command.shouldRequireNoFactionMembership()) {
+        if (! command.shouldRequireNoFactionMembership()) {
             if (playerFaction != null) {
                 context.replyWith("AlertAlreadyInFaction");
                 return false;
@@ -352,7 +352,7 @@ public class CommandService implements TabCompleter {
                         if (onlinePlayer != null) {
                             parsedArgumentData = onlinePlayer;
                             break;
-                        }            
+                        }
                         context.replyWith(
                             new MessageBuilder("PlayerNotFound")
                                 .with("name", argumentData)
@@ -592,7 +592,7 @@ public class CommandService implements TabCompleter {
                 if (
                     this.senderCanAccessCommand(sender, commandObj) &&
                     commandObj.getName().toLowerCase().startsWith(nextArg.toLowerCase())
-                ) { 
+                ) {
                     results.add(commandObj.getName().toLowerCase());
                 }
             }
