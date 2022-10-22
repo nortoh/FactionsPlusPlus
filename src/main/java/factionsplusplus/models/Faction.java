@@ -48,7 +48,7 @@ public class Faction extends Nation implements Feudal {
 
     /*
      * Retrieves the factions UUID.
-     * 
+     *
      * @Deprecated Use getUUID()
      * @returns the factions UUID
      */

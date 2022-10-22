@@ -12,6 +12,9 @@ import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.utils.Logger;
+
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -507,19 +510,11 @@ public class DynmapIntegrator {
         }
     }
 
-    /**
-     * Change the visibility of a faction on {@link org.dynmap.DynmapAPI}
-     * @param faction
-     * @param visible
-     */
-    public void changeFactionVisibility(Faction faction, boolean visible) {
-        for (UUID uuid : faction.getMemberList()) {
-            this.changePlayerVisibility(uuid, visible);
-        }
-    }
-
     public void changePlayerVisibility(UUID uuid, boolean visible) {
-        this.dynmapAPI.setPlayerVisiblity(uuid.toString(), visible);
+        OfflinePlayer offlinePlayer = Bukkit.getServer().getOfflinePlayer(uuid);
+        if (! offlinePlayer.isOnline()) return;
+
+        this.dynmapAPI.setPlayerVisiblity(offlinePlayer.getPlayer().getPlayerListName(), visible);
     }
 
     enum direction {XPLUS, ZPLUS, XMINUS, ZMINUS}

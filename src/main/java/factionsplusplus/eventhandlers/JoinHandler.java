@@ -84,7 +84,7 @@ public class JoinHandler implements Listener {
     private void handleDynmapMapVisibility(UUID uuid) {
         Faction playerFaction = this.dataService.getFaction(uuid);
 
-        // In the event a player is hidden with no faction and rejoins, we should reset their visibility
+        // In the event a player is hidden, leaves faction & rejoins, we should reset their visibility
         if (playerFaction == null) {
             this.dynmapIntegrationService.changePlayersVisibility(List.of(uuid), true);
             return;

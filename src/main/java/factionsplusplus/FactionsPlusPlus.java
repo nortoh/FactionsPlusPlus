@@ -204,7 +204,8 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
                 this.getInjector().getInstance(JoinHandler.class),
                 this.getInjector().getInstance(MoveHandler.class),
                 this.getInjector().getInstance(QuitHandler.class),
-                this.getInjector().getInstance(SpawnHandler.class)
+                this.getInjector().getInstance(SpawnHandler.class),
+                this.getInjector().getInstance(WarHandler.class)
         ));
     }
 

@@ -18,7 +18,7 @@ public class FactionWarStartEvent extends FactionEvent implements Cancellable {
     private final Faction defender;
     private final Player declarer;
     // Variables.
-    private boolean cancelled = false;
+    private boolean cancelled;
 
     /**
      * Constructor to initialise a FactionWarStartEvent.
@@ -35,17 +35,18 @@ public class FactionWarStartEvent extends FactionEvent implements Cancellable {
         this.attacker = attacker;
         this.defender = defender;
         this.declarer = declarer;
+        this.cancelled = false;
     }
 
     // Cancellable methodology.
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override
-    public void setCancelled(boolean b) {
-        this.cancelled = b;
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
     }
 
     /**

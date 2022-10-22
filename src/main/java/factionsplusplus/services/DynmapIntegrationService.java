@@ -52,18 +52,14 @@ public class DynmapIntegrationService {
     public void changeFactionsVisibility(List<Faction> factions, boolean visible) {
         if (this.dynmapIntegrator == null) this.checkForDynmap();
         if (this.dynmapIntegrator != null) {
-            for (Faction faction : factions) {
-                this.dynmapIntegrator.changeFactionVisibility(faction, visible);
-            }
+            factions.stream().forEach(faction -> this.changePlayersVisibility(faction.getMembers(), visible));
         }
     }
 
     public void changePlayersVisibility(List<UUID> players, boolean visible) {
         if (this.dynmapIntegrator == null) this.checkForDynmap();
         if (this.dynmapIntegrator != null) {
-            for (UUID uuid : players) {
-                this.dynmapIntegrator.changePlayerVisibility(uuid, visible);
-            }
+            players.stream().forEach(player -> this.dynmapIntegrator.changePlayerVisibility(player, visible));
         }
     }
 }
