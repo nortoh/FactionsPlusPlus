@@ -17,6 +17,7 @@ import org.bukkit.ChatColor;
 
 import java.util.stream.Collectors;
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import java.util.List;
 import java.util.HashMap;
@@ -78,8 +79,18 @@ public class FlagsCommand extends Command {
     public void setCommand(CommandContext context) {
         final FactionFlag flag = context.getFactionFlagArgument("flag name");
         final String flagValue = context.getStringArgument("value");
-        flag.set(flagValue);
-        // TODO: error handling, alert that flag was set
+        String newValue = flag.set(flagValue);
+        if (newValue == null) {
+            context.replyWith(
+                new MessageBuilder("FactionFlagValueInvalid")
+                    .with("type", flag.getRequiredType().toString())
+            );
+            return;
+        }
+        context.replyWith(
+            new MessageBuilder("FactionFlagValueSet")
+                .with("value", newValue)
+        );
     }
 
     public void showCommand(CommandContext context) {

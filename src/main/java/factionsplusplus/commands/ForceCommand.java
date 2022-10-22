@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
+import factionsplusplus.builders.MessageBuilder;
 
 import java.util.*;
 
@@ -651,7 +652,17 @@ public class ForceCommand extends Command {
             );
         }
         final String value = context.getStringArgument("value");
-        // TODO: handle errors & informing of flag being set
-        flag.set(value);
+        String newValue = flag.set(value);
+        if (newValue == null) {
+            context.replyWith(
+                new MessageBuilder("FactionFlagValueInvalid")
+                    .with("type", flag.getRequiredType().toString())
+            );
+            return;
+        }
+        context.replyWith(
+            new MessageBuilder("FactionFlagValueSet")
+                .with("value", newValue)
+        );
     }
 }
