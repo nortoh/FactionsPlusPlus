@@ -62,41 +62,29 @@ public class FactionService {
     }
 
     public void addDefaultFactionFlag(String flagName, FactionFlag flag) {
-        this.defaultFlags.put(flagName, flag);
+        this.factionRepository.addDefaultFactionFlag(flagName, flag);
     }
 
     private void initializeDefaultFactionFlags() {
-        this.addDefaultFactionFlag("mustBeOfficerToManageLand", new FactionFlag(FlagType.Boolean, true));
-        this.addDefaultFactionFlag("mustBeOfficerToInviteOthers", new FactionFlag(FlagType.Boolean, true));
-        this.addDefaultFactionFlag("alliesCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")));
-        this.addDefaultFactionFlag("vassalageTreeCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")));
-        this.addDefaultFactionFlag("neutral", new FactionFlag(FlagType.Boolean, false));
-        this.addDefaultFactionFlag("dynmapTerritoryColor", new FactionFlag(FlagType.Color, "#ff0000"));
-        this.addDefaultFactionFlag("territoryAlertColor", new FactionFlag(FlagType.Color, this.configService.getString("territoryAlertColor")));
-        this.addDefaultFactionFlag("prefixColor", new FactionFlag(FlagType.Color, "white"));
-        this.addDefaultFactionFlag("allowFriendlyFire", new FactionFlag(FlagType.Boolean, false));
-        this.addDefaultFactionFlag("acceptBonusPower", new FactionFlag(FlagType.Boolean, true));
-        this.addDefaultFactionFlag("enableMobProtection", new FactionFlag(FlagType.Boolean, true));
+        this.factionRepository.addDefaultFactionFlag("mustBeOfficerToManageLand", new FactionFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("mustBeOfficerToInviteOthers", new FactionFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("alliesCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")), false);
+        this.factionRepository.addDefaultFactionFlag("vassalageTreeCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")), false);
+        this.factionRepository.addDefaultFactionFlag("neutral", new FactionFlag(FlagType.Boolean, false), false);
+        this.factionRepository.addDefaultFactionFlag("dynmapTerritoryColor", new FactionFlag(FlagType.Color, "#ff0000"), false);
+        this.factionRepository.addDefaultFactionFlag("territoryAlertColor", new FactionFlag(FlagType.Color, this.configService.getString("territoryAlertColor")), false);
+        this.factionRepository.addDefaultFactionFlag("prefixColor", new FactionFlag(FlagType.Color, "white"), false);
+        this.factionRepository.addDefaultFactionFlag("allowFriendlyFire", new FactionFlag(FlagType.Boolean, false), false);
+        this.factionRepository.addDefaultFactionFlag("acceptBonusPower", new FactionFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("enableMobProtection", new FactionFlag(FlagType.Boolean, true), false);
     }
 
     public void addFlagToMissingFactions(String flagName) {
-        // get the flag from defaultFlags
-        FactionFlag flag = this.defaultFlags.get(flagName);
-        // TODO: error if null
-        for (Faction faction : this.factionRepository.all().values()) {
-            if (!faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
-        }
+        this.factionRepository.addFlagToMissingFactions(flagName);
     }
 
     public void removeFlagFromFactions(String flagName) {
-        // remove from default flags first
-        this.defaultFlags.remove(flagName);
-        // iterate through factions, removing the flag
-        for (Faction faction : this.factionRepository.all().values()) faction.getFlags().remove(flagName);
-    }
-
-    public Map<String, FactionFlag> getDefaultFlags() {
-        return this.defaultFlags;
+        this.factionRepository.removeFlagFromFactions(flagName);
     }
 
     public void setBonusPower(Faction faction, int power) {
@@ -178,11 +166,11 @@ public class FactionService {
     }
     
     public Faction createFaction(String factionName, UUID ownerUUID) {
-        return new Faction(factionName, ownerUUID, this.getDefaultFlags());
+        return new Faction(factionName, ownerUUID, this.factionRepository.getDefaultFlags());
     }
 
     public Faction createFaction(String factionName) {
-        return new Faction(factionName, this.getDefaultFlags());
+        return new Faction(factionName, this.factionRepository.getDefaultFlags());
     }
 
     public void removeFaction(Faction faction) {

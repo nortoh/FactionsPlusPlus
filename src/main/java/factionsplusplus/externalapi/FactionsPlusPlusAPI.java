@@ -121,7 +121,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public boolean hasFactionFlag(String flagName) {
-        return this.factionService.getDefaultFlags().containsKey(flagName);
+        return this.dataService.getFactionRepository().getDefaultFlags().containsKey(flagName);
     }
 
     public void createFactionFlag(String flagName, FlagType flagType, Object defaultValue) {

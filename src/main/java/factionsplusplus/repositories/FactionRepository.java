@@ -26,10 +26,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.lang.reflect.Type;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
 
+import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.FactionFlag;
 
 @Singleton
 public class FactionRepository {
@@ -37,6 +40,7 @@ public class FactionRepository {
     private final String dataPath;
     private final static String FILE_NAME = "factions.json";
     private final static Type JSON_TYPE = new TypeToken<Map<UUID, Faction>>() { }.getType();
+    private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
 
     @Inject
     public FactionRepository(@Named("dataFolder") String dataPath) {
@@ -53,8 +57,7 @@ public class FactionRepository {
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
-            // TODO: reimplement
-            //for (Faction faction : jsonFactions) faction.getFlags().loadMissingFlagsIfNecessary();
+            this.addAnyMissingFlagsToFactions();
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
@@ -211,6 +214,50 @@ public class FactionRepository {
      */
     public int count() {
         return this.factionStore.size();
+    }
+
+    public void addDefaultFactionFlag(String flagName, FactionFlag flag, boolean addToMissingFactions) {
+        this.defaultFlags.put(flagName, flag);
+        if (addToMissingFactions) this.addAnyMissingFlagsToFactions();
+    }
+
+    public void addDefaultFactionFlag(String flagName, FactionFlag flag) {
+        this.addDefaultFactionFlag(flagName, flag, true);
+    }
+
+    public void addAnyMissingFlagsToFaction(Faction faction) {
+        List<String> missingFlags = this.defaultFlags.keySet().stream().filter(key -> faction.getFlag(key) == null).collect(Collectors.toList());
+        if (!missingFlags.isEmpty()) {
+            missingFlags.stream().forEach(flag -> {
+                faction.getFlags().put(flag, this.defaultFlags.get(flag));
+            });
+        }
+    }
+
+    public void addAnyMissingFlagsToFactions() {
+        this.factionStore.values()
+            .stream()
+            .forEach(faction -> this.addAnyMissingFlagsToFaction(faction));
+    }
+
+    public void addFlagToMissingFactions(String flagName) {
+        // get the flag from defaultFlags
+        FactionFlag flag = this.defaultFlags.get(flagName);
+        // TODO: error if null
+        for (Faction faction : this.factionStore.values()) {
+            if (!faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
+        }
+    }
+
+    public void removeFlagFromFactions(String flagName) {
+        // remove from default flags first
+        this.defaultFlags.remove(flagName);
+        // iterate through factions, removing the flag
+        for (Faction faction : this.factionStore.values()) faction.getFlags().remove(flagName);
+    }
+
+    public Map<String, FactionFlag> getDefaultFlags() {
+        return this.defaultFlags;
     }
 
     // Write to file
