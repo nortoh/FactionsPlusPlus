@@ -198,13 +198,15 @@ public class FactionService {
     }
 
     public void removePoliticalTiesToFaction(Faction targetFaction) {
-        for (Map.Entry<UUID, Faction> entry : this.factionRepository.all().entrySet()) {
-            Faction faction = entry.getValue();
-            faction.removeAlly(targetFaction.getID());
-            faction.removeEnemy(targetFaction.getID());
-            faction.unsetIfLiege(targetFaction.getID());
-            faction.removeVassal(targetFaction.getID());
-        }
+        this.factionRepository.all().values()
+            .stream()
+            .filter(faction -> !faction.equals(targetFaction))
+            .forEach(faction -> {
+                faction.removeAlly(targetFaction.getID());
+                faction.removeEnemy(targetFaction.getID());
+                faction.unsetIfLiege(targetFaction.getID());
+                faction.removeVassal(targetFaction.getID());
+            });
     }
 
     public void removeAllClaimedChunks(Faction faction) {
