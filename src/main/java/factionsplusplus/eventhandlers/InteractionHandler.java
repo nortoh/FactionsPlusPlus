@@ -61,7 +61,6 @@ public class InteractionHandler implements Listener {
 
     @Inject
     public InteractionHandler(
-        PersistentData persistentData,
         InteractionAccessChecker interactionAccessChecker,
         BlockChecker blockChecker,
         FactionsPlusPlus factionsPlusPlus,
@@ -72,7 +71,6 @@ public class InteractionHandler implements Listener {
         DataService dataService,
         ClaimService claimService
     ) {
-        this.persistentData = persistentData;
         this.interactionAccessChecker = interactionAccessChecker;
         this.blockChecker = blockChecker;
         this.factionsPlusPlus = factionsPlusPlus;

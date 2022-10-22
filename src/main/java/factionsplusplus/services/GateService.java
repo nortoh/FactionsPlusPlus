@@ -197,7 +197,7 @@ public class GateService {
                     && !context.getGate().getCoord2().equals(clickedBlock)) {
                 if (clickedBlock.getBlockData() instanceof Powerable) {
                     if (this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
-                        Gate g = ephemeralData.getCreatingGatePlayers().get(event.getPlayer().getUniqueId());
+                        Gate g = context.getGate();
                         ErrorCodeAddCoord e = this.addCoord(g, clickedBlock);
                         switch(e) {
                             case None:
