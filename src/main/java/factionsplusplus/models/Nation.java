@@ -22,10 +22,10 @@ public class Nation extends Group implements Diplomatic, Lawful, Identifiable {
     protected final UUID uuid = UUID.randomUUID();
     @Expose
     protected final List<UUID> allyFactions = new ArrayList<>();
-    protected final List<UUID> attemptedAlliances = new ArrayList<>();
+    protected final ArrayList<UUID> attemptedAlliances = new ArrayList<>();
     @Expose
     protected final List<UUID> enemyFactions = new ArrayList<>();
-    protected final List<UUID> attemptedTruces = new ArrayList<>();
+    protected final ArrayList<UUID> attemptedTruces = new ArrayList<>();
     @Expose
     protected final List<String> laws = new ArrayList<>();
 
