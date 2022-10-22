@@ -53,21 +53,6 @@ public class ConfigCommand extends Command {
                 )
                 .addSubCommand(
                     new CommandBuilder()
-                        .withName("list")
-                        .withAliases(LOCALE_PREFIX + "CmdConfigList")
-                        .withDescription("Lists all current configuration values for this plugin.")
-                        .setExecutorMethod("listCommand")
-                        .addArgument(
-                            "page",
-                            new ArgumentBuilder()
-                                .setDescription("the page to view")
-                                .expectsInteger()
-                                .setDefaultValue(1)
-                                .isOptional()
-                        )
-                )
-                .addSubCommand(
-                    new CommandBuilder()
                         .withName("set")
                         .withAliases(LOCALE_PREFIX + "CmdConfigSet")
                         .withDescription("Sets a configuration option.")
@@ -109,26 +94,14 @@ public class ConfigCommand extends Command {
         this.factionsPlusPlus = factionsPlusPlus;
     }
 
-    public void listCommand(CommandContext context) {
-        final int configPage = context.getIntegerArgument("page");
-        switch(configPage) {
-            case 1:
-                this.configService.sendPageOneOfConfigList(context.getSender());
-                break;
-            case 2:
-                this.configService.sendPageTwoOfConfigList(context.getSender());
-                break;
-            default:
-                context.getSender().sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigShow")));
-        }
-    }
-
     public void getCommand(CommandContext context) {
         final ConfigOption configOption = context.getConfigOptionArgument("config option");
         context.replyWith(
-            this.constructMessage("CurrentConfigValue")
-                .with("option", configOption.getName())
-                .with("value", this.configService.getString(configOption.getName()))
+            new MultiMessageBuilder()
+                .add(this.constructMessage("ConfigOptionInfo.Title").with("name", configOption.getName()))
+                .add(this.constructMessage("ConfigOptionInfo.Description").with("desc", configOption.getDescription()))
+                .add(this.constructMessage("ConfigOptionInfo.DefaultValue").with("value", String.valueOf(configOption.getDefaultValue())))
+                .add(this.constructMessage("ConfigOptionInfo.Value").with("value", this.configService.getString(configOption.getName())))
         );
     }
 

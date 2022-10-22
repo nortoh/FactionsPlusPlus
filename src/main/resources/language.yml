@@ -283,6 +283,11 @@ CannotAttackNonWarringPlayer: "&cYou can't attack another player if your faction
 ConfigListPage: "&a===== Config List Page #page#/#pages# ====="
 UsageConfigShow: "&cUsage: /mf config show <page>"
 CancelInteraction: "&bCancelled pending #type# request"
+ConfigOptionInfo:
+  Title: "&a==== #name# ===="
+  Description: "&aDescription: #desc#"
+  DefaultValue: "&aDefault Value: #value#"
+  Value: "&aCurrent Value: #value#"
 FactionInfo:
   Title: "&bFaction Info"
   Name: "&bName: #name#"
