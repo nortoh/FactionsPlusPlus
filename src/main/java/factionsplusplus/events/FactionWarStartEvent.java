@@ -14,9 +14,9 @@ import org.bukkit.event.Cancellable;
  */
 public class FactionWarStartEvent extends FactionEvent implements Cancellable {
 
-    private final String attackerName;
-    private final String defenderName;
-    private final String playerName;
+    private final Faction attacker;
+    private final Faction defender;
+    private final Player declarer;
     // Variables.
     private boolean cancelled = false;
 
@@ -32,9 +32,9 @@ public class FactionWarStartEvent extends FactionEvent implements Cancellable {
      */
     public FactionWarStartEvent(Faction attacker, Faction defender, Player declarer) {
         super(attacker, declarer);
-        attackerName = attacker.getName();
-        defenderName = defender.getName();
-        playerName = declarer.getName();
+        this.attacker = attacker;
+        this.defender = defender;
+        this.declarer = declarer;
     }
 
     // Cancellable methodology.
@@ -48,15 +48,33 @@ public class FactionWarStartEvent extends FactionEvent implements Cancellable {
         this.cancelled = b;
     }
 
-    public String getAttacker() {
-        return attackerName;
+    /**
+     * Returns the Faction object that started the attack.
+     *
+     * @return the faction that started a war
+     * @see Faction
+     */
+    public Faction getAttacker() {
+        return this.attacker;
     }
 
-    public String getDefender() {
-        return defenderName;
+    /**
+     * Returns the Faction object that is defending
+     *
+     * @return the faction that is defending the war
+     * @see Faction
+     */
+    public Faction getDefender() {
+        return this.defender;
     }
 
-    public String getDeclarer() {
-        return playerName;
+    /**
+     * Returns the Player object for who declared war.
+     *
+     * @return the player that declared a war.
+     * @see Player
+     */
+    public Player getDeclarer() {
+        return this.declarer;
     }
 }

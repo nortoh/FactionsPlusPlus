@@ -40,6 +40,9 @@ public class DynmapIntegrator {
     private final Map<String, AreaMarker> resAreas = new HashMap<>();
     private final Map<String, Marker> resMark = new HashMap<>();
 
+    // Current players that are hiding
+    private final List<UUID> hiddenMapPlayers = new ArrayList<UUID>();
+
     // Dynmap integration related members
     // Realms markers
     private final Map<String, AreaMarker> realmsAreas = new HashMap<>();
@@ -151,6 +154,10 @@ public class DynmapIntegrator {
 
     private MarkerAPI getMarkerAPI() {
         return this.dynmapAPI.getMarkerAPI();
+    }
+
+    public String getCoreVersion() {
+        return this.dynmapAPI.getDynmapCoreVersion();
     }
 
     /**
@@ -504,6 +511,27 @@ public class DynmapIntegrator {
             }
         } catch (Exception e) {
             logger.error("Something went wrong updating a nation's player lists.");
+        }
+    }
+
+    /**
+     * Change the visibility of a faction on {@link org.dynmap.DynmapAPI}
+     * @param faction
+     * @param visible
+     */
+    public void changeFactionVisibility(Faction faction, boolean visible) {
+        if (faction.getEnemyFactions().size() == 0) return;
+
+        for (UUID uuid : faction.getMemberList()) {
+            String uuidStr = uuid.toString();
+
+            this.dynmapAPI.setPlayerVisiblity(uuidStr, visible);
+
+            if (visible && this.hiddenMapPlayers.contains(uuid)) {
+                this.hiddenMapPlayers.remove(uuid);
+                continue;
+            }
+            this.hiddenMapPlayers.add(uuid);
         }
     }
 

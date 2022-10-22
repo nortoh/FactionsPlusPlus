@@ -22,6 +22,13 @@ public class DynmapIntegrationService {
     public void checkForDynmap() {
         if (Bukkit.getPluginManager().getPlugin("dynmap") != null) {
             this.dynmapIntegrator = this.factionsPlusPlus.getInjector().getInstance(DynmapIntegrator.class);
+            this.factionsPlusPlus.getLogger().info(
+                String.format(
+                    "[%s] Hooked into Dynmap-API %s",
+                    this.factionsPlusPlus.getName(),
+                    this.dynmapIntegrator.getCoreVersion()
+                )
+            );
             this.dynmapIntegrator.scheduleClaimsUpdate(600);
             this.dynmapIntegrator.updateClaims();
         } else {
