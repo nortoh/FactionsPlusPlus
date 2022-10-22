@@ -140,20 +140,4 @@ public class ConfigCommand extends Command {
         this.localeService.reloadLanguage();
         context.reply(ChatColor.GREEN + "Config reloaded.");
     }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    /*public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (args.length == 1) {
-            return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
-        } else if (args.length == 2) {
-            if (args[0] == "show") return TabCompleteTools.completeMultipleOptions(args[1], "1", "2");
-            //if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
-        }
-        return null;
-    }*/
 }

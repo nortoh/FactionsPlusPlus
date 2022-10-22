@@ -55,6 +55,7 @@ public class HelpCommand extends Command {
                         .isOptional()
                         .expectsString()
                         .setDefaultValue(1)
+                        .setTabCompletionHandler("autocompletePage")
                         .consumesAllLaterArguments()
                 )
         );
@@ -117,13 +118,9 @@ public class HelpCommand extends Command {
         return String.format("&b/mf %s %s - %s", command.getName(), command.buildSyntax(), command.getDescription());
     }
 
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    /*public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.filterStartingWith(args[0], IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf));
-    }*/
+    public List<String> autocompletePage(CommandSender sender, String argument) {
+        List<String> completions = new ArrayList<>();
+        org.bukkit.util.StringUtil.copyPartialMatches(argument, IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf).collect(Collectors.toList()), completions);
+        return completions;
+    }
 }
