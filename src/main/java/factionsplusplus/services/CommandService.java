@@ -660,7 +660,7 @@ public class CommandService implements TabCompleter {
                     results.addAll(this.configService.getConfigOptions().keySet());
                     return results;
                 case FactionFlagName:
-                    results.addAll(this.factionService.getDefaultFlags().keySet());
+                    results.addAll(this.dataService.getFactionRepository().getDefaultFlags().keySet());
                     return results;
                 case Faction:
                     return this.applyFactionFilters(
