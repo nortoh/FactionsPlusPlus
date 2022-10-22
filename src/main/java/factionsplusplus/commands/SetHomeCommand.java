@@ -7,11 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.builders.*;
 import org.bukkit.entity.Player;
 
@@ -21,10 +21,10 @@ import org.bukkit.entity.Player;
 @Singleton
 public class SetHomeCommand extends Command {
 
-    private final PersistentData persistentData;
+    private final DataService dataService;
 
     @Inject
-    public SetHomeCommand(PersistentData persistentData) {
+    public SetHomeCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("sethome")
@@ -34,17 +34,17 @@ public class SetHomeCommand extends Command {
                 .expectsFactionOfficership()
                 .requiresPermissions("mf.sethome")
         );
-        this.persistentData = persistentData;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
         Player player = context.getPlayer();
         Faction faction = context.getExecutorsFaction();
-        if (!this.persistentData.getChunkDataAccessor().isClaimed(player.getLocation().getChunk())) {
+        if (!this.dataService.isChunkClaimed(player.getLocation().getChunk())) {
             context.replyWith("LandIsNotClaimed");
             return;
         }
-        ClaimedChunk chunk = this.persistentData.getChunkDataAccessor().getClaimedChunk(player.getLocation().getChunk());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(player.getLocation().getChunk());
         if (chunk == null || !chunk.getHolder().equals(faction.getID())) {
             context.replyWith("CannotSetFactionHomeInWilderness");
             return;

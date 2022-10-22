@@ -54,6 +54,7 @@ public class DisbandCommand extends Command {
                         .consumesAllLaterArguments()
                         .requiresPermissionsIfNull("mf.disband")
                         .requiresPermissionsIfNotNull("mf.disband.others", "mf.admin")
+                        .isOptional()
                 )
         );
         this.logger = logger;
@@ -87,6 +88,14 @@ public class DisbandCommand extends Command {
             );
             return;
         }
+        boolean ok = this.removeFaction(disband, self ? ((OfflinePlayer) sender) : null);
+        if (!ok) {
+            context.replyWith(
+                this.constructMessage("ErrorDisbanding")
+                    .with("faction", disband.getName())
+            );
+            return;
+        }
         if (self) {
             context.replyWith("FactionSuccessfullyDisbanded");
             this.ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
@@ -96,11 +105,9 @@ public class DisbandCommand extends Command {
                     .with("faction", disband.getName())
             );
         }
-        this.removeFaction(disband, self ? ((OfflinePlayer) sender) : null);
     }
 
-    private void removeFaction(Faction faction, OfflinePlayer disbandingPlayer) {
-        String nameOfFactionToRemove = faction.getName();
+    private boolean removeFaction(Faction faction, OfflinePlayer disbandingPlayer) {
         FactionDisbandEvent event = new FactionDisbandEvent(
                 faction,
                 disbandingPlayer
@@ -108,8 +115,9 @@ public class DisbandCommand extends Command {
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             this.logger.debug("Disband event was cancelled.");
-            return;
+            return false;
         }
         this.factionService.removeFaction(faction);
+        return true;
     }
 }

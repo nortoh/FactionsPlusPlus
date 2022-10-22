@@ -10,9 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.services.DataService;
-import factionsplusplus.utils.extended.Messenger;
-import org.bukkit.command.CommandSender;
+import factionsplusplus.services.FactionService;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
@@ -24,14 +22,10 @@ import java.util.List;
  */
 @Singleton
 public class InfoCommand extends Command {
-    private final Messenger messenger;
-    private final DataService dataService;
+    private final FactionService factionService;
 
     @Inject
-    public InfoCommand(
-        Messenger messenger,
-        DataService dataService
-    ) {
+    public InfoCommand(FactionService factionService) {
         super(
             new CommandBuilder()
                 .withName("info")
@@ -47,8 +41,7 @@ public class InfoCommand extends Command {
                         .isOptional()
                 )
         );
-        this.messenger = messenger;
-        this.dataService = dataService;
+        this.factionService = factionService;
     }
 
     public void execute(CommandContext context) {
@@ -66,6 +59,8 @@ public class InfoCommand extends Command {
         } else {
             target = context.getFactionArgument("faction name");
         }
-        this.messenger.sendFactionInfo(context.getSender(), target, this.dataService.getClaimedChunksForFaction(target).size());
+        context.replyWith(
+            this.factionService.generateFactionInfo(target)
+        );
     }
 }

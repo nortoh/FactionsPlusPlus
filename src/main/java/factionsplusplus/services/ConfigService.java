@@ -252,11 +252,6 @@ public class ConfigService {
                 .setDefaultValue(true)
                 .isBoolean(),
             new ConfigOptionBuilder()
-                .withName("useNewLanguageFile")
-                .withDescription("If the plugin should attempt to use the new style language file")
-                .setDefaultValue(true)
-                .isBoolean(),
-            new ConfigOptionBuilder()
                 .withName("powerLostOnDeath")
                 .withDescription("The amount of power lost on power death (if power loss on death is enabled)")
                 .setDefaultValue(1.0)
@@ -290,7 +285,8 @@ public class ConfigService {
         String[] deprecatedOptionNames = {
             "officerLimit",
             "hourlyPowerIncreaseAmount",
-            "maxPowerLevel"
+            "maxPowerLevel",
+            "useNewLanguageFile"
         };
         for (String optionName : deprecatedOptionNames) this.configOptionRepository.addDeprecatedOption(optionName);
     }
@@ -373,73 +369,6 @@ public class ConfigService {
             return new AbstractMap.SimpleEntry<>(SetConfigResult.ValueSet, String.valueOf(parsedValue));
         }
         return new AbstractMap.SimpleEntry<>(SetConfigResult.DoesNotExist, null);
-    }
-
-    public void sendPageOneOfConfigList(CommandSender sender) {
-        this.messageService.sendLocalizedMessage(
-            sender,
-            new MessageBuilder("ConfigListPage")
-                .with("page", "1")
-                .with("pages", "2")
-        );
-        sender.sendMessage(ChatColor.AQUA + "version: " + getString("version")
-                + ", languageid: " + getString("languageid")
-                + ", debugMode: " + getBoolean("debugMode")
-                + ", initialMaxPowerLevel: " + getInt("initialMaxPowerLevel")
-                + ", initialPowerLevel: " + getInt("initialPowerLevel")
-                + ", powerIncreaseAmount: " + getInt("powerIncreaseAmount")
-                + ", mobsSpawnInFactionTerritory: " + getBoolean("mobsSpawnInFactionTerritory")
-                + ", laddersPlaceableInEnemyFactionTerritory: " + getBoolean("laddersPlaceableInEnemyFactionTerritory")
-                + ", minutesBeforeInitialPowerIncrease: " + getInt("minutesBeforeInitialPowerIncrease")
-                + ", minutesBetweenPowerIncreases: " + getInt("minutesBetweenPowerIncreases")
-                + ", warsRequiredForPVP: " + getBoolean("warsRequiredForPVP")
-                + ", factionOwnerMultiplier: " + getDouble("factionOwnerMultiplier")
-                + ", officerPerMemberCount: " + getInt("officerPerMemberCount")
-                + ", factionOfficerMultiplier: " + getDouble("factionOfficerMultiplier")
-                + ", powerDecreases: " + getBoolean("powerDecreases")
-                + ", minutesBetweenPowerDecreases: " + getInt("minutesBetweenPowerDecreases")
-                + ", minutesBeforePowerDecrease: " + getInt("minutesBeforePowerDecrease")
-                + ", powerDecreaseAmount: " + getInt("powerDecreaseAmount")
-                + ", factionMaxNameLength: " + getInt("factionMaxNameLength")
-                + ", factionMaxNumberGates: " + getInt("factionMaxNumberGates"));
-    }
-
-    public void sendPageTwoOfConfigList(CommandSender sender) {
-        this.messageService.sendLocalizedMessage(
-            sender,
-            new MessageBuilder("ConfigListPage")
-                .with("page", "2")
-                .with("pages", "2")
-        );
-        sender.sendMessage(ChatColor.AQUA + "factionMaxGateArea: " + getInt("factionMaxGateArea")
-                + ", surroundedChunksProtected: " + getBoolean("surroundedChunksProtected")
-                + ", zeroPowerFactionsGetDisbanded: " + getBoolean("zeroPowerFactionsGetDisbanded")
-                + ", vassalContributionPercentageMultiplier: " + getDouble("vassalContributionPercentageMultiplier")
-                + ", nonMembersCanInteractWithDoors: " + getBoolean("nonMembersCanInteractWithDoors")
-                + ", playersChatWithPrefixes: " + getBoolean("playersChatWithPrefixes")
-                + ", maxClaimRadius: " + getInt("maxClaimRadius")
-                + ", chatSharedInVassalageTrees: " + getBoolean("chatSharedInVassalageTrees")
-                + ", allowAllyInteraction: " + getBoolean("allowAllyInteraction")
-                + ", allowVassalageTreeInteraction: " + getBoolean("allowVassalageTreeInteraction")
-                + ", factionChatColor: " + getString("factionChatColor")
-                + ", territoryAlertPopUp: " + getBoolean("territoryAlertPopUp")
-                + ", territoryAlertColor: " + getString("territoryAlertColor")
-                + ", territoryIndicatorActionbar: " + getBoolean("territoryIndicatorActionbar")
-                + ", randomFactionAssignment: " + getBoolean("randomFactionAssignment")
-                + ", allowNeutrality: " + getBoolean("allowNeutrality")
-                + ", showPrefixesInFactionChat: " + getBoolean("showPrefixesInFactionChat")
-                + ", factionProtectionsEnabled: " + getBoolean("factionProtectionsEnabled")
-                + ", limitLand: " + getBoolean("limitLand")
-                + ", factionsCanSetPrefixColors: " + getBoolean("factionsCanSetPrefixColors")
-                + ", playersLosePowerOnDeath: " + getBoolean("playersLosePowerOnDeath")
-                + ", bonusPowerEnabled: " + getBoolean("bonusPowerEnabled")
-                + ", powerLostOnDeath: " + getDouble("powerLostOnDeath")
-                + ", powerGainedOnKill: " + getDouble("powerGainedOnKill")
-                + ", teleportDelay: " + getInt("teleportDelay")
-                + ", factionless: " + getString("factionless")
-                + ", useNewLanguageFile: " + getBoolean("useNewLanguageFile")
-                + ", secondsBeforeInitialAutosave: " + getInt("secondsBeforeInitialAutosave")
-                + ", secondsBetweenAutosaves: " + getInt("secondsBetweenAutosaves"));
     }
 
     public boolean hasBeenAltered() {

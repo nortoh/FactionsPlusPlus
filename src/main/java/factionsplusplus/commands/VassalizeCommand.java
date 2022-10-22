@@ -110,7 +110,7 @@ public class VassalizeCommand extends Command {
             UUID liegeID = current.getLiege();
             if (liegeID == null) return 0;
             if (liegeID.equals(potentialVassal.getID())) return 1;
-            current = this.factionRepository.getByID(liegeID);
+            current = this.factionRepository.get(liegeID);
             steps++;
         }
         return 2; // We don't know :/

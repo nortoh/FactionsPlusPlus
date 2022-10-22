@@ -14,7 +14,6 @@ import factionsplusplus.models.ConfigOption;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
-import factionsplusplus.utils.TabCompleteTools;
 import factionsplusplus.builders.*;
 import factionsplusplus.constants.SetConfigResult;
 
@@ -51,21 +50,6 @@ public class ConfigCommand extends Command {
                         .withAliases(LOCALE_PREFIX + "CmdConfigReload")
                         .withDescription("Reloads the configuration and language files for this plugin.")
                         .setExecutorMethod("reloadCommand")
-                )
-                .addSubCommand(
-                    new CommandBuilder()
-                        .withName("list")
-                        .withAliases(LOCALE_PREFIX + "CmdConfigList")
-                        .withDescription("Lists all current configuration values for this plugin.")
-                        .setExecutorMethod("listCommand")
-                        .addArgument(
-                            "page",
-                            new ArgumentBuilder()
-                                .setDescription("the page to view")
-                                .expectsInteger()
-                                .setDefaultValue(1)
-                                .isOptional()
-                        )
                 )
                 .addSubCommand(
                     new CommandBuilder()
@@ -110,26 +94,14 @@ public class ConfigCommand extends Command {
         this.factionsPlusPlus = factionsPlusPlus;
     }
 
-    public void listCommand(CommandContext context) {
-        final int configPage = context.getIntegerArgument("page");
-        switch(configPage) {
-            case 1:
-                this.configService.sendPageOneOfConfigList(context.getSender());
-                break;
-            case 2:
-                this.configService.sendPageTwoOfConfigList(context.getSender());
-                break;
-            default:
-                context.getSender().sendMessage(this.translate("&c" + this.localeService.getText("UsageConfigShow")));
-        }
-    }
-
     public void getCommand(CommandContext context) {
         final ConfigOption configOption = context.getConfigOptionArgument("config option");
         context.replyWith(
-            this.constructMessage("CurrentConfigValue")
-                .with("option", configOption.getName())
-                .with("value", this.configService.getString(configOption.getName()))
+            new MultiMessageBuilder()
+                .add(this.constructMessage("ConfigOptionInfo.Title").with("name", configOption.getName()))
+                .add(this.constructMessage("ConfigOptionInfo.Description").with("desc", configOption.getDescription()))
+                .add(this.constructMessage("ConfigOptionInfo.DefaultValue").with("value", String.valueOf(configOption.getDefaultValue())))
+                .add(this.constructMessage("ConfigOptionInfo.Value").with("value", this.configService.getString(configOption.getName())))
         );
     }
 
@@ -167,21 +139,5 @@ public class ConfigCommand extends Command {
         this.factionsPlusPlus.reloadConfig();
         this.localeService.reloadLanguage();
         context.reply(ChatColor.GREEN + "Config reloaded.");
-    }
-
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        if (args.length == 1) {
-            return TabCompleteTools.completeMultipleOptions(args[0], "show", "set", "reload");
-        } else if (args.length == 2) {
-            if (args[0] == "show") return TabCompleteTools.completeMultipleOptions(args[1], "1", "2");
-            //if (args[0] == "set") return TabCompleteTools.filterStartingWith(args[1], this.configService.getStringConfigOptions());
-        }
-        return null;
     }
 }

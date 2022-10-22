@@ -1,12 +1,13 @@
 package factionsplusplus.utils;
 
 import java.util.Arrays;
+import java.util.UUID;
+
 import org.bukkit.ChatColor;
 
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-
 public class StringUtils {
+    public final static String[] BOOLEAN_VALUES = {"yes", "no", "true", "false", "on", "off"};
+    
     public static Integer parseAsInteger(String string) {
         try {
             return Integer.parseInt(string);
@@ -28,13 +29,6 @@ public class StringUtils {
         final String[] falseValues = {"no", "off", "false", "n"};
         if (Arrays.asList(trueValues).contains(string.toLowerCase())) return true;
         if (Arrays.asList(falseValues).contains(string.toLowerCase())) return false;
-        return null;
-    }
-
-    @SuppressWarnings("deprecation")
-    public static OfflinePlayer parseAsPlayer(String playerName) {
-        final OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player.hasPlayedBefore() || Bukkit.getPlayer(player.getUniqueId()) != null) return player;
         return null;
     }
 

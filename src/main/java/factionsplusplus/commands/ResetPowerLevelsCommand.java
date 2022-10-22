@@ -7,9 +7,9 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.services.PlayerService;
 import factionsplusplus.builders.CommandBuilder;
 
 /**
@@ -18,10 +18,10 @@ import factionsplusplus.builders.CommandBuilder;
 @Singleton
 public class ResetPowerLevelsCommand extends Command {
 
-    private final PersistentData persistentData;
+    private final PlayerService playerService;
 
     @Inject
-    public ResetPowerLevelsCommand(PersistentData persistentData) {
+    public ResetPowerLevelsCommand(PlayerService playerService) {
         super(
             new CommandBuilder()
                 .withName("resetpowerlevels")
@@ -29,12 +29,12 @@ public class ResetPowerLevelsCommand extends Command {
                 .withDescription("Reset player power records and faction cumulative power levels.")
                 .requiresPermissions("mf.resetpowerlevels", "mf.admin")
         );
-        this.persistentData = persistentData;
+        this.playerService = playerService;
     }
 
     public void execute(CommandContext context) {
         context.reply(this.translate("&aPower Levels Resetting..."));
         // TODO: log this?
-        this.persistentData.resetPowerLevels();
+        this.playerService.resetPowerLevels();
     }
 }

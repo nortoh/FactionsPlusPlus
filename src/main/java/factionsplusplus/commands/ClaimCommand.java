@@ -7,9 +7,9 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.PlayerService;
@@ -22,11 +22,11 @@ import org.bukkit.entity.Player;
 @Singleton
 public class ClaimCommand extends Command {
 
-    private final PersistentData persistentData;
     private final DynmapIntegrationService dynmapService;
+    private final ClaimService claimService;
 
     @Inject
-    public ClaimCommand(PersistentData persistentData, DynmapIntegrationService dynmapService) {
+    public ClaimCommand(ClaimService claimService, DynmapIntegrationService dynmapService) {
         super(
             new CommandBuilder()
                 .withName("claim")
@@ -43,7 +43,7 @@ public class ClaimCommand extends Command {
                         .isOptional()
                 )
         );
-        this.persistentData = persistentData;
+        this.claimService = claimService;
         this.dynmapService = dynmapService;
     }
 
@@ -63,10 +63,10 @@ public class ClaimCommand extends Command {
             if (depth <= 0) {
                 context.replyWith("UsageClaimRadius");
             } else {
-                this.persistentData.getChunkDataAccessor().radiusClaimAtLocation(depth, player, player.getLocation(), context.getExecutorsFaction());
+                this.claimService.radiusClaimAtLocation(depth, player, player.getLocation(), context.getExecutorsFaction());
             }
         } else {
-            this.persistentData.getChunkDataAccessor().claimChunkAtLocation(player, player.getLocation(), context.getExecutorsFaction());
+            this.claimService.claimChunkAtLocation(player, player.getLocation(), context.getExecutorsFaction());
         }
         this.dynmapService.updateClaimsIfAble();
     }

@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 
 public class Command implements ColorTranslator {
-    public static final String LOCALE_PREFIX = "Locale_";
+    public static final String LOCALE_PREFIX = "Alias.";
     private String name;
     private String[] aliases;
     private String[] requiredPermissions;

@@ -3,7 +3,6 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DeathService;
@@ -19,7 +18,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 @Singleton
 public class DeathHandler implements Listener {
     private final ConfigService configService;
-    private final PersistentData persistentData;
     private final DeathService deathService;
     private final PlayerService playerService;
     private final MessageService messageService;
@@ -27,13 +25,11 @@ public class DeathHandler implements Listener {
     @Inject
     public DeathHandler(
         ConfigService configService,
-        PersistentData persistentData,
         DeathService deathService,
         PlayerService playerService,
         MessageService messageService
     ) {
         this.configService = configService;
-        this.persistentData = persistentData;
         this.deathService = deathService;
         this.playerService = playerService;
         this.messageService = messageService;

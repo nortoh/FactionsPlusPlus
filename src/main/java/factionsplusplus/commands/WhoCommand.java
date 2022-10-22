@@ -10,10 +10,8 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.ClaimedChunkRepository;
-import factionsplusplus.services.PlayerService;
-import factionsplusplus.utils.TabCompleteTools;
-import factionsplusplus.utils.extended.Messenger;
+import factionsplusplus.services.DataService;
+import factionsplusplus.services.FactionService;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -28,15 +26,13 @@ import java.util.UUID;
  */
 @Singleton
 public class WhoCommand extends Command {
-    private final PlayerService playerService;
-    private final ClaimedChunkRepository claimedChunkRepository;
-    private final Messenger messenger;
+    private final FactionService factionService;
+    private final DataService dataService;
 
     @Inject
     public WhoCommand(
-        PlayerService playerService,
-        ClaimedChunkRepository claimedChunkRepository,
-        Messenger messenger
+        FactionService factionService,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -53,21 +49,16 @@ public class WhoCommand extends Command {
                         .isRequired()
                 )
         );
-        this.claimedChunkRepository = claimedChunkRepository;
-        this.playerService = playerService;
-        this.messenger = messenger;
+        this.dataService = dataService;
+        this.factionService = factionService;
     }
 
     public void execute(CommandContext context) {
-        final Faction temp = this.playerService.getPlayerFaction(context.getOfflinePlayerArgument("player").getUniqueId());
+        final Faction temp = this.dataService.getPlayersFaction(context.getOfflinePlayerArgument("player"));
         if (temp == null) {
             context.replyWith("PlayerIsNotInAFaction");
             return;
         }
-        this.messenger.sendFactionInfo(
-            context.getPlayer(), 
-            temp,
-            this.claimedChunkRepository.getAllForFaction(temp).size()
-        );
+        context.replyWith(this.factionService.generateFactionInfo(temp));
     }
 }

@@ -2,6 +2,7 @@ package factionsplusplus.models;
 
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.utils.ColorConversion;
+import factionsplusplus.utils.StringUtils;
 
 import java.awt.Color;
 
@@ -63,36 +64,35 @@ public class FactionFlag {
         return Color.decode(this.toString());
     }
 
-    public void set(String value) {
+    public String set(String value) {
+        Object newValue = null;
         switch(this.requiredType) {
             case String:
-                this.currentValue = value;
+                newValue = value;
                 break;
             case Boolean:
-                this.currentValue = Boolean.parseBoolean(value);
+                newValue = StringUtils.parseAsBoolean(value);
                 break;
             case Integer:
-                this.currentValue = Integer.parseInt(value);
-                break;
-            case Float:
-                this.currentValue = Float.parseFloat(value);
+                newValue = StringUtils.parseAsInteger(value);
                 break;
             case Double:
-                this.currentValue = Double.parseDouble(value);
+                newValue = StringUtils.parseAsDouble(value);
                 break;
             case Color:
                 String hex = value;
                 if (!hex.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
                     final String output = ColorConversion.attemptDecode(hex, false);
-                    if (output != null) {
-                        this.currentValue = output;
-                    }
+                    newValue = null;
                 }
                 break;
             default:
-                this.currentValue = value;
+                newValue = value;
                 break;
         }
+        if (newValue == null) return null;
+        this.currentValue = newValue;
+        return this.toString();
     }
 
     public Object get() {

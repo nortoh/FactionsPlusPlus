@@ -48,12 +48,12 @@ public class DeclareWarCommand extends Command {
     ) {
         super(
             new CommandBuilder()
-                .withName("grantindependence")
+                .withName("declarewar")
                 .withAliases("dw", LOCALE_PREFIX + "CmdDeclareWar")
                 .withDescription("Declare war on a faction.")
                 .requiresPermissions("mf.declarewar")
                 .expectsPlayerExecution()
-                .expectsNoFactionMembership()
+                .expectsFactionMembership()
                 .expectsFactionOfficership()
                 .addArgument(
                     "faction name",
@@ -104,7 +104,7 @@ public class DeclareWarCommand extends Command {
             }
 
             if (!faction.getLiege().equals(opponent.getLiege())) {
-                final Faction enemyLiege = this.factionRepository.getByID(opponent.getLiege());
+                final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
                 if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
                         this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
                     context.replyWith("CannotDeclareWarIfLiegeNotWeakened");

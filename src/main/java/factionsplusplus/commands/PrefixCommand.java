@@ -7,10 +7,9 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-
+import factionsplusplus.services.DataService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
@@ -20,10 +19,10 @@ import factionsplusplus.builders.ArgumentBuilder;
 @Singleton
 public class PrefixCommand extends Command {
 
-    private final PersistentData persistentData;
+    private final DataService dataService;
 
     @Inject
-    public PrefixCommand(PersistentData persistentData) {
+    public PrefixCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("prefix")
@@ -43,12 +42,12 @@ public class PrefixCommand extends Command {
                         
                 )
         );
-        this.persistentData = persistentData;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
         final String newPrefix = context.getStringArgument("new prefix");
-        if (this.persistentData.isPrefixTaken(newPrefix)) {
+        if (this.dataService.isFactionPrefixTaken(newPrefix)) {
             context.replyWith("PrefixTaken");
             return;
         }

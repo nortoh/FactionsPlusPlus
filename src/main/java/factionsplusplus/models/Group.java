@@ -22,9 +22,9 @@ import com.google.gson.annotations.JsonAdapter;
 public class Group {
     private final List<UUID> invited = new ArrayList<>();
     @Expose
-    protected String name = "defaultName";
+    protected String name = null;
     @Expose
-    protected String description = "defaultDescription";
+    protected String description = null;
     @Expose
     protected UUID owner = UUID.randomUUID();
     @Expose

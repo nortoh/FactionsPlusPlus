@@ -12,13 +12,13 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.repositories.CommandRepository;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.utils.StringUtils;
-import factionsplusplus.utils.TabCompleteTools;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.Arrays;
@@ -55,6 +55,8 @@ public class HelpCommand extends Command {
                         .isOptional()
                         .expectsString()
                         .setDefaultValue(1)
+                        .setTabCompletionHandler("autocompletePage")
+                        .consumesAllLaterArguments()
                 )
         );
         this.commandRepository = commandRepository;
@@ -65,7 +67,23 @@ public class HelpCommand extends Command {
         if (requestedPage == null) {
             String requestedCommand = context.getStringArgument("page or command");
             Command command = this.commandRepository.get(requestedCommand);
-            // TODO: implement this
+            if (command == null) {
+                context.replyWith("CommandNotRecognized");
+                return;
+            }
+            MultiMessageBuilder builder = new MultiMessageBuilder();
+            builder
+                .add(this.constructMessage("CommandInfo.Title").with("name", command.getName()))
+                .add(this.constructMessage("CommandInfo.Description").with("desc", command.getDescription()));
+            if (command.getAliases().length > 0) builder.add(this.constructMessage("CommandInfo.Aliases").with("aliases", String.join(", ", command.getAliases())));
+            if (command.hasSubCommands()) {
+                builder.add(this.constructMessage("CommandInfo.SubcommandHeader"));
+                for (Command subCommand : command.getSubCommands().values()) {
+                    builder.add(this.constructMessage("CommandInfo.Subcommand").with("command", subCommand.getName()));
+                }
+            }
+            if (command.getRequiredPermissions().length > 0) builder.add(this.constructMessage("CommandInfo.Permissions").with("permissions", String.join(", ", command.getRequiredPermissions())));
+            context.replyWith(builder);
             return;
         }
         final ArrayList<ArrayList<Command>> partitionedList = this.generateHelpPages();
@@ -100,13 +118,9 @@ public class HelpCommand extends Command {
         return String.format("&b/mf %s %s - %s", command.getName(), command.buildSyntax(), command.getDescription());
     }
 
-    /**
-     * Method to handle tab completion.
-     * 
-     * @param sender who sent the command.
-     * @param args   of the command.
-     */
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        return TabCompleteTools.filterStartingWith(args[0], IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf));
+    public List<String> autocompletePage(CommandSender sender, String argument) {
+        List<String> completions = new ArrayList<>();
+        org.bukkit.util.StringUtil.copyPartialMatches(argument, IntStream.range(1, this.generateHelpPages().size()).mapToObj(String::valueOf).collect(Collectors.toList()), completions);
+        return completions;
     }
 }

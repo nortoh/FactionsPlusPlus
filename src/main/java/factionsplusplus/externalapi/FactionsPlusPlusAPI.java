@@ -10,12 +10,11 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.data.PersistentData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.models.PlayerRecord;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 
 import org.bukkit.Chunk;
@@ -32,28 +31,25 @@ import java.util.UUID;
 @Singleton
 public class FactionsPlusPlusAPI {
     private final FactionsPlusPlus factionsPlusPlus;
-    private final PersistentData persistentData;
     private final EphemeralData ephemeralData;
     private final ConfigService configService;
-    private final FactionRepository factionRepository;
+    private final DataService dataService;
     private final FactionService factionService;
 
     private final String APIVersion = "v1.0.0"; // every time the external API is altered, this should be incremented
 
     @Inject
     public FactionsPlusPlusAPI(
-        FactionRepository factionRepository,
+        DataService dataService,
         FactionsPlusPlus factionsPlusPlus,
-        PersistentData persistentData,
         EphemeralData ephemeralData,
         ConfigService configService,
         FactionService factionService
     ) {
         this.factionsPlusPlus = factionsPlusPlus;
-        this.persistentData = persistentData;
         this.ephemeralData = ephemeralData;
         this.configService = configService;
-        this.factionRepository = factionRepository;
+        this.dataService = dataService;
         this.factionService = factionService;
     }
 
@@ -66,19 +62,24 @@ public class FactionsPlusPlusAPI {
     }
 
     public FPP_Faction getFaction(String factionName) {
-        Faction faction = this.factionRepository.get(factionName);
-        if (faction == null) return null;
+        Faction faction = this.dataService.getFaction(factionName);
+        if (faction == null) {
+            return null;
+        }
         return new FPP_Faction(faction);
     }
 
-    public FPP_Faction getFaction(UUID factionUUID) {
-        Faction faction = this.factionRepository.getByID(factionUUID);
-        if (faction == null) return null;
+    public FPP_Faction getFaction(Player player) {
+        Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
+        if (faction == null) {
+            return null;
+        }
         return new FPP_Faction(faction);
     }
 
-    public FPP_Faction getFactionFromPlayer(UUID playerUUID) {
-        Faction faction = this.persistentData.getPlayersFaction(playerUUID);
+    public FPP_Faction getFaction(UUID playerUUID) {
+        Faction faction = this.dataService.getPlayersFaction(playerUUID);
+
         if (faction == null) {
             return null;
         }
@@ -91,7 +92,7 @@ public class FactionsPlusPlusAPI {
 
     public List<FPP_Faction> getFactions() {
         ArrayList<FPP_Faction> factions = new ArrayList<>();
-        for (Faction faction : this.factionRepository.all().values()) factions.add(new FPP_Faction(faction));
+        for (Faction faction : this.dataService.getFactionRepository().all().values()) factions.add(new FPP_Faction(faction));
         return factions;
     }
 
@@ -104,15 +105,15 @@ public class FactionsPlusPlusAPI {
     }
 
     public boolean isChunkClaimed(Chunk chunk) {
-        return (this.persistentData.getChunkDataAccessor().getClaimedChunk(chunk) != null);
+        return (this.dataService.getClaimedChunk(chunk) != null);
     }
 
-    public double getPlayerPower(UUID playerUUID) {
-        return this.persistentData.getPlayerRecord(playerUUID).getPower();
+    public double getPower(Player player) {
+        return this.dataService.getPlayerRecord(player.getUniqueId()).getPower();
     }
 
-    public double getPlayerPower(Player player) {
-        return this.getPlayerPower(player.getUniqueId());
+    public double getPower(UUID playerUUID) {
+        return this.dataService.getPlayerRecord(playerUUID).getPower();
     }
 
     public void forcePlayerToLeaveFactionChat(UUID uuid) {
@@ -120,7 +121,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public boolean hasFactionFlag(String flagName) {
-        return this.factionService.getDefaultFlags().containsKey(flagName);
+        return this.dataService.getFactionRepository().getDefaultFlags().containsKey(flagName);
     }
 
     public void createFactionFlag(String flagName, FlagType flagType, Object defaultValue) {
@@ -141,14 +142,14 @@ public class FactionsPlusPlusAPI {
     }
 
     public void increasePlayerPower(Player player, int amount) {
-        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
         double originalPower = record.getPower();
         double newPower = originalPower + amount;
         record.setPower(newPower);
     }
 
-    public void decreasePlayerPower(Player player, int amount) {
-        PlayerRecord record = this.persistentData.getPlayerRecord(player.getUniqueId());
+    public void decreasePower(Player player, int amount) {
+        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
         double originalPower = record.getPower();
         double newPower = originalPower - amount;
         if (newPower >= 0) record.setPower(originalPower - amount);
