@@ -143,13 +143,24 @@ public class CommandService implements TabCompleter {
 
     public Command registerCommand(Class commandClass) {
         Command command = (Command)this.factionsPlusPlus.getInjector().getInstance(commandClass);
+        this.loadCommandNames(command);
         this.commandRepository.add(command);
         return command;
     }
 
-    // TODO: reimplement
     public void loadCommandNames(Command command) {
-
+        ArrayList<String> newAliases = new ArrayList<>();
+        String[] aliases = command.getAliases();
+        for (int i = 0; i < aliases.length; i++) {
+            String alias = aliases[i];
+            if (alias.startsWith(Command.LOCALE_PREFIX)) {
+                alias = this.localeService.get(alias);
+                if (alias == null) continue;
+            }
+            if (!newAliases.contains(alias) && !command.getName().equalsIgnoreCase(alias)) newAliases.add(alias);
+        }
+        Object[] aliasesToSet = newAliases.toArray();
+        command.setAliases(Arrays.copyOf(aliasesToSet, aliasesToSet.length, String[].class));
     }
 
     public List<String> checkPermissions(CommandSender sender, String[] permissions) {
