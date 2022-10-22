@@ -637,8 +637,8 @@ public class CommandService implements TabCompleter {
             // Handle (sub)commands wanting to handle their own tab completion
             if (argument.getTabCompletionHandler() != null) {
                 try {
-                    Method executor = argument.getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, ArrayList.class);
-                    return (List<String>)executor.invoke(sender, argumentList);
+                    Method executor = currentCommand.getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, String.class);
+                    return (List<String>)executor.invoke(currentCommand, sender, argumentData);
                 } catch(Exception e) {
                     return results;
                 }
@@ -657,11 +657,17 @@ public class CommandService implements TabCompleter {
             // Console types
             switch(argument.getType()) {
                 case ConfigOptionName:
-                    results.addAll(this.configService.getConfigOptions().keySet());
-                    return results;
+                    return this.configService.getConfigOptions()
+                        .keySet()
+                        .stream()
+                        .filter(c -> c.toLowerCase().startsWith(argumentText))
+                        .collect(Collectors.toList());
                 case FactionFlagName:
-                    results.addAll(this.factionService.getDefaultFlags().keySet());
-                    return results;
+                    return this.dataService.getFactionRepository().getDefaultFlags()
+                        .keySet()
+                        .stream()
+                        .filter(c -> c.toLowerCase().startsWith(argumentText))
+                        .collect(Collectors.toList());
                 case Faction:
                     return this.applyFactionFilters(
                             this.dataService.getFactionRepository().all().values().stream()
@@ -701,7 +707,7 @@ public class CommandService implements TabCompleter {
                 case Integer:
                 case Double:
                 case Any:
-                    return results;
+                    return results.stream().filter(c -> c.toLowerCase().startsWith(argumentText)).collect(Collectors.toList());
                 default:
                     break;
             }

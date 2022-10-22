@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.bukkit.ChatColor;
 
 public class StringUtils {
+    public final static String[] BOOLEAN_VALUES = {"yes", "no", "true", "false", "on", "off"};
+    
     public static Integer parseAsInteger(String string) {
         try {
             return Integer.parseInt(string);
