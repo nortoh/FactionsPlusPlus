@@ -126,9 +126,9 @@ public class PlayerService {
     }
 
     public void initiatePowerIncreaseForAllPlayers() {
-        this.dataService.getPlayerRecordRepository()
-            .all()
+        Bukkit.getOnlinePlayers()
             .stream()
+            .map(player -> this.dataService.getPlayerRecord(player.getUniqueId()))
             .forEach(record -> this.initiatePowerIncrease(record));
     }
 
