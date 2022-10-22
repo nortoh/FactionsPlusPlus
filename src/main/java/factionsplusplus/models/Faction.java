@@ -32,7 +32,7 @@ public class Faction extends Nation implements Feudal {
     private int bonusPower = 0;
 
     private boolean autoclaim = false;
-    private final List<UUID> attemptedVassalizations = new ArrayList<>();
+    private final ArrayList<UUID> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
     public Faction(String factionName, Map<String, FactionFlag> flags) {
@@ -123,7 +123,7 @@ public class Faction extends Nation implements Feudal {
     }
 
     public boolean isLiege(UUID uuid) {
-        return this.liege.equals(uuid);
+        return this.hasLiege() && this.liege.equals(uuid);
     }
 
     public void unsetIfLiege(UUID uuid) {

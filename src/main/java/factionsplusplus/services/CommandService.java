@@ -705,6 +705,7 @@ public class CommandService implements TabCompleter {
                     return this.applyPlayerFilters(
                             this.dataService.getPlayerRecordRepository().all().stream()
                                 .map(record -> Bukkit.getOfflinePlayer(record.getPlayerUUID()))
+                                .filter(p -> p.getName() != null)
                                 .filter(p -> p.getName().toLowerCase().startsWith(argumentText)),
                             player,
                             playersFaction,
