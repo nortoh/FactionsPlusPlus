@@ -123,7 +123,7 @@ public class Faction extends Nation implements Feudal {
     }
 
     public boolean isLiege(UUID uuid) {
-        return this.liege.equals(uuid);
+        return this.hasLiege() && this.liege.equals(uuid);
     }
 
     public void unsetIfLiege(UUID uuid) {
