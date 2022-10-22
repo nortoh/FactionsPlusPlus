@@ -38,9 +38,6 @@ public class DynmapIntegrator {
     private final Map<String, AreaMarker> resAreas = new HashMap<>();
     private final Map<String, Marker> resMark = new HashMap<>();
 
-    // Current players that are hiding
-    private final List<UUID> hiddenMapPlayers = new ArrayList<UUID>();
-
     // Dynmap integration related members
     // Realms markers
     private final Map<String, AreaMarker> realmsAreas = new HashMap<>();
@@ -516,19 +513,13 @@ public class DynmapIntegrator {
      * @param visible
      */
     public void changeFactionVisibility(Faction faction, boolean visible) {
-        if (faction.getEnemyFactions().size() == 0) return;
-
         for (UUID uuid : faction.getMemberList()) {
-            String uuidStr = uuid.toString();
-
-            this.dynmapAPI.setPlayerVisiblity(uuidStr, visible);
-
-            if (visible && this.hiddenMapPlayers.contains(uuid)) {
-                this.hiddenMapPlayers.remove(uuid);
-                continue;
-            }
-            this.hiddenMapPlayers.add(uuid);
+            this.changePlayerVisibility(uuid, visible);
         }
+    }
+
+    public void changePlayerVisibility(UUID uuid, boolean visible) {
+        this.dynmapAPI.setPlayerVisiblity(uuid.toString(), visible);
     }
 
     enum direction {XPLUS, ZPLUS, XMINUS, ZMINUS}

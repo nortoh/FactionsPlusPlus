@@ -5,6 +5,10 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.integrators.DynmapIntegrator;
+import factionsplusplus.models.Faction;
+
+import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 
@@ -43,5 +47,23 @@ public class DynmapIntegrationService {
     public void updateClaimsIfAble() {
         if (this.dynmapIntegrator == null) this.checkForDynmap();
         if (this.dynmapIntegrator != null) this.dynmapIntegrator.updateClaims();
+    }
+
+    public void changeFactionsVisibility(List<Faction> factions, boolean visible) {
+        if (this.dynmapIntegrator == null) this.checkForDynmap();
+        if (this.dynmapIntegrator != null) {
+            for (Faction faction : factions) {
+                this.dynmapIntegrator.changeFactionVisibility(faction, visible);
+            }
+        }
+    }
+
+    public void changePlayersVisibility(List<UUID> players, boolean visible) {
+        if (this.dynmapIntegrator == null) this.checkForDynmap();
+        if (this.dynmapIntegrator != null) {
+            for (UUID uuid : players) {
+                this.dynmapIntegrator.changePlayerVisibility(uuid, visible);
+            }
+        }
     }
 }

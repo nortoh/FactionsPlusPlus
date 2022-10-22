@@ -14,18 +14,19 @@ import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
+import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,6 +41,7 @@ public class JoinHandler implements Listener {
     private final DataService dataService;
     private final MessageService messageService;
     private final ClaimService claimService;
+    private final DynmapIntegrationService dynmapIntegrationService;
 
     @Inject
     public JoinHandler(
@@ -49,7 +51,8 @@ public class JoinHandler implements Listener {
         FactionService factionService,
         DataService dataService,
         MessageService messageService,
-        ClaimService claimService
+        ClaimService claimService,
+        DynmapIntegrationService dynmapIntegrationService
     ) {
         this.configService = configService;
         this.logger = logger;
@@ -58,6 +61,7 @@ public class JoinHandler implements Listener {
         this.dataService = dataService;
         this.messageService = messageService;
         this.claimService = claimService;
+        this.dynmapIntegrationService = dynmapIntegrationService;
     }
 
     @EventHandler()
@@ -74,6 +78,24 @@ public class JoinHandler implements Listener {
         this.setPlayerActionBarTerritoryInfo(event.getPlayer());
         this.claimService.informPlayerIfTheirLandIsInDanger(player);
         this.informPlayerIfTheirFactionIsWeakened(player);
+        this.handleDynmapMapVisibility(player.getUniqueId());
+    }
+
+    private void handleDynmapMapVisibility(UUID uuid) {
+        Faction playerFaction = this.dataService.getFaction(uuid);
+
+        // In the event a player is hidden with no faction and rejoins, we should reset their visibility
+        if (playerFaction == null) {
+            this.dynmapIntegrationService.changePlayersVisibility(List.of(uuid), true);
+            return;
+        }
+
+        if (playerFaction.getEnemyFactions().size() > 0) {
+            this.dynmapIntegrationService.changePlayersVisibility(List.of(uuid), false);
+            return;
+        }
+
+        this.dynmapIntegrationService.changePlayersVisibility(List.of(uuid), true);
     }
 
     private void handlePowerDecay(PlayerRecord record, Player player, PlayerJoinEvent event) {
