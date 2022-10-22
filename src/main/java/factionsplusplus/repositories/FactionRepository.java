@@ -57,7 +57,7 @@ public class FactionRepository {
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
-            this.addAnyMissingFlagsToFactions();
+            this.initializeFactions();
         } catch (FileNotFoundException ignored) {
             // TODO: log here
         }
@@ -258,6 +258,15 @@ public class FactionRepository {
 
     public Map<String, FactionFlag> getDefaultFlags() {
         return this.defaultFlags;
+    }
+
+    private void initializeFactions() {
+        this.factionStore.values()
+            .stream()
+            .forEach(faction -> {
+                faction.initialize();
+                this.addAnyMissingFlagsToFaction(faction);
+            });
     }
 
     // Write to file

@@ -32,7 +32,7 @@ public class Faction extends Nation implements Feudal {
     private int bonusPower = 0;
 
     private boolean autoclaim = false;
-    private final ArrayList<UUID> attemptedVassalizations = new ArrayList<>();
+    private List<UUID> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
     public Faction(String factionName, Map<String, FactionFlag> flags) {
@@ -44,6 +44,12 @@ public class Faction extends Nation implements Feudal {
         this.name = factionName;
         this.owner = owner;
         this.flags = flags;
+    }
+
+    public void initialize() {
+        this.attemptedAlliances = new ArrayList<>();
+        this.attemptedVassalizations = new ArrayList<>();
+        this.attemptedTruces = new ArrayList<>();
     }
 
     /*
