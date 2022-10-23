@@ -48,4 +48,5 @@ public interface Diplomatic {
 
     void removeRequestedTruce(UUID uuid);
 
+    List<UUID> getAttemptedTruces();
 }

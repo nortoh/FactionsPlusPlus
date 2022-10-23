@@ -13,10 +13,10 @@ import org.bukkit.event.Cancellable;
  */
 public class FactionWarEndEvent extends FactionEvent implements Cancellable {
 
-    private final String factionOneName;
-    private final String factionTwoName;
+    private final Faction attacker;
+    private final Faction defender;
     // Variables.
-    private boolean cancelled = false;
+    private boolean cancelled;
 
     /**
      * Constructor to initialise a FactionWarEndEvent.
@@ -24,31 +24,44 @@ public class FactionWarEndEvent extends FactionEvent implements Cancellable {
      * This event is called when a war ends due to a peace agreement.
      * </p>
      *
-     * @param faction1 - First faction involved.
-     * @param faction2 - Second faction involved.
+     * @param attacker - First faction involved.
+     * @param defender - Second faction involved.
      */
-    public FactionWarEndEvent(Faction faction1, Faction faction2) {
-        super(faction1);
-        factionOneName = faction1.getName();
-        factionTwoName = faction2.getName();
+    public FactionWarEndEvent(Faction attacker, Faction defender) {
+        super(attacker);
+        this.attacker = attacker;
+        this.defender = defender;
+        this.cancelled = false;
     }
 
     // Cancellable methodology.
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override
-    public void setCancelled(boolean b) {
-        this.cancelled = b;
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
     }
 
-    public String getFirstFaction() {
-        return factionOneName;
+    /**
+     * Returns the Faction object that started the attack.
+     *
+     * @return the faction that started a war
+     * @see Faction
+     */
+    public Faction getAttacker() {
+        return this.attacker;
     }
 
-    public String getSecondFaction() {
-        return factionTwoName;
+    /**
+     * Returns the Faction object that is defending
+     *
+     * @return the faction that is defending the war
+     * @see Faction
+     */
+    public Faction getDefender() {
+        return this.defender;
     }
 }

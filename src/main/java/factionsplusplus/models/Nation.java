@@ -129,6 +129,11 @@ public class Nation extends Group implements Diplomatic, Lawful, Identifiable {
     }
 
     @Override
+    public List<UUID> getAttemptedTruces() {
+        return this.attemptedTruces;
+    }
+
+    @Override
     public void addLaw(String newLaw) {
         laws.add(newLaw);
     }

@@ -12,6 +12,9 @@ import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.utils.Logger;
+
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -147,6 +150,10 @@ public class DynmapIntegrator {
 
     private MarkerAPI getMarkerAPI() {
         return this.dynmapAPI.getMarkerAPI();
+    }
+
+    public String getCoreVersion() {
+        return this.dynmapAPI.getDynmapCoreVersion();
     }
 
     /**
@@ -501,6 +508,13 @@ public class DynmapIntegrator {
         } catch (Exception e) {
             logger.error("Something went wrong updating a nation's player lists.");
         }
+    }
+
+    public void changePlayerVisibility(UUID uuid, boolean visible) {
+        OfflinePlayer offlinePlayer = Bukkit.getServer().getOfflinePlayer(uuid);
+        if (offlinePlayer == null || ! offlinePlayer.isOnline()) return;
+
+        this.dynmapAPI.setPlayerVisiblity(offlinePlayer.getPlayer().getPlayerListName(), visible);
     }
 
     enum direction {XPLUS, ZPLUS, XMINUS, ZMINUS}
