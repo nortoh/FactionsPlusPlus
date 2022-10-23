@@ -202,7 +202,7 @@ public class InteractionHandler implements Listener {
     public void handle(PlayerInteractEvent event) {
         // Ignore events for offhand
         if (event.getHand() == EquipmentSlot.OFF_HAND) return;
-        
+
         Player player = event.getPlayer();
 
         Block clickedBlock = event.getClickedBlock();
@@ -211,7 +211,7 @@ public class InteractionHandler implements Listener {
         }
 
         InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
-        
+
         if (context != null) {
             if (context.isLockedBlockLock()) this.lockService.handleLockingBlock(event, player, clickedBlock);
             if (context.isLockedBlockUnlock()) this.lockService.handleUnlockingBlock(event, player, clickedBlock);
@@ -274,8 +274,8 @@ public class InteractionHandler implements Listener {
         if (chunk != null) {
             this.claimService.handleClaimedChunkInteraction(event, chunk);
         }
-        
-        if (context.isGateCreating() && playerHoldingGoldenHoe(player)) {
+
+        if (context != null && context.isGateCreating() && playerHoldingGoldenHoe(player)) {
             gateService.handleCreatingGate(clickedBlock, player, event);
         }
     }
