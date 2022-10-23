@@ -108,7 +108,7 @@ public class FactionService {
             try {
                 powerLevel += this.playerRecordRepository.get(playerUUID).getPower();
             } catch (Exception e) {
-                this.logger.error(e.getMessage());
+                this.logger.error(e.getMessage(), e);
             }
         }
         return powerLevel;
@@ -144,7 +144,7 @@ public class FactionService {
             try {
                 maxPower += this.playerService.getMaxPower(playerUUID);
             } catch (Exception e) {
-                this.logger.error(e.getMessage());
+                this.logger.error(e.getMessage(), e);
             }
         }
         return maxPower;

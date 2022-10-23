@@ -75,7 +75,7 @@ public class DynmapIntegrator {
             try {
                 this.dynmapAPI = (DynmapCommonAPI) dynmap; /* Get API */
                 if (this.dynmapAPI == null) {
-                    this.logger.error("Instantiated DynmapCommonAPI object was null. DynmapIntegrator construction cannot continue.");
+                    this.logger.error("Instantiated DynmapCommonAPI object was null. DynmapIntegrator construction cannot continue.", null);
                     return;
                 }
                 this.initializeMarkerSets();
@@ -506,7 +506,7 @@ public class DynmapIntegrator {
                 set.setPlayers(plids);
             }
         } catch (Exception e) {
-            logger.error("Something went wrong updating a nation's player lists.");
+            logger.error("Something went wrong updating a nation's player lists.", e);
         }
     }
 
