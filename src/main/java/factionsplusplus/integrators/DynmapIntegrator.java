@@ -512,7 +512,7 @@ public class DynmapIntegrator {
 
     public void changePlayerVisibility(UUID uuid, boolean visible) {
         OfflinePlayer offlinePlayer = Bukkit.getServer().getOfflinePlayer(uuid);
-        if (! offlinePlayer.isOnline()) return;
+        if (offlinePlayer == null || ! offlinePlayer.isOnline()) return;
 
         this.dynmapAPI.setPlayerVisiblity(offlinePlayer.getPlayer().getPlayerListName(), visible);
     }
