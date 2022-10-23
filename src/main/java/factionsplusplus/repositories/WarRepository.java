@@ -24,8 +24,8 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.lang.reflect.Type;
 
-import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
+import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WarRepository {
@@ -33,11 +33,12 @@ public class WarRepository {
     private final String dataPath;
     private final static String FILE_NAME = "wars.json";
     private final static Type JSON_TYPE = new TypeToken<List<War>>() { }.getType();
-
+    private final Logger logger;
 
     @Inject
-    public WarRepository(@Named("dataFolder") String dataPath) {
+    public WarRepository(@Named("dataFolder") String dataPath, Logger logger) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+        this.logger = logger;
     }
 
     // Load wars
@@ -51,7 +52,7 @@ public class WarRepository {
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.warStore = gson.fromJson(reader, WarRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
-            // TODO: log here
+            this.logger.error(String.format("File %s not found", this.dataPath));
         }
     }
 
@@ -69,7 +70,7 @@ public class WarRepository {
     public List<War> getAllForFaction(UUID factionUUID) {
         ArrayList<War> results = new ArrayList<>();
         for (War war : this.warStore) {
-            if (war.getAttacker().equals(factionUUID) || war.getDefender().equals(factionUUID)) results.add(war); 
+            if (war.getAttacker().equals(factionUUID) || war.getDefender().equals(factionUUID)) results.add(war);
         }
         return results;
     }
@@ -106,8 +107,7 @@ public class WarRepository {
             outputStreamWriter.write(gson.toJson(this.warStore, WarRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO: log here
+            this.logger.error(String.format("Failed to write to %s", this.dataPath));
         }
     }
-    
 }

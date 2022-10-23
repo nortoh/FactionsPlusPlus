@@ -30,9 +30,9 @@ import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
 
-import factionsplusplus.constants.FlagType;
-import factionsplusplus.models.Faction;
+=import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
+import factionsplusplus.utils.Logger;
 
 @Singleton
 public class FactionRepository {
@@ -41,10 +41,12 @@ public class FactionRepository {
     private final static String FILE_NAME = "factions.json";
     private final static Type JSON_TYPE = new TypeToken<Map<UUID, Faction>>() { }.getType();
     private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
+    private final Logger logger;
 
     @Inject
-    public FactionRepository(@Named("dataFolder") String dataPath) {
+    public FactionRepository(@Named("dataFolder") String dataPath, Logger logger) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+        this.logger = logger;
     }
 
     // Load factions
@@ -59,7 +61,7 @@ public class FactionRepository {
             this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
             this.initializeFactions();
         } catch (FileNotFoundException ignored) {
-            // TODO: log here
+            this.logger.error(String.format("File %s not found", this.dataPath));
         }
     }
 
@@ -81,7 +83,7 @@ public class FactionRepository {
 
     /*
      * Retrieve a faction by prefix
-     * 
+     *
      * @param prefix the prefix of the faction to search for
      * @return Faction instance if found, null otherwise
      */
@@ -96,7 +98,7 @@ public class FactionRepository {
 
     /*
      * Retrieve a faction by name
-     * 
+     *
      * @param factionName the name of the faction to search for
      * @return Faction instance if found, null otherwise
      */
@@ -111,7 +113,7 @@ public class FactionRepository {
 
     /*
      * Retrieve a faction by a member player
-     * 
+     *
      * @param playerUUID the UUID of the player to determine faction for
      * @return Faction instance if found, null otherwise
      */
@@ -126,7 +128,7 @@ public class FactionRepository {
 
     /*
      * Retrieve a faction by a member player
-     * 
+     *
      * @param player the Player instance to determine faction for
      * @return Faction instance if found, null otherwise
      */
@@ -136,7 +138,7 @@ public class FactionRepository {
 
     /*
      * Retrieve a faction by its UUID
-     * 
+     *
      * @param uuid the UUID of the faction to search for
      * @return Faction instance if found, null otherwise
      */
@@ -148,7 +150,7 @@ public class FactionRepository {
     // TODO: refactor this, it's a bit bloated
     /*
      * Retrieves factions in a factions vassalage tree
-     * 
+     *
      * @param the faction you wish to get the vassalage tree for
      * @return a List of Faction instances that are in the vassalage tree
      */
@@ -209,7 +211,7 @@ public class FactionRepository {
 
     /*
      * Retrieves the number of factions currently stored
-     * 
+     *
      * @return the number of factions currently stored
      */
     public int count() {
@@ -282,8 +284,7 @@ public class FactionRepository {
             outputStreamWriter.write(gson.toJson(this.factionStore, FactionRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO: log here
+            this.logger.error(String.format("Failed to write to %s", this.dataPath));
         }
     }
-    
 }

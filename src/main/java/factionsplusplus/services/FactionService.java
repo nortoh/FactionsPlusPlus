@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.utils.Pair;
 import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.Comparators;
+import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
@@ -18,7 +19,6 @@ import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.repositories.PlayerRecordRepository;
 import factionsplusplus.repositories.ClaimedChunkRepository;
 import factionsplusplus.repositories.LockedBlockRepository;
-import factionsplusplus.services.DynmapIntegrationService;
 
 import javax.inject.Provider;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.Map;
 
 @Singleton
@@ -40,6 +39,7 @@ public class FactionService {
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
     private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
+    private final Logger logger;
 
     @Inject
     public FactionService(
@@ -49,7 +49,8 @@ public class FactionService {
         PlayerService playerService,
         Provider<DynmapIntegrationService> dynmapService,
         LockedBlockRepository lockedBlockRepository,
-        ClaimedChunkRepository claimedChunkRepository
+        ClaimedChunkRepository claimedChunkRepository,
+        Logger logger
     ) {
         this.configService = configService;
         this.factionRepository = factionRepository;
@@ -58,6 +59,7 @@ public class FactionService {
         this.dynmapService = dynmapService;
         this.lockedBlockRepository = lockedBlockRepository;
         this.claimedChunkRepository = claimedChunkRepository;
+        this.logger = logger;
         this.initializeDefaultFactionFlags();
     }
 
@@ -106,7 +108,7 @@ public class FactionService {
             try {
                 powerLevel += this.playerRecordRepository.get(playerUUID).getPower();
             } catch (Exception e) {
-                // TODO: log this?
+                this.logger.error(e.getMessage());
             }
         }
         return powerLevel;
@@ -142,7 +144,7 @@ public class FactionService {
             try {
                 maxPower += this.playerService.getMaxPower(playerUUID);
             } catch (Exception e) {
-                // TODO: log this?
+                this.logger.error(e.getMessage());
             }
         }
         return maxPower;
@@ -152,7 +154,7 @@ public class FactionService {
         return this.calculateCumulativePowerLevelWithoutVassalContribution(faction) < (this.getMaximumCumulativePowerLevel(faction) / 2);
     }
 
-    public UUID getTopLiege(Faction faction) 
+    public UUID getTopLiege(Faction faction)
     {
         UUID liegeUUID = faction.getLiege();
         Faction topLiege = this.factionRepository.get(liegeUUID);
@@ -164,7 +166,7 @@ public class FactionService {
         }
         return liegeUUID;
     }
-    
+
     public Faction createFaction(String factionName, UUID ownerUUID) {
         return new Faction(factionName, ownerUUID, this.factionRepository.getDefaultFlags());
     }

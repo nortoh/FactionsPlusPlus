@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.lang.reflect.Type;
 
 import factionsplusplus.models.LockedBlock;
+import factionsplusplus.utils.Logger;
 
 @Singleton
 public class LockedBlockRepository {
@@ -33,11 +34,12 @@ public class LockedBlockRepository {
     private final String dataPath;
     private final static String FILE_NAME = "lockedblocks.json";
     private final static Type JSON_TYPE = new TypeToken<List<LockedBlock>>() { }.getType();
-
+    private final Logger logger;
 
     @Inject
-    public LockedBlockRepository(@Named("dataFolder") String dataPath) {
+    public LockedBlockRepository(@Named("dataFolder") String dataPath, Logger logger) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+        this.logger = logger;
     }
 
     // Load claimed chunks
@@ -51,7 +53,7 @@ public class LockedBlockRepository {
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.lockedBlockStore = gson.fromJson(reader, LockedBlockRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
-            // TODO: log here
+            this.logger.error(String.format("File %s not found", this.dataPath));
         }
     }
 
@@ -102,8 +104,7 @@ public class LockedBlockRepository {
             outputStreamWriter.write(gson.toJson(this.lockedBlockStore, LockedBlockRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO: log here
+            this.logger.error(String.format("Failed to write to %s", this.dataPath));
         }
     }
-    
 }

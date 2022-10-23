@@ -23,11 +23,11 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Type;
-import java.util.Optional;
 
 import org.bukkit.Bukkit;
 
 import factionsplusplus.models.World;
+import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WorldRepository {
@@ -35,10 +35,12 @@ public class WorldRepository {
     private final String dataPath;
     private final static String FILE_NAME = "worlds.json";
     private final static Type JSON_TYPE = new TypeToken<Map<UUID, World>>() { }.getType();
+    private final Logger logger;
 
     @Inject
-    public WorldRepository(@Named("dataFolder") String dataPath) {
+    public WorldRepository(@Named("dataFolder") String dataPath, Logger logger) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+        this.logger = logger;
     }
 
     // Load worlds
@@ -53,7 +55,7 @@ public class WorldRepository {
             this.worldStore = gson.fromJson(reader, WorldRepository.JSON_TYPE);
             // TODO: check if world no longer exists
         } catch (FileNotFoundException ignored) {
-            // TODO: log here
+            this.logger.error(String.format("File %s not found", this.dataPath));
         }
     }
 
@@ -64,7 +66,7 @@ public class WorldRepository {
 
     /*
      * Retrieves a World by the underlying Bukkit World obect
-     * 
+     *
      * @param world The Bukkit World
      * @return an instance of World if found, otherwise null
      */
@@ -74,7 +76,7 @@ public class WorldRepository {
 
     /*
      * Retrieves a World by name
-     * 
+     *
      * @param name The name of the world
      * @return an instance of World if found, otherwise null
      */
@@ -84,7 +86,7 @@ public class WorldRepository {
 
     /*
      * Retrieves a World by UUID
-     * 
+     *
      * @param uuid The UUID of the world
      * @return an instance of World if found, otherwise null
      */
@@ -105,7 +107,7 @@ public class WorldRepository {
             outputStreamWriter.write(gson.toJson(this.worldStore, WorldRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO: log here
+            this.logger.error(String.format("Failed to write to %s", this.dataPath));
         }
     }
 }
