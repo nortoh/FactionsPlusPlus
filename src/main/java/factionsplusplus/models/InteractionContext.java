@@ -1,13 +1,17 @@
 package factionsplusplus.models;
 
-import java.lang.annotation.Target;
 import java.util.UUID;
+
+import com.google.inject.Inject;
+
+import factionsplusplus.services.LocaleService;
 
 public class InteractionContext {
     private Type type;
     private TargetType targetType = null;
     private Gate gate = null;
     private UUID uuid = null;
+    @Inject private LocaleService localeService;
 
     public InteractionContext(Type type, TargetType targetType, UUID uuid) {
         this.type = type;
@@ -74,24 +78,23 @@ public class InteractionContext {
     }
 
     public String toString() {
-        // TODO: localize these
         switch(this.type) {
             case LockedBlockGrant:
-                return "Grant Access";
+                return this.localeService.get("GrantAccess");
             case LockedBlockInquiry:
-                return "Check Access";
+                return this.localeService.get("CheckAccess");
             case LockedBlockRevoke:
-                return "Revoke Access";
+                return this.localeService.get("RevokeAccess");
             case LockedBlockLock:
-                return "Lock Block";
+                return this.localeService.get("LockBlock");
             case LockedBlockUnlock:
-                return "Unlock Block";
+                return this.localeService.get("UnlockBlock");
             case LockedBlockForceUnlock:
-                return "Force Unlock Block";
+                return this.localeService.get("ForceUnlockBlock");
             case GateCreating:
-                return "Gate Create";
+                return this.localeService.get("GateCreate");
             default:
-                return "Unknown";
+                return this.localeService.get("Unknown");
         }
     }
 
