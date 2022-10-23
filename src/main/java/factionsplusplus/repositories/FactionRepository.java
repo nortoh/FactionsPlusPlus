@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
 
-=import factionsplusplus.models.Faction;
+import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.utils.Logger;
 
