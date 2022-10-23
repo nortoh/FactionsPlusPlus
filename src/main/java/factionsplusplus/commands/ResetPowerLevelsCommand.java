@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.PlayerService;
+import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.CommandBuilder;
 
 /**
@@ -19,9 +20,10 @@ import factionsplusplus.builders.CommandBuilder;
 public class ResetPowerLevelsCommand extends Command {
 
     private final PlayerService playerService;
+    private final Logger logger;
 
     @Inject
-    public ResetPowerLevelsCommand(PlayerService playerService) {
+    public ResetPowerLevelsCommand(PlayerService playerService, Logger logger) {
         super(
             new CommandBuilder()
                 .withName("resetpowerlevels")
@@ -30,11 +32,13 @@ public class ResetPowerLevelsCommand extends Command {
                 .requiresPermissions("mf.resetpowerlevels", "mf.admin")
         );
         this.playerService = playerService;
+        this.logger = logger;
     }
 
     public void execute(CommandContext context) {
-        context.reply(this.translate("&aPower Levels Resetting..."));
-        // TODO: log this?
+        String msg = this.translate("&aPower Levels Resetting...");
+        context.reply(msg);
+        this.logger.print(msg);
         this.playerService.resetPowerLevels();
     }
 }

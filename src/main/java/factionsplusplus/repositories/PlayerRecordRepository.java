@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.lang.reflect.Type;
 
 import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.utils.Logger;
 
 @Singleton
 public class PlayerRecordRepository {
@@ -33,10 +34,12 @@ public class PlayerRecordRepository {
     private final String dataPath;
     private final static String FILE_NAME = "players.json";
     private final static Type JSON_TYPE = new TypeToken<List<PlayerRecord>>() { }.getType();
+    private final Logger logger;
 
     @Inject
-    public PlayerRecordRepository(@Named("dataFolder") String dataPath) {
+    public PlayerRecordRepository(@Named("dataFolder") String dataPath, Logger logger) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+        this.logger = logger;
     }
 
     // Load records
@@ -50,7 +53,7 @@ public class PlayerRecordRepository {
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.playerStore = gson.fromJson(reader, PlayerRecordRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
-            // TODO: log here
+            this.logger.error(String.format("File %s not found", this.dataPath));
         }
     }
 
@@ -82,7 +85,7 @@ public class PlayerRecordRepository {
 
     /*
      * Retrieves the number of players currently stored
-     * 
+     *
      * @return the number of players currently stored
      */
     public int count() {
@@ -102,8 +105,7 @@ public class PlayerRecordRepository {
             outputStreamWriter.write(gson.toJson(this.playerStore, PlayerRecordRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO: log here
+            this.logger.error(String.format("Failed to write to %s", this.dataPath));
         }
     }
-    
 }

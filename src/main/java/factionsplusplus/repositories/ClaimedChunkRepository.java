@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
+import factionsplusplus.utils.Logger;
 
 @Singleton
 public class ClaimedChunkRepository {
@@ -33,10 +34,12 @@ public class ClaimedChunkRepository {
     private final String dataPath;
     private final static String FILE_NAME = "claimedchunks.json";
     private final static Type JSON_TYPE = new TypeToken<List<ClaimedChunk>>() { }.getType();
+    private final Logger logger;
 
     @Inject
-    public ClaimedChunkRepository(@Named("dataFolder") String dataPath) {
+    public ClaimedChunkRepository(@Named("dataFolder") String dataPath, Logger logger) {
         this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+        this.logger = logger;
     }
 
     // Load claimed chunks
@@ -50,7 +53,7 @@ public class ClaimedChunkRepository {
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.claimedChunksStore = gson.fromJson(reader, ClaimedChunkRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
-            // TODO: log here
+            this.logger.error(String.format("File %s not found", this.dataPath));
         }
     }
 
@@ -103,8 +106,7 @@ public class ClaimedChunkRepository {
             outputStreamWriter.write(gson.toJson(this.claimedChunksStore, JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO: log here
+            this.logger.error(String.format("Failed to write to %s", this.dataPath));
         }
     }
-    
 }
