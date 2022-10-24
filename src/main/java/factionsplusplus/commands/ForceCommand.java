@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.events.*;
+import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -23,14 +24,10 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import factionsplusplus.builders.MessageBuilder;
-
-import java.util.*;
 
 /**
  * @author Callum Johnson
@@ -43,6 +40,7 @@ public class ForceCommand extends Command {
     private final FactionService factionService;
     private final DataService dataService;
     private final ClaimService claimService;
+    private final InteractionContextFactory interactionContextFactory;
 
     @Inject
     public ForceCommand(
@@ -51,7 +49,8 @@ public class ForceCommand extends Command {
         Logger logger,
         FactionService factionService,
         DataService dataService,
-        ClaimService claimService
+        ClaimService claimService,
+        InteractionContextFactory interactionContextFactory
     ) {
         super(
             new CommandBuilder()
@@ -367,6 +366,7 @@ public class ForceCommand extends Command {
         this.logger = logger;
         this.factionService = factionService;
         this.dataService = dataService;
+        this.interactionContextFactory = interactionContextFactory;
     }
 
     // "mf.force.save", "mf.force.*", "mf.admin"
@@ -399,7 +399,7 @@ public class ForceCommand extends Command {
             context.messageAllPlayers(
                 this.constructMessage("AlertNowAtPeaceWith")
                     .with("p1", former.getName())
-                    .with("p2", latter.getName())  
+                    .with("p2", latter.getName())
             );
         }
     }
@@ -598,8 +598,8 @@ public class ForceCommand extends Command {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext == null) {
             this.ephemeralData.getPlayersPendingInteraction().put(
-                context.getPlayer().getUniqueId(), 
-                new InteractionContext(InteractionContext.Type.LockedBlockForceUnlock)
+                context.getPlayer().getUniqueId(),
+                this.interactionContextFactory.create(InteractionContext.Type.LockedBlockForceUnlock)
             );
             context.replyWith("RightClickForceUnlock");
         };

@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -17,13 +18,9 @@ import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Callum Johnson
@@ -33,9 +30,14 @@ public class GateCommand extends Command {
 
     private final EphemeralData ephemeralData;
     private final DataService dataService;
+    private final InteractionContextFactory interactionContextFactory;
 
     @Inject
-    public GateCommand(EphemeralData ephemeralData, DataService dataService) {
+    public GateCommand(
+        EphemeralData ephemeralData,
+        DataService dataService,
+        InteractionContextFactory interactionContextFactory
+    ) {
         super(
             new CommandBuilder()
                 .withName("gate")
@@ -101,6 +103,7 @@ public class GateCommand extends Command {
         );
         this.ephemeralData = ephemeralData;
         this.dataService = dataService;
+        this.interactionContextFactory = interactionContextFactory;
     }
 
     public Gate doCommonBlockChecks(CommandContext context) {
@@ -191,7 +194,7 @@ public class GateCommand extends Command {
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.GateCreating,
                 new Gate(gateName)
             )

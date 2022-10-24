@@ -8,15 +8,13 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
 
-import org.bukkit.entity.Player;
-
 import factionsplusplus.builders.CommandBuilder;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -26,9 +24,13 @@ import java.util.UUID;
 public class CheckAccessCommand extends Command {
 
     private final EphemeralData ephemeralData;
+    private final InteractionContextFactory interactionContextFactory;
 
     @Inject
-    public CheckAccessCommand(EphemeralData ephemeralData) {
+    public CheckAccessCommand(
+        EphemeralData ephemeralData,
+        InteractionContextFactory interactionContextFactory
+    ) {
         super(
             new CommandBuilder()
                 .withName("checkaccess")
@@ -45,6 +47,7 @@ public class CheckAccessCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
+        this.interactionContextFactory = interactionContextFactory;
     }
 
     public boolean doCommonChecks(CommandContext context) {
@@ -77,9 +80,10 @@ public class CheckAccessCommand extends Command {
             );
             this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
         }
+
         this.ephemeralData.getPlayersPendingInteraction().put(
             playerUUID,
-            new InteractionContext(InteractionContext.Type.LockedBlockInquiry)
+            this.interactionContextFactory.create(InteractionContext.Type.LockedBlockInquiry)
         );
         context.replyWith("RightClickCheckAccess");
     }

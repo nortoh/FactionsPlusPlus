@@ -8,18 +8,17 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,9 +28,13 @@ import java.util.UUID;
 public class RevokeAccessCommand extends Command {
 
     private final EphemeralData ephemeralData;
+    private final InteractionContextFactory interactionContextFactory;
 
     @Inject
-    public RevokeAccessCommand(EphemeralData ephemeralData) {
+    public RevokeAccessCommand(
+        EphemeralData ephemeralData,
+        InteractionContextFactory interactionContextFactory
+    ) {
         super(
             new CommandBuilder()
                 .withName("revokeaccess")
@@ -78,6 +81,7 @@ public class RevokeAccessCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
+        this.interactionContextFactory = interactionContextFactory;
     }
 
 
@@ -114,7 +118,7 @@ public class RevokeAccessCommand extends Command {
         }
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.LockedBlockRevoke,
                 InteractionContext.TargetType.Player,
                 targetUUID
@@ -127,7 +131,7 @@ public class RevokeAccessCommand extends Command {
         if (!this.doCommonChecks(context)) return;
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.LockedBlockRevoke,
                 InteractionContext.TargetType.Allies
             )
@@ -139,7 +143,7 @@ public class RevokeAccessCommand extends Command {
         if (!this.doCommonChecks(context)) return;
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.LockedBlockRevoke,
                 InteractionContext.TargetType.FactionMembers
             )

@@ -8,15 +8,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
 
-import org.bukkit.entity.Player;
-
 import factionsplusplus.builders.CommandBuilder;
-
-import java.util.List;
 
 /**
  * @author Callum Johnson
@@ -25,9 +22,13 @@ import java.util.List;
 public class LockCommand extends Command {
 
     private final EphemeralData ephemeralData;
+    private final InteractionContextFactory interactionContextFactory;
 
     @Inject
-    public LockCommand(EphemeralData ephemeralData) {
+    public LockCommand(
+        EphemeralData ephemeralData,
+        InteractionContextFactory interactionContextFactory
+    ) {
         super(
             new CommandBuilder()
                 .withName("lock")
@@ -45,6 +46,7 @@ public class LockCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
+        this.interactionContextFactory = interactionContextFactory;
     }
 
     public void execute(CommandContext context) {
@@ -52,8 +54,8 @@ public class LockCommand extends Command {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext == null) {
             this.ephemeralData.getPlayersPendingInteraction().put(
-                context.getPlayer().getUniqueId(), 
-                new InteractionContext(InteractionContext.Type.LockedBlockLock)
+                context.getPlayer().getUniqueId(),
+                this.interactionContextFactory.create(InteractionContext.Type.LockedBlockLock)
             );
             context.replyWith("RightClickLock");
         };
