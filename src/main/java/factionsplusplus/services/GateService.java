@@ -17,21 +17,16 @@ import factionsplusplus.models.Gate;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LocationData;
 import factionsplusplus.builders.MessageBuilder;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Powerable;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
-import java.util.Objects;
-import javax.inject.Provider;
 
 /**
  * @author Caibinus

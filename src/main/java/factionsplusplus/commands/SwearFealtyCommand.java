@@ -10,15 +10,10 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Callum Johnson
@@ -26,10 +21,8 @@ import java.util.Objects;
 @Singleton
 public class SwearFealtyCommand extends Command {
 
-    private final FactionRepository factionRepository;
-
     @Inject
-    public SwearFealtyCommand(FactionRepository factionRepository) {
+    public SwearFealtyCommand() {
         super(
             new CommandBuilder()
                 .withName("swearfelty")
@@ -49,7 +42,6 @@ public class SwearFealtyCommand extends Command {
                         .isRequired() 
                 )
         );
-        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {

@@ -14,7 +14,6 @@ import java.util.UUID;
 import static org.bukkit.Bukkit.getServer;
 
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 
 /**
  * @author Daniel McCoy Stephenson

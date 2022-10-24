@@ -13,9 +13,7 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -23,8 +21,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static org.bukkit.Bukkit.getServer;

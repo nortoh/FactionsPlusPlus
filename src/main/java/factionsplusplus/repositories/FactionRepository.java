@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.utils.Logger;
 
 @Singleton
@@ -40,7 +40,7 @@ public class FactionRepository {
     private final String dataPath;
     private final static String FILE_NAME = "factions.json";
     private final static Type JSON_TYPE = new TypeToken<Map<UUID, Faction>>() { }.getType();
-    private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
+    private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
 
     @Inject
@@ -61,7 +61,7 @@ public class FactionRepository {
             this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
             this.initializeFactions();
         } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath));
+            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
         }
     }
 
@@ -218,12 +218,12 @@ public class FactionRepository {
         return this.factionStore.size();
     }
 
-    public void addDefaultFactionFlag(String flagName, FactionFlag flag, boolean addToMissingFactions) {
+    public void addDefaultFactionFlag(String flagName, ConfigurationFlag flag, boolean addToMissingFactions) {
         this.defaultFlags.put(flagName, flag);
         if (addToMissingFactions) this.addAnyMissingFlagsToFactions();
     }
 
-    public void addDefaultFactionFlag(String flagName, FactionFlag flag) {
+    public void addDefaultFactionFlag(String flagName, ConfigurationFlag flag) {
         this.addDefaultFactionFlag(flagName, flag, true);
     }
 
@@ -244,7 +244,7 @@ public class FactionRepository {
 
     public void addFlagToMissingFactions(String flagName) {
         // get the flag from defaultFlags
-        FactionFlag flag = this.defaultFlags.get(flagName);
+        ConfigurationFlag flag = this.defaultFlags.get(flagName);
         // TODO: error if null
         for (Faction faction : this.factionStore.values()) {
             if (!faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
@@ -258,7 +258,7 @@ public class FactionRepository {
         for (Faction faction : this.factionStore.values()) faction.getFlags().remove(flagName);
     }
 
-    public Map<String, FactionFlag> getDefaultFlags() {
+    public Map<String, ConfigurationFlag> getDefaultFlags() {
         return this.defaultFlags;
     }
 
@@ -284,7 +284,7 @@ public class FactionRepository {
             outputStreamWriter.write(gson.toJson(this.factionStore, FactionRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath));
+            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
         }
     }
 }

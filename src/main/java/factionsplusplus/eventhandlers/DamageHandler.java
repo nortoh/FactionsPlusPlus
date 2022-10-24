@@ -12,11 +12,9 @@ import factionsplusplus.objects.domain.Duel;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.RelationChecker;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,17 +29,15 @@ import org.bukkit.projectiles.ProjectileSource;
 public class DamageHandler implements Listener {
     private final Logger logger;
     private final EphemeralData ephemeralData;
-    private final LocaleService localeService;
     private final ConfigService configService;
     private final RelationChecker relationChecker;
     private final MessageService messageService;
     private final DataService dataService;
 
     @Inject
-    public DamageHandler(Logger logger, EphemeralData ephemeralData, LocaleService localeService, ConfigService configService, RelationChecker relationChecker, MessageService messageService, DataService dataService) {
+    public DamageHandler(Logger logger, EphemeralData ephemeralData, ConfigService configService, RelationChecker relationChecker, MessageService messageService, DataService dataService) {
         this.logger = logger;
         this.ephemeralData = ephemeralData;
-        this.localeService = localeService;
         this.configService = configService;
         this.relationChecker = relationChecker;
         this.messageService = messageService;

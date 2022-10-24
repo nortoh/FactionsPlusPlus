@@ -21,7 +21,6 @@ import factionsplusplus.builders.CommandBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -76,13 +75,13 @@ public class MapCommand extends Command {
                             colour = "&5"; // If the current position is the player-position, make it purple.
                             map_key = '+';
                             printedHolders.put(chunkHolder.getName(), printedHolders.get(chunkHolder.getName()) - 1);
-                        } else if (chunkHolder.getName().equals(faction.getName())) {
+                        } else if (faction != null && chunkHolder.getName().equals(faction.getName())) {
                             colour = "&a"; // If the faction is the player-faction, make it green.
                             map_key = '+';
-                        } else if (faction.isEnemy(chunk.getHolder())) {
+                        } else if (faction != null && faction.isEnemy(chunk.getHolder())) {
                             colour = "&c"; // If they are an enemy to the player-faction, make it red.
                             colourMap.put(chunkHolder.getName(), "&c");
-                        } else if (faction.isAlly(chunk.getHolder())) {
+                        } else if (faction != null && faction.isAlly(chunk.getHolder())) {
                             colour = "&b"; // If they are an ally to the player-faction, make it blue.
                             colourMap.put(chunkHolder.getName(), "&b");
                         } else {
@@ -111,7 +110,7 @@ public class MapCommand extends Command {
             if (!(printedHolders.get(printedHolder) <= 0)) {
                 String line;
                 try {
-                    if (hasFaction && printedHolder.equalsIgnoreCase(faction.getName())) {
+                    if (faction != null && printedHolder.equalsIgnoreCase(faction.getName())) {
                         line = "&a+&7 = " + printedHolder;
                     } else {
                         if (hasFaction) {

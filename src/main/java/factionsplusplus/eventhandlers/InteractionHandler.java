@@ -18,7 +18,6 @@ import factionsplusplus.services.*;
 import factionsplusplus.utils.InteractionAccessChecker;
 import factionsplusplus.utils.extended.BlockChecker;
 import factionsplusplus.builders.MessageBuilder;
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;

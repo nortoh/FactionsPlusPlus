@@ -5,8 +5,6 @@
 package factionsplusplus.models;
 
 import factionsplusplus.constants.GateStatus;
-import factionsplusplus.constants.ErrorCodeAddCoord;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;

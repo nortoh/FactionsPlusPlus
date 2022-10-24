@@ -10,25 +10,15 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.repositories.CommandRepository;
-import factionsplusplus.services.LocaleService;
 import factionsplusplus.utils.StringUtils;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
 import java.util.Spliterator;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.stream.IntStream;

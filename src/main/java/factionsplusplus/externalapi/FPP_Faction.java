@@ -4,9 +4,8 @@
  */
 package factionsplusplus.externalapi;
 
-import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 
 import org.bukkit.entity.Player;
 
@@ -79,7 +78,7 @@ public class FPP_Faction {
         return this.faction.getFlags().containsKey(flagName);
     }
 
-    public FactionFlag getFlag(String flagName) {
+    public ConfigurationFlag getFlag(String flagName) {
         return this.faction.getFlag(flagName);
     }
 

@@ -13,16 +13,14 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.MessageService;
-import factionsplusplus.builders.*;
+import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.builders.ArgumentBuilder;
+import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.constants.SetConfigResult;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.AbstractMap;
-import java.util.List;
 
 /**
  * @author Callum Johnson
@@ -32,11 +30,10 @@ public class ConfigCommand extends Command {
 
     private final ConfigService configService;
     private final LocaleService localeService;
-    private final MessageService messageService;
     private final FactionsPlusPlus factionsPlusPlus;
 
     @Inject
-    public ConfigCommand(ConfigService configService, LocaleService localeService, MessageService messageService, FactionsPlusPlus factionsPlusPlus) {
+    public ConfigCommand(ConfigService configService, LocaleService localeService, FactionsPlusPlus factionsPlusPlus) {
         super(
             new CommandBuilder()
                 .withName("config")
@@ -90,7 +87,6 @@ public class ConfigCommand extends Command {
         );
         this.configService = configService;
         this.localeService = localeService;
-        this.messageService = messageService;
         this.factionsPlusPlus = factionsPlusPlus;
     }
 

@@ -1,7 +1,6 @@
 package factionsplusplus.utils;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 import org.bukkit.ChatColor;
 

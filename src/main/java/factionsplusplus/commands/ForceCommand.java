@@ -14,7 +14,7 @@ import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.models.War;
@@ -644,12 +644,13 @@ public class ForceCommand extends Command {
     public void flagCommand(CommandContext context) {
         final Faction faction = context.getFactionArgument("faction");
         final String flagName = context.getStringArgument("flag");
-        final FactionFlag flag = faction.getFlag(flagName);
+        final ConfigurationFlag flag = faction.getFlag(flagName);
         if (flag == null) {
             context.replyWith(
                 this.constructMessage("InvalidFactionFlag")
                     .with("flag", flagName)
             );
+            return;
         }
         final String value = context.getStringArgument("value");
         String newValue = flag.set(value);

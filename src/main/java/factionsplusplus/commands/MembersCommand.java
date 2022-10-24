@@ -10,15 +10,9 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.services.PlayerService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Callum Johnson
@@ -26,14 +20,8 @@ import java.util.Objects;
 @Singleton
 public class MembersCommand extends Command {
 
-    private final PlayerService playerService;
-    private final FactionRepository factionRepository;
-
     @Inject
-    public MembersCommand(
-        PlayerService playerService,
-        FactionRepository factionRepository
-    ) {
+    public MembersCommand() {
         super(
             new CommandBuilder()
                 .withName("members")
@@ -49,13 +37,10 @@ public class MembersCommand extends Command {
                         .isOptional()
                 )
         );
-        this.playerService = playerService;
-        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {
         final Faction faction;
-        CommandSender sender = context.getSender();
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
                 context.replyWith("OnlyPlayersCanUseCommand");

@@ -1,7 +1,5 @@
 package factionsplusplus.builders;
 
-import java.lang.reflect.Type;
-
 import factionsplusplus.constants.ConfigOptionType;
 import factionsplusplus.models.ConfigOption;
 

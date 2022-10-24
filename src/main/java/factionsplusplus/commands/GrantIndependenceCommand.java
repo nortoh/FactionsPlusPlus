@@ -10,16 +10,9 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -27,10 +20,8 @@ import java.util.UUID;
 @Singleton
 public class GrantIndependenceCommand extends Command {
 
-    private final FactionRepository factionRepository;
-
     @Inject
-    public GrantIndependenceCommand(FactionRepository factionRepository) {
+    public GrantIndependenceCommand() {
         super(
             new CommandBuilder()
                 .withName("grantindependence")
@@ -49,7 +40,6 @@ public class GrantIndependenceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {

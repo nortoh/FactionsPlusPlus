@@ -12,7 +12,7 @@ import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.repositories.FactionRepository;
@@ -21,13 +21,11 @@ import factionsplusplus.repositories.ClaimedChunkRepository;
 import factionsplusplus.repositories.LockedBlockRepository;
 
 import javax.inject.Provider;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.Map;
 
 @Singleton
 public class FactionService {
@@ -38,7 +36,6 @@ public class FactionService {
     private final Provider<DynmapIntegrationService> dynmapService;
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
-    private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
 
     @Inject
@@ -63,22 +60,22 @@ public class FactionService {
         this.initializeDefaultFactionFlags();
     }
 
-    public void addDefaultFactionFlag(String flagName, FactionFlag flag) {
+    public void addDefaultFactionFlag(String flagName, ConfigurationFlag flag) {
         this.factionRepository.addDefaultFactionFlag(flagName, flag);
     }
 
     private void initializeDefaultFactionFlags() {
-        this.factionRepository.addDefaultFactionFlag("mustBeOfficerToManageLand", new FactionFlag(FlagType.Boolean, true), false);
-        this.factionRepository.addDefaultFactionFlag("mustBeOfficerToInviteOthers", new FactionFlag(FlagType.Boolean, true), false);
-        this.factionRepository.addDefaultFactionFlag("alliesCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")), false);
-        this.factionRepository.addDefaultFactionFlag("vassalageTreeCanInteractWithLand", new FactionFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")), false);
-        this.factionRepository.addDefaultFactionFlag("neutral", new FactionFlag(FlagType.Boolean, false), false);
-        this.factionRepository.addDefaultFactionFlag("dynmapTerritoryColor", new FactionFlag(FlagType.Color, "#ff0000"), false);
-        this.factionRepository.addDefaultFactionFlag("territoryAlertColor", new FactionFlag(FlagType.Color, this.configService.getString("territoryAlertColor")), false);
-        this.factionRepository.addDefaultFactionFlag("prefixColor", new FactionFlag(FlagType.Color, "white"), false);
-        this.factionRepository.addDefaultFactionFlag("allowFriendlyFire", new FactionFlag(FlagType.Boolean, false), false);
-        this.factionRepository.addDefaultFactionFlag("acceptBonusPower", new FactionFlag(FlagType.Boolean, true), false);
-        this.factionRepository.addDefaultFactionFlag("enableMobProtection", new FactionFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("mustBeOfficerToManageLand", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("mustBeOfficerToInviteOthers", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("alliesCanInteractWithLand", new ConfigurationFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")), false);
+        this.factionRepository.addDefaultFactionFlag("vassalageTreeCanInteractWithLand", new ConfigurationFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")), false);
+        this.factionRepository.addDefaultFactionFlag("neutral", new ConfigurationFlag(FlagType.Boolean, false), false);
+        this.factionRepository.addDefaultFactionFlag("dynmapTerritoryColor", new ConfigurationFlag(FlagType.Color, "#ff0000"), false);
+        this.factionRepository.addDefaultFactionFlag("territoryAlertColor", new ConfigurationFlag(FlagType.Color, this.configService.getString("territoryAlertColor")), false);
+        this.factionRepository.addDefaultFactionFlag("prefixColor", new ConfigurationFlag(FlagType.Color, "white"), false);
+        this.factionRepository.addDefaultFactionFlag("allowFriendlyFire", new ConfigurationFlag(FlagType.Boolean, false), false);
+        this.factionRepository.addDefaultFactionFlag("acceptBonusPower", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultFactionFlag("enableMobProtection", new ConfigurationFlag(FlagType.Boolean, true), false);
     }
 
     public void addFlagToMissingFactions(String flagName) {
@@ -108,7 +105,7 @@ public class FactionService {
             try {
                 powerLevel += this.playerRecordRepository.get(playerUUID).getPower();
             } catch (Exception e) {
-                this.logger.error(e.getMessage());
+                this.logger.error(e.getMessage(), e);
             }
         }
         return powerLevel;
@@ -144,7 +141,7 @@ public class FactionService {
             try {
                 maxPower += this.playerService.getMaxPower(playerUUID);
             } catch (Exception e) {
-                this.logger.error(e.getMessage());
+                this.logger.error(e.getMessage(), e);
             }
         }
         return maxPower;

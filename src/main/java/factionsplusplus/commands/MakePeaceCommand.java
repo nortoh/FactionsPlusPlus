@@ -15,14 +15,10 @@ import factionsplusplus.models.War;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.repositories.WarRepository;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**

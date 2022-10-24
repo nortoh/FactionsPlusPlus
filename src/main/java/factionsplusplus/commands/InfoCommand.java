@@ -15,8 +15,6 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.List;
-
 /**
  * @author Callum Johnson
  */

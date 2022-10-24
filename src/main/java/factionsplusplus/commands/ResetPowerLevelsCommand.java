@@ -38,7 +38,7 @@ public class ResetPowerLevelsCommand extends Command {
     public void execute(CommandContext context) {
         String msg = this.translate("&aPower Levels Resetting...");
         context.reply(msg);
-        this.logger.print(msg);
+        this.logger.info(msg);
         this.playerService.resetPowerLevels();
     }
 }

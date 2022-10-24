@@ -3,7 +3,6 @@ package factionsplusplus.eventhandlers;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DeathService;
 import factionsplusplus.services.MessageService;

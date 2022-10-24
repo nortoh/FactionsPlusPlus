@@ -143,7 +143,6 @@ public class GateCommand extends Command {
     public void renameCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
-            final Faction gateFaction = this.dataService.getGatesFaction(targetGate);
             final String newName = context.getStringArgument("new name");
             targetGate.setName(newName);
             context.replyWith(

@@ -292,6 +292,7 @@ public class DynmapIntegrator {
                     blkmaps.put(wname, curblks);
                 }
             }
+            if (curblks == null) continue;
             curblks.setFlag(b.getChunk().getX(), b.getChunk().getZ(), true);
             nodevals.addLast(b);
         }
@@ -506,7 +507,7 @@ public class DynmapIntegrator {
                 set.setPlayers(plids);
             }
         } catch (Exception e) {
-            logger.error("Something went wrong updating a nation's player lists.");
+            logger.error("Something went wrong updating a nation's player lists.", e);
         }
     }
 
