@@ -10,15 +10,11 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.FactionService;
-import org.bukkit.command.CommandSender;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Callum Johnson
@@ -26,14 +22,10 @@ import java.util.List;
 @Singleton
 public class UnclaimallCommand extends Command {
 
-    private FactionRepository factionRepository;
     private FactionService factionService;
 
     @Inject
-    public UnclaimallCommand(
-        FactionService factionService,
-        FactionRepository factionRepository
-    ) {
+    public UnclaimallCommand(FactionService factionService) {
         super(
             new CommandBuilder()
                 .withName("unclaimall")
@@ -50,7 +42,6 @@ public class UnclaimallCommand extends Command {
                 )
         );
         this.factionService = factionService;
-        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {

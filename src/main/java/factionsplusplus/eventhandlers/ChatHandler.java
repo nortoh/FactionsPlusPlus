@@ -12,7 +12,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
-import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

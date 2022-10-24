@@ -21,13 +21,11 @@ import factionsplusplus.repositories.ClaimedChunkRepository;
 import factionsplusplus.repositories.LockedBlockRepository;
 
 import javax.inject.Provider;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.Map;
 
 @Singleton
 public class FactionService {
@@ -38,7 +36,6 @@ public class FactionService {
     private final Provider<DynmapIntegrationService> dynmapService;
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
-    private final Map<String, FactionFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
 
     @Inject

@@ -1,8 +1,5 @@
 package factionsplusplus.utils;
 
-import java.util.AbstractMap;
-import java.util.Map;
-
 public class Pair<F, S>
 {
     private final F first;

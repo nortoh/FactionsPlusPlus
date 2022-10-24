@@ -18,8 +18,6 @@ import org.bukkit.entity.Player;
 
 import static org.bukkit.Material.LADDER;
 
-import javax.inject.Provider;
-
 /**
  * @author Daniel McCoy Stephenson
  */

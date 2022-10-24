@@ -13,7 +13,6 @@ import com.google.inject.Inject;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
-import factionsplusplus.utils.StringUtils;
 
 public class CommandContext {
     private Faction faction = null;

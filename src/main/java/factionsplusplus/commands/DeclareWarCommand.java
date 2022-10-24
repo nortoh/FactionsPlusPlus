@@ -16,17 +16,12 @@ import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.FactionService;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Callum Johnson

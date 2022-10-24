@@ -17,13 +17,10 @@ import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Callum Johnson
@@ -140,7 +137,6 @@ public class GateCommand extends Command {
     public void renameCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
-            final Faction gateFaction = this.dataService.getGatesFaction(targetGate);
             final String newName = context.getStringArgument("new name");
             targetGate.setName(newName);
             context.replyWith(

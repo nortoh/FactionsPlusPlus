@@ -83,7 +83,7 @@ public class FactionFlag {
                 String hex = value;
                 if (!hex.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
                     final String output = ColorConversion.attemptDecode(hex, false);
-                    newValue = null;
+                    newValue = output;
                 }
                 break;
             default:

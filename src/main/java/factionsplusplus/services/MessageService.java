@@ -9,12 +9,10 @@ import factionsplusplus.utils.StringUtils;
 import factionsplusplus.models.Faction;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Objects;
 
 @Singleton

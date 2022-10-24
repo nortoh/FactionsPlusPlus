@@ -14,7 +14,6 @@ import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.utils.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;

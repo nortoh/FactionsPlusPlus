@@ -292,6 +292,7 @@ public class DynmapIntegrator {
                     blkmaps.put(wname, curblks);
                 }
             }
+            if (curblks == null) continue;
             curblks.setFlag(b.getChunk().getX(), b.getChunk().getZ(), true);
             nodevals.addLast(b);
         }

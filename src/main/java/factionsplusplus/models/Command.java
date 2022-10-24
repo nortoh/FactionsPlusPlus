@@ -10,11 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
-import org.bukkit.entity.Player;
-import org.bukkit.command.CommandSender;
 
 public class Command implements ColorTranslator {
     public static final String LOCALE_PREFIX = "Alias.";

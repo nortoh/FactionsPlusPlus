@@ -17,8 +17,6 @@ import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.Objects;
-
 /**
  * @author Callum Johnson
  */

@@ -1,6 +1,5 @@
 package factionsplusplus.models;
 
-import java.lang.annotation.Target;
 import java.util.UUID;
 
 public class InteractionContext {

@@ -9,18 +9,14 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 import factionsplusplus.services.ConfigService;
-import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
 
 import java.util.stream.Collectors;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
-import java.util.List;
-import java.util.HashMap;
 
 // TODO: implement tab complete for basic values (i.e. true/false for boolean)
 

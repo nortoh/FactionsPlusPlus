@@ -8,7 +8,6 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonDeserializationContext;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import static org.bukkit.Bukkit.getServer;
 

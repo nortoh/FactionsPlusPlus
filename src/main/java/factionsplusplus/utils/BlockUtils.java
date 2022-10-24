@@ -6,9 +6,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.*;
 import org.bukkit.block.data.Bisected;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
-import java.lang.Record;
 
 public class BlockUtils {
     public static enum GenericBlockType {
@@ -33,7 +31,6 @@ public class BlockUtils {
         String materialName = block.getType().name();
         if (blockData instanceof TrapDoor) return GenericBlockType.TrapDoor;
         if (blockData instanceof Door) return GenericBlockType.Door;
-        if (blockData instanceof Barrel) return GenericBlockType.Barrel;
         if (blockData instanceof Gate) return GenericBlockType.Gate;
         if (blockData instanceof Furnace) return GenericBlockType.Furance;
         if (blockData instanceof Chest) return GenericBlockType.Chest;
@@ -44,6 +41,7 @@ public class BlockUtils {
         if (blockData instanceof Slab) return GenericBlockType.Slab;
         if (blockData instanceof Switch) return GenericBlockType.Switch;
         if (materialName.contains("ANVIL")) return GenericBlockType.Anvil;
+        if (blockData instanceof Barrel) return GenericBlockType.Barrel;
         return GenericBlockType.Unknown;
     }
 

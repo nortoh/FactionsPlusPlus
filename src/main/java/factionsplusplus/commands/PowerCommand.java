@@ -12,13 +12,10 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.PlayerService;
-import org.bukkit.command.CommandSender;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**

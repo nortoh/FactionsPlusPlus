@@ -4,8 +4,6 @@
  */
 package factionsplusplus.models;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import com.google.gson.annotations.Expose;

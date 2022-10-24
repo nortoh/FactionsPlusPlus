@@ -1,7 +1,6 @@
 package factionsplusplus.utils;
 
 import java.util.Comparator;
-import java.util.Map;
 
 import factionsplusplus.models.Faction;
 
