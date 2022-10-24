@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
@@ -27,9 +28,13 @@ import java.util.UUID;
 public class GrantAccessCommand extends Command {
 
     private final EphemeralData ephemeralData;
+    private final InteractionContextFactory interactionContextFactory;
 
     @Inject
-    public GrantAccessCommand(EphemeralData ephemeralData) {
+    public GrantAccessCommand(
+        EphemeralData ephemeralData,
+        InteractionContextFactory interactionContextFactory
+    ) {
         super(
             new CommandBuilder()
                 .withName("grantaccess")
@@ -76,6 +81,7 @@ public class GrantAccessCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
+        this.interactionContextFactory = interactionContextFactory;
     }
 
     public boolean doCommonChecks(CommandContext context) {
@@ -109,9 +115,15 @@ public class GrantAccessCommand extends Command {
             context.replyWith("CannotGrantAccessToSelf");
             return;
         }
+        context.getPlayer().sendMessage(context.getPlayer().getUniqueId(),
+        this.interactionContextFactory.create(
+            InteractionContext.Type.LockedBlockGrant,
+            InteractionContext.TargetType.Player,
+            targetUUID
+        ).toString());
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.LockedBlockGrant,
                 InteractionContext.TargetType.Player,
                 targetUUID
@@ -124,7 +136,7 @@ public class GrantAccessCommand extends Command {
         if (!this.doCommonChecks(context)) return;
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.LockedBlockGrant,
                 InteractionContext.TargetType.Allies
             )
@@ -136,7 +148,7 @@ public class GrantAccessCommand extends Command {
         if (!this.doCommonChecks(context)) return;
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
-            new InteractionContext(
+            this.interactionContextFactory.create(
                 InteractionContext.Type.LockedBlockGrant,
                 InteractionContext.TargetType.FactionMembers
             )

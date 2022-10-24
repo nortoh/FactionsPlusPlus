@@ -29,7 +29,7 @@ public class LocaleService {
     private final String dataPath;
 
     private File languageFile;
-    private FileConfiguration language; 
+    private FileConfiguration language;
 
     @Inject
     public LocaleService(@Named("dataFolder") String dataPath, Provider<FactionsPlusPlus> factionsPlusPlus) {
