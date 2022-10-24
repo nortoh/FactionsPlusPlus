@@ -2,30 +2,61 @@ package factionsplusplus.models;
 
 import java.util.UUID;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
+import factionsplusplus.services.LocaleService;
+
 public class InteractionContext {
     private Type type;
     private TargetType targetType = null;
     private Gate gate = null;
     private UUID uuid = null;
+    @Inject private final LocaleService localeService;
 
-    public InteractionContext(Type type, TargetType targetType, UUID uuid) {
+    @AssistedInject
+    public InteractionContext(
+        @Assisted Type type,
+        @Assisted TargetType targetType,
+        @Assisted UUID uuid,
+        LocaleService localeService
+    ) {
         this.type = type;
         this.targetType = targetType;
         this.uuid = uuid;
+        this.localeService = localeService;
     }
 
-    public InteractionContext(Type type, TargetType targetType) {
+    @AssistedInject
+    public InteractionContext(
+        @Assisted Type type,
+        @Assisted TargetType targetType,
+        LocaleService localeService
+    ) {
         this.type = type;
         this.targetType = targetType;
+        this.localeService = localeService;
     }
 
-    public InteractionContext(Type type) {
+    @AssistedInject
+    public InteractionContext(
+        @Assisted Type type,
+        LocaleService localeService
+    ) {
         this.type = type;
+        this.localeService = localeService;
     }
 
-    public InteractionContext(Type type, Gate gate) {
+    @AssistedInject
+    public InteractionContext(
+        @Assisted Type type,
+        @Assisted Gate gate,
+        LocaleService localeService
+    ) {
         this.type = type;
         this.gate = gate;
+        this.localeService = localeService;
     }
 
     public boolean isLockedBlockGrant() {
@@ -73,24 +104,23 @@ public class InteractionContext {
     }
 
     public String toString() {
-        // TODO: localize these
         switch(this.type) {
             case LockedBlockGrant:
-                return "Grant Access";
+                return this.localeService.get("InteractionContextInfo.GrantAccess");
             case LockedBlockInquiry:
-                return "Check Access";
+                return this.localeService.get("InteractionContextInfo.CheckAccess");
             case LockedBlockRevoke:
-                return "Revoke Access";
+                return this.localeService.get("InteractionContextInfo.RevokeAccess");
             case LockedBlockLock:
-                return "Lock Block";
+                return this.localeService.get("InteractionContextInfo.LockBlock");
             case LockedBlockUnlock:
-                return "Unlock Block";
+                return this.localeService.get("InteractionContextInfo.UnlockBlock");
             case LockedBlockForceUnlock:
-                return "Force Unlock Block";
+                return this.localeService.get("InteractionContextInfo.ForceUnlockBlock");
             case GateCreating:
-                return "Gate Create";
+                return this.localeService.get("InteractionContextInfo.GateCreate");
             default:
-                return "Unknown";
+                return this.localeService.get("InteractionContextInfo.Unknown");
         }
     }
 

@@ -3,9 +3,11 @@ package factionsplusplus.di;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 
 import factionsplusplus.FactionsPlusPlus;
+import factionsplusplus.factories.InteractionContextFactory;
 
 public class PluginModule extends AbstractModule {
     private final FactionsPlusPlus factionsPlusPlus;
@@ -23,7 +25,7 @@ public class PluginModule extends AbstractModule {
         bind(String.class)
             .annotatedWith(Names.named("pluginVersion"))
             .toInstance(this.factionsPlusPlus.getVersion());
-
+        install(new FactoryModuleBuilder().build(InteractionContextFactory.class));
     }
 
     public Injector createInjector() {
