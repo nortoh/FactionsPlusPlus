@@ -75,7 +75,7 @@ public class DynmapIntegrator {
             try {
                 this.dynmapAPI = (DynmapCommonAPI) dynmap; /* Get API */
                 if (this.dynmapAPI == null) {
-                    this.logger.error("Instantiated DynmapCommonAPI object was null. DynmapIntegrator construction cannot continue.", null);
+                    this.logger.error("Instantiated DynmapCommonAPI object was null. DynmapIntegrator construction cannot continue.");
                     return;
                 }
                 this.initializeMarkerSets();

@@ -48,15 +48,22 @@ public class Logger {
 
     /**
      * Log an error to the the error/debug log file.
+     * If an Exception is provided, then the strack
+     * trace is logged as well.
      *
      * @param message The message to log.
+     * @param exception The exception to log.
      */
-    public void error(String message, Exception e) {
+    public void error(String message, Exception exception) {
         this.log(message, Level.Debug, Level.Error);
-        if (e != null) {
-            message = this.stacktraceToMessage(e);
+        if (exception != null) {
+            message = this.stackTraceToString(exception);
             this.log(message, Level.Debug, Level.Error);
         }
+    }
+
+    public void error(String message) {
+        this.log(message, Level.Debug, Level.Error);
     }
 
     /**
@@ -81,8 +88,7 @@ public class Logger {
             );
 
             File path = new File(Path.of(
-                "plugins",
-                this.factionsPlusPlus.getName(),
+                this.factionsPlusPlus.getStoragePath(),
                 "logs",
                 level.toString()
             ).toString());
@@ -112,7 +118,7 @@ public class Logger {
         }
     }
 
-    private String stacktraceToMessage(Exception e) {
+    private String stackTraceToString(Exception e) {
         try {
             try (
                 StringWriter stringWiter = new StringWriter();
