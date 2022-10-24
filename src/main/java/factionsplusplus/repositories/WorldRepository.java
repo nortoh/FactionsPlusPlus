@@ -55,7 +55,7 @@ public class WorldRepository {
             this.worldStore = gson.fromJson(reader, WorldRepository.JSON_TYPE);
             // TODO: check if world no longer exists
         } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath));
+            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
         }
     }
 
@@ -107,7 +107,7 @@ public class WorldRepository {
             outputStreamWriter.write(gson.toJson(this.worldStore, WorldRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath));
+            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
         }
     }
 }

@@ -52,7 +52,7 @@ public class WarRepository {
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.warStore = gson.fromJson(reader, WarRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath));
+            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
         }
     }
 
@@ -107,7 +107,7 @@ public class WarRepository {
             outputStreamWriter.write(gson.toJson(this.warStore, WarRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath));
+            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
         }
     }
 }

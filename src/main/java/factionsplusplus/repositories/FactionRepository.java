@@ -61,7 +61,7 @@ public class FactionRepository {
             this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
             this.initializeFactions();
         } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath));
+            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
         }
     }
 
@@ -284,7 +284,7 @@ public class FactionRepository {
             outputStreamWriter.write(gson.toJson(this.factionStore, FactionRepository.JSON_TYPE));
             outputStreamWriter.close();
         } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath));
+            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
         }
     }
 }

@@ -506,7 +506,7 @@ public class DynmapIntegrator {
                 set.setPlayers(plids);
             }
         } catch (Exception e) {
-            logger.error("Something went wrong updating a nation's player lists.");
+            logger.error("Something went wrong updating a nation's player lists.", e);
         }
     }
 
