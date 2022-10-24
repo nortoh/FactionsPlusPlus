@@ -49,7 +49,7 @@ public class ClaimCommand extends Command {
         Player player = context.getPlayer();
         if (context.getExecutorsFaction().getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
-            if (!context.getExecutorsFaction().isOfficer(player.getUniqueId()) && !context.getExecutorsFaction().isOwner(player.getUniqueId())) {
+            if (! context.getExecutorsFaction().isOfficer(player.getUniqueId()) && ! context.getExecutorsFaction().isOwner(player.getUniqueId())) {
                 context.replyWith("AlertMustBeOfficerOrOwnerToClaimLand");
                 return;
             }

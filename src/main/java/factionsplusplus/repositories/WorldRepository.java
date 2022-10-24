@@ -20,12 +20,15 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import java.util.UUID;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Type;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.World;
 import factionsplusplus.utils.Logger;
 
@@ -35,6 +38,7 @@ public class WorldRepository {
     private final String dataPath;
     private final static String FILE_NAME = "worlds.json";
     private final static Type JSON_TYPE = new TypeToken<Map<UUID, World>>() { }.getType();
+    private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
 
     @Inject
@@ -92,6 +96,34 @@ public class WorldRepository {
      */
     public World get(UUID uuid) {
         return this.get(Bukkit.getWorld(uuid));
+    }
+
+    public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag, boolean addToMissing) {
+        this.defaultFlags.put(flagName, flag);
+        if (addToMissing) this.addAnyMissingFlags();
+    }
+
+    public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag) {
+        this.addDefaultConfigurationFlag(flagName, flag, true);
+    }
+
+    public void addAnyMissingFlags(World world) {
+        List<String> missingFlags = this.defaultFlags.keySet().stream().filter(key -> world.getFlag(key) == null).collect(Collectors.toList());
+        if (!missingFlags.isEmpty()) {
+            missingFlags.stream().forEach(flag -> {
+                world.getFlags().put(flag, this.defaultFlags.get(flag));
+            });
+        }
+    }
+
+    public void addAnyMissingFlags() {
+        this.worldStore.values()
+            .stream()
+            .forEach(world -> this.addAnyMissingFlags(world));
+    }
+
+    public Map<String, ConfigurationFlag> getDefaultFlags() {
+        return this.defaultFlags;
     }
 
     // Write to file

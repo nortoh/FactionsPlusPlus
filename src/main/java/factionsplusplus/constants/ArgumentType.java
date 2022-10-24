@@ -15,5 +15,6 @@ public enum ArgumentType {
     OnlinePlayer,
     FactionMember,
     FactionOfficer,
-    ConfigOptionName
+    ConfigOptionName,
+    WorldFlagName
 }

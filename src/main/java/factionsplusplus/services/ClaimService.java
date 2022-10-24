@@ -89,6 +89,11 @@ public class ClaimService {
             return;
         }
 
+        if (! this.dataService.getWorld(location.getWorld().getUID()).getFlag("allowClaims").toBoolean()) {
+            this.messageService.sendLocalizedMessage(claimant, "ClaimsDisabled");
+            return;
+        }
+
         // if depth is 0, we just need to claim the chunk the player is on
         if (depth == 0) {
             claimChunkAtLocation(claimant, location, claimantsFaction);

@@ -218,13 +218,13 @@ public class FactionRepository {
         return this.factionStore.size();
     }
 
-    public void addDefaultFactionFlag(String flagName, ConfigurationFlag flag, boolean addToMissingFactions) {
+    public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag, boolean addToMissingFactions) {
         this.defaultFlags.put(flagName, flag);
         if (addToMissingFactions) this.addAnyMissingFlagsToFactions();
     }
 
-    public void addDefaultFactionFlag(String flagName, ConfigurationFlag flag) {
-        this.addDefaultFactionFlag(flagName, flag, true);
+    public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag) {
+        this.addDefaultConfigurationFlag(flagName, flag, true);
     }
 
     public void addAnyMissingFlagsToFaction(Faction faction) {

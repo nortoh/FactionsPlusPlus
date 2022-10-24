@@ -129,7 +129,7 @@ public class FactionsPlusPlusAPI {
         // Create the flag object
         ConfigurationFlag flag = new ConfigurationFlag(flagType, defaultValue);
         // Add to default flags for new factions
-        this.factionService.addDefaultFactionFlag(flagName, flag);
+        this.factionService.addDefaultConfigurationFlag(flagName, flag);
         // Add to existing factions
         this.factionService.addFlagToMissingFactions(flagName);
     }

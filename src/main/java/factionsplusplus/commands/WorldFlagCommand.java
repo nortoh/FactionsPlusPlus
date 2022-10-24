@@ -1,7 +1,3 @@
-/*
-  Copyright (c) 2022 Daniel McCoy Stephenson
-  GPL3 License
- */
 package factionsplusplus.commands;
 
 import com.google.inject.Inject;
@@ -10,7 +6,6 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigurationFlag;
-import factionsplusplus.services.ConfigService;
 import org.bukkit.ChatColor;
 
 import java.util.stream.Collectors;
@@ -24,40 +19,37 @@ import factionsplusplus.builders.ArgumentBuilder;
  * @author Callum Johnson
  */
 @Singleton
-public class FlagsCommand extends Command {
-
-    private final ConfigService configService;
+public class WorldFlagCommand extends Command {
 
     @Inject
-    public FlagsCommand(ConfigService configService) {
+    public WorldFlagCommand() {
         super(
             new CommandBuilder()
-                .withName("flags")
-                .withAliases(LOCALE_PREFIX + "CmdFlags")
-                .withDescription("Manage faction flags.")
-                .requiresPermissions("mf.flags")
+                .withName("worldflag")
+                .withAliases(LOCALE_PREFIX + "CmdWorldFlag")
+                .withDescription("Manage world flags.")
+                .requiresPermissions("mf.admin", "mf.admin.world")
                 .requiresSubCommand()
                 .expectsPlayerExecution()
-                .expectsFactionOwnership()
                 .addSubCommand(
                     new CommandBuilder()
                         .withName("show")
-                        .withAliases(LOCALE_PREFIX + "CmdFlagShow")
-                        .withDescription("Shows the current faction flags.")
+                        .withAliases(LOCALE_PREFIX + "CmdWorldFlagShow")
+                        .withDescription("Shows a worlds flags.")
                         .setExecutorMethod("showCommand")
                 )
                 .addSubCommand(
                     new CommandBuilder()
                         .withName("set")
-                        .withAliases(LOCALE_PREFIX + "CmdFlagSet")
+                        .withAliases(LOCALE_PREFIX + "CmdWorldFlagSet")
                         .withDescription("Sets a faction flag.")
                         .setExecutorMethod("setCommand")
                         .addArgument(
                             "flag name",
                             new ArgumentBuilder()
                                 .setDescription("the flag you are setting")
-                                .expectsFactionFlagName()
-                            .isRequired()
+                                .expectsWorldFlagName()
+                                .isRequired()
                         )
                         .addArgument(
                             "value",
@@ -69,7 +61,6 @@ public class FlagsCommand extends Command {
                         )
                 )
         );
-        this.configService = configService;
     }
     
     public void setCommand(CommandContext context) {
@@ -90,17 +81,11 @@ public class FlagsCommand extends Command {
     }
 
     public void showCommand(CommandContext context) {
-        String flagOutput = context.getExecutorsFaction().getFlags()
+        String flagOutput = context.getExecutorsWorld().getFlags()
             .keySet()
             .stream()
-            .filter(flagKey -> {
-                return (
-                    (!this.configService.getBoolean("allowNeutrality") && !flagKey.equalsIgnoreCase("neutral")) &&
-                    ((!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) && !flagKey.equalsIgnoreCase("prefixColor"))
-                );
-            })
-            .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsFaction().getFlags().get(flagKey).toString()))
+            .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsWorld().getFlags().get(flagKey).toString()))
             .collect(Collectors.joining(", "));
-        context.reply(ChatColor.AQUA + "" + flagOutput);
+        context.reply(ChatColor.AQUA + "[World Flags] " + flagOutput);
     }
 }

@@ -12,7 +12,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 
 
-// TODO: updateDate function to handle renames
 public class Faction extends Nation implements Feudal {
     @Expose
     private final List<Gate> gates = new ArrayList<>();

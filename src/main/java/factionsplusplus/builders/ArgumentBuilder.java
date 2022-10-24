@@ -142,4 +142,9 @@ public class ArgumentBuilder {
         this.type = ArgumentType.ConfigOptionName;
         return this;
     }
+
+    public ArgumentBuilder expectsWorldFlagName() {
+        this.type = ArgumentType.WorldFlagName;
+        return this;
+    }
 }
