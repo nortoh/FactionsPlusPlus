@@ -283,6 +283,15 @@ CannotAttackNonWarringPlayer: "&cYou can't attack another player if your faction
 ConfigListPage: "&a===== Config List Page #page#/#pages# ====="
 UsageConfigShow: "&cUsage: /mf config show <page>"
 CancelInteraction: "&bCancelled pending #type# request"
+InteractionContextInfo:
+  GrantAccess: "Grant Access"
+  CheckAccess: "Check Access"
+  RevokeAccess: "Revoke Access"
+  LockBlock: "Lock Block"
+  UnlockBlock: "Unlock Block"
+  ForceUnlockBlock: "Force Unlock Block"
+  GateCreate: "Gate Create"
+  Unknown: "Unknown"
 ConfigOptionInfo:
   Title: "&a==== #name# ===="
   Description: "&aDescription: #desc#"
