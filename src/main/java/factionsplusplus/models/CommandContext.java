@@ -129,9 +129,9 @@ public class CommandContext {
     /*
      * Retrieves an argument as a FactionFlag, if able.
      */
-    public FactionFlag getFactionFlagArgument(String name) {
+    public ConfigurationFlag getFactionFlagArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
-        if (possibleArgument != null) return (FactionFlag)possibleArgument;
+        if (possibleArgument != null) return (ConfigurationFlag)possibleArgument;
         return null;
     }
 

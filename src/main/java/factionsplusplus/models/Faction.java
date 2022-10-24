@@ -17,7 +17,7 @@ public class Faction extends Nation implements Feudal {
     @Expose
     private final List<Gate> gates = new ArrayList<>();
     @Expose
-    private final Map<String, FactionFlag> flags;
+    private final Map<String, ConfigurationFlag> flags;
     @Expose
     private List<UUID> vassals = new ArrayList<>();
     @Expose
@@ -35,12 +35,12 @@ public class Faction extends Nation implements Feudal {
     private List<UUID> attemptedVassalizations = new ArrayList<>();
 
     // Constructor
-    public Faction(String factionName, Map<String, FactionFlag> flags) {
+    public Faction(String factionName, Map<String, ConfigurationFlag> flags) {
         this.name = factionName;
         this.flags = flags;
     }
 
-    public Faction(String factionName, UUID owner, Map<String, FactionFlag> flags) {
+    public Faction(String factionName, UUID owner, Map<String, ConfigurationFlag> flags) {
         this.name = factionName;
         this.owner = owner;
         this.flags = flags;
@@ -63,11 +63,11 @@ public class Faction extends Nation implements Feudal {
     }
 
     // Flags
-    public Map<String, FactionFlag> getFlags() {
+    public Map<String, ConfigurationFlag> getFlags() {
         return this.flags;
     }
 
-    public FactionFlag getFlag(String flagName) {
+    public ConfigurationFlag getFlag(String flagName) {
         return this.flags.get(flagName);
     }
 

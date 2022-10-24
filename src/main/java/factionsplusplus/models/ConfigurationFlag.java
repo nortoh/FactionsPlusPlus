@@ -8,7 +8,7 @@ import java.awt.Color;
 
 import com.google.gson.annotations.Expose;
 
-public class FactionFlag {
+public class ConfigurationFlag {
     @Expose
     private final FlagType requiredType;
     @Expose
@@ -16,13 +16,13 @@ public class FactionFlag {
     @Expose
     private Object currentValue;
 
-    public FactionFlag(FlagType requiredType, Object defaultValue, Object currentValue) {
+    public ConfigurationFlag(FlagType requiredType, Object defaultValue, Object currentValue) {
         this.requiredType = requiredType;
         this.defaultValue = defaultValue;
         this.currentValue = currentValue;
     }
 
-    public FactionFlag(FlagType requiredType, Object defaultValue) {
+    public ConfigurationFlag(FlagType requiredType, Object defaultValue) {
         this.requiredType = requiredType;
         this.defaultValue = defaultValue;
         this.currentValue = null;
