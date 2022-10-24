@@ -12,11 +12,8 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
 
-import org.bukkit.entity.Player;
-
 import factionsplusplus.builders.CommandBuilder;
 
-import java.util.List;
 import java.util.UUID;
 
 /**

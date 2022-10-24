@@ -10,16 +10,9 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -27,13 +20,11 @@ import java.util.UUID;
 @Singleton
 public class BreakAllianceCommand extends Command {
 
-    private final FactionRepository factionRepository;
-
     /**
      * Constructor to initialise a Command.
      */
     @Inject
-    public BreakAllianceCommand(FactionRepository factionRepository) {
+    public BreakAllianceCommand() {
         super(
             new CommandBuilder()
                 .withName("breakalliance")
@@ -52,7 +43,6 @@ public class BreakAllianceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.factionRepository = factionRepository;
     }
 
 

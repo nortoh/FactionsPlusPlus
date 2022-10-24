@@ -16,7 +16,6 @@ import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

@@ -4,7 +4,6 @@
  */
 package factionsplusplus.externalapi;
 
-import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
 

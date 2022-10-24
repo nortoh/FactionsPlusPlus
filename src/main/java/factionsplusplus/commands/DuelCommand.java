@@ -15,16 +15,11 @@ import factionsplusplus.objects.domain.Duel;
 import factionsplusplus.objects.domain.Duel.DuelState;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.services.DeathService;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Callum Johnson

@@ -9,10 +9,8 @@ import com.google.inject.Injector;
 import factionsplusplus.di.PluginModule;
 import factionsplusplus.eventhandlers.*;
 import factionsplusplus.externalapi.FactionsPlusPlusAPI;
-import factionsplusplus.factories.WarFactory;
 import factionsplusplus.placeholders.PlaceholderAPI;
 import factionsplusplus.services.*;
-import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.extended.Scheduler;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -28,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.inject.Provider;
 
-import javax.swing.Action;
-
 /**
  * @author Daniel McCoy Stephenson
  * @since May 30th, 2020
@@ -39,7 +35,6 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
     private final String pluginVersion = "v" + getDescription().getVersion();
     @Inject private ActionBarService actionBarService;
     @Inject private ConfigService configService;
-    @Inject private Logger logger;
     @Inject private DataService dataService;
     @Inject private Scheduler scheduler;
     @Inject private CommandService commandService;

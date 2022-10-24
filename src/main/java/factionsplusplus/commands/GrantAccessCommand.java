@@ -13,13 +13,11 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.List;
 import java.util.UUID;
 
 /**

@@ -16,7 +16,6 @@ import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.ChatColor;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Callum Johnson

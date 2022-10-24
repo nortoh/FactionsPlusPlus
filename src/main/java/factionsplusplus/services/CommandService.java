@@ -12,13 +12,9 @@ import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionFlag;
-import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.RelationChecker;
 import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.StringUtils;
-import factionsplusplus.utils.extended.Scheduler;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -32,15 +28,10 @@ import factionsplusplus.repositories.CommandRepository;
 
 import factionsplusplus.builders.MessageBuilder;
 
-import java.util.Collection;
 import java.util.Arrays;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,31 +45,25 @@ public class CommandService implements TabCompleter {
     private final LocaleService localeService;
     private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
-    private final PlayerService playerService;
     private final MessageService messageService;
     private final CommandRepository commandRepository;
     private final DataService dataService;
-    private final FactionService factionService;
 
     @Inject
     public CommandService(
         LocaleService localeService,
         FactionsPlusPlus factionsPlusPlus,
         ConfigService configService,
-        PlayerService playerService,
         MessageService messageService,
         CommandRepository commandRepository,
-        FactionService factionService,
         DataService dataService
     ) {
         this.localeService = localeService;
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
-        this.playerService = playerService;
         this.messageService = messageService;
         this.commandRepository = commandRepository;
         this.dataService = dataService;
-        this.factionService = factionService;
     }
 
     public void registerCommands() {

@@ -13,8 +13,6 @@ import factionsplusplus.repositories.WarRepository;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.builders.MessageBuilder;
 
-import java.util.Objects;
-
 /**
  * @author Daniel McCoy Stephenson
  */

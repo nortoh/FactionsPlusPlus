@@ -1,6 +1,5 @@
 package factionsplusplus.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Random;
@@ -8,7 +7,6 @@ import java.util.Collection;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -117,6 +115,7 @@ public class DataService {
     }
 
     public Faction getRandomFaction() {
+        // TODO: fix this to get a random uuid from factionRepository
         return this.factionRepository.all().get(new Random().nextInt(this.factionRepository.all().size()));
     }
 

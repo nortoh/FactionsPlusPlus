@@ -11,8 +11,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DynmapIntegrationService;
-import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.PlayerService;
 import factionsplusplus.builders.*;
 import org.bukkit.entity.Player;
 

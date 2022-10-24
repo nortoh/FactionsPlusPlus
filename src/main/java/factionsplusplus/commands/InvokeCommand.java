@@ -11,19 +11,13 @@ import factionsplusplus.events.FactionWarStartEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -32,13 +26,9 @@ import java.util.UUID;
 public class InvokeCommand extends Command {
 
     private final ConfigService configService;
-    private final FactionRepository factionRepository;
 
     @Inject
-    public InvokeCommand(
-        ConfigService configService,
-        FactionRepository factionRepository
-    ) {
+    public InvokeCommand(ConfigService configService) {
         super(
             new CommandBuilder()
                 .withName("invoke")
@@ -66,7 +56,6 @@ public class InvokeCommand extends Command {
                 )
         );
         this.configService = configService;
-        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {

@@ -23,14 +23,11 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import factionsplusplus.builders.MessageBuilder;
-
-import java.util.*;
 
 /**
  * @author Callum Johnson
@@ -650,6 +647,7 @@ public class ForceCommand extends Command {
                 this.constructMessage("InvalidFactionFlag")
                     .with("flag", flagName)
             );
+            return;
         }
         final String value = context.getStringArgument("value");
         String newValue = flag.set(value);

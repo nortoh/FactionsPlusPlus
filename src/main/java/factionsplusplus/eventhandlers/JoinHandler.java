@@ -176,10 +176,6 @@ public class JoinHandler implements Listener {
         }
     }
 
-    private boolean chunkIsClaimed(Player player) {
-        return this.dataService.isChunkClaimed(player.getLocation().getChunk());
-    }
-
     private void informPlayerIfTheirFactionIsWeakened(Player player) {
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {

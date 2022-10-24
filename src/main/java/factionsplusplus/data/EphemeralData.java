@@ -7,7 +7,6 @@ package factionsplusplus.data;
 import com.google.inject.Singleton;
 
 import factionsplusplus.objects.domain.Duel;
-import factionsplusplus.models.Gate;
 import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.entity.AreaEffectCloud;

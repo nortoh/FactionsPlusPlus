@@ -13,10 +13,7 @@ import factionsplusplus.repositories.ConfigOptionRepository;
 import factionsplusplus.utils.StringUtils;
 import factionsplusplus.builders.ConfigOptionBuilder;
 import factionsplusplus.constants.SetConfigResult;
-import factionsplusplus.builders.MessageBuilder;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Map;
@@ -30,15 +27,13 @@ import javax.inject.Provider;
 public class ConfigService {
     private final Provider<FactionsPlusPlus> factionsPlusPlus;
     private final ConfigOptionRepository configOptionRepository;
-    private final MessageService messageService;
 
     private boolean altered = false;
 
     @Inject
-    public ConfigService(Provider<FactionsPlusPlus> factionsPlusPlus, ConfigOptionRepository configOptionRepository, MessageService messageService) {
+    public ConfigService(Provider<FactionsPlusPlus> factionsPlusPlus, ConfigOptionRepository configOptionRepository) {
         this.factionsPlusPlus = factionsPlusPlus;
         this.configOptionRepository = configOptionRepository;
-        this.messageService = messageService;
         this.registerCoreOptions();
     }
 

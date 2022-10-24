@@ -15,12 +15,6 @@ import factionsplusplus.services.LocaleService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
-import org.bukkit.entity.Player;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -64,7 +58,6 @@ public class AllyCommand extends Command {
     public void execute(CommandContext context) {
         // retrieve the Faction from the given arguments
         final Faction otherFaction = context.getFactionArgument("faction name");
-        final Player player = context.getPlayer();
 
         // the faction can't be itself
         if (otherFaction == context.getExecutorsFaction()) {

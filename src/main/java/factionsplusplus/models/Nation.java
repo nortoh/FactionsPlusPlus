@@ -185,15 +185,4 @@ public class Nation extends Group implements Diplomatic, Lawful, Identifiable {
         }
         return false;
     }
-
-    private void removeIfContainsIgnoreCase(List<String> list, String str) {
-        String toRemove = "";
-        for (String string : list) {
-            if (string.equalsIgnoreCase(str)) {
-                toRemove = string;
-                break;
-            }
-        }
-        list.remove(toRemove);
-    }
 }

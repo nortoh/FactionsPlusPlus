@@ -21,15 +21,16 @@ repositories {
 dependencies {
     implementation 'com.github.Preponderous-Software:Ponder:1.1'
     implementation 'me.clip:placeholderapi:2.11.1'
-    implementation 'org.spigotmc:spigot-api:1.14.1-R0.1-SNAPSHOT'
+    implementation 'org.spigotmc:spigot-api:1.19.1-R0.1-SNAPSHOT'
     implementation 'us.dynmap:dynmap-api:2.2'
     implementation 'org.bstats:bstats-bukkit:3.0.0'
+    implementation 'com.google.inject:guice:5.1.0'
 }
 
 group = 'factionsplusplus'
 version = '1.0.0-SNAPSHOT'
 description = 'Factions Plus Plus'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_16
 
 import org.apache.tools.ant.filters.ReplaceTokens
 processResources {
