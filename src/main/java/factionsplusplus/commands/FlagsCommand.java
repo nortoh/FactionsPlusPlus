@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.services.ConfigService;
 import org.bukkit.ChatColor;
 
@@ -73,7 +73,7 @@ public class FlagsCommand extends Command {
     }
     
     public void setCommand(CommandContext context) {
-        final FactionFlag flag = context.getFactionFlagArgument("flag name");
+        final ConfigurationFlag flag = context.getFactionFlagArgument("flag name");
         final String flagValue = context.getStringArgument("value");
         String newValue = flag.set(flagValue);
         if (newValue == null) {

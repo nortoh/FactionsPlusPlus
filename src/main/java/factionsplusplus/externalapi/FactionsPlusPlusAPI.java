@@ -11,7 +11,7 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
@@ -127,7 +127,7 @@ public class FactionsPlusPlusAPI {
     public void createFactionFlag(String flagName, FlagType flagType, Object defaultValue) {
         // TODO: handle the flag name already existing  
         // Create the flag object
-        FactionFlag flag = new FactionFlag(flagType, defaultValue);
+        ConfigurationFlag flag = new ConfigurationFlag(flagType, defaultValue);
         // Add to default flags for new factions
         this.factionService.addDefaultFactionFlag(flagName, flag);
         // Add to existing factions

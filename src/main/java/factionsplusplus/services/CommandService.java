@@ -11,7 +11,7 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.FactionFlag;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.StringUtils;
 import org.bukkit.Bukkit;
@@ -356,7 +356,7 @@ public class CommandService implements TabCompleter {
                         );
                         return false;
                     case FactionFlagName:
-                        FactionFlag flag = this.getFactionFlag(context, argumentData);
+                        ConfigurationFlag flag = this.getFactionFlag(context, argumentData);
                         if (flag != null) {
                             parsedArgumentData = flag;
                             break;
@@ -415,8 +415,8 @@ public class CommandService implements TabCompleter {
         }
     }
 
-    private FactionFlag getFactionFlag(CommandContext context, String argumentData) {
-        final FactionFlag flag = context.getExecutorsFaction().getFlag(argumentData);
+    private ConfigurationFlag getFactionFlag(CommandContext context, String argumentData) {
+        final ConfigurationFlag flag = context.getExecutorsFaction().getFlag(argumentData);
         if (flag == null) {
             context.replyWith(
                 new MessageBuilder("InvalidFactionFlag")
