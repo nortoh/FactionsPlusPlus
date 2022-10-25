@@ -226,7 +226,7 @@ public class CommandService implements TabCompleter {
         // Faction owner?
         if (command.shouldRequireFactionOwnership()) {
             if (context.isConsole()) return false; // bail if console
-            if (playerFaction != null && ! playerFaction.getOwner().equals(((Player)sender).getUniqueId())) {
+            if (playerFaction != null && ! playerFaction.getOwner().getUUID().equals(((Player)sender).getUniqueId())) {
                 context.replyWith("AlertMustBeOwnerToUseCommand");
                 return false;
             }
@@ -236,7 +236,7 @@ public class CommandService implements TabCompleter {
         if (command.shouldRequireFactionOfficership()) {
             if (context.isConsole()) return false; // bail if console
             UUID senderUUID = ((Player)sender).getUniqueId();
-            if (playerFaction != null && ! playerFaction.getOwner().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
+            if (playerFaction != null && ! playerFaction.getOwner().getUUID().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
                 context.replyWith("AlertMustBeOwnerOrOfficeToUseCommand");
                 return false;
             }
@@ -778,7 +778,7 @@ public class CommandService implements TabCompleter {
                     return playersFaction.getMembers()
                         .values().stream()
                         .filter(member -> member.hasRole(GroupRole.Officer))
-                        .map(GroupMember::getId)
+                        .map(GroupMember::getUUID)
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());

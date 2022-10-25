@@ -68,7 +68,7 @@ public class DisbandCommand extends Command {
             }
             disband = context.getExecutorsFaction();
             self = true;
-            if (disband != null && disband.getPopulation() != 1) {
+            if (disband != null && disband.getMemberCount() != 1) {
                 context.replyWith("AlertMustKickAllPlayers");
                 return;
             }

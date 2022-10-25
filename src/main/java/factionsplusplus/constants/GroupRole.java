@@ -1,32 +1,29 @@
 package factionsplusplus.constants;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public enum GroupRole {
-    Member(null),
-    Laborer(Member),
-    Officer(Laborer),
-    Owner(Officer);
+    Member(0x1),
+    Laborer(0x2 | GroupRole.Member.getLevel()),
+    Officer(0x4 | GroupRole.Laborer.getLevel() | GroupRole.Member.getLevel()),
+    Owner(0x8 | GroupRole.Officer.getLevel() | GroupRole.Laborer.getLevel() | GroupRole.Member.getLevel());
 
-    private GroupRole inherentince;
+    private int level;
 
-    GroupRole(GroupRole inherentince) {
-        this.inherentince = inherentince;
+    GroupRole(int level) {
+        this.level = level;
     }
 
-    public GroupRole getInheritedRole() {
-        return this.inherentince;
+    public int getLevel() {
+        return this.level;
     }
 
-    public static ArrayList<GroupRole> getFullRoles(GroupRole role) {
-        ArrayList<GroupRole> inherited = new ArrayList<>();
+    public static List<GroupRole> getRoleList(int role) {
+        ArrayList<GroupRole> roles = new ArrayList<>();
 
-        while (role != Member) {
-            inherited.add(role);
-            role = role.inherentince;
-        }
+        for (GroupRole potentialRole : GroupRole.values()) if ((role & potentialRole.level) == potentialRole.level) roles.add(potentialRole);
 
-        inherited.add(Member);
-        return inherited;
+        return roles;
     }
 }

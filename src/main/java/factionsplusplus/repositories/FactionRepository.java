@@ -56,6 +56,7 @@ public class FactionRepository {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .serializeNulls()
+                .enableComplexMapKeySerialization()
                 .create();
             JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
             this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
@@ -278,6 +279,7 @@ public class FactionRepository {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .serializeNulls()
+                .enableComplexMapKeySerialization()
                 .create();
             file.createNewFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);

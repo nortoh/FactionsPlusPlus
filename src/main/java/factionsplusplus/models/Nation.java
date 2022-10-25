@@ -5,7 +5,6 @@
 package factionsplusplus.models;
 
 import factionsplusplus.models.interfaces.Diplomatic;
-import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.models.interfaces.Lawful;
 
 import java.util.List;
@@ -17,9 +16,7 @@ import com.google.gson.annotations.Expose;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class Nation extends Group implements Diplomatic, Lawful, Identifiable {
-    @Expose
-    protected final UUID uuid = UUID.randomUUID();
+public class Nation extends Group implements Diplomatic, Lawful {
     @Expose
     protected final List<UUID> allyFactions = new ArrayList<>();
     protected List<UUID> attemptedAlliances = new ArrayList<>();
@@ -47,11 +44,6 @@ public class Nation extends Group implements Diplomatic, Lawful, Identifiable {
     @Override
     public List<UUID> getAllies() {
         return this.allyFactions;
-    }
-
-    @Override
-    public UUID getUUID() {
-        return this.uuid;
     }
 
     @Override

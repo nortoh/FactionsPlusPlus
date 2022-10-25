@@ -1,51 +1,44 @@
 package factionsplusplus.models;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.google.gson.annotations.Expose;
 
 import factionsplusplus.constants.GroupRole;
+import factionsplusplus.models.interfaces.Identifiable;
 
-public class GroupMember {
+public class GroupMember implements Identifiable {
     @Expose
-    protected final UUID playerUuid;
+    protected final UUID uuid;
     @Expose
-    protected ArrayList<GroupRole> roles = new ArrayList<GroupRole>();
+    protected int role = GroupRole.Member.getLevel();
 
     public GroupMember(UUID playerUuid) {
-        this.playerUuid = playerUuid;
+        this.uuid = playerUuid;
     }
 
-    public UUID getId() {
-        return this.playerUuid;
+    public UUID getUUID() {
+        return this.uuid;
     }
 
     public void addRole(GroupRole role) {
-        if (! this.roles.contains(role)) return;
-        this.roles.addAll(GroupRole.getFullRoles(role));
-    }
-
-    public void addRoles(GroupRole... roles) {
-        for (GroupRole role : roles) {
-            if (this.hasRole(role)) continue;
-            this.roles.addAll(GroupRole.getFullRoles(role));
-            // possibly could contain duplicates, needs testing
-            this.roles = (ArrayList<GroupRole>) this.roles.stream().distinct().toList();
-        }
+        this.role |= role.getLevel();
     }
 
     public void removeRole(GroupRole role) {
-        if (this.roles.contains(role)) {
-            this.roles.removeAll(GroupRole.getFullRoles(role));
-        }
+        this.role &= ~role.getLevel();
     }
 
     public boolean hasRole(GroupRole role) {
-        return this.roles.contains(role);
+        return (this.role & role.getLevel()) == role.getLevel();
     }
 
-    public ArrayList<GroupRole> getRoles() {
-        return this.roles;
+    public boolean isRole(GroupRole role) {
+        return this.role == role.getLevel();
+    }
+
+    public List<GroupRole> getRoles() {
+        return GroupRole.getRoleList(this.role);
     }
 }

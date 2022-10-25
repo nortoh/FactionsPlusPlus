@@ -248,11 +248,11 @@ public class FactionService {
         // Faction name
         builder.add(new MessageBuilder("FactionInfo.Name").with("name", faction.getName()));
         // Owner
-        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner().getId()).getName()));
+        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName()));
         // Description (if applicable)
         if (faction.getDescription() != null) builder.add(new MessageBuilder("FactionInfo.Description").with("desc", faction.getDescription()));
         // Population
-        builder.add(new MessageBuilder("FactionInfo.Population").with("amount", String.valueOf(faction.getPopulation())));
+        builder.add(new MessageBuilder("FactionInfo.Population").with("amount", String.valueOf(faction.getMemberCount())));
         // Allies (if applicable)
         if (!faction.getAllies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.Allies").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getAllies()))));
         // Enemies (if applicable)
