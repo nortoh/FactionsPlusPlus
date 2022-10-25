@@ -49,7 +49,7 @@ public class HomeCommand extends Command {
             return;
         }
         final Chunk home_chunk;
-        if (!this.dataService.isChunkClaimed(home_chunk = faction.getFactionHome().getChunk())) {
+        if (! this.dataService.isChunkClaimed(home_chunk = faction.getFactionHome().getChunk())) {
             context.replyWith("HomeIsInUnclaimedChunk");
             return;
         }
@@ -58,7 +58,7 @@ public class HomeCommand extends Command {
             context.replyWith("HomeIsInUnclaimedChunk");
             return;
         }
-        if (!chunk.getHolder().equals(faction.getID())) {
+        if (! chunk.getHolder().equals(faction.getID())) {
             context.replyWith("HomeClaimedByAnotherFaction");
             return;
         }

@@ -66,7 +66,7 @@ public class InviteCommand extends Command {
         Player player = context.getPlayer();
         if (faction.getFlag("mustBeOfficerToInviteOthers").toBoolean()) {
             // officer or owner rank required
-            if (!faction.isOfficer(player.getUniqueId()) && !faction.isOwner(player.getUniqueId())) {
+            if (! faction.isOfficer(player.getUniqueId()) && ! faction.isOwner(player.getUniqueId())) {
                 context.replyWith("AlertMustBeOwnerOrOfficerToUseCommand");
                 return;
             }

@@ -15,7 +15,6 @@ import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.FactionService;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
@@ -63,8 +62,7 @@ public class CreateCommand extends Command {
             return;
         }
         final String factionName = context.getStringArgument("faction name");
-        final FileConfiguration config = this.configService.getConfig();
-        if (factionName.length() > config.getInt("factionMaxNameLength")) {
+        if (factionName.length() > this.configService.getInt("factionMaxNameLength")) {
             context.replyWith(
                 this.constructMessage("FactionNameTooLong")
                     .with("name", factionName)
@@ -84,7 +82,7 @@ public class CreateCommand extends Command {
         playerFaction.setOwner(context.getPlayer().getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
-        if (!createEvent.isCancelled()) {
+        if (! createEvent.isCancelled()) {
             this.factionRepository.create(playerFaction);
             context.replyWith(
                 this.constructMessage("FactionCreated")

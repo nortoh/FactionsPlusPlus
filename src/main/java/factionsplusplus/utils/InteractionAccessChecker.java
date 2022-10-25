@@ -37,7 +37,7 @@ public class InteractionAccessChecker {
     }
 
     public boolean shouldEventBeCancelled(ClaimedChunk claimedChunk, Player player) {
-        if (factionsProtectionsNotEnabled()) {
+        if (this.factionsProtectionsNotEnabled()) {
             return false;
         }
 
@@ -45,7 +45,7 @@ public class InteractionAccessChecker {
             return false;
         }
 
-        if (isPlayerBypassing(player)) {
+        if (this.isPlayerBypassing(player)) {
             return false;
         }
 
@@ -54,7 +54,7 @@ public class InteractionAccessChecker {
             return true;
         }
 
-        return !isLandClaimedByPlayersFaction(playersFaction, claimedChunk) && !isOutsiderInteractionAllowed(player, claimedChunk, playersFaction);
+        return ! this.isLandClaimedByPlayersFaction(playersFaction, claimedChunk) && ! this.isOutsiderInteractionAllowed(player, claimedChunk, playersFaction);
     }
 
     private boolean isLandClaimedByPlayersFaction(Faction faction, ClaimedChunk claimedChunk) {
@@ -62,15 +62,15 @@ public class InteractionAccessChecker {
     }
 
     private boolean factionsProtectionsNotEnabled() {
-        return !configService.getBoolean("factionProtectionsEnabled");
+        return ! this.configService.getBoolean("factionProtectionsEnabled");
     }
 
     private boolean isPlayerBypassing(Player player) {
-        return ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
+        return this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
     }
 
     public boolean isOutsiderInteractionAllowed(Player player, ClaimedChunk chunk, Faction playersFaction) {
-        if (!configService.getBoolean("factionProtectionsEnabled")) {
+        if (! this.configService.getBoolean("factionProtectionsEnabled")) {
             return true;
         }
 
@@ -104,7 +104,7 @@ public class InteractionAccessChecker {
             return false;
         }
 
-        boolean laddersArePlaceableInEnemyTerritory = configService.getBoolean("laddersPlaceableInEnemyFactionTerritory");
+        boolean laddersArePlaceableInEnemyTerritory = this.configService.getBoolean("laddersPlaceableInEnemyFactionTerritory");
         boolean playerIsTryingToPlaceLadderInEnemyTerritory = blockPlaced.getType() == LADDER && playersFaction.isEnemy(claimedChunk.getHolder());
         return laddersArePlaceableInEnemyTerritory && playerIsTryingToPlaceLadderInEnemyTerritory;
     }

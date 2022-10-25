@@ -81,7 +81,7 @@ public class ConfigurationFlag {
                 break;
             case Color:
                 String hex = value;
-                if (!hex.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                if (! hex.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
                     final String output = ColorConversion.attemptDecode(hex, false);
                     newValue = output;
                 }

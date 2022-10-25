@@ -26,15 +26,15 @@ public class PlayerRecord {
     }
 
     public UUID getPlayerUUID() {
-        return playerUUID;
+        return this.playerUUID;
     }
 
     public double getPower() {
-        return powerLevel;
+        return this.powerLevel;
     }
 
     public void setPower(double newPower) {
-        powerLevel = newPower;
+        this.powerLevel = newPower;
     }
 
 

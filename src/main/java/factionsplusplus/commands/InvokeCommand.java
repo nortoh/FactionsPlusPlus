@@ -62,7 +62,7 @@ public class InvokeCommand extends Command {
         final Player player = context.getPlayer();
         final Faction invokee = context.getFactionArgument("allied faction name");
         final Faction warringFaction = context.getFactionArgument("enemy faction name");
-        if (!context.getExecutorsFaction().isVassal(invokee.getID())) {
+        if (! context.getExecutorsFaction().isVassal(invokee.getID())) {
             context.replyWith(
                 this.constructMessage("NotAnAllyOrVassal")
                     .with("name", invokee.getName())

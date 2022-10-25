@@ -40,7 +40,7 @@ public class LocaleService {
 
     public void createLanguageFile() {
         this.languageFile = new File(this.dataPath, "language.yml");
-        if (!this.languageFile.exists()) this.factionsPlusPlus.get().saveResource("language.yml", false);
+        if (! this.languageFile.exists()) this.factionsPlusPlus.get().saveResource("language.yml", false);
         this.language = new YamlConfiguration();
         try {
             this.language.load(this.languageFile);

@@ -49,28 +49,28 @@ public class ChatHandler implements Listener {
         if (playersFaction == null) {
             return;
         }
-        initializeValues(playersFaction, event);
-        if (configService.getBoolean("playersChatWithPrefixes")) {
-            addPrefix(event, prefixColor, prefix);
+        this.initializeValues(playersFaction, event);
+        if (this.configService.getBoolean("playersChatWithPrefixes")) {
+            this.addPrefix(event, prefixColor, prefix);
         }
-        if (ephemeralData.isPlayerInFactionChat(event.getPlayer())) {
-            sendMessage(playersFaction, prefixColor, prefix, event, factionChatColor, message);
+        if (this.ephemeralData.isPlayerInFactionChat(event.getPlayer())) {
+            this.sendMessage(playersFaction, prefixColor, prefix, event, factionChatColor, message);
             event.setCancelled(true);
         }
     }
 
     private void initializeValues(Faction playersFaction, AsyncPlayerChatEvent event) {
-        factionChatColor = configService.getString("factionChatColor");
-        prefixColor = playersFaction.getFlag("prefixColor").toString();
-        prefix = playersFaction.getPrefix();
-        message = event.getMessage();
+        this.factionChatColor = this.configService.getString("factionChatColor");
+        this.prefixColor = playersFaction.getFlag("prefixColor").toString();
+        this.prefix = playersFaction.getPrefix();
+        this.message = event.getMessage();
     }
 
     private void sendMessage(Faction playersFaction, String prefixColor, String prefix, AsyncPlayerChatEvent event, String factionChatColor, String message) {
-        if (configService.getBoolean("chatSharedInVassalageTrees")) {
-            sendMessageToVassalageTree(playersFaction, prefixColor, prefix, event, factionChatColor, message);
+        if (this.configService.getBoolean("chatSharedInVassalageTrees")) {
+            this.sendMessageToVassalageTree(playersFaction, prefixColor, prefix, event, factionChatColor, message);
         } else {
-            sendMessageToFaction(playersFaction, prefix, prefixColor, event, factionChatColor, message);
+            this.sendMessageToFaction(playersFaction, prefix, prefixColor, event, factionChatColor, message);
         }
     }
 

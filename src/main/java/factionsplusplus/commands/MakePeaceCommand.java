@@ -82,7 +82,7 @@ public class MakePeaceCommand extends Command {
         if (faction.isTruceRequested(target.getID()) && target.isTruceRequested(faction.getID())) {
             FactionWarEndEvent warEndEvent = new FactionWarEndEvent(faction, target);
             Bukkit.getPluginManager().callEvent(warEndEvent);
-            if (!warEndEvent.isCancelled()) {
+            if (! warEndEvent.isCancelled()) {
                 // remove requests in case war breaks out again, and they need to make peace again
                 faction.removeRequestedTruce(target.getID());
                 target.removeRequestedTruce(faction.getID());

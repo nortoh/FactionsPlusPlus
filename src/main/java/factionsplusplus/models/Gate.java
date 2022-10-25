@@ -50,16 +50,16 @@ public class Gate {
     }
 
     public World getWorld() {
-        if (_world != null) {
-            return _world;
+        if (this._world != null) {
+            return this._world;
         }
-        _world = getServer().getWorld(world);
-        return _world;
+        this._world = getServer().getWorld(this.world);
+        return this._world;
     }
 
     public void setWorld(String worldName) {
-        world = worldName;
-        _world = null;
+        this.world = worldName;
+        this._world = null;
     }
 
     public boolean isVertical() {
@@ -103,100 +103,100 @@ public class Gate {
     }
 
     public boolean isIntersecting(Gate gate) {
-        boolean xoverlap = coord2.getX() > gate.coord1.getX() && coord1.getX() < coord2.getX();
-        boolean yoverlap = coord2.getY() > gate.coord1.getY() && coord1.getY() < gate.coord1.getY();
-        boolean zoverlap = coord2.getZ() > gate.coord1.getZ() && coord1.getZ() < coord2.getZ();
+        boolean xoverlap = this.coord2.getX() > gate.coord1.getX() && this.coord1.getX() < this.coord2.getX();
+        boolean yoverlap = this.coord2.getY() > gate.coord1.getY() && this.coord1.getY() < gate.coord1.getY();
+        boolean zoverlap = this.coord2.getZ() > gate.coord1.getZ() && this.coord1.getZ() < this.coord2.getZ();
         return xoverlap && yoverlap && zoverlap;
     }
 
     public int getTopLeftX() {
-        if (coord1 != null && coord2 != null) {
-            return Math.min(coord1.getX(), coord2.getX());
+        if (this.coord1 != null && this.coord2 != null) {
+            return Math.min(this.coord1.getX(), this.coord2.getX());
         }
         return 0;
     }
 
     public int getTopLeftY() {
-        if (coord1 != null && coord2 != null) {
-            return Math.max(coord1.getY(), coord2.getY());
+        if (this.coord1 != null && this.coord2 != null) {
+            return Math.max(this.coord1.getY(), this.coord2.getY());
         }
         return 0;
     }
 
     public int getTopLeftZ() {
-        if (coord1 != null && coord2 != null) {
-            return Math.min(coord1.getZ(), coord2.getZ());
+        if (this.coord1 != null && this.coord2 != null) {
+            return Math.min(this.coord1.getZ(), this.coord2.getZ());
         }
         return 0;
     }
 
     public int getBottomRightX() {
-        if (coord1 != null && coord2 != null) {
-            return Math.max(coord1.getX(), coord2.getX());
+        if (this.coord1 != null && this.coord2 != null) {
+            return Math.max(this.coord1.getX(), this.coord2.getX());
         }
         return 0;
     }
 
     public int getBottomRightY() {
-        if (coord1 != null && coord2 != null) {
-            return Math.min(coord1.getY(), coord2.getY());
+        if (this.coord1 != null && this.coord2 != null) {
+            return Math.min(this.coord1.getY(), this.coord2.getY());
         }
         return 0;
     }
 
     public int getBottomRightZ() {
-        if (coord1 != null && coord2 != null) {
-            return Math.max(coord1.getZ(), coord2.getZ());
+        if (this.coord1 != null && this.coord2 != null) {
+            return Math.max(this.coord1.getZ(), this.coord2.getZ());
         }
         return 0;
     }
 
     public int getTopLeftChunkX() {
-        if (coord1 != null && coord2 != null) {
-            return coord1.getX() < coord2.getX() ? coord1.getX() / 16 : coord2.getX() / 16;
+        if (this.coord1 != null && this.coord2 != null) {
+            return this.coord1.getX() < this.coord2.getX() ? this.coord1.getX() / 16 : this.coord2.getX() / 16;
         }
         return 0;
     }
 
     public int getTopLeftChunkZ() {
-        if (coord1 != null && coord2 != null) {
-            return coord1.getZ() < coord2.getZ() ? coord1.getZ() / 16 : coord2.getZ() / 16;
+        if (this.coord1 != null && this.coord2 != null) {
+            return this.coord1.getZ() < this.coord2.getZ() ? this.coord1.getZ() / 16 : this.coord2.getZ() / 16;
         }
         return 0;
     }
 
     public int getBottomRightChunkX() {
         if (coord1 != null && coord2 != null) {
-            return coord1.getX() < coord2.getX() ? coord2.getX() / 16 : coord1.getX() / 16;
+            return this.coord1.getX() < this.coord2.getX() ? this.coord2.getX() / 16 : this.coord1.getX() / 16;
         }
         return 0;
     }
 
     public int getBottomRightChunkZ() {
-        if (coord1 != null && coord2 != null) {
-            return coord1.getZ() < coord2.getZ() ? coord2.getZ() / 16 : coord1.getZ() / 16;
+        if (this.coord1 != null && this.coord2 != null) {
+            return this.coord1.getZ() < this.coord2.getZ() ? this.coord2.getZ() / 16 : this.coord1.getZ() / 16;
         }
         return 0;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String value) {
-        name = value;
+        this.name = value;
     }
 
     public boolean isOpen() {
-        return open;
+        return this.open;
     }
 
     public boolean isReady() {
-        return gateStatus.equals(GateStatus.Ready);
+        return this.gateStatus.equals(GateStatus.Ready);
     }
 
     public boolean isClosed() {
-        return !open;
+        return ! open;
     }
 
     public GateStatus getStatus() {
@@ -204,28 +204,28 @@ public class Gate {
     }
 
     public LocationData getTrigger() {
-        return trigger;
+        return this.trigger;
     }
 
     public LocationData getCoord1() {
-        return coord1;
+        return this.coord1;
     }
 
     public LocationData getCoord2() {
-        return coord2;
+        return this.coord2;
     }
 
     public boolean isParallelToZ() {
-        if (coord1 != null && coord2 != null) {
-            return coord1.getZ() != coord2.getZ();
+        if (this.coord1 != null && this.coord2 != null) {
+            return this.coord1.getZ() != this.coord2.getZ();
         } else {
             return false;
         }
     }
 
     public boolean isParallelToX() {
-        if (coord1 != null && coord2 != null) {
-            return coord1.getX() != coord2.getX();
+        if (this.coord1 != null && this.coord2 != null) {
+            return this.coord1.getX() != this.coord2.getX();
         } else {
             return false;
         }
@@ -233,9 +233,9 @@ public class Gate {
 
     public ArrayList<Block> getGateBlocks() {
         ArrayList<Block> blocks = new ArrayList<>();
-        for (int y = coord1.getY(); y < coord2.getY(); y++) {
-            for (int z = coord1.getZ(); z < coord2.getZ(); z++) {
-                for (int x = coord1.getX(); x < coord2.getX(); x++) {
+        for (int y = this.coord1.getY(); y < this.coord2.getY(); y++) {
+            for (int z = this.coord1.getZ(); z < this.coord2.getZ(); z++) {
+                for (int x = this.coord1.getX(); x < this.coord2.getX(); x++) {
                     blocks.add(getWorld().getBlockAt(x, y, z));
                 }
             }
@@ -244,30 +244,30 @@ public class Gate {
     }
 
     public boolean gateBlocksMatch(Material mat) {
-        int topY = coord1.getY();
-        int bottomY = coord2.getY();
-        if (coord2.getY() > coord1.getY()) {
-            topY = coord2.getY();
-            bottomY = coord1.getY();
+        int topY = this.coord1.getY();
+        int bottomY = this.coord2.getY();
+        if (this.coord2.getY() > this.coord1.getY()) {
+            topY = this.coord2.getY();
+            bottomY = this.coord1.getY();
         }
 
-        int leftX = coord1.getX();
-        int rightX = coord2.getX();
-        if (coord2.getX() < coord1.getX()) {
-            leftX = coord2.getX();
-            rightX = coord1.getX();
+        int leftX = this.coord1.getX();
+        int rightX = this.coord2.getX();
+        if (this.coord2.getX() < this.coord1.getX()) {
+            leftX = this.coord2.getX();
+            rightX = this.coord1.getX();
         }
 
-        int leftZ = coord1.getZ();
-        int rightZ = coord2.getZ();
-        if (coord2.getZ() < coord1.getZ()) {
-            leftZ = coord2.getZ();
-            rightZ = coord1.getZ();
+        int leftZ = this.coord1.getZ();
+        int rightZ = this.coord2.getZ();
+        if (this.coord2.getZ() < this.coord1.getZ()) {
+            leftZ = this.coord2.getZ();
+            rightZ = this.coord1.getZ();
         }
 
-        if (isParallelToZ()) {
+        if (this.isParallelToZ()) {
             rightX++;
-        } else if (isParallelToX()) {
+        } else if (this.isParallelToX()) {
             rightZ++;
         }
 
@@ -284,15 +284,15 @@ public class Gate {
     }
 
     public int getDimX() {
-        return getDimX(coord1, coord2);
+        return this.getDimX(coord1, coord2);
     }
 
     public int getDimY() {
-        return getDimY(coord1, coord2);
+        return this.getDimY(coord1, coord2);
     }
 
     public int getDimZ() {
-        return getDimZ(coord1, coord2);
+        return this.getDimZ(coord1, coord2);
     }
 
     public int getDimX(LocationData first, LocationData second) {
@@ -326,26 +326,26 @@ public class Gate {
     }
 
     public void fillGate() {
-        if (!open) {
+        if (! open) {
             return;
         }
 
         open = false;
         // For vertical, we only need to iterate over x/y
-        if (vertical) {
-            if (isParallelToX()) {
-                int topY = coord1.getY();
-                int bottomY = coord2.getY();
-                if (coord2.getY() > coord1.getY()) {
-                    topY = coord2.getY();
-                    bottomY = coord1.getY();
+        if (this.vertical) {
+            if (this.isParallelToX()) {
+                int topY = this.coord1.getY();
+                int bottomY = this.coord2.getY();
+                if (this.coord2.getY() > this.coord1.getY()) {
+                    topY = this.coord2.getY();
+                    bottomY = this.coord1.getY();
                 }
 
-                int _leftX = coord1.getX();
-                int _rightX = coord2.getX();
-                if (coord2.getX() < coord1.getX()) {
-                    _leftX = coord2.getX();
-                    _rightX = coord1.getX();
+                int _leftX = this.coord1.getX();
+                int _rightX = this.coord2.getX();
+                if (this.coord2.getX() < this.coord1.getX()) {
+                    _leftX = this.coord2.getX();
+                    _rightX = this.coord1.getX();
                 }
 
                 final int leftX = _leftX;
@@ -354,26 +354,26 @@ public class Gate {
                 for (int y = topY; y >= bottomY; y--) {
                     Block b = null;
                     for (int x = leftX; x <= rightX; x++) {
-                        b = getWorld().getBlockAt(x, y, coord1.getZ());
+                        b = getWorld().getBlockAt(x, y, this.coord1.getZ());
                         b.setType(material);
                     }
                     if (b != null)
-                        getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
+                        getWorld().playSound(b.getLocation(), this.soundEffect, 0.1f, 0.1f);
                 }
-            } else if (isParallelToZ()) {
-                int topY = coord1.getY();
-                int bottomY = coord2.getY();
-                if (coord2.getY() > coord1.getY()) {
-                    topY = coord2.getY();
-                    bottomY = coord1.getY();
+            } else if (this.isParallelToZ()) {
+                int topY = this.coord1.getY();
+                int bottomY = this.coord2.getY();
+                if (this.coord2.getY() > this.coord1.getY()) {
+                    topY = this.coord2.getY();
+                    bottomY = this.coord1.getY();
                 }
 
-                int _leftZ = coord1.getZ();
-                int _rightZ = coord2.getZ();
+                int _leftZ = this.coord1.getZ();
+                int _rightZ = this.coord2.getZ();
 
-                if (coord2.getZ() < coord1.getZ()) {
-                    _leftZ = coord2.getZ();
-                    _rightZ = coord1.getZ();
+                if (this.coord2.getZ() < this.coord1.getZ()) {
+                    _leftZ = this.coord2.getZ();
+                    _rightZ = this.coord1.getZ();
                 }
                 final int leftZ = _leftZ;
                 final int rightZ = _rightZ;
@@ -381,11 +381,11 @@ public class Gate {
                 for (int y = topY; y >= bottomY; y--) {
                     Block b = null;
                     for (int z = leftZ; z <= rightZ; z++) {
-                        b = getWorld().getBlockAt(coord1.getX(), y, z);
+                        b = getWorld().getBlockAt(this.coord1.getX(), y, z);
                         b.setType(material);
                     }
                     if (b != null) {
-                        getWorld().playSound(b.getLocation(), soundEffect, 0.1f, 0.1f);
+                        getWorld().playSound(b.getLocation(), this.soundEffect, 0.1f, 0.1f);
                     }
                 }
             }
@@ -393,28 +393,28 @@ public class Gate {
     }
 
     public boolean hasBlock(Block targetBlock) {
-        int topY = coord1.getY();
-        int bottomY = coord2.getY();
-        if (coord2.getY() > coord1.getY()) {
-            topY = coord2.getY();
-            bottomY = coord1.getY();
+        int topY = this.coord1.getY();
+        int bottomY = this.coord2.getY();
+        if (this.coord2.getY() > this.coord1.getY()) {
+            topY = this.coord2.getY();
+            bottomY = this.coord1.getY();
         }
 
-        int _leftZ = coord1.getZ();
-        int _rightZ = coord2.getZ();
+        int _leftZ = this.coord1.getZ();
+        int _rightZ = this.coord2.getZ();
 
-        if (coord2.getZ() < coord1.getZ()) {
-            _leftZ = coord2.getZ();
-            _rightZ = coord1.getZ();
+        if (this.coord2.getZ() < this.coord1.getZ()) {
+            _leftZ = this.coord2.getZ();
+            _rightZ = this.coord1.getZ();
         }
         int leftZ = _leftZ;
         int rightZ = _rightZ;
 
-        int _leftX = coord1.getX();
-        int _rightX = coord2.getX();
-        if (coord2.getX() < coord1.getX()) {
-            _leftX = coord2.getX();
-            _rightX = coord1.getX();
+        int _leftX = this.coord1.getX();
+        int _rightX = this.coord2.getX();
+        if (this.coord2.getX() < this.coord1.getX()) {
+            _leftX = this.coord2.getX();
+            _rightX = this.coord1.getX();
         }
 
         int leftX = _leftX;
@@ -423,19 +423,19 @@ public class Gate {
         if (targetBlock.getX() >= leftX && targetBlock.getX() <= rightX
                 && targetBlock.getY() >= bottomY && targetBlock.getY() <= topY
                 && targetBlock.getZ() >= leftZ && targetBlock.getZ() <= rightZ
-                && targetBlock.getWorld().getName().equalsIgnoreCase(coord1.getWorld())) {
+                && targetBlock.getWorld().getName().equalsIgnoreCase(this.coord1.getWorld())) {
             return true;
         }
 
-        return trigger.equals(targetBlock);
+        return this.trigger.getBlock().equals(targetBlock);
     }
 
     public String coordsToString() {
-        if (coord1 == null || coord2 == null || trigger == null) {
+        if (this.coord1 == null || this.coord2 == null || this.trigger == null) {
             return "";
         }
 
-        return String.format("(%d, %d, %d to %d, %d, %d) Trigger (%d, %d, %d)", coord1.getX(), coord1.getY(), coord1.getZ(), coord2.getX(), coord2.getY(), coord2.getZ(),
-                trigger.getX(), trigger.getY(), trigger.getZ());
+        return String.format("(%d, %d, %d to %d, %d, %d) Trigger (%d, %d, %d)", this.coord1.getX(), this.coord1.getY(), this.coord1.getZ(), this.coord2.getX(), this.coord2.getY(), this.coord2.getZ(),
+                this.trigger.getX(), this.trigger.getY(), this.trigger.getZ());
     }
 }

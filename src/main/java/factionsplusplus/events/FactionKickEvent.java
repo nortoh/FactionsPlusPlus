@@ -32,7 +32,7 @@ public class FactionKickEvent extends FactionLeaveEvent {
 
     // Getters.
     public OfflinePlayer getKicker() {
-        return kicker;
+        return this.kicker;
     }
 
 }

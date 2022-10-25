@@ -140,7 +140,7 @@ public class Command implements ColorTranslator {
             for (Map.Entry<String, Command> entry : this.subcommands.entrySet()) {
                 joiner.add(entry.getKey());
             }
-            if (!this.requiresSubCommand) {
+            if (! this.requiresSubCommand) {
                 output.add(String.format("[%s]", joiner.toString()));
             } else {
                 output.add(joiner.toString());

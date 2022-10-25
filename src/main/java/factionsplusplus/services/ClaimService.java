@@ -77,11 +77,11 @@ public class ClaimService {
      * @param claimantsFaction The claimant's faction.
      */
     public void radiusClaimAtLocation(int depth, Player claimant, Location location, Faction claimantsFaction) {
-        int maxClaimRadius = configService.getInt("maxClaimRadius");
+        int maxClaimRadius = this.configService.getInt("maxClaimRadius");
 
         // check if depth is valid
         if (depth < 0 || depth > maxClaimRadius) {
-            messageService.sendLocalizedMessage(
+            this.messageService.sendLocalizedMessage(
                 claimant,
                 new MessageBuilder("RadiusRequirement")
                     .with("number", String.valueOf(maxClaimRadius))
@@ -96,14 +96,14 @@ public class ClaimService {
 
         // if depth is 0, we just need to claim the chunk the player is on
         if (depth == 0) {
-            claimChunkAtLocation(claimant, location, claimantsFaction);
+            this.claimChunkAtLocation(claimant, location, claimantsFaction);
             return;
         }
 
         // claim chunks
         final Chunk initial = location.getChunk();
         final Set<Chunk> chunkSet = ChunkUtils.obtainChunksForRadius(initial, depth);
-        chunkSet.forEach(chunk -> claimChunkAtLocation(
+        chunkSet.forEach(chunk -> this.claimChunkAtLocation(
                 claimant, ChunkUtils.getChunkCoords(chunk), chunk.getWorld(), claimantsFaction
         ));
     }
@@ -120,7 +120,7 @@ public class ClaimService {
 
         // check if radius is valid
         if (radius <= 0 || radius > maxChunksUnclaimable) {
-            messageService.sendLocalizedMessage(
+            this.messageService.sendLocalizedMessage(
                 player,
                 new MessageBuilder("RadiusRequirement")
                     .with("number", String.valueOf(maxChunksUnclaimable))
@@ -131,9 +131,9 @@ public class ClaimService {
         // unclaim chunks
         final Set<Chunk> chunkSet = ChunkUtils.obtainChunksForRadius(player.getLocation().getChunk(), radius);
         chunkSet.stream()
-                .map(c -> dataService.getClaimedChunk(c.getX(), c.getZ(), c.getWorld().getName()))
+                .map(c -> this.dataService.getClaimedChunk(c.getX(), c.getZ(), c.getWorld().getName()))
                 .filter(Objects::nonNull)
-                .forEach(chunk -> removeChunk(chunk, player, faction));
+                .forEach(chunk -> this.removeChunk(chunk, player, faction));
     }
 
     /**
@@ -145,7 +145,7 @@ public class ClaimService {
      */
     public void claimChunkAtLocation(Player claimant, Location location, Faction claimantsFaction) {
         double[] chunkCoords = ChunkUtils.getChunkCoords(location);
-        claimChunkAtLocation(claimant, chunkCoords, location.getWorld(), claimantsFaction);
+        this.claimChunkAtLocation(claimant, chunkCoords, location.getWorld(), claimantsFaction);
     }
 
     /**
@@ -161,18 +161,18 @@ public class ClaimService {
         playerCoords[1] = player.getLocation().getChunk().getZ();
 
         // handle admin bypass
-        if (ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId())) {
-            ClaimedChunk chunk = dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
+        if (this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId())) {
+            ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
             if (chunk != null) {
-                removeChunk(chunk, player, dataService.getFaction(chunk.getHolder()));
-                messageService.sendLocalizedMessage(player, "LandClaimedUsingAdminBypass");
+                this.removeChunk(chunk, player, this.dataService.getFaction(chunk.getHolder()));
+                this.messageService.sendLocalizedMessage(player, "LandClaimedUsingAdminBypass");
                 return;
             }
-            messageService.sendLocalizedMessage(player, "LandNotCurrentlyClaimed");
+            this.messageService.sendLocalizedMessage(player, "LandNotCurrentlyClaimed");
             return;
         }
 
-        ClaimedChunk chunk = dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
 
         // ensure that chunk is claimed
         if (chunk == null) {
@@ -180,9 +180,9 @@ public class ClaimService {
         }
 
         // ensure that the chunk is claimed by the player's faction.
-        if (!chunk.getHolder().equals(playersFaction.getName())) {
-            Faction chunkOwner = dataService.getFaction(chunk.getHolder());
-            messageService.sendLocalizedMessage(
+        if (! chunk.getHolder().equals(playersFaction.getUUID())) {
+            Faction chunkOwner = this.dataService.getFaction(chunk.getHolder());
+            this.messageService.sendLocalizedMessage(
                 player,
                 new MessageBuilder("LandClaimedBy")
                     .with("player", chunkOwner.getName())
@@ -191,8 +191,8 @@ public class ClaimService {
         }
 
         // initiate removal
-        removeChunk(chunk, player, playersFaction);
-        messageService.sendLocalizedMessage(player, "LandUnclaimed");
+        this.removeChunk(chunk, player, playersFaction);
+        this.messageService.sendLocalizedMessage(player, "LandUnclaimed");
     }
 
     /**
@@ -205,9 +205,9 @@ public class ClaimService {
         double[] playerCoords = new double[2];
         playerCoords[0] = player.getLocation().getChunk().getX();
         playerCoords[1] = player.getLocation().getChunk().getZ();
-        ClaimedChunk chunk = dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
         if (chunk != null) {
-            return dataService.getFactionRepository().get(chunk.getHolder()).getName();
+            return this.dataService.getFactionRepository().get(chunk.getHolder()).getName();
         }
         return "unclaimed";
     }
@@ -219,7 +219,7 @@ public class ClaimService {
      * @return Whether the faction's claimed land exceeds their power.
      */
     public boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (dataService.getClaimedChunksForFaction(faction).size() > factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
     }
 
     /**
@@ -228,10 +228,10 @@ public class ClaimService {
      * @param player The player to inform.
      */
     public void informPlayerIfTheirLandIsInDanger(Player player) {
-        Faction faction = dataService.getPlayersFaction(player.getUniqueId());
+        Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction != null) {
-            if (isFactionExceedingTheirDemesneLimit(faction)) {
-                messageService.sendLocalizedMessage(player, "AlertMoreClaimedChunksThanPower");
+            if (this.isFactionExceedingTheirDemesneLimit(faction)) {
+                this.messageService.sendLocalizedMessage(player, "AlertMoreClaimedChunksThanPower");
             }
         }
     }
@@ -244,10 +244,10 @@ public class ClaimService {
      */
     public void handleClaimedChunkInteraction(PlayerInteractEvent event, ClaimedChunk claimedChunk) {
         // player not in a faction and isn't overriding
-        if (!dataService.isPlayerInFaction(event.getPlayer()) && !ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
 
             Block block = event.getClickedBlock();
-            if (configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && blockChecker.isDoor(block)) {
+            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && this.blockChecker.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -257,16 +257,16 @@ public class ClaimService {
 
         // TODO: simplify this code with a call to the shouldEventBeCancelled() method in InteractionAccessChecker.java
 
-        final Faction playersFaction = dataService.getPlayersFaction(event.getPlayer().getUniqueId());
+        final Faction playersFaction = this.dataService.getPlayersFaction(event.getPlayer().getUniqueId());
         if (playersFaction == null) {
             return;
         }
 
         // if player's faction is not the same as the holder of the chunk and player isn't overriding
-        if (!(playersFaction.getID().equals(claimedChunk.getHolder())) && !ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
 
             Block block = event.getClickedBlock();
-            if (configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && blockChecker.isDoor(block)) {
+            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && this.blockChecker.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -274,15 +274,15 @@ public class ClaimService {
             // if enemy territory
             if (playersFaction.isEnemy(claimedChunk.getHolder())) {
                 // if not interacting with chest
-                if (canBlockBeInteractedWith(event)) {
+                if (this.canBlockBeInteractedWith(event)) {
                     // allow placing ladders
-                    if (configService.getBoolean("laddersPlaceableInEnemyFactionTerritory")) {
+                    if (this.configService.getBoolean("laddersPlaceableInEnemyFactionTerritory")) {
                         if (event.getMaterial() == LADDER) {
                             return;
                         }
                     }
                     // allow eating
-                    if (materialAllowed(event.getMaterial())) {
+                    if (this.materialAllowed(event.getMaterial())) {
                         return;
                     }
                     // allow blocking
@@ -292,7 +292,7 @@ public class ClaimService {
                 }
             }
 
-            if (!interactionAccessChecker.isOutsiderInteractionAllowed(event.getPlayer(), claimedChunk, playersFaction)) {
+            if (! this.interactionAccessChecker.isOutsiderInteractionAllowed(event.getPlayer(), claimedChunk, playersFaction)) {
                 event.setCancelled(true);
             }
         }
@@ -307,84 +307,83 @@ public class ClaimService {
     public void forceClaimAtPlayerLocation(Player player, Faction faction) {
         Location location = player.getLocation();
 
-        ClaimedChunk claimedChunk = dataService.getClaimedChunk(location.getChunk());
+        ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(location.getChunk());
 
         if (claimedChunk != null) {
-            removeChunk(claimedChunk, player, faction);
+            this.removeChunk(claimedChunk, player, faction);
         }
 
-        addClaimedChunk(location.getChunk(), faction, Objects.requireNonNull(location.getWorld()));
+        this.addClaimedChunk(location.getChunk(), faction, Objects.requireNonNull(location.getWorld()));
     }
 
     private void claimChunkAtLocation(Player claimant, double[] chunkCoords, World world, Faction claimantsFaction) {
 
         // if demesne limit enabled
-        if (configService.getBoolean("limitLand")) {
+        if (this.configService.getBoolean("limitLand")) {
             // if at demesne limit
             
-            if (!(dataService.getClaimedChunksForFaction(claimantsFaction).size() < factionService.getCumulativePowerLevel(claimantsFaction))) {
-                System.out.println("Limit reached");
-                messageService.sendLocalizedMessage(claimant, "AlertReachedDemesne");
+            if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < this.factionService.getCumulativePowerLevel(claimantsFaction))) {
+                this.messageService.sendLocalizedMessage(claimant, "AlertReachedDemesne");
                 return;
             }
         }
 
         // check if land is already claimed
-        ClaimedChunk chunk = dataService.getClaimedChunk(chunkCoords[0], chunkCoords[1], world.getName());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(chunkCoords[0], chunkCoords[1], world.getName());
         if (chunk != null) {
             // chunk already claimed
-            Faction targetFaction = dataService.getFaction(chunk.getHolder());
+            Faction targetFaction = this.dataService.getFaction(chunk.getHolder());
 
             // if holder is player's faction
-            if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && !claimantsFaction.getAutoClaimStatus()) {
-                messageService.sendLocalizedMessage(claimant, "LandAlreadyClaimedByYourFaction");
+            if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && ! claimantsFaction.getAutoClaimStatus()) {
+                this.messageService.sendLocalizedMessage(claimant, "LandAlreadyClaimedByYourFaction");
                 return;
             }
 
             // if not at war with target faction
-            if (!claimantsFaction.isEnemy(targetFaction.getID())) {
-                messageService.sendLocalizedMessage(claimant, "IsNotEnemy");
+            if (! claimantsFaction.isEnemy(targetFaction.getID())) {
+                this.messageService.sendLocalizedMessage(claimant, "IsNotEnemy");
                 return;
             }
 
             // surrounded chunk protection check
-            if (configService.getBoolean("surroundedChunksProtected")) {
-                if (isClaimedChunkSurroundedByChunksClaimedBySameFaction(chunk)) {
-                    messageService.sendLocalizedMessage(claimant, "SurroundedChunkProtected");
+            if (this.configService.getBoolean("surroundedChunksProtected")) {
+                if (this.isClaimedChunkSurroundedByChunksClaimedBySameFaction(chunk)) {
+                    this.messageService.sendLocalizedMessage(claimant, "SurroundedChunkProtected");
                     return;
                 }
             }
 
-            int targetFactionsCumulativePowerLevel = factionService.getCumulativePowerLevel(targetFaction);
-            int chunksClaimedByTargetFaction = dataService.getClaimedChunksForFaction(targetFaction).size();
+            int targetFactionsCumulativePowerLevel = this.factionService.getCumulativePowerLevel(targetFaction);
+            int chunksClaimedByTargetFaction = this.dataService.getClaimedChunksForFaction(targetFaction).size();
 
             // if target faction does not have more land than their demesne limit
-            if (!(targetFactionsCumulativePowerLevel < chunksClaimedByTargetFaction)) {
-                messageService.sendLocalizedMessage(claimant, "TargetFactionNotOverClaiming");
+            if (! (targetFactionsCumulativePowerLevel < chunksClaimedByTargetFaction)) {
+                this.messageService.sendLocalizedMessage(claimant, "TargetFactionNotOverClaiming");
                 return;
             }
 
             // CONQUERABLE
 
             // remove locks on this chunk
-            dataService.getLockedBlockRepository().all().removeIf(block -> chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunk.getChunk().getX() &&
+            this.dataService.getLockedBlockRepository().all().removeIf(block -> chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunk.getChunk().getX() &&
                     chunk.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunk.getChunk().getZ());
 
             FactionClaimEvent claimEvent = new FactionClaimEvent(claimantsFaction, claimant, chunk.getChunk());
             Bukkit.getPluginManager().callEvent(claimEvent);
-            if (!claimEvent.isCancelled()) {
-                dataService.getClaimedChunkRepository().delete(chunk);
+            if (! claimEvent.isCancelled()) {
+                this.dataService.getClaimedChunkRepository().delete(chunk);
 
                 Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
-                addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                messageService.sendLocalizedMessage(
+                this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
+                this.messageService.sendLocalizedMessage(
                     claimant,
                     new MessageBuilder("AlertLandConqueredFromAnotherFaction")
                         .with("name", targetFaction.getName())
-                        .with("number", String.valueOf(dataService.getClaimedChunksForFaction(claimantsFaction).size()))
-                        .with("max", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction)))
+                        .with("number", String.valueOf(this.dataService.getClaimedChunksForFaction(claimantsFaction).size()))
+                        .with("max", String.valueOf(this.factionService.getCumulativePowerLevel(claimantsFaction)))
                 );
-                messageService.sendFactionLocalizedMessage(
+                this.messageService.sendFactionLocalizedMessage(
                     targetFaction,
                     new MessageBuilder("AlertLandConqueredFromYourFaction")
                         .with("name", claimantsFaction.getName())
@@ -394,14 +393,14 @@ public class ClaimService {
             Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
             FactionClaimEvent claimEvent = new FactionClaimEvent(claimantsFaction, claimant, toClaim);
             Bukkit.getPluginManager().callEvent(claimEvent);
-            if (!claimEvent.isCancelled()) {
+            if (! claimEvent.isCancelled()) {
                 // chunk not already claimed
-                addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                messageService.sendLocalizedMessage(
+                this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
+                this.messageService.sendLocalizedMessage(
                     claimant,
                     new MessageBuilder("AlertLandClaimed")
-                        .with("number", String.valueOf(dataService.getClaimedChunksForFaction(claimantsFaction).size()))
-                        .with("max", String.valueOf(factionService.getCumulativePowerLevel(claimantsFaction)))
+                        .with("number", String.valueOf(this.dataService.getClaimedChunksForFaction(claimantsFaction).size()))
+                        .with("max", String.valueOf(this.factionService.getCumulativePowerLevel(claimantsFaction)))
                 );
             }
         }
@@ -417,7 +416,7 @@ public class ClaimService {
     private void addClaimedChunk(Chunk chunk, Faction faction, World world) {
         ClaimedChunk newChunk = new ClaimedChunk(chunk);
         newChunk.setHolder(faction.getID());
-        dataService.getClaimedChunkRepository().create(newChunk);            
+        this.dataService.getClaimedChunkRepository().create(newChunk);            
     }
 
     /**
@@ -439,10 +438,10 @@ public class ClaimService {
         }
 
         // get player's faction
-        Faction playersFaction = dataService.getPlayersFaction(unclaimingPlayer.getUniqueId());
+        Faction playersFaction = this.dataService.getPlayersFaction(unclaimingPlayer.getUniqueId());
 
         // ensure that the claimed chunk is owned by the player's faction
-        if (!chunkToRemove.getHolder().equals(playersFaction.getID())) {
+        if (! chunkToRemove.getHolder().equals(playersFaction.getID())) {
             // TODO: add locale message
             return;
         }
@@ -454,12 +453,12 @@ public class ClaimService {
                     && chunkToRemove.getWorldName().equalsIgnoreCase(Objects.requireNonNull(unclaimingPlayer.getLocation().getWorld()).getName())) {
                 // remove faction home
                 holdingFaction.setFactionHome(null);
-                messageService.sendFactionLocalizedMessage(holdingFaction, "AlertFactionHomeRemoved");
+                this.messageService.sendFactionLocalizedMessage(holdingFaction, "AlertFactionHomeRemoved");
             }
         }
 
         // remove locks on this chunk
-        dataService.getLockedBlockRepository().all().removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
+        this.dataService.getLockedBlockRepository().all().removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
                 chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunkToRemove.getChunk().getZ() &&
                 block.getWorld().equalsIgnoreCase(chunkToRemove.getWorldName()));
 
@@ -473,7 +472,7 @@ public class ClaimService {
             }
         }
 
-        dataService.getClaimedChunkRepository().delete(chunkToRemove);
+        this.dataService.getClaimedChunkRepository().delete(chunkToRemove);
     }
 
     /**
@@ -483,10 +482,10 @@ public class ClaimService {
      * @return Boolean indicating whether or not the claimed chunk is surrounded.
      */
     private boolean isClaimedChunkSurroundedByChunksClaimedBySameFaction(ClaimedChunk target) {
-        ClaimedChunk northernClaimedChunk = dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "north"));
-        ClaimedChunk easternClaimedChunk = dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "east"));
-        ClaimedChunk southernClaimedChunk = dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "south"));
-        ClaimedChunk westernClaimedChunk = dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "west"));
+        ClaimedChunk northernClaimedChunk = this.dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "north"));
+        ClaimedChunk easternClaimedChunk = this.dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "east"));
+        ClaimedChunk southernClaimedChunk = this.dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "south"));
+        ClaimedChunk westernClaimedChunk = this.dataService.getClaimedChunk(ChunkUtils.getChunkByDirection(target.getChunk(), "west"));
 
         if (northernClaimedChunk == null ||
                 easternClaimedChunk == null ||
@@ -517,7 +516,7 @@ public class ClaimService {
     private boolean canBlockBeInteractedWith(PlayerInteractEvent event) {
         if (event.getClickedBlock() != null) {
             // CHEST
-            if (blockChecker.isChest(event.getClickedBlock())) {
+            if (this.blockChecker.isChest(event.getClickedBlock())) {
                 return false;
             }
             switch (event.getClickedBlock().getType()) {

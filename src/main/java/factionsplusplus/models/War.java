@@ -4,8 +4,6 @@
  */
 package factionsplusplus.models;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import factionsplusplus.jsonadapters.ZonedDateTimeAdapter;
 
 
@@ -69,14 +67,5 @@ public class War {
     public void end() {
         this.active = false;
         this.ended = ZonedDateTime.now();
-    }
-
-    // Tools
-    public JsonElement toJsonTree() {
-        return new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .serializeNulls()
-            .create()
-            .toJsonTree(this);
     }
 }

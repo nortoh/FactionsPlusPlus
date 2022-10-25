@@ -29,7 +29,7 @@ public class PlayerService {
     public FactionRank getFactionRank(UUID playerUUID) {
         Faction playerFaction = this.dataService.getPlayersFaction(playerUUID);
         if (playerFaction != null) {
-            if (playerFaction.getOwner().equals(playerUUID)) {
+            if (playerFaction.getOwner().getUUID().equals(playerUUID)) {
                 return FactionRank.Owner;
             } else if (playerFaction.isOfficer(playerUUID)) {
                 return FactionRank.Officer;

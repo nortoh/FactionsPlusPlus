@@ -35,17 +35,17 @@ public class FactionRenameEvent extends FactionEvent implements Cancellable {
 
     // Getters.
     public String getCurrentName() {
-        return current;
+        return this.current;
     }
 
     public String getProposedName() {
-        return proposed;
+        return this.proposed;
     }
 
     // Bukkit Cancellable methodology.
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override

@@ -164,7 +164,7 @@ public class DynmapIntegrator {
         ArrayDeque<int[]> stack = new ArrayDeque<>();
         stack.push(new int[]{x, y});
 
-        while (!stack.isEmpty()) {
+        while (! stack.isEmpty()) {
             int[] nxt = stack.pop();
             x = nxt[0];
             y = nxt[1];
@@ -290,7 +290,7 @@ public class DynmapIntegrator {
 
         /* Loop through blocks: set flags on blockmaps for worlds */
         for (ClaimedChunk b : blocks) {
-            if (!b.getWorldName().equalsIgnoreCase(currentWorld)) { /* Not same world */
+            if (! b.getWorldName().equalsIgnoreCase(currentWorld)) { /* Not same world */
                 String wname = b.getWorldName();
                 currentWorld = b.getWorldName();
                 curblks = blkmaps.get(wname);
@@ -314,13 +314,13 @@ public class DynmapIntegrator {
                 int nodex = node.getChunk().getX();
                 int nodez = node.getChunk().getZ();
                 if (ourblks == null) {   /* If not started, switch to world for this block first */
-                    if (!node.getWorldName().equalsIgnoreCase(currentWorld)) {
+                    if (! node.getWorldName().equalsIgnoreCase(currentWorld)) {
                         currentWorld = node.getWorldName();
                         curblks = blkmaps.get(currentWorld);
                     }
                 }
                 /* If we need to start shape, and this block is not part of one yet */
-                if ((ourblks == null) && curblks.getFlag(nodex, nodez)) {
+                if ((ourblks == null) && curblks != null && curblks.getFlag(nodex, nodez)) {
                     ourblks = new ChunkFlags();  /* Create map for shape */
                     ournodes = new LinkedList<>();
                     this.floodFillTarget(curblks, ourblks, nodex, nodez);   /* Copy shape */
@@ -331,7 +331,7 @@ public class DynmapIntegrator {
                 /* If shape found, and we're in it, add to our node list */
                 else if ((ourblks != null) && (node.getWorldName().equalsIgnoreCase(currentWorld)) &&
                         (ourblks.getFlag(nodex, nodez))) {
-                    ournodes.add(node);
+                    if (ournodes != null) ournodes.add(node);
                     if (nodex < minx) {
                         minx = nodex;
                         minz = nodez;
@@ -357,10 +357,10 @@ public class DynmapIntegrator {
                 while ((cur_x != minx) || (cur_z != minz) || (dir != direction.ZMINUS)) {
                     switch (dir) {
                         case XPLUS: /* Segment in X+ direction */
-                            if (!ourblks.getFlag(cur_x + 1, cur_z)) { /* Right turn? */
+                            if (! ourblks.getFlag(cur_x + 1, cur_z)) { /* Right turn? */
                                 linelist.add(new int[]{cur_x + 1, cur_z}); /* Finish line */
                                 dir = direction.ZPLUS;  /* Change direction */
-                            } else if (!ourblks.getFlag(cur_x + 1, cur_z - 1)) {  /* Straight? */
+                            } else if (! ourblks.getFlag(cur_x + 1, cur_z - 1)) {  /* Straight? */
                                 cur_x++;
                             } else {  /* Left turn */
                                 linelist.add(new int[]{cur_x + 1, cur_z}); /* Finish line */
@@ -370,10 +370,10 @@ public class DynmapIntegrator {
                             }
                             break;
                         case ZPLUS: /* Segment in Z+ direction */
-                            if (!ourblks.getFlag(cur_x, cur_z + 1)) { /* Right turn? */
+                            if (! ourblks.getFlag(cur_x, cur_z + 1)) { /* Right turn? */
                                 linelist.add(new int[]{cur_x + 1, cur_z + 1}); /* Finish line */
                                 dir = direction.XMINUS;  /* Change direction */
-                            } else if (!ourblks.getFlag(cur_x + 1, cur_z + 1)) {  /* Straight? */
+                            } else if (! ourblks.getFlag(cur_x + 1, cur_z + 1)) {  /* Straight? */
                                 cur_z++;
                             } else {  /* Left turn */
                                 linelist.add(new int[]{cur_x + 1, cur_z + 1}); /* Finish line */
@@ -383,10 +383,10 @@ public class DynmapIntegrator {
                             }
                             break;
                         case XMINUS: /* Segment in X- direction */
-                            if (!ourblks.getFlag(cur_x - 1, cur_z)) { /* Right turn? */
+                            if (! ourblks.getFlag(cur_x - 1, cur_z)) { /* Right turn? */
                                 linelist.add(new int[]{cur_x, cur_z + 1}); /* Finish line */
                                 dir = direction.ZMINUS;  /* Change direction */
-                            } else if (!ourblks.getFlag(cur_x - 1, cur_z + 1)) {  /* Straight? */
+                            } else if (! ourblks.getFlag(cur_x - 1, cur_z + 1)) {  /* Straight? */
                                 cur_x--;
                             } else {  /* Left turn */
                                 linelist.add(new int[]{cur_x, cur_z + 1}); /* Finish line */
@@ -396,10 +396,10 @@ public class DynmapIntegrator {
                             }
                             break;
                         case ZMINUS: /* Segment in Z- direction */
-                            if (!ourblks.getFlag(cur_x, cur_z - 1)) { /* Right turn? */
+                            if (! ourblks.getFlag(cur_x, cur_z - 1)) { /* Right turn? */
                                 linelist.add(new int[]{cur_x, cur_z}); /* Finish line */
                                 dir = direction.XPLUS;  /* Change direction */
-                            } else if (!ourblks.getFlag(cur_x - 1, cur_z - 1)) {  /* Straight? */
+                            } else if (! ourblks.getFlag(cur_x - 1, cur_z - 1)) {  /* Straight? */
                                 cur_z--;
                             } else {  /* Left turn */
                                 linelist.add(new int[]{cur_x, cur_z}); /* Finish line */

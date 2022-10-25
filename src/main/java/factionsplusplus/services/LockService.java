@@ -60,7 +60,7 @@ public class LockService {
         if (chunk != null) {
 
             // if claimed by other faction
-            if (!chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getID())) {
+            if (! chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getID())) {
                 this.messageService.sendLocalizedMessage(player, "CanOnlyLockInFactionTerritory");
                 event.setCancelled(true);
                 return;
@@ -74,7 +74,7 @@ public class LockService {
             }
 
             // if the block is a lockable type
-            if (!BlockUtils.isGenericBlockType(clickedBlock, LOCKABLE_BLOCKS)) {
+            if (! BlockUtils.isGenericBlockType(clickedBlock, LOCKABLE_BLOCKS)) {
                 this.messageService.sendLocalizedMessage(player, "CanOnlyLockSpecificBlocks");
                 event.setCancelled(true);
                 return;

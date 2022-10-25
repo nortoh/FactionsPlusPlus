@@ -126,7 +126,7 @@ public class MapCommand extends Command {
             }
             index++;
         }
-        if (!added.isEmpty()) { // We don't wanna send an empty line, so check if the added lines is empty or not.
+        if (! added.isEmpty()) { // We don't wanna send an empty line, so check if the added lines is empty or not.
             context.reply(" " + this.translate(String.join(", ", added)));
         }
     }

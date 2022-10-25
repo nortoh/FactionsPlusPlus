@@ -11,7 +11,6 @@ import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.ClaimedChunk;
@@ -72,7 +71,7 @@ public class FactionService {
     }
 
     public void setBonusPower(Faction faction, int power) {
-        if (!this.configService.getBoolean("bonusPowerEnabled") || !(faction.getFlag("acceptBonusPower").toBoolean())) {
+        if (! this.configService.getBoolean("bonusPowerEnabled") || ! (faction.getFlag("acceptBonusPower").toBoolean())) {
             return;
         }
         faction.setBonusPower(power);
@@ -254,9 +253,9 @@ public class FactionService {
         // Population
         builder.add(new MessageBuilder("FactionInfo.Population").with("amount", String.valueOf(faction.getMemberCount())));
         // Allies (if applicable)
-        if (!faction.getAllies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.Allies").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getAllies()))));
+        if (! faction.getAllies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.Allies").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getAllies()))));
         // Enemies (if applicable)
-        if (!faction.getEnemyFactions().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemyFactions()))));
+        if (! faction.getEnemyFactions().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemyFactions()))));
         // Power level
         final int claimedChunks = this.claimedChunkRepository.getAllForFaction(faction).size();
         final int cumulativePowerLevel = this.getCumulativePowerLevel(faction);

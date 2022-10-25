@@ -52,7 +52,6 @@ public class ListCommand extends Command {
         context.replyWith("ListLegend");
         context.reply(ChatColor.AQUA + "-----");
         for (Faction faction : sortedFactionList) {
-
             context.reply(ChatColor.AQUA + String.format("%-25s %10s %10s %10s", faction.getName(), "P: " +
                     this.factionService.getCumulativePowerLevel(faction), "M: " + faction.getMemberCount(), "L: " +
                     this.dataService.getClaimedChunksForFaction(faction).size()));

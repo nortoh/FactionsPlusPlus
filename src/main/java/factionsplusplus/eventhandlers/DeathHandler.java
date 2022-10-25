@@ -38,10 +38,10 @@ public class DeathHandler implements Listener {
     public void handle(PlayerDeathEvent event) {
         event.getEntity();
         Player player = event.getEntity();
-        if (configService.getBoolean("playersLosePowerOnDeath")) {
-            decreaseDyingPlayersPower(player);
+        if (this.configService.getBoolean("playersLosePowerOnDeath")) {
+            this.decreaseDyingPlayersPower(player);
         }
-        if (! wasPlayersCauseOfDeathAnotherPlayerKillingThem(player)) {
+        if (! this.wasPlayersCauseOfDeathAnotherPlayerKillingThem(player)) {
             return;
         }
         Player killer = player.getKiller();
@@ -60,6 +60,7 @@ public class DeathHandler implements Listener {
     private void decreaseDyingPlayersPower(Player player) {
         double powerLost = this.playerService.revokePowerDueToDeath(player.getUniqueId());
         if (powerLost != 0) {
+            // TODO: use message service here
             player.sendMessage(ChatColor.RED + "You lost " + powerLost + " power.");
         }
     }

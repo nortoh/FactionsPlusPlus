@@ -173,14 +173,14 @@ public class FactionRepository {
 
                 Faction liege = this.get(current.getLiege());
                 if (liege != null) {
-                    if (!toAdd.contains(liege) && !foundFactions.contains(liege)) {
+                    if (! toAdd.contains(liege) && ! foundFactions.contains(liege)) {
                         toAdd.add(liege);
                         numFactionsFound++;
                     }
 
                     for (UUID vassalID : liege.getVassals()) {
                         Faction vassal = this.get(vassalID);
-                        if (!toAdd.contains(vassal) && !foundFactions.contains(vassal)) {
+                        if (! toAdd.contains(vassal) && ! foundFactions.contains(vassal)) {
                             toAdd.add(vassal);
                             numFactionsFound++;
                         }
@@ -189,7 +189,7 @@ public class FactionRepository {
 
                 for (UUID vassalID : current.getVassals()) {
                     Faction vassal = this.get(vassalID);
-                    if (!toAdd.contains(vassal) && !foundFactions.contains(vassal)) {
+                    if (! toAdd.contains(vassal) && ! foundFactions.contains(vassal)) {
                         toAdd.add(vassal);
                         numFactionsFound++;
                     }
@@ -230,7 +230,7 @@ public class FactionRepository {
 
     public void addAnyMissingFlagsToFaction(Faction faction) {
         List<String> missingFlags = this.defaultFlags.keySet().stream().filter(key -> faction.getFlag(key) == null).collect(Collectors.toList());
-        if (!missingFlags.isEmpty()) {
+        if (! missingFlags.isEmpty()) {
             missingFlags.stream().forEach(flag -> {
                 faction.getFlags().put(flag, this.defaultFlags.get(flag));
             });
@@ -248,7 +248,7 @@ public class FactionRepository {
         ConfigurationFlag flag = this.defaultFlags.get(flagName);
         // TODO: error if null
         for (Faction faction : this.factionStore.values()) {
-            if (!faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
+            if (! faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
         }
     }
 

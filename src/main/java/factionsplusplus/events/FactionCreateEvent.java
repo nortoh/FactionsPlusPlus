@@ -33,7 +33,7 @@ public class FactionCreateEvent extends FactionEvent implements Cancellable {
     // Cancellable methodology.
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override

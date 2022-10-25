@@ -1,6 +1,8 @@
 package factionsplusplus.models;
 
 import com.google.gson.annotations.Expose;
+
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 
 public class LocationData {
@@ -41,5 +43,9 @@ public class LocationData {
 
     public String getWorld() {
         return this.world;
+    }
+
+    public Block getBlock() {
+        return Bukkit.getWorld(this.world).getBlockAt(x, y, z);
     }
 }

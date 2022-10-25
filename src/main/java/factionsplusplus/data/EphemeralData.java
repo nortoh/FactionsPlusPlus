@@ -59,7 +59,7 @@ public class EphemeralData {
     // specific getters ---
 
     public Duel getDuel(Player player, Player target) {
-        for (Duel duel : getDuelingPlayers()) {
+        for (Duel duel : this.getDuelingPlayers()) {
             if (duel.hasPlayer(player) && duel.hasPlayer(target)) {
                 return duel;
             }
@@ -68,6 +68,6 @@ public class EphemeralData {
     }
 
     public boolean isPlayerInFactionChat(Player player) {
-        return getPlayersInFactionChat().contains(player.getUniqueId());
+        return this.getPlayersInFactionChat().contains(player.getUniqueId());
     }
 }

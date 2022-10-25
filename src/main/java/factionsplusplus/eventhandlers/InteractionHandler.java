@@ -105,7 +105,7 @@ public class InteractionHandler implements Listener {
 
         if (this.dataService.isBlockLocked(block)) {
             boolean isOwner = this.dataService.getLockedBlock(block).getOwner().equals(player.getUniqueId());
-            if (!isOwner) {
+            if (! isOwner) {
                 event.setCancelled(true);
                 this.messageService.sendLocalizedMessage(player, "AlertNonOwnership");
                 return;
@@ -114,7 +114,7 @@ public class InteractionHandler implements Listener {
             this.dataService.getLockedBlockRepository().delete(block);
 
             if (this.blockChecker.isDoor(block)) {
-                removeLocksAboveAndBelowTheOriginalBlockAsWell(block);
+                this.removeLocksAboveAndBelowTheOriginalBlockAsWell(block);
             }
         }
     }
@@ -158,7 +158,7 @@ public class InteractionHandler implements Listener {
             factionsPlusPlus.getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
                 Block block = player.getWorld().getBlockAt(event.getBlock().getLocation());
 
-                if (!this.blockChecker.isChest(block)) {
+                if (! this.blockChecker.isChest(block)) {
                     // There has been 2 seconds since we last confirmed this was a chest, double-checking isn't ever bad :)
                     return;
                 }
@@ -226,8 +226,8 @@ public class InteractionHandler implements Listener {
                 if (lockedBlock.getAccessList().alliesPermitted() && ownersFaction.isAlly(playersFaction.getID())) playerHasAccess = true;
             }
             if (lockedBlock.getAccessList().playerOnAccessList(player.getUniqueId())) playerHasAccess = true;
-            boolean isPlayerBypassing = ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
-            if (!playerHasAccess && !isPlayerBypassing) {
+            boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
+            if (! playerHasAccess && ! isPlayerBypassing) {
                 UUIDChecker uuidChecker = new UUIDChecker();
                 String owner = uuidChecker.findPlayerNameBasedOnUUID(lockedBlock.getOwner());
                 this.messageService.sendLocalizedMessage(
@@ -274,8 +274,8 @@ public class InteractionHandler implements Listener {
             this.claimService.handleClaimedChunkInteraction(event, chunk);
         }
 
-        if (context != null && context.isGateCreating() && playerHoldingGoldenHoe(player)) {
-            gateService.handleCreatingGate(clickedBlock, player, event);
+        if (context != null && context.isGateCreating() && this.playerHoldingGoldenHoe(player)) {
+            this.gateService.handleCreatingGate(clickedBlock, player, event);
         }
     }
 
@@ -297,6 +297,7 @@ public class InteractionHandler implements Listener {
             location = armorStand.getLocation();
         } else if (clickedEntity instanceof ItemFrame) {
             if (this.factionsPlusPlus.isDebugEnabled()) {
+                // TODO: use logger here
                 System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
             }
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
@@ -317,7 +318,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(HangingBreakByEntityEvent event) {
-        if (!(event.getRemover() instanceof Player)) {
+        if (! (event.getRemover() instanceof Player)) {
             return;
         }
 
@@ -336,6 +337,7 @@ public class InteractionHandler implements Listener {
     @EventHandler()
     public void handle(PlayerBucketFillEvent event) {
         if (this.factionsPlusPlus.isDebugEnabled()) {
+            // TODO: use logger here
             System.out.println("DEBUG: A player is attempting to fill a bucket!");
         }
 
@@ -353,6 +355,7 @@ public class InteractionHandler implements Listener {
     @EventHandler()
     public void handle(PlayerBucketEmptyEvent event) {
         if (this.factionsPlusPlus.isDebugEnabled()) {
+            // TODO: use logger here
             System.out.println("DEBUG: A player is attempting to empty a bucket!");
         }
 
@@ -370,6 +373,7 @@ public class InteractionHandler implements Listener {
     @EventHandler()
     public void handle(EntityPlaceEvent event) {
         if (this.factionsPlusPlus.isDebugEnabled()) {
+            // TODO: use logger here
             System.out.println("DEBUG: A player is attempting to place an entity!");
         }
 
@@ -391,6 +395,7 @@ public class InteractionHandler implements Listener {
 
         if (clickedEntity instanceof ItemFrame) {
             if (this.factionsPlusPlus.isDebugEnabled()) {
+                // TODO: use logger here
                 System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractEntityEvent!");
             }
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
