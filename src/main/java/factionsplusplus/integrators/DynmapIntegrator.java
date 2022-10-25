@@ -248,9 +248,9 @@ public class DynmapIntegrator {
     private String buildNationPopupText(Faction f) {
         UUIDChecker uuidChecker = new UUIDChecker();
         String message = "<h4>" + f.getName() + "</h4>" +
-                "Owner: " + uuidChecker.findPlayerNameBasedOnUUID(f.getOwner()) + "<br/>" +
+                "Owner: " + uuidChecker.findPlayerNameBasedOnUUID(f.getOwner().getId()) + "<br/>" +
                 "Description: " + f.getDescription() + "<br/>" +
-                "<div style='display: inline;' title='" + f.getMemberListSeparatedByCommas() + "'>Population: " + f.getMemberList().size() + "</div><br/>";
+                "<div style='display: inline;' title='" + f.getMemberListSeparatedByCommas() + "'>Population: " + f.getMembers().size() + "</div><br/>";
 
         if (f.hasLiege()) {
             message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";

@@ -65,7 +65,7 @@ public class MessageService {
     public void sendFactionLocalizedMessage(Faction faction, GenericMessageBuilder builder) {
         for (MessageBuilder mBuilder : builder.getMessageBuilders()) {
             this.sendToFaction(
-                faction, 
+                faction,
                 mBuilder.toString(
                     this.localeService.get(mBuilder.getLocalizationKey())
                 )
@@ -86,7 +86,7 @@ public class MessageService {
     public void sendToFaction(Faction faction, String message) {
         faction.getMembers()
             .stream()
-            .map(Bukkit::getPlayer)
+            .map(member -> Bukkit.getPlayer(member.getId()))
             .filter(Objects::nonNull)
             .forEach(player -> this.send(player, message));
     }
@@ -102,7 +102,7 @@ public class MessageService {
 
     /**
      * Method to broadcast a message as the server.
-     * 
+     *
      * @param message message to broadcast.
      */
     public void broadcast(String message) {

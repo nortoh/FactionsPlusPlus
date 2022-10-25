@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.World;
 import factionsplusplus.models.ConfigurationFlag;
@@ -700,7 +701,7 @@ public class CommandService implements TabCompleter {
                         .keySet()
                         .stream()
                         .filter(c -> c.toLowerCase().startsWith(argumentText))
-                        .collect(Collectors.toList());                    
+                        .collect(Collectors.toList());
                 case Faction:
                     return this.applyFactionFilters(
                             this.dataService.getFactionRepository().all().values().stream()
@@ -767,12 +768,12 @@ public class CommandService implements TabCompleter {
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionMember:
-                    return playersFaction.getMembers().stream()
+                    return playersFaction.getMembersUUIDS().stream()
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionOfficer:
-                    return playersFaction.getOfficerList().stream()
+                    return playersFaction.getMembersUUIDS(GroupRole.Officer).stream()
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());

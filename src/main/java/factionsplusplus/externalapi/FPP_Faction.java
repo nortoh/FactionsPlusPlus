@@ -5,6 +5,7 @@
 package factionsplusplus.externalapi;
 
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.ConfigurationFlag;
 
 import org.bukkit.entity.Player;
@@ -38,7 +39,7 @@ public class FPP_Faction {
         return this.faction.getPrefix();
     }
 
-    public UUID getOwner() {
+    public GroupMember getOwner() {
         return this.faction.getOwner();
     }
 
@@ -66,11 +67,11 @@ public class FPP_Faction {
         return this.faction.getAllies();
     }
 
-    public List<UUID> getOfficers() {
+    public List<GroupMember> getOfficers() {
         return this.faction.getOfficerList();
     }
 
-    public List<UUID> getMembers() {
+    public List<GroupMember> getMembers() {
         return this.faction.getMembers();
     }
 

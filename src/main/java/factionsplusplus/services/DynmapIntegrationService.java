@@ -52,7 +52,7 @@ public class DynmapIntegrationService {
     public void changeFactionsVisibility(List<Faction> factions, boolean visible) {
         if (this.dynmapIntegrator == null) this.checkForDynmap();
         if (this.dynmapIntegrator != null) {
-            factions.stream().forEach(faction -> this.changePlayersVisibility(faction.getMembers(), visible));
+            factions.stream().forEach(faction -> this.changePlayersVisibility(faction.getMembersUUIDS(), visible));
         }
     }
 

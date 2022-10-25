@@ -59,7 +59,7 @@ public class MembersCommand extends Command {
             this.constructMessage("MembersFaction.Title")
                 .with("faction", faction.getName())
         );
-        faction.getMembers().stream()
+        faction.getMembersUUIDS().stream()
                 .map(Bukkit::getOfflinePlayer)
                 .forEach(player -> {
                     String rank = context.getLocalizedString("MembersFaction.Rank.Member.Rank");

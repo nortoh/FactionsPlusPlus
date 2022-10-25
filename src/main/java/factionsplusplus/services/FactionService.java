@@ -11,6 +11,7 @@ import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.ClaimedChunk;
@@ -79,13 +80,13 @@ public class FactionService {
 
     public int calculateMaxOfficers(Faction faction) {
         int officersPerXNumber = this.configService.getInt("officerPerMemberCount");
-        int officersFromConfig = faction.getMemberList().size() / officersPerXNumber;
+        int officersFromConfig = faction.getMembers().size() / officersPerXNumber;
         return 1 + officersFromConfig;
     }
 
     public int calculateCumulativePowerLevelWithoutVassalContribution(Faction faction) {
         int powerLevel = 0;
-        for (UUID playerUUID : faction.getMemberList()) {
+        for (UUID playerUUID : faction.getMembersUUIDS()) {
             try {
                 powerLevel += this.playerRecordRepository.get(playerUUID).getPower();
             } catch (Exception e) {
@@ -121,9 +122,10 @@ public class FactionService {
     public int getMaximumCumulativePowerLevel(Faction faction) {     // get max power without vassal contribution
         int maxPower = 0;
 
-        for (UUID playerUUID : faction.getMemberList()) {
+        for (GroupMember member : faction.getMembers()) {
+            UUID playerUuid = member.getId();
             try {
-                maxPower += this.playerService.getMaxPower(playerUUID);
+                maxPower += this.playerService.getMaxPower(playerUuid);
             } catch (Exception e) {
                 this.logger.error(e.getMessage(), e);
             }
@@ -247,7 +249,7 @@ public class FactionService {
         // Faction name
         builder.add(new MessageBuilder("FactionInfo.Name").with("name", faction.getName()));
         // Owner
-        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner()).getName()));
+        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner().getId()).getName()));
         // Description (if applicable)
         if (faction.getDescription() != null) builder.add(new MessageBuilder("FactionInfo.Description").with("desc", faction.getDescription()));
         // Population
