@@ -172,12 +172,12 @@ public class InteractionHandler implements Listener {
 
                     if (this.dataService.isBlockLocked(leftChest)) {
                         // lock right chest
-                        LockedBlock right = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getName());
+                        LockedBlock right = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getUID());
                         this.dataService.getLockedBlockRepository().create(right);
                     } else {
                         if (this.dataService.isBlockLocked(rightChest)) {
                             // lock left chest
-                            LockedBlock left = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getName());
+                            LockedBlock left = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getUID());
                             this.dataService.getLockedBlockRepository().create(left);
                         }
                     }

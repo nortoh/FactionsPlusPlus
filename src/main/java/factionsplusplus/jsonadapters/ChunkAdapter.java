@@ -9,16 +9,16 @@ import com.google.gson.JsonDeserializationContext;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import static org.bukkit.Bukkit.getServer;
 
 import java.lang.reflect.Type;
+import java.util.UUID;
 
 public class ChunkAdapter implements JsonSerializer<Chunk>, JsonDeserializer<Chunk> {
     @Override
     public JsonElement serialize(Chunk src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject result = new JsonObject();
-        result.addProperty("world", src.getWorld().getName());
+        result.addProperty("world", src.getWorld().getUID().toString());
         result.addProperty("x", src.getX());
         result.addProperty("z", src.getZ());
         return result;
@@ -26,7 +26,7 @@ public class ChunkAdapter implements JsonSerializer<Chunk>, JsonDeserializer<Chu
     @Override
     public Chunk deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
         JsonObject data = json.getAsJsonObject();
-        World chunkWorld = getServer().createWorld(new WorldCreator(data.get("world").getAsString()));
+        World chunkWorld = getServer().getWorld(UUID.fromString(data.get("world").getAsString()));
         return chunkWorld.getChunkAt(
             data.get("x").getAsInt(),
             data.get("z").getAsInt()

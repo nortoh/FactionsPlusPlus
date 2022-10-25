@@ -423,7 +423,7 @@ public class GateService {
             gate.setCoord1(new LocationData(clickedBlock));
             gate.setMaterial(clickedBlock.getType());
         } else if (gate.getCoord2() == null) {
-            if (!gate.getCoord1().getWorld().equalsIgnoreCase(clickedBlock.getWorld().getName())) {
+            if (!gate.getCoord1().getWorld().equals(clickedBlock.getWorld().getUID())) {
                 return ErrorCodeAddCoord.WorldMismatch;
             }
             if (!clickedBlock.getType().equals(gate.getMaterial())) {
