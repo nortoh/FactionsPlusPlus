@@ -5,6 +5,8 @@ import com.google.gson.annotations.Expose;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 
+import java.util.UUID;
+
 public class LocationData {
     @Expose
     private final int x;
@@ -13,9 +15,9 @@ public class LocationData {
     @Expose
     private final int z;
     @Expose
-    private final String world;
+    private final UUID world;
 
-    public LocationData(int x, int y, int z, String world) {
+    public LocationData(int x, int y, int z, UUID world) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -26,7 +28,7 @@ public class LocationData {
         this.x = block.getX();
         this.y = block.getY();
         this.z = block.getZ();
-        this.world = block.getWorld().getName();
+        this.world = block.getWorld().getUID();
     }
 
     public int getX() {
@@ -41,7 +43,7 @@ public class LocationData {
         return this.z;
     }
 
-    public String getWorld() {
+    public UUID getWorld() {
         return this.world;
     }
 

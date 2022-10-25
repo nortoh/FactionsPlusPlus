@@ -27,16 +27,16 @@ public class LockedBlock {
         int xCoord,
         int yCoord,
         int zCoord,
-        String worldName
+        UUID worldUUID
     ) {
-        this.block = new LocationData(xCoord, yCoord, zCoord, worldName);
+        this.block = new LocationData(xCoord, yCoord, zCoord, worldUUID);
         this.owner = owner;
         this.faction = faction;
         this.accessList = new AccessList();
         this.accessList.addPlayerToAccessList(owner);
     }
 
-    public String getWorld() {
+    public UUID getWorld() {
         return this.block.getWorld();
     }
 

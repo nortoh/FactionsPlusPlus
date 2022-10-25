@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import org.bukkit.block.Block;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.lang.reflect.Type;
 
@@ -67,18 +68,18 @@ public class LockedBlockRepository {
         this.lockedBlockStore.remove(block);
     }
     public void delete(Block b) {
-        LockedBlock block = this.get(b.getX(), b.getY(), b.getZ(), b.getWorld().getName());
+        LockedBlock block = this.get(b.getX(), b.getY(), b.getZ(), b.getWorld().getUID());
         if (block != null) this.delete(block);
     }
 
     // Retrieve a locked block by location
-    public LockedBlock get(int x, int y, int z, String world) {
+    public LockedBlock get(int x, int y, int z, UUID world) {
         for (LockedBlock block : this.lockedBlockStore) {
             if (
                 block.getX() == x &&
                 block.getY() == y &&
                 block.getZ() == z &&
-                block.getWorld().equalsIgnoreCase(world)
+                block.getWorld().equals(world)
             ) {
                 return block;
             }

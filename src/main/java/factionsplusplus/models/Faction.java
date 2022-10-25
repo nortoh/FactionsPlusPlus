@@ -155,7 +155,7 @@ public class Faction extends Nation implements Feudal {
     public boolean hasGateTrigger(Block block) {
         for (Gate g : this.gates) {
             if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equalsIgnoreCase(block.getWorld().getName())) {
+                    g.getTrigger().getWorld().equals(block.getWorld().getUID())) {
                 return true;
             }
         }
@@ -166,7 +166,7 @@ public class Faction extends Nation implements Feudal {
         ArrayList<Gate> gateList = new ArrayList<>();
         for (Gate g : this.gates) {
             if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equalsIgnoreCase(block.getWorld().getName())) {
+                    g.getTrigger().getWorld().equals(block.getWorld().getUID())) {
                 gateList.add(g);
             }
         }

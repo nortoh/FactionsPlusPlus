@@ -19,6 +19,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
+import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -68,12 +69,12 @@ public class ClaimedChunkRepository {
     }
 
     // Retrieve a claimed chunk by location
-    public ClaimedChunk get(double x, double z, String world) {
+    public ClaimedChunk get(double x, double z, UUID world) {
         for (ClaimedChunk claimedChunk : this.claimedChunksStore) {
             if (
                 claimedChunk.getCoordinates()[0] == x
                 && claimedChunk.getCoordinates()[1] == z
-                && claimedChunk.getWorldName().equalsIgnoreCase(world)
+                && claimedChunk.getWorldUUID().equals(world)
             ) {
                 return claimedChunk;
             }

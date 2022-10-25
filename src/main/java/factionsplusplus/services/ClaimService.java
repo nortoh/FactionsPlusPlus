@@ -131,7 +131,7 @@ public class ClaimService {
         // unclaim chunks
         final Set<Chunk> chunkSet = ChunkUtils.obtainChunksForRadius(player.getLocation().getChunk(), radius);
         chunkSet.stream()
-                .map(c -> this.dataService.getClaimedChunk(c.getX(), c.getZ(), c.getWorld().getName()))
+                .map(c -> this.dataService.getClaimedChunk(c.getX(), c.getZ(), c.getWorld().getUID()))
                 .filter(Objects::nonNull)
                 .forEach(chunk -> this.removeChunk(chunk, player, faction));
     }
@@ -162,7 +162,7 @@ public class ClaimService {
 
         // handle admin bypass
         if (this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId())) {
-            ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
+            ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
             if (chunk != null) {
                 this.removeChunk(chunk, player, this.dataService.getFaction(chunk.getHolder()));
                 this.messageService.sendLocalizedMessage(player, "LandClaimedUsingAdminBypass");
@@ -172,7 +172,7 @@ public class ClaimService {
             return;
         }
 
-        ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
 
         // ensure that chunk is claimed
         if (chunk == null) {
@@ -205,7 +205,7 @@ public class ClaimService {
         double[] playerCoords = new double[2];
         playerCoords[0] = player.getLocation().getChunk().getX();
         playerCoords[1] = player.getLocation().getChunk().getZ();
-        ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getName());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
         if (chunk != null) {
             return this.dataService.getFactionRepository().get(chunk.getHolder()).getName();
         }
@@ -329,7 +329,8 @@ public class ClaimService {
         }
 
         // check if land is already claimed
-        ClaimedChunk chunk = this.dataService.getClaimedChunk(chunkCoords[0], chunkCoords[1], world.getName());
+        ClaimedChunk chunk = this.dataService.getClaimedChunk(chunkCoords[0], chunkCoords[1], world.getUID());
+        
         if (chunk != null) {
             // chunk already claimed
             Faction targetFaction = this.dataService.getFaction(chunk.getHolder());
@@ -460,7 +461,7 @@ public class ClaimService {
         // remove locks on this chunk
         this.dataService.getLockedBlockRepository().all().removeIf(block -> chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getX() == chunkToRemove.getChunk().getX() &&
                 chunkToRemove.getChunk().getWorld().getBlockAt(block.getX(), block.getY(), block.getZ()).getChunk().getZ() == chunkToRemove.getChunk().getZ() &&
-                block.getWorld().equalsIgnoreCase(chunkToRemove.getWorldName()));
+                block.getWorld().equals(chunkToRemove.getWorldUUID()));
 
         // remove any gates in this chunk
         Iterator<Gate> gtr = holdingFaction.getGates().iterator();
