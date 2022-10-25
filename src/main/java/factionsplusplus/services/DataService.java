@@ -189,23 +189,23 @@ public class DataService {
         return this.claimedChunkRepository;
     }
 
-    public ClaimedChunk getClaimedChunk(double x, double z, String world) {
+    public ClaimedChunk getClaimedChunk(double x, double z, UUID world) {
         return this.claimedChunkRepository.get(x, z, world);
     }
 
     public ClaimedChunk getClaimedChunk(Block block) {
-        return this.claimedChunkRepository.get(block.getX(), block.getZ(), block.getWorld().getName());
+        return this.claimedChunkRepository.get(block.getX(), block.getZ(), block.getWorld().getUID());
     }
 
     public ClaimedChunk getClaimedChunk(Chunk chunk) {
-        return this.claimedChunkRepository.get(chunk.getX(), chunk.getZ(), chunk.getWorld().getName());
+        return this.claimedChunkRepository.get(chunk.getX(), chunk.getZ(), chunk.getWorld().getUID());
     }
 
     public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
         return this.claimedChunkRepository.getAllForFaction(faction);
     }
 
-    public boolean isChunkClaimed(double x, double z, String world) {
+    public boolean isChunkClaimed(double x, double z, UUID world) {
         return this.getClaimedChunk(x, z, world) != null;
     }
 
@@ -217,19 +217,19 @@ public class DataService {
         return this.lockedBlockRepository;
     }
 
-    public LockedBlock getLockedBlock(int x, int y, int z, String world) {
+    public LockedBlock getLockedBlock(int x, int y, int z, UUID world) {
         return this.lockedBlockRepository.get(x, y, z, world);
     }
 
     public LockedBlock getLockedBlock(Block block) {
-        return this.lockedBlockRepository.get(block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
+        return this.lockedBlockRepository.get(block.getX(), block.getY(), block.getZ(), block.getWorld().getUID());
     }
 
     public boolean isBlockLocked(Block block) {
         return this.getLockedBlock(block) != null;
     }
 
-    public boolean isBlockLocked(int x, int y, int z, String world) {
+    public boolean isBlockLocked(int x, int y, int z, UUID world) {
         return this.getLockedBlock(x, y, z, world) != null;
     }
 

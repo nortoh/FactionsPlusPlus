@@ -96,7 +96,7 @@ public class LockService {
                 block.getX(),
                 block.getY(),
                 block.getZ(),
-                block.getWorld().getName()
+                block.getWorld().getUID()
             )
         );
     }

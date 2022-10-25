@@ -423,7 +423,7 @@ public class Gate {
         if (targetBlock.getX() >= leftX && targetBlock.getX() <= rightX
                 && targetBlock.getY() >= bottomY && targetBlock.getY() <= topY
                 && targetBlock.getZ() >= leftZ && targetBlock.getZ() <= rightZ
-                && targetBlock.getWorld().getName().equalsIgnoreCase(coord1.getWorld())) {
+                && targetBlock.getWorld().getUID().equals(coord1.getWorld())) {
             return true;
         }
 

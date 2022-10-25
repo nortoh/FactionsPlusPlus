@@ -2,6 +2,9 @@ package factionsplusplus.models;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
+
+import java.util.UUID;
+
 import org.bukkit.Chunk;
 
 import factionsplusplus.jsonadapters.ChunkAdapter;
@@ -32,6 +35,10 @@ public class ClaimedChunk extends Territory {
         coordinates[0] = chunk.getX();
         coordinates[1] = chunk.getZ();
         return coordinates;
+    }
+
+    public UUID getWorldUUID() {
+        return this.chunk.getWorld().getUID();
     }
 
     public String getWorldName() {
