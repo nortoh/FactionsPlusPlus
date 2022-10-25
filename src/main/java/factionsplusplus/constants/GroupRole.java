@@ -20,12 +20,13 @@ public enum GroupRole {
 
     public static ArrayList<GroupRole> getFullRoles(GroupRole role) {
         ArrayList<GroupRole> inherited = new ArrayList<>();
-        inherited.add(role);
-        while (role.inherentince != null) {
-            inherited.add(role.inherentince);
+
+        while (role != Member) {
+            inherited.add(role);
             role = role.inherentince;
         }
 
+        inherited.add(Member);
         return inherited;
     }
 }
