@@ -133,15 +133,15 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         }
         if (id.equalsIgnoreCase("faction_leader")) {
             // The Leader of the Faction that the Player is in.
-            return Bukkit.getOfflinePlayer(faction.getOwner()).getName();
+            return Bukkit.getOfflinePlayer(faction.getOwner().getUUID()).getName();
         }
         if (id.equalsIgnoreCase("faction_population")) {
             // The total players/members/population for the Faction that the Player is in.
-            return String.valueOf(faction.getPopulation());
+            return String.valueOf(faction.getMemberCount());
         }
         if (id.equalsIgnoreCase("faction_officers")) {
             // The total officers for the Faction that the Player is in.
-            return String.valueOf(faction.getNumOfficers());
+            return String.valueOf(faction.getOfficerCount());
         }
         if (id.equalsIgnoreCase("faction_rank")) {
             // The Player-Specific rank for their Faction. (Owner/Officer/Member).

@@ -10,7 +10,9 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.World;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.utils.PlayerUtils;
@@ -224,7 +226,7 @@ public class CommandService implements TabCompleter {
         // Faction owner?
         if (command.shouldRequireFactionOwnership()) {
             if (context.isConsole()) return false; // bail if console
-            if (playerFaction != null && ! playerFaction.getOwner().equals(((Player)sender).getUniqueId())) {
+            if (playerFaction != null && ! playerFaction.getOwner().getUUID().equals(((Player)sender).getUniqueId())) {
                 context.replyWith("AlertMustBeOwnerToUseCommand");
                 return false;
             }
@@ -234,7 +236,7 @@ public class CommandService implements TabCompleter {
         if (command.shouldRequireFactionOfficership()) {
             if (context.isConsole()) return false; // bail if console
             UUID senderUUID = ((Player)sender).getUniqueId();
-            if (playerFaction != null && ! playerFaction.getOwner().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
+            if (playerFaction != null && ! playerFaction.getOwner().getUUID().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
                 context.replyWith("AlertMustBeOwnerOrOfficeToUseCommand");
                 return false;
             }
@@ -700,7 +702,7 @@ public class CommandService implements TabCompleter {
                         .keySet()
                         .stream()
                         .filter(c -> c.toLowerCase().startsWith(argumentText))
-                        .collect(Collectors.toList());                    
+                        .collect(Collectors.toList());
                 case Faction:
                     return this.applyFactionFilters(
                             this.dataService.getFactionRepository().all().values().stream()
@@ -767,12 +769,16 @@ public class CommandService implements TabCompleter {
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionMember:
-                    return playersFaction.getMembers().stream()
+                    return playersFaction.getMembers().keySet()
+                        .stream()
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionOfficer:
-                    return playersFaction.getOfficerList().stream()
+                    return playersFaction.getMembers()
+                        .values().stream()
+                        .filter(member -> member.hasRole(GroupRole.Officer))
+                        .map(GroupMember::getUUID)
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());

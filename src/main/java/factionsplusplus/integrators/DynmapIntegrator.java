@@ -23,6 +23,7 @@ import org.dynmap.markers.*;
 import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.bukkit.Bukkit.getServer;
 
@@ -247,10 +248,16 @@ public class DynmapIntegrator {
 
     private String buildNationPopupText(Faction f) {
         UUIDChecker uuidChecker = new UUIDChecker();
+        String nationMembers = f.getMembers()
+            .keySet()
+            .stream()
+            .map(Bukkit::getOfflinePlayer)
+            .map(OfflinePlayer::getName)
+            .collect(Collectors.joining(", "));
         String message = "<h4>" + f.getName() + "</h4>" +
-                "Owner: " + uuidChecker.findPlayerNameBasedOnUUID(f.getOwner()) + "<br/>" +
+                "Owner: " + uuidChecker.findPlayerNameBasedOnUUID(f.getOwner().getUUID()) + "<br/>" +
                 "Description: " + f.getDescription() + "<br/>" +
-                "<div style='display: inline;' title='" + f.getMemberListSeparatedByCommas() + "'>Population: " + f.getMemberList().size() + "</div><br/>";
+                "<div style='display: inline;' title='" + nationMembers + "'>Population: " + f.getMembers().size() + "</div><br/>";
 
         if (f.hasLiege()) {
             message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";

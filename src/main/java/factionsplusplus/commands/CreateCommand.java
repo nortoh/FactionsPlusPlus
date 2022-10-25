@@ -81,7 +81,7 @@ public class CreateCommand extends Command {
         }
 
         Faction playerFaction = this.factionService.createFaction(factionName, context.getPlayer().getUniqueId());
-        playerFaction.addMember(context.getPlayer().getUniqueId());
+        playerFaction.setOwner(context.getPlayer().getUniqueId());
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (!createEvent.isCancelled()) {

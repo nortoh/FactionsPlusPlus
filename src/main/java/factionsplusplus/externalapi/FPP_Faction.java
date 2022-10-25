@@ -5,10 +5,13 @@
 package factionsplusplus.externalapi;
 
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.ConfigurationFlag;
 
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,8 +25,13 @@ public class FPP_Faction {
         this.faction = faction;
     }
 
+    @Deprecated
     public UUID getID() {
         return this.faction.getID();
+    }
+
+    public UUID getUUID() {
+        return this.faction.getUUID();
     }
 
     public String getName() {
@@ -38,7 +46,7 @@ public class FPP_Faction {
         return this.faction.getPrefix();
     }
 
-    public UUID getOwner() {
+    public GroupMember getOwner() {
         return this.faction.getOwner();
     }
 
@@ -66,11 +74,11 @@ public class FPP_Faction {
         return this.faction.getAllies();
     }
 
-    public List<UUID> getOfficers() {
-        return this.faction.getOfficerList();
+    public Collection<GroupMember> getOfficers() {
+        return this.faction.getOfficers();
     }
 
-    public List<UUID> getMembers() {
+    public HashMap<UUID, GroupMember> getMembers() {
         return this.faction.getMembers();
     }
 

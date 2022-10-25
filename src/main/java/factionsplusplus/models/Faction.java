@@ -41,7 +41,7 @@ public class Faction extends Nation implements Feudal {
 
     public Faction(String factionName, UUID owner, Map<String, ConfigurationFlag> flags) {
         this.name = factionName;
-        this.owner = owner;
+        this.setOwner(owner);
         this.flags = flags;
     }
 

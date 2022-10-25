@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
@@ -59,7 +60,7 @@ public class MembersCommand extends Command {
             this.constructMessage("MembersFaction.Title")
                 .with("faction", faction.getName())
         );
-        faction.getMembers().stream()
+        faction.getMembers().keySet().stream()
                 .map(Bukkit::getOfflinePlayer)
                 .forEach(player -> {
                     String rank = context.getLocalizedString("MembersFaction.Rank.Member.Rank");

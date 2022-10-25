@@ -60,7 +60,7 @@ public class PromoteCommand extends Command {
             return;
         }
         int maxOfficers = this.factionService.calculateMaxOfficers(faction);
-        if (faction.getOfficerList().size() <= maxOfficers) {
+        if (faction.getOfficerCount() <= maxOfficers) {
             faction.addOfficer(target.getUniqueId());
             context.replyWith("PlayerPromoted");
             if (target.isOnline() && target.getPlayer() != null) {
