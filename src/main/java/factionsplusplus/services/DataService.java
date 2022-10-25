@@ -1,5 +1,6 @@
 package factionsplusplus.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Random;
@@ -8,16 +9,20 @@ import java.util.Collection;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.Chunk;
 
+import factionsplusplus.constants.FlagType;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.World;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.ConfigOption;
+import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.Gate;
 import factionsplusplus.repositories.*;
 
@@ -31,6 +36,8 @@ public class DataService {
     private final CommandRepository commandRepository;
     private final ConfigOptionRepository configOptionRepository;
     private final WarRepository warRepository;
+    private final WorldRepository worldRepository;
+    private final ConfigService configService;
 
     @Inject
     public DataService(
@@ -40,7 +47,9 @@ public class DataService {
         PlayerRecordRepository playerRecordRepository,
         CommandRepository commandRepository,
         ConfigOptionRepository configOptionRepository,
-        WarRepository warRepository
+        WarRepository warRepository,
+        WorldRepository worldRepository,
+        ConfigService configService
     ) {
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
@@ -49,23 +58,59 @@ public class DataService {
         this.commandRepository = commandRepository;
         this.configOptionRepository = configOptionRepository;
         this.warRepository = warRepository;
+        this.worldRepository = worldRepository;
+        this.configService = configService;
+        this.initializeDefaultConfigurationFlags();
     }
 
     public void save() {
+        this.worldRepository.persist();
         this.factionRepository.persist();
         this.claimedChunkRepository.persist();
         this.playerRecordRepository.persist();
         this.lockedBlockRepository.persist();
         this.warRepository.persist();
-        // TODO save config if it's been altered 
+        if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
     }
 
     public void load() {
+        this.worldRepository.load();
         this.factionRepository.load();
         this.claimedChunkRepository.load();
         this.playerRecordRepository.load();
         this.lockedBlockRepository.load();
         this.warRepository.load();
+        this.initializeWorlds();
+    }
+
+    private void initializeWorlds() {
+        Bukkit.getWorlds().stream()
+            .forEach(world -> {
+                if (this.worldRepository.get(world) == null) {
+                    World newWorld = new World(world.getUID());
+                    this.worldRepository.create(newWorld);
+                }
+            });
+        this.worldRepository.addAnyMissingFlags();
+    }
+
+    private void initializeDefaultConfigurationFlags() {
+        // Factions
+        this.factionRepository.addDefaultConfigurationFlag("mustBeOfficerToManageLand", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultConfigurationFlag("mustBeOfficerToInviteOthers", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultConfigurationFlag("alliesCanInteractWithLand", new ConfigurationFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")), false);
+        this.factionRepository.addDefaultConfigurationFlag("vassalageTreeCanInteractWithLand", new ConfigurationFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")), false);
+        this.factionRepository.addDefaultConfigurationFlag("neutral", new ConfigurationFlag(FlagType.Boolean, false), false);
+        this.factionRepository.addDefaultConfigurationFlag("dynmapTerritoryColor", new ConfigurationFlag(FlagType.Color, "#ff0000"), false);
+        this.factionRepository.addDefaultConfigurationFlag("territoryAlertColor", new ConfigurationFlag(FlagType.Color, this.configService.getString("territoryAlertColor")), false);
+        this.factionRepository.addDefaultConfigurationFlag("prefixColor", new ConfigurationFlag(FlagType.Color, "white"), false);
+        this.factionRepository.addDefaultConfigurationFlag("allowFriendlyFire", new ConfigurationFlag(FlagType.Boolean, false), false);
+        this.factionRepository.addDefaultConfigurationFlag("acceptBonusPower", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.factionRepository.addDefaultConfigurationFlag("enableMobProtection", new ConfigurationFlag(FlagType.Boolean, true), false);
+
+        // Worlds
+        this.worldRepository.addDefaultConfigurationFlag("enabled", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.worldRepository.addDefaultConfigurationFlag("allowClaims", new ConfigurationFlag(FlagType.Boolean, true), false);
     }
 
     public FactionRepository getFactionRepository() {
@@ -115,8 +160,8 @@ public class DataService {
     }
 
     public Faction getRandomFaction() {
-        // TODO: fix this to get a random uuid from factionRepository
-        return this.factionRepository.all().get(new Random().nextInt(this.factionRepository.all().size()));
+        List<Faction> valuesList = new ArrayList<Faction>(this.factionRepository.all().values());
+        return valuesList.get(new Random().nextInt(valuesList.size()));
     }
 
     public int getNumberOfFactions() {
@@ -230,5 +275,17 @@ public class DataService {
 
     public WarRepository getWarRepository() {
         return this.warRepository;
+    }
+
+    public WorldRepository getWorldRepository() {
+        return this.worldRepository;
+    }
+
+    public World getWorld(String name) {
+        return this.worldRepository.get(name);
+    }
+
+    public World getWorld(UUID uuid) {
+        return this.worldRepository.get(uuid);
     }
 }

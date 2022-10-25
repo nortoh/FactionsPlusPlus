@@ -11,6 +11,7 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.World;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.StringUtils;
@@ -67,7 +68,7 @@ public class CommandService implements TabCompleter {
     }
 
     public void registerCommands() {
-        Class[] coreCommands = new Class[]{
+        Class<?>[] coreCommands = new Class<?>[]{
             AllyCommand.class,
             AutoClaimCommand.class,
             BreakAllianceCommand.class,
@@ -119,14 +120,15 @@ public class CommandService implements TabCompleter {
             UnlockCommand.class,
             VassalizeCommand.class,
             VersionCommand.class,
-            WhoCommand.class
+            WhoCommand.class,
+            WorldFlagCommand.class
         };
-        for (Class commandClass : coreCommands) {
+        for (Class<?> commandClass : coreCommands) {
             this.registerCommand(commandClass);
         }
     }
 
-    public Command registerCommand(Class commandClass) {
+    public Command registerCommand(Class<?> commandClass) {
         Command command = (Command)this.factionsPlusPlus.getInjector().getInstance(commandClass);
         this.loadCommandNames(command);
         this.commandRepository.add(command);
@@ -191,6 +193,14 @@ public class CommandService implements TabCompleter {
             }
         }
 
+        // If not console, set the players world. If the players world has this plugin disabled and the player does not have mf.admin, ignore the command.
+        World playersWorld = null;
+        if (! context.isConsole()) {
+            playersWorld = this.dataService.getWorld(((Player)sender).getWorld().getUID());
+            context.setExecutorsWorld(playersWorld);
+            if (! sender.hasPermission("mf.admin") && ! playersWorld.getFlag("enabled").toBoolean()) return false;
+        }
+
         // Check if this command should require faction specific stuff
         Faction playerFaction = null;
         if (! context.isConsole()) {
@@ -214,7 +224,7 @@ public class CommandService implements TabCompleter {
         // Faction owner?
         if (command.shouldRequireFactionOwnership()) {
             if (context.isConsole()) return false; // bail if console
-            if (! playerFaction.getOwner().equals(((Player)sender).getUniqueId())) {
+            if (playerFaction != null && ! playerFaction.getOwner().equals(((Player)sender).getUniqueId())) {
                 context.replyWith("AlertMustBeOwnerToUseCommand");
                 return false;
             }
@@ -224,7 +234,7 @@ public class CommandService implements TabCompleter {
         if (command.shouldRequireFactionOfficership()) {
             if (context.isConsole()) return false; // bail if console
             UUID senderUUID = ((Player)sender).getUniqueId();
-            if (! playerFaction.getOwner().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
+            if (playerFaction != null && ! playerFaction.getOwner().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
                 context.replyWith("AlertMustBeOwnerOrOfficeToUseCommand");
                 return false;
             }
@@ -362,6 +372,13 @@ public class CommandService implements TabCompleter {
                             break;
                         }
                         return false;
+                    case WorldFlagName:
+                        flag = this.getWorldFlag(context, argumentData);
+                        if (flag != null) {
+                            parsedArgumentData = flag;
+                            break;
+                        }
+                        return false;
                     case Integer:
                         Integer intValue = StringUtils.parseAsInteger(argumentData);
                         if (intValue != null) {
@@ -415,11 +432,24 @@ public class CommandService implements TabCompleter {
         }
     }
 
+    private ConfigurationFlag getWorldFlag(CommandContext context, String argumentData) {
+        if (context.isConsole()) return null;
+        final org.bukkit.World playersWorld = context.getPlayer().getWorld();
+        final ConfigurationFlag flag = this.dataService.getWorld(playersWorld.getUID()).getFlag(argumentData);
+        if (flag == null) {
+            context.replyWith(
+                new MessageBuilder("InvalidConfigurationFlag")
+                    .with("flag", argumentData)
+            );
+        }
+        return flag;
+    }
+
     private ConfigurationFlag getFactionFlag(CommandContext context, String argumentData) {
         final ConfigurationFlag flag = context.getExecutorsFaction().getFlag(argumentData);
         if (flag == null) {
             context.replyWith(
-                new MessageBuilder("InvalidFactionFlag")
+                new MessageBuilder("InvalidConfigurationFlag")
                     .with("flag", argumentData)
             );
         }
@@ -665,6 +695,12 @@ public class CommandService implements TabCompleter {
                         .stream()
                         .filter(c -> c.toLowerCase().startsWith(argumentText))
                         .collect(Collectors.toList());
+                case WorldFlagName:
+                    return this.dataService.getWorldRepository().getDefaultFlags()
+                        .keySet()
+                        .stream()
+                        .filter(c -> c.toLowerCase().startsWith(argumentText))
+                        .collect(Collectors.toList());                    
                 case Faction:
                     return this.applyFactionFilters(
                             this.dataService.getFactionRepository().all().values().stream()

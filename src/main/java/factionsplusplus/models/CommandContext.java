@@ -16,6 +16,7 @@ import factionsplusplus.services.MessageService;
 
 public class CommandContext {
     private Faction faction = null;
+    private World world = null;
     private CommandSender sender = null;
     private HashMap<String, Object> arguments = new HashMap<>();
     private String[] rawArguments = new String[]{};
@@ -30,6 +31,15 @@ public class CommandContext {
      */
     public Faction getExecutorsFaction() {
         return this.faction;
+    }
+
+    /*
+     * Retrieves the World instance the executor of this command is a member of, if any
+     * 
+     * @return the World the executor is in, if any
+     */
+    public World getExecutorsWorld() {
+        return this.world;
     }
 
     /*
@@ -127,9 +137,9 @@ public class CommandContext {
     }
 
     /*
-     * Retrieves an argument as a FactionFlag, if able.
+     * Retrieves an argument as a ConfigurationFlag, if able.
      */
-    public ConfigurationFlag getFactionFlagArgument(String name) {
+    public ConfigurationFlag getConfigurationFlagArgument(String name) {
         Object possibleArgument = this.arguments.get(name);
         if (possibleArgument != null) return (ConfigurationFlag)possibleArgument;
         return null;
@@ -150,6 +160,10 @@ public class CommandContext {
 
     public void setExecutorsFaction(Faction faction) {
         this.faction = faction;
+    }
+
+    public void setExecutorsWorld(World world) {
+        this.world = world;
     }
 
     public void setSender(CommandSender sender) {
