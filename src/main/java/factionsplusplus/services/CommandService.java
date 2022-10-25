@@ -12,6 +12,7 @@ import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.World;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.utils.PlayerUtils;
@@ -768,12 +769,16 @@ public class CommandService implements TabCompleter {
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionMember:
-                    return playersFaction.getMembersUUIDS().stream()
+                    return playersFaction.getMembers().keySet()
+                        .stream()
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case FactionOfficer:
-                    return playersFaction.getMembersUUIDS(GroupRole.Officer).stream()
+                    return playersFaction.getMembers()
+                        .values().stream()
+                        .filter(member -> member.hasRole(GroupRole.Officer))
+                        .map(GroupMember::getId)
                         .map(id -> Bukkit.getOfflinePlayer(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());

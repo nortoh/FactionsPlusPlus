@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public enum GroupRole {
     Member(null),
-    Laborar(Member),
-    Officer(Laborar),
+    Laborer(Member),
+    Officer(Laborer),
     Owner(Officer);
 
     private GroupRole inherentince;

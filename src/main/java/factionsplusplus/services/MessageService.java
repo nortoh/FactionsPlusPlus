@@ -85,8 +85,9 @@ public class MessageService {
      */
     public void sendToFaction(Faction faction, String message) {
         faction.getMembers()
+            .keySet()
             .stream()
-            .map(member -> Bukkit.getPlayer(member.getId()))
+            .map(uuid -> Bukkit.getPlayer(uuid))
             .filter(Objects::nonNull)
             .forEach(player -> this.send(player, message));
     }

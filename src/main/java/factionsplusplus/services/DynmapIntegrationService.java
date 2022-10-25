@@ -6,7 +6,9 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.integrators.DynmapIntegrator;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +54,8 @@ public class DynmapIntegrationService {
     public void changeFactionsVisibility(List<Faction> factions, boolean visible) {
         if (this.dynmapIntegrator == null) this.checkForDynmap();
         if (this.dynmapIntegrator != null) {
-            factions.stream().forEach(faction -> this.changePlayersVisibility(faction.getMembersUUIDS(), visible));
+            factions.stream()
+            .forEach(faction -> this.changePlayersVisibility(new ArrayList<UUID>(faction.getMembers().keySet()), visible));
         }
     }
 

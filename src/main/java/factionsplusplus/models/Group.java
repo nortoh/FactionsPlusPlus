@@ -5,7 +5,6 @@
 package factionsplusplus.models;
 
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -16,8 +15,11 @@ import java.util.stream.Collectors;
 import static org.bukkit.Bukkit.getServer;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 
 import factionsplusplus.constants.GroupRole;
+import factionsplusplus.jsonadapters.GroupMemberAdapter;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -33,9 +35,9 @@ public class Group {
     @Expose
     protected List<UUID> officers = new ArrayList<>();
     @Expose
-    protected HashMap<UUID, GroupRole> roles = new HashMap<>();
-    @Expose
-    protected ArrayList<GroupMember> members = new ArrayList<>();
+    @JsonAdapter(GroupMemberAdapter.class)
+    @SerializedName("members")
+    protected HashMap<UUID, GroupMember> members = new HashMap<>();
 
     public String getName() {
         return name;
@@ -59,9 +61,10 @@ public class Group {
 
     public GroupMember getOwner() {
         return this.members
+            .values()
             .stream()
             .filter(member -> member.hasRole(GroupRole.Owner))
-            .findAny()
+            .findFirst()
             .orElse(null);
     }
 
@@ -85,13 +88,12 @@ public class Group {
      * lookup. This will gurantee that a GroupMember object is assocated with
      * every member in the group.
      *
-     * @param playerUuid
+     * @param playerUUID
      */
-    public void addMember(UUID playerUuid) {
-        GroupMember member = new GroupMember(playerUuid);
+    public void addMember(UUID playerUUID) {
+        GroupMember member = new GroupMember(playerUUID);
         member.addRole(GroupRole.Member);
-        members.add(new GroupMember(playerUuid));
-
+        members.put(playerUUID, new GroupMember(playerUUID));
     }
 
     /**
@@ -102,65 +104,51 @@ public class Group {
      * every member in the group. The provided role will be stored in an
      * ArrayList of roles.
      *
-     * @param playerUuid
+     * @param playerUUID
      * @param role
      */
-    public void addMember(UUID playerUuid, GroupRole role) {
-        GroupMember member = new GroupMember(playerUuid);
+    public void addMember(UUID playerUUID, GroupRole role) {
+        GroupMember member = new GroupMember(playerUUID);
         member.addRole(role);
-        members.add(member);
+        members.put(playerUUID, member);
     }
 
-    public GroupMember getMember(UUID playerUuid) {
-        return this.members
-            .stream()
-            .filter(member -> member.getId() == playerUuid)
-            .findFirst()
-            .orElse(null);
+    public GroupMember getMember(UUID playerUUID) {
+        return this.members.get(playerUUID);
     }
 
-    public void removeMember(UUID playerUuid) {
-        members.remove(this.getMember(playerUuid));
+    public void removeMember(UUID playerUUID) {
+        members.remove(playerUUID);
     }
 
-    public boolean isMember(UUID playerUuid) {
-        return this.members
-            .stream()
-            .filter(member -> member.getId() == playerUuid)
-            .count() == 1;
+    public boolean isMember(UUID playerUUID) {
+        return this.members.containsKey(playerUUID);
     }
 
-    public ArrayList<GroupMember> getMembers() {
+    public HashMap<UUID, GroupMember> getMembers() {
         return this.members;
     }
 
-    public ArrayList<UUID> getMembersUUIDS() {
-        return (ArrayList<UUID>) this.members.
-            stream()
-            .map(member -> member.getId())
-            .collect(Collectors.toList());
+    public HashMap<UUID, GroupMember> getMembers(GroupRole role) {
+        return (HashMap<UUID, GroupMember>) this.members.entrySet()
+            .stream()
+            .filter(k -> k.getValue().hasRole(role))
+            .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
     }
 
-    public ArrayList<UUID> getMembersUUIDS(GroupRole role) {
-        return (ArrayList<UUID>) this.members.stream()
-            .filter(member -> member.hasRole(role))
-            .map(uuid -> uuid.getId())
-            .collect(Collectors.toList());
-    }
-
-    public String getMemberListSeparatedByCommas() {
-        String players = "";
-        for (GroupMember member : this.getMembers()) {
-            UUID uuid = member.getId();
-            UUIDChecker uuidChecker = new UUIDChecker();
-            String playerName = uuidChecker.findPlayerNameBasedOnUUID(uuid);
-            players += playerName + ", ";
-        }
-        if (players.length() > 0) {
-            return players.substring(0, players.length() - 2);
-        }
-        return "";
-    }
+    // public String getMemberListSeparatedByCommas() {
+    //     String players = "";
+    //     for (GroupMember member : this.getMembers()) {
+    //         UUID uuid = member.getId();
+    //         UUIDChecker uuidChecker = new UUIDChecker();
+    //         String playerName = uuidChecker.findPlayerNameBasedOnUUID(uuid);
+    //         players += playerName + ", ";
+    //     }
+    //     if (players.length() > 0) {
+    //         return players.substring(0, players.length() - 2);
+    //     }
+    //     return "";
+    // }
 
     public boolean addOfficer(UUID playerUuid) {
         if (! this.isMember(playerUuid)) this.addMember(playerUuid);
@@ -194,6 +182,7 @@ public class Group {
 
     public int getNumOfficers() {
         return (int) this.getMembers()
+            .values()
             .stream()
             .filter(member -> member.hasRole(GroupRole.Officer))
             .count();
@@ -201,6 +190,7 @@ public class Group {
 
     public List<GroupMember> getOfficerList() {
         return this.getMembers()
+            .values()
             .stream()
             .filter(member -> member.hasRole(GroupRole.Officer))
             .toList();
@@ -210,19 +200,18 @@ public class Group {
         return this.members.size();
     }
 
-    public void invite(UUID playerUuid) {
-        Player player = getServer().getPlayer(playerUuid);
+    public void invite(UUID playerUUID) {
+        Player player = getServer().getPlayer(playerUUID);
         if (player != null) {
-            playerUuid = getServer().getPlayer(playerUuid).getUniqueId();
-            this.invited.add(playerUuid);
+            this.invited.add(playerUUID);
         }
     }
 
-    public void uninvite(UUID playerUuid) {
-        this.invited.remove(playerUuid);
+    public void uninvite(UUID playerUUID) {
+        this.invited.remove(playerUUID);
     }
 
-    public boolean isInvited(UUID playerUuid) {
-        return this.invited.contains(playerUuid);
+    public boolean isInvited(UUID playerUUID) {
+        return this.invited.contains(playerUUID);
     }
 }

@@ -86,7 +86,7 @@ public class FactionService {
 
     public int calculateCumulativePowerLevelWithoutVassalContribution(Faction faction) {
         int powerLevel = 0;
-        for (UUID playerUUID : faction.getMembersUUIDS()) {
+        for (UUID playerUUID : faction.getMembers().keySet()) {
             try {
                 powerLevel += this.playerRecordRepository.get(playerUUID).getPower();
             } catch (Exception e) {
@@ -122,10 +122,9 @@ public class FactionService {
     public int getMaximumCumulativePowerLevel(Faction faction) {     // get max power without vassal contribution
         int maxPower = 0;
 
-        for (GroupMember member : faction.getMembers()) {
-            UUID playerUuid = member.getId();
+        for (UUID playerUUID : faction.getMembers().keySet()) {
             try {
-                maxPower += this.playerService.getMaxPower(playerUuid);
+                maxPower += this.playerService.getMaxPower(playerUUID);
             } catch (Exception e) {
                 this.logger.error(e.getMessage(), e);
             }
