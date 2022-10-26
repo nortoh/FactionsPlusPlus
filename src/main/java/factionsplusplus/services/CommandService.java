@@ -302,7 +302,7 @@ public class CommandService implements TabCompleter {
                     argumentData = argumentData.substring(1);
                     // Handle one word with double quotes
                     if (argumentData.endsWith("\"")) foundEnd = true;
-                    while (! arguments.isEmpty() && !foundEnd) {
+                    while (! arguments.isEmpty() && ! foundEnd) {
                         if (arguments.get(0).endsWith("\"")) foundEnd = true;
                         argumentData = argumentData + " " + arguments.remove(0);
                     }
@@ -647,7 +647,7 @@ public class CommandService implements TabCompleter {
                 argumentData = argumentData.substring(1);
                 // Handle one word with double quotes
                 if (argumentData.endsWith("\"")) foundEnd = true;
-                while (! argumentList.isEmpty() && !foundEnd) {
+                while (! argumentList.isEmpty() && ! foundEnd) {
                     if (argumentList.get(0).endsWith("\"")) foundEnd = true;
                     argumentData = argumentData + " " + argumentList.remove(0);
                 }

@@ -81,7 +81,7 @@ public class DamageHandler implements Listener {
         }
 
         // case 2
-        if (! this.dataService.isPlayerInFaction(attacker) || !this.dataService.isPlayerInFaction(victim)) {
+        if (! this.dataService.isPlayerInFaction(attacker) || ! this.dataService.isPlayerInFaction(victim)) {
             this.logger.debug("Attacker or victim is not in a faction. Returning.");
             // allow since factionless don't have PVP restrictions
             return;

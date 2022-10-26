@@ -162,7 +162,7 @@ public class GateService {
                     && context.getGate().getCoord2() == null
                     && context.getGate().getTrigger() == null
                 ) {
-                if (!context.getGate().getCoord1().getBlock().equals(clickedBlock)) {
+                if (! context.getGate().getCoord1().getBlock().equals(clickedBlock)) {
                     ErrorCodeAddCoord e = this.addCoord(context.getGate(), clickedBlock);
                     switch(e) {
                         case None:
