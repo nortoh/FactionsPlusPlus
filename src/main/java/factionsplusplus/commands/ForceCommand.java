@@ -388,7 +388,7 @@ public class ForceCommand extends Command {
         final Faction latter = context.getFactionArgument("faction two");
         FactionWarEndEvent warEndEvent = new FactionWarEndEvent(former, latter);
         Bukkit.getPluginManager().callEvent(warEndEvent);
-        if (!warEndEvent.isCancelled()) {
+        if (! warEndEvent.isCancelled()) {
             if (former.isEnemy(latter.getID())) former.removeEnemy(latter.getID());
             if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
 
