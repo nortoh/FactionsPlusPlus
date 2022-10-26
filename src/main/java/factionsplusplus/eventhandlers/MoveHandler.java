@@ -126,19 +126,19 @@ public class MoveHandler implements Listener {
     }
 
     private void scheduleClaiming(Player player, Faction faction) {
-        getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
+        getServer().getScheduler().runTaskLater(this.factionsPlusPlus, () -> {
             // add new chunk to claimed chunks
-            this.claimService.claimChunkAtLocation(player, player.getLocation(), faction);
-            this.dynmapService.updateClaimsIfAble();
+            claimService.claimChunkAtLocation(player, player.getLocation(), faction);
+            dynmapService.updateClaimsIfAble();
         }, 1); // delayed by 1 tick (1/20th of a second) because otherwise players will claim the chunk they just left
     }
 
     private boolean newChunkIsClaimedAndOldChunkWasNot(PlayerMoveEvent event) {
-        return this.dataService.isChunkClaimed(Objects.requireNonNull(event.getTo()).getChunk()) && !this.dataService.isChunkClaimed(event.getFrom().getChunk());
+        return this.dataService.isChunkClaimed(Objects.requireNonNull(event.getTo()).getChunk()) && ! this.dataService.isChunkClaimed(event.getFrom().getChunk());
     }
 
     private boolean newChunkIsUnclaimedAndOldChunkWasNot(PlayerMoveEvent event) {
-        return !this.dataService.isChunkClaimed(Objects.requireNonNull(event.getTo()).getChunk()) && this.dataService.isChunkClaimed(event.getFrom().getChunk());
+        return ! this.dataService.isChunkClaimed(Objects.requireNonNull(event.getTo()).getChunk()) && this.dataService.isChunkClaimed(event.getFrom().getChunk());
     }
 
     private boolean newChunkIsClaimedAndOldChunkWasAlsoClaimed(PlayerMoveEvent event) {
@@ -146,7 +146,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean chunkHoldersAreNotEqual(PlayerMoveEvent event) {
-        return !(this.dataService.getClaimedChunk(event.getFrom().getChunk()).getHolder().equals(this.dataService.getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder()));
+        return ! (this.dataService.getClaimedChunk(event.getFrom().getChunk()).getHolder().equals(this.dataService.getClaimedChunk(Objects.requireNonNull(event.getTo()).getChunk()).getHolder()));
     }
 
     private boolean playerMovedFromUnclaimedLandIntoClaimedLand(ClaimedChunk fromChunk, ClaimedChunk toChunk) {
@@ -154,7 +154,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean holdersOfChunksAreDifferent(ClaimedChunk fromChunk, ClaimedChunk toChunk) {
-        return !fromChunk.getHolder().equals(toChunk.getHolder());
+        return ! fromChunk.getHolder().equals(toChunk.getHolder());
     }
 
     private boolean playerMovedFromClaimedLandIntoClaimedLand(ClaimedChunk fromChunk, ClaimedChunk toChunk) {

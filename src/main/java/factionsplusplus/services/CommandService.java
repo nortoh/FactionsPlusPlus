@@ -146,7 +146,7 @@ public class CommandService implements TabCompleter {
                 alias = this.localeService.get(alias);
                 if (alias == null) continue;
             }
-            if (!newAliases.contains(alias) && !command.getName().equalsIgnoreCase(alias)) newAliases.add(alias);
+            if (! newAliases.contains(alias) && !command.getName().equalsIgnoreCase(alias)) newAliases.add(alias);
         }
         Object[] aliasesToSet = newAliases.toArray();
         command.setAliases(Arrays.copyOf(aliasesToSet, aliasesToSet.length, String[].class));
@@ -189,7 +189,7 @@ public class CommandService implements TabCompleter {
 
         // Check if we require a player context (i.e. not the console)
         if (command.shouldRequirePlayerExecution()) {
-            if (!(sender instanceof Player)) {
+            if (! (sender instanceof Player)) {
                 context.replyWith("OnlyPlayersCanUseCommand");
                 return false;
             }
@@ -287,7 +287,7 @@ public class CommandService implements TabCompleter {
 
             // If argument should consume the remainder of arguments, so be it. We can't handle any arguments after this.
             if (argument.shouldConsumeAllArguments() && arguments.size() > 0) {
-                String newArguments = String.join(" ", (ArrayList)arguments.clone());
+                String newArguments = String.join(" ", new ArrayList<String>(arguments));
                 arguments.clear();
                 arguments.add(newArguments);
             }
@@ -302,11 +302,11 @@ public class CommandService implements TabCompleter {
                     argumentData = argumentData.substring(1);
                     // Handle one word with double quotes
                     if (argumentData.endsWith("\"")) foundEnd = true;
-                    while (!arguments.isEmpty() && !foundEnd) {
+                    while (! arguments.isEmpty() && ! foundEnd) {
                         if (arguments.get(0).endsWith("\"")) foundEnd = true;
                         argumentData = argumentData + " " + arguments.remove(0);
                     }
-                    if (!foundEnd) {
+                    if (! foundEnd) {
                         this.messageService.sendInvalidSyntaxMessage(sender, context.getCommandNames(), command.buildSyntax());
                         return false;
                     }
@@ -578,7 +578,7 @@ public class CommandService implements TabCompleter {
 
     private boolean senderCanAccessCommand(CommandSender sender, Command command) {
         // Can console use this command?
-        if (!(sender instanceof Player)) {
+        if (! (sender instanceof Player)) {
             if (command.shouldRequirePlayerExecution()) return false;
             return true; // no need to check permissions for console
         }
@@ -635,7 +635,7 @@ public class CommandService implements TabCompleter {
             String argumentName = (String)currentCommand.getArguments().keySet().toArray()[argumentIndex];
             final CommandArgument argument = currentCommand.getArguments().get(argumentName);
             if (argument.shouldConsumeAllArguments()) {
-                String newArguments = String.join(" ", (ArrayList)argumentList.clone());
+                String newArguments = String.join(" ", new ArrayList<String>(argumentList));
                 argumentList.clear();
                 argumentList.add(newArguments);
             }
@@ -647,11 +647,11 @@ public class CommandService implements TabCompleter {
                 argumentData = argumentData.substring(1);
                 // Handle one word with double quotes
                 if (argumentData.endsWith("\"")) foundEnd = true;
-                while (!argumentList.isEmpty() && !foundEnd) {
+                while (! argumentList.isEmpty() && ! foundEnd) {
                     if (argumentList.get(0).endsWith("\"")) foundEnd = true;
                     argumentData = argumentData + " " + argumentList.remove(0);
                 }
-                if (!foundEnd) moveToNextArgumentIfPresent = false;
+                if (! foundEnd) moveToNextArgumentIfPresent = false;
                 else argumentData = argumentData.substring(0, argumentData.length() - 1); // remove closing quote
             }
 
@@ -667,7 +667,9 @@ public class CommandService implements TabCompleter {
             if (argument.getTabCompletionHandler() != null) {
                 try {
                     Method executor = commandStack.get(0).getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, String.class);
-                    return (List<String>)executor.invoke(commandStack.get(0), sender, argumentData);
+                    @SuppressWarnings("unchecked") // can't supress a warning on a return
+                    List<String> result = (List<String>)executor.invoke(commandStack.get(0), sender, argumentData);
+                    return result;
                 } catch(Exception e) {
                     return results;
                 }
@@ -749,7 +751,7 @@ public class CommandService implements TabCompleter {
             }
 
             // Player types
-            if (!(sender instanceof Player)) return results;
+            if (! (sender instanceof Player)) return results;
             if (playersFaction == null) return results;
 
             switch(argument.getType()) {
@@ -797,22 +799,22 @@ public class CommandService implements TabCompleter {
                     input = input.filter(f -> faction.isAlly(f.getID()));
                     break;
                 case NotAllied:
-                    input = input.filter(f -> !faction.isAlly(f.getID()));
+                    input = input.filter(f -> ! faction.isAlly(f.getID()));
                     break;
                 case NotOwnFaction:
-                    input = input.filter(f -> !faction.equals(f));
+                    input = input.filter(f -> ! faction.equals(f));
                     break;
                 case Enemy:
                     input = input.filter(f -> faction.isEnemy(f.getID()));
                     break;
                 case NotEnemy:
-                    input = input.filter(f -> !faction.isEnemy(f.getID()));
+                    input = input.filter(f -> ! faction.isEnemy(f.getID()));
                     break;
                 case Vassal:
                     input = input.filter(f -> faction.isVassal(f.getID()));
                     break;
                 case NotVassal:
-                    input = input.filter(f -> !faction.isVassal(f.getID()));
+                    input = input.filter(f -> ! faction.isVassal(f.getID()));
                     break;
                 case OfferedVassalization:
                     input = input.filter(f -> f.hasBeenOfferedVassalization(faction.getID()));
@@ -829,13 +831,13 @@ public class CommandService implements TabCompleter {
         for (ArgumentFilterType type : argument.getFilters()) {
             switch(type) {
                 case ExcludeOfficers:
-                    input = input.filter(p -> !faction.isOfficer(p.getUniqueId()));
+                    input = input.filter(p -> ! faction.isOfficer(p.getUniqueId()));
                     break;
                 case ExcludeSelf:
-                    input = input.filter(p -> !p.equals(player));
+                    input = input.filter(p -> ! p.equals(player));
                     break;
                 case NotInExecutorsFaction:
-                    input = input.filter(p -> !faction.isMember(p.getUniqueId()));
+                    input = input.filter(p -> ! faction.isMember(p.getUniqueId()));
                     break;
                 case NotInAnyFaction:
                     input = input.filter(p -> this.dataService.getFactionRepository().getForPlayer(p.getUniqueId()) == null);

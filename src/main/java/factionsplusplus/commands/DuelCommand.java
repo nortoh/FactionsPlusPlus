@@ -99,7 +99,7 @@ public class DuelCommand extends Command {
 
     public void cancelCommand(CommandContext context) {
         Player player = context.getPlayer();
-        if(!this.isDuelling(player)) {
+        if (! this.isDuelling(player)) {
             context.replyWith("AlertNoPendingChallenges");
             return;
         }
@@ -144,7 +144,7 @@ public class DuelCommand extends Command {
             );
             return;
         }
-        if (!duel.isChallenged(player)) {
+        if (! duel.isChallenged(player)) {
             context.replyWith(
                 this.constructMessage("AlertNotBeenChallengedByPlayer")
                     .with("name", target.getName())

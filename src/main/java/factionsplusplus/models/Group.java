@@ -185,6 +185,20 @@ public class Group implements Identifiable {
         return this.getMembers(GroupRole.Officer).values();
     }
 
+    public boolean isLaborer(UUID playerUUID) {
+        if (! this.isMember(playerUUID)) return false;
+
+        return this.getMember(playerUUID).hasRole(GroupRole.Laborer);
+    }
+
+    public int getLaborerCount() {
+        return this.getMembers(GroupRole.Laborer).size();
+    }
+
+    public Collection<GroupMember> getLaborers() {
+        return this.getMembers(GroupRole.Laborer).values();
+    }
+
     public int getMemberCount() {
         return this.members.size();
     }

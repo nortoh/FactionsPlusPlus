@@ -47,7 +47,7 @@ public class SwearFealtyCommand extends Command {
     public void execute(CommandContext context) {
         final Faction faction = context.getExecutorsFaction();
         final Faction target = context.getFactionArgument("faction name");
-        if (!target.hasBeenOfferedVassalization(faction.getID())) {
+        if (! target.hasBeenOfferedVassalization(faction.getID())) {
             context.replyWith("AlertNotOfferedVassalizationBy");
             return;
         }

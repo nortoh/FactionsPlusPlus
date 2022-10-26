@@ -71,45 +71,45 @@ public class DamageHandler implements Listener {
      * 4) Players are not in the same faction but are not enemies.
      */
     private void handlePlayerVersusPlayer(Player attacker, Player victim, EntityDamageByEntityEvent event) {
-        logger.debug("Handling damage between players.");
+        this.logger.debug("Handling damage between players.");
 
         // case 1
-        if (arePlayersDueling(attacker, victim)) {
-            logger.debug("Players are dueling. Ending if necessary.");
-            endDuelIfNecessary(attacker, victim, event);
+        if (this.arePlayersDueling(attacker, victim)) {
+            this.logger.debug("Players are dueling. Ending if necessary.");
+            this.endDuelIfNecessary(attacker, victim, event);
             return;
         }
 
         // case 2
-        if (!this.dataService.isPlayerInFaction(attacker) || !this.dataService.isPlayerInFaction(victim)) {
-            logger.debug("Attacker or victim is not in a faction. Returning.");
+        if (! this.dataService.isPlayerInFaction(attacker) || ! this.dataService.isPlayerInFaction(victim)) {
+            this.logger.debug("Attacker or victim is not in a faction. Returning.");
             // allow since factionless don't have PVP restrictions
             return;
         }
 
         // case 3
-        if (relationChecker.arePlayersInSameFaction(attacker, victim)){
-            logger.debug("Players are in the same faction. Handling friendly fire.");
-            handleFriendlyFire(event, attacker, victim);
+        if (this.relationChecker.arePlayersInSameFaction(attacker, victim)){
+            this.logger.debug("Players are in the same faction. Handling friendly fire.");
+            this.handleFriendlyFire(event, attacker, victim);
             return;
         }
 
         // case 4
-        if (relationChecker.arePlayersFactionsNotEnemies(attacker, victim)) {
-            logger.debug("Players factions are not enemies. Handling non-enemy fire.");
-            handleNonEnemyFire(event, attacker, victim);
+        if (this.relationChecker.arePlayersFactionsNotEnemies(attacker, victim)) {
+            this.logger.debug("Players factions are not enemies. Handling non-enemy fire.");
+            this.handleNonEnemyFire(event, attacker, victim);
         }
     }
 
     private void handleEntityDamage(Player attacker, EntityDamageByEntityEvent event) {
-        logger.debug("Handling entity damage.");
+        this.logger.debug("Handling entity damage.");
         if (event.getEntity() instanceof Player) {
-            logger.debug("Entity is an instance of a player. Returning.");
+            this.logger.debug("Entity is an instance of a player. Returning.");
             return;
         }
 
         // If entity is protected, cancel the event and return
-        if (isEntityProtected(attacker, event.getEntity())) {
+        if (this.isEntityProtected(attacker, event.getEntity())) {
             event.setCancelled(true);
         }
     }
@@ -118,36 +118,34 @@ public class DamageHandler implements Listener {
         if (entity instanceof ArmorStand || entity instanceof ItemFrame) return true;
 
         // If entity isn't on claimed chunk, return false
-        if (!this.dataService.isChunkClaimed(entity.getLocation().getChunk())) {
-            logger.debug("Chunk isn't claimed");
+        if (! this.dataService.isChunkClaimed(entity.getLocation().getChunk())) {
+            this.logger.debug("Chunk isn't claimed");
             return false;
         }
 
         final Faction chunkHolder = this.dataService.getFaction(this.dataService.getClaimedChunk(entity.getLocation().getChunk()).getHolder());
-        System.out.println("Checking entity protection for player: "+attacker);
-        System.out.println("\t and entity: "+entity);
         final Faction attackerFaction = this.dataService.getPlayersFaction(attacker.getUniqueId());
 
-        if (!chunkHolder.getFlag("enableMobProtection").toBoolean()) {
-            logger.debug("Mob Protection is disabled");
+        if (! chunkHolder.getFlag("enableMobProtection").toBoolean()) {
+            this.logger.debug("Mob Protection is disabled");
             return false;
         }
 
         // If entity isn't a living one (like minecarts), return false
-        if (!(entity instanceof LivingEntity)) {
-            logger.debug("Entity isn't a living");
+        if (! (entity instanceof LivingEntity)) {
+            this.logger.debug("Entity isn't a living");
             return false;
         }
 
         // If attacker is in faction which owns the chunk, return false
         if (this.dataService.getPlayersFaction(attacker.getUniqueId()) == chunkHolder) {
-            logger.debug("Attacker is in same faction as Chunkholder");
+            this.logger.debug("Attacker is in same faction as Chunkholder");
             return false;
         }
 
         // If attacker is factionless, return true
         if (attackerFaction == null) {
-            logger.debug("attacker is factionless");
+            this.logger.debug("attacker is factionless");
             return true;
         }
 
@@ -166,13 +164,13 @@ public class DamageHandler implements Listener {
     }
 
     private Player getAttacker(EntityDamageByEntityEvent event) {
-        if (wasDamageWasBetweenPlayers(event)) {
+        if (this.wasDamageWasBetweenPlayers(event)) {
             return (Player) event.getDamager();
         }
-        else if (wasPlayerWasDamagedByAProjectile(event) && wasProjectileShotByPlayer(event)) {
+        else if (this.wasPlayerWasDamagedByAProjectile(event) && this.wasProjectileShotByPlayer(event)) {
             return (Player) getProjectileSource(event);
         }
-        else if (isDamagerPlayer(event)) {
+        else if (this.isDamagerPlayer(event)) {
             return (Player) event.getDamager();
 
         } else {
@@ -195,11 +193,11 @@ public class DamageHandler implements Listener {
     }
 
     private void endDuelIfNecessary(Player attacker, Player victim, EntityDamageEvent event) {
-        Duel duel = ephemeralData.getDuel(attacker, victim);
-        if (isDuelActive(duel) && isVictimDead(victim.getHealth(), event.getFinalDamage())) {
+        Duel duel = this.ephemeralData.getDuel(attacker, victim);
+        if (this.isDuelActive(duel) && this.isVictimDead(victim.getHealth(), event.getFinalDamage())) {
             duel.setLoser(victim);
             duel.finishDuel(false);
-            ephemeralData.getDuelingPlayers().remove(duel);
+            this.ephemeralData.getDuelingPlayers().remove(duel);
             event.setCancelled(true);
         }
     }
@@ -216,7 +214,7 @@ public class DamageHandler implements Listener {
         if (attacker == null) {
             return false;
         }
-        Duel duel = ephemeralData.getDuel(attacker, victim);
+        Duel duel = this.ephemeralData.getDuel(attacker, victim);
         return duel != null;
     }
 
@@ -234,14 +232,14 @@ public class DamageHandler implements Listener {
     private void handleFriendlyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
         Faction faction = this.dataService.getPlayersFaction(attacker.getUniqueId());
         boolean friendlyFireAllowed = faction.getFlag("allowFriendlyFire").toBoolean();
-        if (!friendlyFireAllowed) {
+        if (! friendlyFireAllowed) {
             event.setCancelled(true);
             this.messageService.sendLocalizedMessage(attacker, "CannotAttackFactionMember");
         }
     }
 
     private void handleNonEnemyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
-        if (configService.getBoolean("warsRequiredForPVP")) {
+        if (this.configService.getBoolean("warsRequiredForPVP")) {
             event.setCancelled(true);
             this.messageService.sendLocalizedMessage(attacker, "CannotAttackNonWarringPlayer");
         }

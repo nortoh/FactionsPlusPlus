@@ -40,12 +40,12 @@ public class SetHomeCommand extends Command {
     public void execute(CommandContext context) {
         Player player = context.getPlayer();
         Faction faction = context.getExecutorsFaction();
-        if (!this.dataService.isChunkClaimed(player.getLocation().getChunk())) {
+        if (! this.dataService.isChunkClaimed(player.getLocation().getChunk())) {
             context.replyWith("LandIsNotClaimed");
             return;
         }
         ClaimedChunk chunk = this.dataService.getClaimedChunk(player.getLocation().getChunk());
-        if (chunk == null || !chunk.getHolder().equals(faction.getID())) {
+        if (chunk == null || ! chunk.getHolder().equals(faction.getID())) {
             context.replyWith("CannotSetFactionHomeInWilderness");
             return;
         }

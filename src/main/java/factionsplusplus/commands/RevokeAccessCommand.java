@@ -109,7 +109,7 @@ public class RevokeAccessCommand extends Command {
     }
 
     public void playerCommand(CommandContext context) {
-        if (!this.doCommonChecks(context)) return;
+        if (! this.doCommonChecks(context)) return;
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID targetUUID = target.getUniqueId();
         if (targetUUID.equals(context.getPlayer().getUniqueId())) {
@@ -128,7 +128,7 @@ public class RevokeAccessCommand extends Command {
     }
 
     public void alliesCommand(CommandContext context) {
-        if (!this.doCommonChecks(context)) return;
+        if (! this.doCommonChecks(context)) return;
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
             this.interactionContextFactory.create(
@@ -140,7 +140,7 @@ public class RevokeAccessCommand extends Command {
     }
 
     public void factionCommand(CommandContext context) {
-        if (!this.doCommonChecks(context)) return;
+        if (! this.doCommonChecks(context)) return;
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
             this.interactionContextFactory.create(

@@ -57,7 +57,7 @@ public class UnclaimallCommand extends Command {
                 context.replyWith("AlertMustBeInFactionToUseCommand");
                 return;
             }
-            if (!faction.isOwner(context.getPlayer().getUniqueId())) {
+            if (! faction.isOwner(context.getPlayer().getUniqueId())) {
                 context.replyWith("AlertMustBeOwnerToUseCommand");
                 return;
             }

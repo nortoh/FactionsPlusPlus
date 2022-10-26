@@ -25,19 +25,19 @@ public class RelationChecker {
 
 
     public boolean arePlayersInSameFaction(Player player1, Player player2) {
-        Pair<UUID, UUID> factionIndices = getFactionIndices(player1, player2);
+        Pair<UUID, UUID> factionIndices = this.getFactionIndices(player1, player2);
         UUID attackersFactionIndex = factionIndices.getLeft();
         UUID victimsFactionIndex = factionIndices.getRight();
-        return arePlayersInAFaction(player1, player2) && attackersFactionIndex.equals(victimsFactionIndex);
+        return this.arePlayersInAFaction(player1, player2) && attackersFactionIndex.equals(victimsFactionIndex);
     }
 
     public boolean arePlayersFactionsNotEnemies(Player player1, Player player2) {
-        Pair<UUID, UUID> factionIndices = getFactionIndices(player1, player2);
+        Pair<UUID, UUID> factionIndices = this.getFactionIndices(player1, player2);
         UUID attackersFactionIndex = factionIndices.getLeft();
         UUID victimsFactionIndex = factionIndices.getRight();
 
-        return !(dataService.getFaction(attackersFactionIndex).isEnemy(dataService.getFaction(victimsFactionIndex).getID())) &&
-                !(dataService.getFaction(victimsFactionIndex).isEnemy(dataService.getFaction(attackersFactionIndex).getID()));
+        return ! (this.dataService.getFaction(attackersFactionIndex).isEnemy(this.dataService.getFaction(victimsFactionIndex).getID())) &&
+                ! (this.dataService.getFaction(victimsFactionIndex).isEnemy(this.dataService.getFaction(attackersFactionIndex).getID()));
     }
 
     private Pair<UUID, UUID> getFactionIndices(Player player1, Player player2) {

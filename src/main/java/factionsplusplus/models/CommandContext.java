@@ -67,7 +67,7 @@ public class CommandContext {
      * @return a boolean indicating if this command was executed from the console.
      */
     public boolean isConsole() {
-        return !(this.sender instanceof Player);
+        return ! (this.sender instanceof Player);
     }
 
 

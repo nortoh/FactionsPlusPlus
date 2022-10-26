@@ -49,9 +49,9 @@ public class Nation extends Group implements Diplomatic, Lawful {
     @Override
     public String getAlliesSeparatedByCommas() {
         String allies = "";
-        for (int i = 0; i < allyFactions.size(); i++) {
-            allies = allies + allyFactions.get(i);
-            if (i != allyFactions.size() - 1) {
+        for (int i = 0; i < this.allyFactions.size(); i++) {
+            allies = allies + this.allyFactions.get(i);
+            if (i != this.allyFactions.size() - 1) {
                 allies = allies + ", ";
             }
         }
@@ -96,9 +96,9 @@ public class Nation extends Group implements Diplomatic, Lawful {
     @Override
     public String getEnemiesSeparatedByCommas() {
         String enemies = "";
-        for (int i = 0; i < enemyFactions.size(); i++) {
-            enemies = enemies + enemyFactions.get(i);
-            if (i != enemyFactions.size() - 1) {
+        for (int i = 0; i < this.enemyFactions.size(); i++) {
+            enemies = enemies + this.enemyFactions.get(i);
+            if (i != this.enemyFactions.size() - 1) {
                 enemies = enemies + ", ";
             }
         }
@@ -127,13 +127,13 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public void addLaw(String newLaw) {
-        laws.add(newLaw);
+        this.laws.add(newLaw);
     }
 
     @Override
     public boolean removeLaw(String lawToRemove) {
-        if (containsIgnoreCase(laws, lawToRemove)) {
-            laws.remove(lawToRemove);
+        if (containsIgnoreCase(this.laws, lawToRemove)) {
+            this.laws.remove(lawToRemove);
             return true;
         }
         return false;
@@ -141,8 +141,8 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public boolean removeLaw(int i) {
-        if (laws.size() > i) {
-            laws.remove(i);
+        if (this.laws.size() > i) {
+            this.laws.remove(i);
             return true;
         }
         return false;
@@ -150,8 +150,8 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public boolean editLaw(int i, String newString) {
-        if (laws.size() > i) {
-            laws.set(i, newString);
+        if (this.laws.size() > i) {
+            this.laws.set(i, newString);
             return true;
         }
         return false;
@@ -159,12 +159,12 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public int getNumLaws() {
-        return laws.size();
+        return this.laws.size();
     }
 
     @Override
     public List<String> getLaws() {
-        return laws;
+        return this.laws;
     }
 
     // helper methods ---------------

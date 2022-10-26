@@ -33,13 +33,13 @@ public class FactionClaimEvent extends FactionEvent implements Cancellable {
 
     // Getters.
     public Chunk getChunk() {
-        return chunk;
+        return this.chunk;
     }
 
     // Bukkit Cancellable methodology.
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override

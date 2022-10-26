@@ -48,7 +48,7 @@ public class JoinCommand extends Command {
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
-        if (!target.isInvited(context.getPlayer().getUniqueId())) {
+        if (! target.isInvited(context.getPlayer().getUniqueId())) {
             context.replyWith("NotInvite");
             return;
         }

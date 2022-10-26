@@ -98,7 +98,7 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
      * @return A string containing the version preceded by 'v'
      */
     public String getVersion() {
-        return pluginVersion;
+        return this.pluginVersion;
     }
 
     /**
@@ -174,17 +174,17 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
      * Calls the Scheduler to schedule tasks that have to repeatedly be executed.
      */
     private void scheduleRecurringTasks() {
-        scheduler.schedulePowerIncrease();
-        scheduler.schedulePowerDecrease();
-        scheduler.scheduleAutosave();
-        actionBarService.schedule(this);
+        this.scheduler.schedulePowerIncrease();
+        this.scheduler.schedulePowerDecrease();
+        this.scheduler.scheduleAutosave();
+        this.actionBarService.schedule(this);
     }
 
     /**
      * Registers the event handlers of the plugin using Ponder.
      */
     private void registerEventHandlers() {
-        ArrayList<Listener> listeners = initializeListeners();
+        ArrayList<Listener> listeners = this.initializeListeners();
         EventHandlerRegistry eventHandlerRegistry = new EventHandlerRegistry();
         eventHandlerRegistry.registerEventHandlers(listeners, this);
     }

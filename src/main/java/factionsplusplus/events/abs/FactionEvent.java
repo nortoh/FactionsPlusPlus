@@ -48,11 +48,11 @@ public abstract class FactionEvent extends Event {
 
     // Getters.
     public Faction getFaction() {
-        return faction;
+        return this.faction;
     }
 
     public OfflinePlayer getOfflinePlayer() {
-        return offlinePlayer;
+        return this.offlinePlayer;
     }
 
     // Bukkit Event API requirements.

@@ -33,7 +33,7 @@ public class FactionLeaveEvent extends FactionEvent implements Cancellable {
     // Bukkit Cancellable methodology.
     @Override
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     @Override

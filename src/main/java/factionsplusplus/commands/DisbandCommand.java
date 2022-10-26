@@ -84,7 +84,7 @@ public class DisbandCommand extends Command {
             return;
         }
         boolean ok = this.removeFaction(disband, self ? ((OfflinePlayer) sender) : null);
-        if (!ok) {
+        if (! ok) {
             context.replyWith(
                 this.constructMessage("ErrorDisbanding")
                     .with("faction", disband.getName())

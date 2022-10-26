@@ -23,7 +23,7 @@ public class ClaimedChunk extends Territory {
     }
 
     public Chunk getChunk() {
-        return chunk;
+        return this.chunk;
     }
 
     public void setChunk(Chunk chunk) {
@@ -32,8 +32,8 @@ public class ClaimedChunk extends Territory {
 
     public int[] getCoordinates() {
         int[] coordinates = new int[2];
-        coordinates[0] = chunk.getX();
-        coordinates[1] = chunk.getZ();
+        coordinates[0] = this.chunk.getX();
+        coordinates[1] = this.chunk.getZ();
         return coordinates;
     }
 

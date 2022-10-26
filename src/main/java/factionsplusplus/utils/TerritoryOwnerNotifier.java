@@ -34,10 +34,10 @@ public class TerritoryOwnerNotifier {
     }
 
     public void sendPlayerTerritoryAlert(Player player, Faction holder) {
-        ChatColor territoryAlertColor = getColor(holder);
-        String title = getTitle(holder);
-        setActionBar(holder, player, territoryAlertColor, title);
-        sendAlert(player, territoryAlertColor, title);
+        ChatColor territoryAlertColor = this.getColor(holder);
+        String title = this.getTitle(holder);
+        this.setActionBar(holder, player, territoryAlertColor, title);
+        this.sendAlert(player, territoryAlertColor, title);
     }
 
     private String getTitle(Faction holder) {
@@ -53,26 +53,26 @@ public class TerritoryOwnerNotifier {
         if (holder != null) {
             territoryAlertColorString = holder.getFlag("territoryAlertColor").toString();
         } else {
-            territoryAlertColorString = configService.getString("territoryAlertColor");
+            territoryAlertColorString = this.configService.getString("territoryAlertColor");
         }
         ColorChecker colorChecker = new ColorChecker();
         return colorChecker.getColorByName(territoryAlertColorString);
     }
 
     private void setActionBar(Faction holder, Player player, ChatColor territoryAlertColor, String title) {
-        if (configService.getBoolean("territoryIndicatorActionbar")) {
+        if (this.configService.getBoolean("territoryIndicatorActionbar")) {
 
             if (holder == null) {
-                actionBarService.clearPlayerActionBar(player);
+                this.actionBarService.clearPlayerActionBar(player);
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(territoryAlertColor + title));
             } else {
-                actionBarService.showPersistentActionBarMessage(player, new TextComponent(territoryAlertColor + title));
+                this.actionBarService.showPersistentActionBarMessage(player, new TextComponent(territoryAlertColor + title));
             }
         }
     }
 
     private void sendAlert(Player player, ChatColor territoryAlertColor, String title) {
-        if (configService.getBoolean("territoryAlertPopUp")) {
+        if (this.configService.getBoolean("territoryAlertPopUp")) {
             int fadeIn = 10;
             int stay = 70;
             int fadeOut = 20;

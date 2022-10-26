@@ -24,7 +24,7 @@ public class SpawnHandler implements Listener {
 
     @EventHandler()
     public void handle(EntitySpawnEvent event) {
-        if (isLandClaimed(event) && event.getEntity() instanceof Monster && !configService.getBoolean("mobsSpawnInFactionTerritory")) {
+        if (this.isLandClaimed(event) && event.getEntity() instanceof Monster && ! this.configService.getBoolean("mobsSpawnInFactionTerritory")) {
             event.setCancelled(true);
         }
     }

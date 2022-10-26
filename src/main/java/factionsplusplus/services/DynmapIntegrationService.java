@@ -6,7 +6,6 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.integrators.DynmapIntegrator;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.GroupMember;
 
 import java.util.ArrayList;
 import java.util.List;

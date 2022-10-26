@@ -109,7 +109,7 @@ public class WorldRepository {
 
     public void addAnyMissingFlags(World world) {
         List<String> missingFlags = this.defaultFlags.keySet().stream().filter(key -> world.getFlag(key) == null).collect(Collectors.toList());
-        if (!missingFlags.isEmpty()) {
+        if (! missingFlags.isEmpty()) {
             missingFlags.stream().forEach(flag -> {
                 world.getFlags().put(flag, this.defaultFlags.get(flag));
             });

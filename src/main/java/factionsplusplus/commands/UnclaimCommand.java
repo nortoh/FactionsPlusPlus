@@ -58,9 +58,9 @@ public class UnclaimCommand extends Command {
         final Faction faction = context.getExecutorsFaction();
         final Player player = context.getPlayer();
         final boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
-        if ((boolean) faction.getFlag("mustBeOfficerToManageLand").toBoolean()) {
+        if (faction.getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
-            if (!faction.isOfficer(player.getUniqueId()) && !faction.isOwner(player.getUniqueId()) && !isPlayerBypassing) {
+            if (! faction.isOfficer(player.getUniqueId()) && ! faction.isOwner(player.getUniqueId()) && ! isPlayerBypassing) {
                 context.replyWith("NotAbleToClaim");
                 return;
             }

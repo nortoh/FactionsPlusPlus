@@ -36,6 +36,6 @@ public class QuitHandler implements Listener {
             record.setLastLogout(ZonedDateTime.now());
         }
 
-        actionBarService.clearPlayerActionBar(event.getPlayer());
+        this.actionBarService.clearPlayerActionBar(event.getPlayer());
     }
 }

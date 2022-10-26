@@ -1,6 +1,8 @@
 package factionsplusplus.models;
 
 import com.google.gson.annotations.Expose;
+
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 
 import java.util.UUID;
@@ -43,5 +45,9 @@ public class LocationData {
 
     public UUID getWorld() {
         return this.world;
+    }
+
+    public Block getBlock() {
+        return Bukkit.getWorld(this.world).getBlockAt(x, y, z);
     }
 }

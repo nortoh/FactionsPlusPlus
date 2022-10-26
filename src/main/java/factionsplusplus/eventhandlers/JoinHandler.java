@@ -147,7 +147,7 @@ public class JoinHandler implements Listener {
             FactionJoinEvent joinEvent = new FactionJoinEvent(faction, player);
             Bukkit.getPluginManager().callEvent(joinEvent);
             if (joinEvent.isCancelled()) {
-                logger.debug("Join event was cancelled.");
+                this.logger.debug("Join event was cancelled.");
                 return;
             }
             this.messageService.sendFactionLocalizedMessage(

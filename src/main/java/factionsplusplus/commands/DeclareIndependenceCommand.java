@@ -52,7 +52,7 @@ public class DeclareIndependenceCommand extends Command {
     public void execute(CommandContext context) {
         Faction faction = context.getExecutorsFaction();
         Player player = context.getPlayer();
-        if (!(faction.hasLiege()) || faction.getLiege() == null) {
+        if (! (faction.hasLiege()) || faction.getLiege() == null) {
             context.replyWith("NotAVassalOfAFaction");
             return;
         }
@@ -63,16 +63,16 @@ public class DeclareIndependenceCommand extends Command {
         liege.removeVassal(faction.getID());
         faction.setLiege(null);
 
-        if (!this.configService.getBoolean("allowNeutrality") || (!(faction.getFlag("neutral").toBoolean()) && !(liege.getFlag("neutral").toBoolean()))) {
+        if (! this.configService.getBoolean("allowNeutrality") || (! (faction.getFlag("neutral").toBoolean()) && ! (liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
             FactionWarStartEvent warStartEvent = new FactionWarStartEvent(faction, liege, player);
             Bukkit.getPluginManager().callEvent(warStartEvent);
 
-            if (!warStartEvent.isCancelled()) {
+            if (! warStartEvent.isCancelled()) {
                 faction.addEnemy(liege.getID());
                 liege.addEnemy(faction.getID());
 
-                // TODO: check if they're already at work (which would be weird since they were a previous vassal?)
+                // TODO: check if they're already at war (which would be weird since they were a previous vassal?)
                 this.warFactory.createWar(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
 
                 // break alliance if allied

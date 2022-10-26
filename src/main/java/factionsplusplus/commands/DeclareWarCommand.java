@@ -98,7 +98,7 @@ public class DeclareWarCommand extends Command {
                 return;
             }
 
-            if (!faction.getLiege().equals(opponent.getLiege())) {
+            if (! faction.getLiege().equals(opponent.getLiege())) {
                 final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
                 if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
                         this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
@@ -129,7 +129,7 @@ public class DeclareWarCommand extends Command {
 
         FactionWarStartEvent warStartEvent = new FactionWarStartEvent(faction, opponent, player);
         Bukkit.getPluginManager().callEvent(warStartEvent);
-        if (!warStartEvent.isCancelled()) {
+        if (! warStartEvent.isCancelled()) {
             // Make enemies.
             faction.addEnemy(opponent.getID());
             opponent.addEnemy(faction.getID());

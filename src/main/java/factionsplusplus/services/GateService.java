@@ -55,7 +55,7 @@ public class GateService {
     }
 
     public void handlePotentialGateInteraction(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        if (!this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
+        if (! this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
             return;
         }
 
@@ -63,11 +63,11 @@ public class GateService {
         Faction faction = this.dataService.getFaction(claim.getHolder());
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
 
-        if (!faction.getName().equals(playersFaction.getName())) {
+        if (! faction.getName().equals(playersFaction.getName())) {
             return;
         }
 
-        if (!faction.hasGateTrigger(clickedBlock)) {
+        if (! faction.hasGateTrigger(clickedBlock)) {
             return;
         }
 
@@ -108,18 +108,18 @@ public class GateService {
     }
 
     public void handleCreatingGate(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        if (!this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
+        if (! this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
             this.messageService.sendLocalizedMessage(player, "CanOnlyCreateGatesInClaimedTerritory");
             return;
         } else {
             ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
             if (claimedChunk != null) {
-                if (!this.dataService.getFaction(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
+                if (! this.dataService.getFaction(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
                     this.messageService.sendLocalizedMessage(player, "AlertMustBeMemberToCreateGate");
                     return;
                 }
-                if (!this.dataService.getFaction(claimedChunk.getHolder()).isOwner(player.getUniqueId())
-                            && !this.dataService.getFaction(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
+                if (! this.dataService.getFaction(claimedChunk.getHolder()).isOwner(player.getUniqueId())
+                            && ! this.dataService.getFaction(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
                     this.messageService.sendLocalizedMessage(player, "AlertMustBeOwnerOrOfficerToCreateGate");
                     return;
                 }
@@ -162,7 +162,7 @@ public class GateService {
                     && context.getGate().getCoord2() == null
                     && context.getGate().getTrigger() == null
                 ) {
-                if (!context.getGate().getCoord1().equals(clickedBlock)) {
+                if (! context.getGate().getCoord1().getBlock().equals(clickedBlock)) {
                     ErrorCodeAddCoord e = this.addCoord(context.getGate(), clickedBlock);
                     switch(e) {
                         case None:
@@ -189,7 +189,7 @@ public class GateService {
                 }
             } else if (context.getGate().getCoord2() != null
                     && context.getGate().getTrigger() == null
-                    && !context.getGate().getCoord2().equals(clickedBlock)) {
+                    && ! context.getGate().getCoord2().getBlock().equals(clickedBlock)) {
                 if (clickedBlock.getBlockData() instanceof Powerable) {
                     if (this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
                         Gate g = context.getGate();
@@ -220,7 +220,7 @@ public class GateService {
     }
 
     public void open(Gate gate) {
-        if (gate.isOpen() || !gate.getStatus().equals(GateStatus.Ready)) {
+        if (gate.isOpen() || ! gate.getStatus().equals(GateStatus.Ready)) {
             return;
         }
 
@@ -319,7 +319,7 @@ public class GateService {
     }
 
     public void close(Gate gate) {
-        if (!gate.isOpen() || !gate.getStatus().equals(GateStatus.Ready)) {
+        if (! gate.isOpen() || ! gate.getStatus().equals(GateStatus.Ready)) {
             return;
         }
 
@@ -423,10 +423,10 @@ public class GateService {
             gate.setCoord1(new LocationData(clickedBlock));
             gate.setMaterial(clickedBlock.getType());
         } else if (gate.getCoord2() == null) {
-            if (!gate.getCoord1().getWorld().equals(clickedBlock.getWorld().getUID())) {
+            if (! gate.getCoord1().getWorld().equals(clickedBlock.getWorld().getUID())) {
                 return ErrorCodeAddCoord.WorldMismatch;
             }
-            if (!clickedBlock.getType().equals(gate.getMaterial())) {
+            if (! clickedBlock.getType().equals(gate.getMaterial())) {
                 return ErrorCodeAddCoord.MaterialMismatch;
             }
             // GetDim methods use coord2 object.
@@ -459,7 +459,7 @@ public class GateService {
                 gate.setCoord2(null);
                 return ErrorCodeAddCoord.Oversized;
             }
-            if (!gate.gateBlocksMatch(gate.getMaterial())) {
+            if (! gate.gateBlocksMatch(gate.getMaterial())) {
                 gate.setCoord2(null);
                 return ErrorCodeAddCoord.MaterialMismatch;
             }

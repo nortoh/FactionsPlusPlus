@@ -58,91 +58,93 @@ public class Duel {
     }
 
     public DuelState getStatus() {
-        return duelState;
+        return this.duelState;
     }
 
     public void setStatus(DuelState state) {
-        duelState = state;
+        this.duelState = state;
     }
 
     public boolean isChallenged(Player player) {
-        return player.equals(_challenged);
+        return player.equals(this._challenged);
     }
 
     public Player getChallenged() {
-        return _challenged;
+        return this._challenged;
     }
 
     public boolean isChallenger(Player player) {
-        return player.equals(_challenger);
+        return player.equals(this._challenger);
     }
 
     public Player getChallenger() {
-        return _challenger;
+        return this._challenger;
     }
 
     public double getChallengerHealth() {
-        return challengerHealth;
+        return this.challengerHealth;
     }
 
     public double getChallengedHealth() {
-        return challengedHealth;
+        return this.challengedHealth;
     }
 
     public boolean hasPlayer(Player player) {
-        return _challenged.equals(player) || _challenger.equals(player);
+        return this._challenged.equals(player) || this._challenger.equals(player);
     }
 
     public void resetHealth() {
-        if (_challenger != null) {
-            _challenger.setHealth(challengerHealth);
+        if (this._challenger != null) {
+            this._challenger.setHealth(this.challengerHealth);
         }
-        if (_challenged != null) {
-            _challenged.setHealth(challengedHealth);
+        if (this._challenged != null) {
+            this._challenged.setHealth(this.challengedHealth);
         }
     }
 
     public Player getWinner() {
-        return winner;
+        return this.winner;
     }
 
     public void setWinner(Player player) {
-        duelState = DuelState.WINNER;
-        winner = player;
+        this.duelState = DuelState.WINNER;
+        this.winner = player;
         if (isChallenger(player)) {
-            loser = getChallenged();
+            this.loser = this.getChallenged();
         } else {
-            loser = getChallenger();
+            this.loser = this.getChallenger();
         }
     }
 
     public Player getLoser() {
-        return loser;
+        return this.loser;
     }
 
     public void setLoser(Player player) {
-        duelState = DuelState.WINNER;
-        loser = player;
-        if (isChallenger(player)) {
-            winner = getChallenged();
+        this.duelState = DuelState.WINNER;
+        this.loser = player;
+        if (this.isChallenger(player)) {
+            winner = this.getChallenged();
         } else {
-            winner = getChallenger();
+            winner = this.getChallenger();
         }
     }
 
     public void acceptDuel() {
         // Participants that the challenged was accepted and that it's game-on.
-        getChallenger().sendMessage(String.format(ChatColor.AQUA + "%s has accepted your challenge, the duel has begun!", _challenged.getName()));
-        getChallenged().sendMessage(String.format(ChatColor.AQUA + "You have accepted %s's challenge, the duel has begun!", _challenger.getName()));
+        // TODO: use message service here
+        this.getChallenger().sendMessage(String.format(ChatColor.AQUA + "%s has accepted your challenge, the duel has begun!", this._challenged.getName()));
+        this.getChallenged().sendMessage(String.format(ChatColor.AQUA + "You have accepted %s's challenge, the duel has begun!", this._challenger.getName()));
 
-        challengerHealth = _challenger.getHealth();
-        challengedHealth = _challenged.getHealth();
-        duelState = DuelState.DUELLING;
+        this.challengerHealth = this._challenger.getHealth();
+        this.challengedHealth = this._challenged.getHealth();
+        this.duelState = DuelState.DUELLING;
         // Announce to nearby players that a duel has started.
-        for (Player other : factionsPlusPlus.getServer().getOnlinePlayers()) {
-            if (other.getLocation().distance(_challenger.getLocation()) <= nearbyPlayerRadius ||
-                    other.getLocation().distance(_challenged.getLocation()) <= nearbyPlayerRadius) {
-                other.sendMessage(String.format(ChatColor.AQUA + "%s has challenged %s to a duel!", _challenger.getName(), _challenged.getName()));
+        for (Player other : this.factionsPlusPlus.getServer().getOnlinePlayers()) {
+            if (other.getLocation().distance(this._challenger.getLocation()) <= this.nearbyPlayerRadius ||
+                    other.getLocation().distance(this._challenged.getLocation()) <= this.nearbyPlayerRadius) {
+                // TODO: use message service here
+                other.sendMessage(String.format(ChatColor.AQUA + "%s has challenged %s to a duel!", this._challenger.getName(), this._challenged.getName()));
             }
         }
 
@@ -150,14 +152,14 @@ public class Duel {
             return;
         }
 
-        bar = factionsPlusPlus.getServer().createBossBar(String.format(ChatColor.AQUA + "%s vs %s", _challenger.getName(), _challenged.getName())
+        this.bar = this.factionsPlusPlus.getServer().createBossBar(String.format(ChatColor.AQUA + "%s vs %s", this._challenger.getName(), this._challenged.getName())
                 , BarColor.WHITE, BarStyle.SEGMENTED_20);
-        bar.setProgress(1);
-        timeDecrementAmount = 1.0 / timeLimit;
-        bar.addPlayer(_challenger);
-        bar.addPlayer(_challenged);
+        this.bar.setProgress(1);
+        this.timeDecrementAmount = 1.0 / this.timeLimit;
+        this.bar.addPlayer(_challenger);
+        this.bar.addPlayer(_challenged);
 
-        repeatingTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, new Runnable() {
+        repeatingTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this.factionsPlusPlus, new Runnable() {
             @Override
             public void run() {
                 double progress = bar.getProgress() - timeDecrementAmount;
@@ -172,40 +174,42 @@ public class Duel {
     }
 
     public void finishDuel(boolean tied) {
-        _challenger.setHealth(challengerHealth);
-        _challenged.setHealth(challengedHealth);
+        this._challenger.setHealth(challengerHealth);
+        this._challenged.setHealth(challengedHealth);
 
         // Remove player damaging effects like fire or poison before ending the duel.
-        _challenged.getActivePotionEffects().clear();
-        _challenger.getActivePotionEffects().clear();
+        this._challenged.getActivePotionEffects().clear();
+        this._challenger.getActivePotionEffects().clear();
 
-        if (!tied) {
+        if (! tied) {
             // Announce winner to nearby players.
-            for (Player other : factionsPlusPlus.getServer().getOnlinePlayers()) {
-                if (other.getLocation().distance(_challenger.getLocation()) <= nearbyPlayerRadius ||
-                        other.getLocation().distance(_challenged.getLocation()) <= nearbyPlayerRadius) {
-                    other.sendMessage(String.format(ChatColor.AQUA + "%s has defeated %s in a duel!", winner.getName(), loser.getName()));
+            for (Player other : this.factionsPlusPlus.getServer().getOnlinePlayers()) {
+                if (other.getLocation().distance(this._challenger.getLocation()) <= this.nearbyPlayerRadius ||
+                        other.getLocation().distance(this._challenged.getLocation()) <= this.nearbyPlayerRadius) {
+                    // TODO: use message service here
+                    other.sendMessage(String.format(ChatColor.AQUA + "%s has defeated %s in a duel!", this.winner.getName(), this.loser.getName()));
                 }
             }
-            if (getWinner().getInventory().firstEmpty() > -1) {
-                getWinner().getInventory().addItem(this.deathService.getHead(getLoser()));
+            if (this.getWinner().getInventory().firstEmpty() > -1) {
+                this.getWinner().getInventory().addItem(this.deathService.getHead(getLoser()));
             } else {
-                getWinner().getWorld().dropItemNaturally(getWinner().getLocation(), Objects.requireNonNull(this.deathService.getHead(getLoser())));
+                this.getWinner().getWorld().dropItemNaturally(this.getWinner().getLocation(), Objects.requireNonNull(this.deathService.getHead(this.getLoser())));
             }
         } else {
-            for (Player other : factionsPlusPlus.getServer().getOnlinePlayers()) {
-                if (other.getLocation().distance(_challenger.getLocation()) <= nearbyPlayerRadius ||
-                        other.getLocation().distance(_challenged.getLocation()) <= nearbyPlayerRadius) {
-                    other.sendMessage(String.format(ChatColor.YELLOW + "%s and %s's duel has ended in a tie.", _challenger.getName(), _challenged.getName()));
+            for (Player other : this.factionsPlusPlus.getServer().getOnlinePlayers()) {
+                if (other.getLocation().distance(this._challenger.getLocation()) <= this.nearbyPlayerRadius ||
+                        other.getLocation().distance(this._challenged.getLocation()) <= this.nearbyPlayerRadius) {
+                    // TODO: use message service here
+                    other.sendMessage(String.format(ChatColor.YELLOW + "%s and %s's duel has ended in a tie.", this._challenger.getName(), this._challenged.getName()));
                 }
             }
         }
-        if (bar == null) {
+        if (this.bar == null) {
             return;
         }
-        bar.removeAll();
-        factionsPlusPlus.getServer().getScheduler().cancelTask(repeatingTaskId);
-        ephemeralData.getDuelingPlayers().remove(this);
+        this.bar.removeAll();
+        this.factionsPlusPlus.getServer().getScheduler().cancelTask(repeatingTaskId);
+        this.ephemeralData.getDuelingPlayers().remove(this);
     }
 
     public enum DuelState {INVITED, DUELLING, WINNER}

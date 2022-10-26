@@ -412,7 +412,7 @@ public class ForceCommand extends Command {
             context.replyWith("PlayerIsNotInAFaction");
             return;
         }
-        if (!faction.isOfficer(player.getUniqueId())) {
+        if (! faction.isOfficer(player.getUniqueId())) {
             context.replyWith("PlayerIsNotOfficerOfFaction");
             return;
         }
@@ -526,7 +526,7 @@ public class ForceCommand extends Command {
             context.replyWith("AlertPlayerAlreadyOwner");
             return;
         }
-        if (!faction.isMember(player.getUniqueId())) {
+        if (! faction.isMember(player.getUniqueId())) {
             context.replyWith("AlertPlayerNotInFaction");
             return;
         }
@@ -627,7 +627,7 @@ public class ForceCommand extends Command {
         final Faction faction = this.factionService.createFaction(newFactionName);
         FactionCreateEvent createEvent = new FactionCreateEvent(faction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
-        if (!createEvent.isCancelled()) {
+        if (! createEvent.isCancelled()) {
             this.dataService.getFactionRepository().create(faction);
             context.replyWith("FactionCreated");
         }

@@ -38,7 +38,7 @@ public class ColorConversion {
         final DefaultColor of = DefaultColor.of(input.trim()); // Medieval Factions List.
         if (of != DefaultColor.NOT_FOUND) return of.getColor();
         Integer[] rgb = obtainRGBFromString(java.awt.Color.class, input); // AWT Graphics List.
-        if (!ideTest) if (rgb == null || rgb.length != 3) rgb = obtainRGBFromString(Color.class, input); // Bukkit List.
+        if (! ideTest) if (rgb == null || rgb.length != 3) rgb = obtainRGBFromString(Color.class, input); // Bukkit List.
         if (rgb == null || rgb.length != 3) return null;
         // Return hex String from rgb value if it isn't null and if its 3 in length.
         return "#" + Integer.toHexString(new java.awt.Color(rgb[0], rgb[1], rgb[2]).getRGB()).substring(2);

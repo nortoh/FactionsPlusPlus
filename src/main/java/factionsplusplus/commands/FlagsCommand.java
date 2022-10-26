@@ -95,8 +95,8 @@ public class FlagsCommand extends Command {
             .stream()
             .filter(flagKey -> {
                 return (
-                    (!this.configService.getBoolean("allowNeutrality") && !flagKey.equalsIgnoreCase("neutral")) &&
-                    ((!this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) && !flagKey.equalsIgnoreCase("prefixColor"))
+                    (! this.configService.getBoolean("allowNeutrality") && ! flagKey.equalsIgnoreCase("neutral")) &&
+                    ((! this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) && ! flagKey.equalsIgnoreCase("prefixColor"))
                 );
             })
             .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsFaction().getFlags().get(flagKey).toString()))
