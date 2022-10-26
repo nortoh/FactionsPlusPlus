@@ -171,7 +171,7 @@ public class FactionService {
     public void removePoliticalTiesToFaction(Faction targetFaction) {
         this.factionRepository.all().values()
             .stream()
-            .filter(faction -> !faction.equals(targetFaction))
+            .filter(faction -> ! faction.equals(targetFaction))
             .forEach(faction -> {
                 faction.removeAlly(targetFaction.getID());
                 faction.removeEnemy(targetFaction.getID());

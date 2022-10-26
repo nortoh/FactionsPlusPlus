@@ -274,7 +274,7 @@ public class Gate {
         for (int y = topY; y > bottomY; y--) {
             for (int z = leftZ; z < rightZ; z++) {
                 for (int x = leftX; x < rightX; x++) {
-                    if (!getWorld().getBlockAt(x, y, z).getType().equals(mat)) {
+                    if (! getWorld().getBlockAt(x, y, z).getType().equals(mat)) {
                         return false;
                     }
                 }
