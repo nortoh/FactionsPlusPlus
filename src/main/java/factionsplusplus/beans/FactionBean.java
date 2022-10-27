@@ -16,12 +16,12 @@ import lombok.Data;
 public class FactionBean {
     private UUID id;
     private String name;
-    private String prefix;
-    private String description;
+    private String prefix = null;
+    private String description = null;
     @ColumnName("bonus_power")
-    private int bonusPower;
+    private int bonusPower = 0;
     @ColumnName("should_autoclaim")
-    private boolean shouldAutoclaim;
+    private boolean shouldAutoclaim = false;
     private Map<String, ConfigurationFlag> flags = new HashMap<>();
     private Map<UUID, GroupMember> members = new HashMap<>();
     private Map<UUID, FactionRelationType> relations = new HashMap<>();
