@@ -92,7 +92,7 @@ public class LockService {
         this.dataService.getLockedBlockRepository().create(
             new LockedBlock(
                 player.getUniqueId(),
-                this.dataService.getPlayersFaction(player.getUniqueId()).getID(),
+                this.dataService.getPlayersFaction(player.getUniqueId()).getUUID(),
                 block.getX(),
                 block.getY(),
                 block.getZ(),

@@ -38,6 +38,7 @@ public class LockedBlockRepository {
 
     // Save a locked block
     public void create(LockedBlock block) {
+        this.getDAO().create(block);
         this.lockedBlockStore.add(block);
     }
 

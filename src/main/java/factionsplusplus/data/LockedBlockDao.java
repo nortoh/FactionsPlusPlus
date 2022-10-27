@@ -8,6 +8,7 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface LockedBlockDao {
     @SqlUpdate("""
@@ -29,7 +30,23 @@ public interface LockedBlockDao {
     """)
     void insert(@BindMethods LockedBlock block);
 
+    @SqlUpdate("""
+        INSERT IGNORE INTO locked_block_access_list (
+            locked_block_id,
+            player_id
+        ) VALUES (
+            ?,
+            ?
+        )
+    """)
+    void insertPlayerAccess(UUID lockId, UUID playerId);
+
     @SqlQuery("SELECT * FROM locked_blocks")
     @RegisterFieldMapper(LockedBlock.class)
     List<LockedBlock> get();
+
+    default void create(LockedBlock block) {
+        insert(block);
+        insertPlayerAccess(block.getUUID(), block.getOwner());
+    }
 }

@@ -17,13 +17,13 @@ import com.google.gson.annotations.Expose;
 public class LockedBlock {
     @Expose
     @ColumnName("id")
-    private UUID uuid;
+    private UUID uuid = UUID.randomUUID();
     @Expose
     @Nested
     private LocationData block;
     @Expose
     @ColumnName("player_id")
-    private UUID owner = UUID.randomUUID();
+    private UUID owner;
     @Expose
     @ColumnName("faction_id")
     private UUID faction = null;
