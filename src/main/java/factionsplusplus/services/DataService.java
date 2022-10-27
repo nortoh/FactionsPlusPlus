@@ -240,6 +240,15 @@ public class DataService {
                     FOREIGN KEY(target_faction) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_laws (
+                    id BINARY(16) NOT NULL,
+                    faction_id BINARY(16) NOT NULL,
+                    text TEXT NOT NULL,
+                    PRIMARY KEY(id),
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                )
+            """);
         });
     }
 
