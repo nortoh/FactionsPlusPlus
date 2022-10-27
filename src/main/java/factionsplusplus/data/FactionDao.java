@@ -1,7 +1,6 @@
 package factionsplusplus.data;
 
 import org.jdbi.v3.sqlobject.config.KeyColumn;
-import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
 import org.jdbi.v3.sqlobject.config.RegisterFieldMapper;
 import org.jdbi.v3.sqlobject.config.ValueColumn;
 import org.jdbi.v3.sqlobject.customizer.Bind;
@@ -11,13 +10,15 @@ import factionsplusplus.models.GroupMember;
 import factionsplusplus.beans.FactionBean;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.models.ConfigurationFlag;
+
+import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 
 public interface FactionDao {
@@ -26,6 +27,30 @@ public interface FactionDao {
 
     @SqlUpdate("INSERT IGNORE INTO factions (id, name) VALUES (?, ?)")
     void insert(UUID uuid, String name);
+
+    @SqlBatch("""
+        UPDATE factions SET
+            name = :getName,
+            prefix = :getPrefix,
+            description = :getDescription,
+            bonus_power = :getBonusPower,
+            should_autoclaim = :getAutoClaimStatus
+        WHERE
+            id = :getUUID        
+    """)
+    void update(@BindMethods Collection<Faction> factions);
+
+    @SqlUpdate("""
+        UPDATE factions SET
+            name = :getName,
+            prefix = :getPrefix,
+            description = :getDescription,
+            bonus_power = :getBonusPower,
+            should_autoclaim = :getAutoClaimStatus
+        WHERE
+            id = :getUUID        
+    """)
+    void update(@BindMethods Faction faction);
 
     @SqlUpdate("INSERT IGNORE INTO faction_members (faction_id, player_id, role) VALUES (?, ?, ?)")
     void insertMember(UUID faction, UUID player, int role);
@@ -44,6 +69,9 @@ public interface FactionDao {
 
     @SqlUpdate("INSERT INTO faction_members (faction_id, player_id, role) VALUES (:faction, :player, :role) ON DUPLICATE KEY UPDATE role = :role")
     void upsert(@Bind("faction") UUID faction, @Bind("player") UUID player, @Bind("role") int role);
+
+    @SqlUpdate("INSERT INTO faction_relations (source_faction, target_faction, type, updated_at) VALUES (:source, :target, :type, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE type = :type, updated_at = CURRENT_TIMESTAMP")
+    void upsertRelation(@Bind("source") UUID source, @Bind("target") UUID target, @Bind("type") FactionRelationType type);
 
     @SqlUpdate("INSERT IGNORE INTO faction_invites (faction_id, player_id) VALUES (?, ?)")
     void insertInvite(UUID faction, UUID player);
