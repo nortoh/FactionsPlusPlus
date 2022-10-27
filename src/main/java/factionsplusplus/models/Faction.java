@@ -2,6 +2,7 @@ package factionsplusplus.models;
 
 import factionsplusplus.beans.FactionBean;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.jsonadapters.LocationAdapter;
 import factionsplusplus.models.interfaces.Feudal;
 import factionsplusplus.services.MessageService;
@@ -24,10 +25,6 @@ public class Faction extends Nation implements Feudal {
     private final List<Gate> gates = new ArrayList<>();
     @Expose
     private Map<String, ConfigurationFlag> flags;
-    @Expose
-    private List<UUID> vassals = new ArrayList<>();
-    @Expose
-    private UUID liege = null;
     @Expose
     private String prefix = "none";
     @Expose
@@ -63,6 +60,7 @@ public class Faction extends Nation implements Feudal {
         this.bonusPower = bean.getBonusPower();
         this.flags = bean.getFlags();
         this.members = bean.getMembers();
+        this.relations = bean.getRelations();
         this.messageService = messageService;
     }
 
@@ -79,12 +77,6 @@ public class Faction extends Nation implements Feudal {
         this.setOwner(owner);
         this.flags = flags;
         this.messageService = messageService;
-    }
-
-    public void initialize() {
-        this.attemptedAlliances = new ArrayList<>();
-        this.attemptedVassalizations = new ArrayList<>();
-        this.attemptedTruces = new ArrayList<>();
     }
 
     /**
@@ -155,27 +147,33 @@ public class Faction extends Nation implements Feudal {
 
     // Lieges
     public boolean isLiege() {
-        return this.vassals.size() > 0;
+        return this.getVassals().size() > 0;
     }
 
     public UUID getLiege() {
-        return this.liege;
+        return this.relations.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue() == FactionRelationType.Liege)
+            .map(entry -> entry.getKey())
+            .findFirst()
+            .orElse(null);
     }
 
     public void setLiege(UUID newLiege) {
-        this.liege = newLiege;
+        this.relations.put(newLiege, FactionRelationType.Liege);
     }
 
     public boolean hasLiege() {
-        return ! (this.liege == null);
+        return this.getLiege() != null;
     }
 
     public boolean isLiege(UUID uuid) {
-        return this.hasLiege() && this.liege.equals(uuid);
+        FactionRelationType relation = this.relations.get(uuid);
+        return relation == FactionRelationType.Liege;
     }
 
     public void unsetIfLiege(UUID uuid) {
-        if (this.isLiege(uuid)) this.liege = null;
+        if (this.isLiege(uuid)) this.relations.remove(this.getLiege());
     }
 
     // Gates
@@ -218,38 +216,32 @@ public class Faction extends Nation implements Feudal {
 
     // Vassals
     public boolean isVassal(UUID uuid) {
-        return this.vassals.contains(uuid);
+        return this.relations.get(uuid) == FactionRelationType.Vassal;
     }
 
     public void addVassal(UUID uuid) {
-        if (! this.isVassal(uuid)) this.vassals.add(uuid);
+        if (! this.isVassal(uuid)) this.relations.put(uuid, FactionRelationType.Vassal);
     }
 
     public void removeVassal(UUID uuid) {
-        if (this.isVassal(uuid)) this.vassals.remove(uuid);
+        if (this.isVassal(uuid)) this.relations.remove(uuid);
     }
 
     public void clearVassals() {
-        this.vassals.clear();
+        this.relations.entrySet()
+            .removeIf(entry -> entry.getValue() == FactionRelationType.Vassal);
     }
 
     public int getNumVassals() {
-        return this.vassals.size();
+        return this.getVassals().size();
     }
 
     public List<UUID> getVassals() {
-        return this.vassals;
-    }
-
-    public String getVassalsSeparatedByCommas() {
-        StringBuilder toReturn = new StringBuilder();
-        for (int i = 0; i < this.vassals.size(); i++) {
-            toReturn.append(this.vassals.get(i));
-            if (i != this.vassals.size() - 1) {
-                toReturn.append(", ");
-            }
-        }
-        return toReturn.toString();
+        return this.relations.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue() == FactionRelationType.Vassal)
+            .map(entry -> entry.getKey())
+            .toList();
     }
 
     public void addAttemptedVassalization(UUID uuid) {

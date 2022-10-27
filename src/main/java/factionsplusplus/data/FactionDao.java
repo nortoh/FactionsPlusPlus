@@ -3,11 +3,13 @@ package factionsplusplus.data;
 import org.jdbi.v3.sqlobject.config.KeyColumn;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
 import org.jdbi.v3.sqlobject.config.RegisterFieldMapper;
+import org.jdbi.v3.sqlobject.config.ValueColumn;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.beans.FactionBean;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.models.ConfigurationFlag;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
@@ -83,12 +85,35 @@ public interface FactionDao {
     @RegisterFieldMapper(GroupMember.class)
     Map<UUID, GroupMember> getMembers(UUID uuid);
 
+    @SqlQuery("""
+        SELECT
+            target_faction,
+            type
+        FROM faction_relations
+        WHERE source_faction = ?     
+    """)
+    @KeyColumn("target_faction")
+    @ValueColumn("type")
+    Map<UUID, FactionRelationType> getRelations(UUID uuid);
+
+    @SqlQuery("""
+        SELECT
+            id,
+            text
+        FROM faction_laws
+        WHERE faction_id = ?     
+    """)
+    @KeyColumn("id")
+    @ValueColumn("text")
+    Map<UUID, String> getLaws(UUID uuid);
+
     default List<FactionBean> getFactions() {
         List<FactionBean> results = new ArrayList<>();
         List<FactionBean> factionMap = get();
         factionMap.stream().forEach(faction -> {
             faction.setFlags(getFlags(faction.getId()));
             faction.setMembers(getMembers(faction.getId()));
+            faction.setRelations(getRelations(faction.getId()));
             results.add(faction);
         });
         return results;
@@ -96,9 +121,6 @@ public interface FactionDao {
 
     default Faction createNewFaction(Faction faction) {
         insert(faction);
-        faction.initialize();
-        faction.setFlags(getFlags(faction.getUUID()));
-        faction.setMembers(getMembers(faction.getUUID()));
         return faction;
     }
 }

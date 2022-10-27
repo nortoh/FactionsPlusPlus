@@ -55,7 +55,7 @@ public class FactionRepository {
 
     // Save a faction after creating
     public void create(Faction faction) {
-        //faction = this.getDAO().createNewFaction(faction);
+        faction = this.getDAO().createNewFaction(faction);
         this.factionStore.put(faction.getUUID(), faction);
     }
 
