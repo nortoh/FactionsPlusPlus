@@ -5,8 +5,8 @@ import com.google.inject.Singleton;
 import com.google.inject.Inject;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -15,7 +15,9 @@ import java.util.stream.Collectors;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.services.DataProviderService;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.data.FactionDao;
 import factionsplusplus.factories.FactionFactory;
 import factionsplusplus.models.ConfigurationFlag;
@@ -23,8 +25,8 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class FactionRepository {
-    private Map<UUID, Faction> factionStore = new HashMap<>();
-    private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
+    private Map<UUID, Faction> factionStore = new ConcurrentHashMap<>();
+    private final Map<String, ConfigurationFlag> defaultFlags = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final FactionFactory factionFactory;
@@ -61,9 +63,7 @@ public class FactionRepository {
 
     // Delete a faction
     public void delete(UUID factionUUID) {
-        this.dataProviderService.getPersistentData().useExtension(FactionDao.class, dao -> {
-            dao.delete(factionUUID);
-        });
+        this.getDAO().delete(factionUUID);
         this.factionStore.remove(factionUUID);
     }
     public void delete(Faction faction) {
@@ -71,6 +71,32 @@ public class FactionRepository {
     }
     public void delete(String factionName) {
         this.delete(this.get(factionName));
+    }
+
+    // Persist faction
+    public void persist(Faction faction) {
+        this.persist(faction, PersistType.Faction);
+    }
+
+    public void persist(UUID faction, GroupMember member) {
+        this.getDAO().upsert(faction, member.getUUID(), member.getRole());
+    }
+
+    public void persist(UUID source, UUID target, FactionRelationType type) {
+        if (source.equals(target)) return; // no self-relationships
+        this.getDAO().upsertRelation(source, target, type);
+        this.getDAO().upsertRelation(target, source, type);
+        this.get(target).updateRelation(source, type);
+    }
+
+    public void persist(Faction faction, PersistType type) {
+        switch(type) {
+            case Faction:
+                this.getDAO().update(faction);
+                break;
+            default:
+                break;
+        }
     }
 
     // Get the DAO for this repository
@@ -88,7 +114,7 @@ public class FactionRepository {
         Optional<Faction> faction = this.factionStore
             .values()
             .stream()
-            .filter(entry -> entry.getPrefix().equalsIgnoreCase(prefix))
+            .filter(entry -> entry.getPrefix() != null && entry.getPrefix().equalsIgnoreCase(prefix))
             .findFirst();
         return faction.orElse(null);
     }
@@ -275,5 +301,13 @@ public class FactionRepository {
         } catch (IOException e) {
             this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
         }*/
+    }
+
+    public enum PersistType {
+        Faction,
+        Relations,
+        Laws,
+        Members,
+        All
     }
 }
