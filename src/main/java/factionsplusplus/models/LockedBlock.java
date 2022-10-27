@@ -16,6 +16,9 @@ import com.google.gson.annotations.Expose;
  */
 public class LockedBlock {
     @Expose
+    @ColumnName("id")
+    private UUID uuid;
+    @Expose
     @Nested
     private LocationData block;
     @Expose
@@ -24,6 +27,10 @@ public class LockedBlock {
     @Expose
     @ColumnName("faction_id")
     private UUID faction = null;
+    @ColumnName("allow_allies")
+    private boolean allowAllies = false;
+    @ColumnName("allow_faction_members")
+    private boolean allowFactionMembers = false;
     @Expose
     private AccessList accessList;
 
@@ -40,6 +47,10 @@ public class LockedBlock {
         this.faction = faction;
         this.accessList = new AccessList();
         this.accessList.addPlayerToAccessList(owner);
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
     }
 
     public UUID getWorld() {
@@ -78,20 +89,28 @@ public class LockedBlock {
         return this.accessList.playerOnAccessList(player);
     }
 
+    public boolean shouldAllowAllies() {
+        return this.allowAllies;
+    }
+
+    public boolean shouldAllowFactionMembers() {
+        return this.allowFactionMembers;
+    }
+
     public void allowAllies() {
-        this.accessList.addAlliesToAccessList();
+        this.allowAllies = true;
     }
 
     public void denyAllies() {
-        this.accessList.removeAlliesFromAccessList();
+        this.allowAllies = false;
     }
 
     public void allowFactionMembers() {
-        this.accessList.addFactionMembersToAccessList();
+        this.allowFactionMembers = true;
     }
 
     public void denyFactionMembers() {
-        this.accessList.removeFactionMembersFromAccessList();
+        this.allowFactionMembers = false;
     }
 
     public AccessList getAccessList() {
