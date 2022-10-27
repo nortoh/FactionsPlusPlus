@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
 
+import factionsplusplus.data.WarDao;
 import factionsplusplus.models.War;
 import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
@@ -28,23 +29,15 @@ public class WarRepository {
     public void load() {
         try {
             this.warStore.clear();
+            this.warStore = this.getDAO().get();
         } catch(Exception e) {
             this.logger.error(String.format("Error loading wars: %s", e.getMessage()));
         }
-        /*try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .create();
-            JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.warStore = gson.fromJson(reader, WarRepository.JSON_TYPE);
-        } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
-        }*/
     }
 
     // Save a war
     public void create(War war) {
+        this.getDAO().insert(war);
         this.warStore.add(war);
     }
 
@@ -79,6 +72,11 @@ public class WarRepository {
     // Retrieve all wars
     public List<War> all() {
         return this.warStore;
+    }
+
+    // Get DAO for this repository
+    public WarDao getDAO() {
+        return this.dataProviderService.getPersistentData().onDemand(WarDao.class);
     }
 
     // Write to file
