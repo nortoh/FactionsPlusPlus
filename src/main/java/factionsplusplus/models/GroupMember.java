@@ -22,6 +22,11 @@ public class GroupMember implements Identifiable {
         this.uuid = playerUuid;
     }
 
+    public GroupMember(UUID playerUuid, GroupRole role) {
+        this.uuid = playerUuid;
+        this.role = role.getLevel();
+    }
+
     public UUID getUUID() {
         return this.uuid;
     }
