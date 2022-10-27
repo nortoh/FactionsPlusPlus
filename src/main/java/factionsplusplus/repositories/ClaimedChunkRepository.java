@@ -2,70 +2,56 @@ package factionsplusplus.repositories;
 
 import com.google.inject.Singleton;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.charset.StandardCharsets;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-import java.lang.reflect.Type;
 
+import factionsplusplus.data.ClaimedChunkDao;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
 
 @Singleton
 public class ClaimedChunkRepository {
     private List<ClaimedChunk> claimedChunksStore = new ArrayList<>();
-    private final String dataPath;
-    private final static String FILE_NAME = "claimedchunks.json";
-    private final static Type JSON_TYPE = new TypeToken<List<ClaimedChunk>>() { }.getType();
     private final Logger logger;
+    private final DataProviderService dataProviderService;
 
     @Inject
-    public ClaimedChunkRepository(@Named("dataFolder") String dataPath, Logger logger) {
-        this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+    public ClaimedChunkRepository(Logger logger, DataProviderService dataProviderService) {
         this.logger = logger;
+        this.dataProviderService = dataProviderService;
     }
 
     // Load claimed chunks
     public void load() {
-        this.claimedChunksStore.clear();
         try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .create();
-            JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.claimedChunksStore = gson.fromJson(reader, ClaimedChunkRepository.JSON_TYPE);
-        } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
+            this.claimedChunksStore.clear();
+            this.claimedChunksStore = this.getDAO().get();
+        } catch(Exception e) {
+            this.logger.error(String.format("Error importing claimed chunks: %s", e.getMessage()));
         }
     }
 
     // Save a claimed chunk
     public void create(ClaimedChunk chunk) {
+        this.getDAO().insert(chunk);
         this.claimedChunksStore.add(chunk);
     }
 
     // Delete a claimed chunk
     public void delete(ClaimedChunk chunk) {
+        this.getDAO().delete(chunk);
         this.claimedChunksStore.remove(chunk);
+    }
+
+    // Get the DAO for this repository
+    public ClaimedChunkDao getDAO() {
+        return this.dataProviderService.getPersistentData().onDemand(ClaimedChunkDao.class);
     }
 
     // Retrieve a claimed chunk by location
@@ -96,7 +82,7 @@ public class ClaimedChunkRepository {
 
     // Write to file
     public void persist() {
-        File file = new File(this.dataPath);
+        /*File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
@@ -108,6 +94,6 @@ public class ClaimedChunkRepository {
             outputStreamWriter.close();
         } catch (IOException e) {
             this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }
+        }*/
     }
 }

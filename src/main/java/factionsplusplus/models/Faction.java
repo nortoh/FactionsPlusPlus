@@ -1,7 +1,11 @@
 package factionsplusplus.models;
 
+import factionsplusplus.beans.FactionBean;
+import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.jsonadapters.LocationAdapter;
 import factionsplusplus.models.interfaces.Feudal;
+import factionsplusplus.services.MessageService;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
@@ -10,13 +14,17 @@ import java.util.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal {
     @Expose
     private final List<Gate> gates = new ArrayList<>();
     @Expose
-    private final Map<String, ConfigurationFlag> flags;
+    private Map<String, ConfigurationFlag> flags;
     @Expose
     private List<UUID> vassals = new ArrayList<>();
     @Expose
@@ -28,27 +36,62 @@ public class Faction extends Nation implements Feudal {
     @SerializedName("location")
     private Location factionHome = null;
     @Expose
+    @ColumnName("bonus_power")
     private int bonusPower = 0;
 
+    @ColumnName("should_autoclaim")
     private boolean autoclaim = false;
     private List<UUID> attemptedVassalizations = new ArrayList<>();
 
+    private final MessageService messageService;
+
     // Constructor
-    public Faction(String factionName, Map<String, ConfigurationFlag> flags) {
-        this.name = factionName;
-        this.flags = flags;
+    @AssistedInject
+    public Faction(MessageService messageService) {
+        this.messageService = messageService;
     }
 
-    public Faction(String factionName, UUID owner, Map<String, ConfigurationFlag> flags) {
+    @AssistedInject
+    public Faction(
+        @Assisted FactionBean bean,
+        MessageService messageService
+    ) {
+        this.name = bean.getName();
+        this.description = bean.getDescription();
+        this.prefix = bean.getDescription();
+        this.autoclaim = bean.isShouldAutoclaim();
+        this.bonusPower = bean.getBonusPower();
+        this.flags = bean.getFlags();
+        this.members = bean.getMembers();
+        this.messageService = messageService;
+    }
+
+    @AssistedInject
+    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService) {
+        this.name = factionName;
+        this.flags = flags;
+        this.messageService = messageService;
+    }
+
+    @AssistedInject
+    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService) {
         this.name = factionName;
         this.setOwner(owner);
         this.flags = flags;
+        this.messageService = messageService;
     }
 
     public void initialize() {
         this.attemptedAlliances = new ArrayList<>();
         this.attemptedVassalizations = new ArrayList<>();
         this.attemptedTruces = new ArrayList<>();
+    }
+
+    /**
+     * Set the faction flags. Should only be used for internal use.
+     */
+    public void setFlags(Map<String, ConfigurationFlag> flags) {
+        this.flags = flags;
     }
 
     /*
@@ -223,5 +266,9 @@ public class Faction extends Nation implements Feudal {
 
     public String toString() {
         return this.name;
+    }
+
+    public void message(GenericMessageBuilder builder) {
+        this.messageService.sendFactionLocalizedMessage(this, builder);
     }
 }

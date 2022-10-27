@@ -6,6 +6,9 @@ package factionsplusplus.models;
 
 import java.util.UUID;
 
+import org.jdbi.v3.core.mapper.Nested;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -13,10 +16,13 @@ import com.google.gson.annotations.Expose;
  */
 public class LockedBlock {
     @Expose
-    private final LocationData block;
+    @Nested
+    private LocationData block;
     @Expose
+    @ColumnName("player_id")
     private UUID owner = UUID.randomUUID();
     @Expose
+    @ColumnName("faction_id")
     private UUID faction = null;
     @Expose
     private AccessList accessList;

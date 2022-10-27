@@ -2,64 +2,51 @@ package factionsplusplus.repositories;
 
 import com.google.inject.Singleton;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.charset.StandardCharsets;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.lang.reflect.Type;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 
+import factionsplusplus.data.WorldDao;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.World;
+import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WorldRepository {
     private Map<UUID, World> worldStore = new HashMap<>();
-    private final String dataPath;
-    private final static String FILE_NAME = "worlds.json";
-    private final static Type JSON_TYPE = new TypeToken<Map<UUID, World>>() { }.getType();
     private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
+    private final DataProviderService dataProviderService;
 
     @Inject
-    public WorldRepository(@Named("dataFolder") String dataPath, Logger logger) {
-        this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+    public WorldRepository(Logger logger, DataProviderService dataProviderService) {
         this.logger = logger;
+        this.dataProviderService = dataProviderService;
     }
 
     // Load worlds
     public void load() {
-        this.worldStore.clear();
         try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .create();
-            JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.worldStore = gson.fromJson(reader, WorldRepository.JSON_TYPE);
+            this.worldStore.clear();
             // TODO: check if world no longer exists
-        } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
+            this.dataProviderService.getPersistentData().useExtension(WorldDao.class, dao -> {
+                Bukkit.getWorlds().stream().forEach(world -> {
+                    dao.insert(world.getUID());
+                });
+                dao.get().stream().forEach(world -> {
+                    world.setFlags(dao.getFlags(world.getUUID()));
+                    this.worldStore.put(world.getUUID(), world);
+                });
+            });
+        } catch(Exception e) {
+            this.logger.error(String.format("Error loading worlds: %s", e.getMessage()));
         }
     }
 
@@ -98,6 +85,10 @@ public class WorldRepository {
         return this.get(Bukkit.getWorld(uuid));
     }
 
+    public Map<UUID, World> all() {
+        return this.worldStore;
+    }
+
     public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag, boolean addToMissing) {
         this.defaultFlags.put(flagName, flag);
         if (addToMissing) this.addAnyMissingFlags();
@@ -128,7 +119,7 @@ public class WorldRepository {
 
     // Write to file
     public void persist() {
-        File file = new File(this.dataPath);
+        /*File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
@@ -140,6 +131,6 @@ public class WorldRepository {
             outputStreamWriter.close();
         } catch (IOException e) {
             this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }
+        }*/
     }
 }

@@ -2,9 +2,13 @@ package factionsplusplus.constants;
 
 import org.jdbi.v3.core.enums.DatabaseValue;
 
-public enum FlagType {
+public enum FactionRelationType {
     @DatabaseValue("1")
-    Faction,
+    Ally,
     @DatabaseValue("2")
-    World;
+    Vassal,
+    @DatabaseValue("3")
+    Liege,
+    @DatabaseValue("4")
+    Enemy;
 }

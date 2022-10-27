@@ -6,6 +6,7 @@ package factionsplusplus;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+
 import factionsplusplus.di.PluginModule;
 import factionsplusplus.eventhandlers.*;
 import factionsplusplus.externalapi.FactionsPlusPlusAPI;

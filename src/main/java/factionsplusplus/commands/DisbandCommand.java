@@ -12,6 +12,8 @@ import factionsplusplus.events.FactionDisbandEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.repositories.FactionRepository;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.CommandBuilder;
@@ -28,13 +30,13 @@ public class DisbandCommand extends Command {
 
     private final EphemeralData ephemeralData;
     private final Logger logger;
-    private final FactionService factionService;
+    private final FactionRepository factionRepository;
 
     @Inject
     public DisbandCommand(
         Logger logger,
         EphemeralData ephemeralData,
-        FactionService factionService
+        FactionRepository factionRepository
     ) {
         super(
             new CommandBuilder()
@@ -54,7 +56,7 @@ public class DisbandCommand extends Command {
         );
         this.logger = logger;
         this.ephemeralData = ephemeralData;
-        this.factionService = factionService;
+        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {
@@ -112,7 +114,7 @@ public class DisbandCommand extends Command {
             this.logger.debug("Disband event was cancelled.");
             return false;
         }
-        this.factionService.removeFaction(faction);
+        this.factionRepository.delete(faction);
         return true;
     }
 }

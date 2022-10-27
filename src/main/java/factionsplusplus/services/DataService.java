@@ -1,5 +1,7 @@
 package factionsplusplus.services;
 
+import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,12 +11,18 @@ import java.util.Collection;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
+import org.jdbi.v3.core.Jdbi;
 import org.bukkit.Chunk;
 
+import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.constants.FlagType;
+import factionsplusplus.constants.GroupRole;
+import factionsplusplus.data.ClaimedChunkDao;
+import factionsplusplus.data.DefaultConfigurationFlagDao;
+import factionsplusplus.data.FactionDao;
+import factionsplusplus.data.PlayerDao;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.PlayerRecord;
@@ -24,11 +32,13 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.Gate;
+import factionsplusplus.models.GroupMember;
 import factionsplusplus.repositories.*;
 
 
 @Singleton
 public class DataService {
+    private final DataProviderService dataProviderService;
     private final FactionRepository factionRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
     private final LockedBlockRepository lockedBlockRepository;
@@ -38,9 +48,12 @@ public class DataService {
     private final WarRepository warRepository;
     private final WorldRepository worldRepository;
     private final ConfigService configService;
+    private final Jdbi ephemeralData;
+    private Jdbi persistentData;
 
     @Inject
     public DataService(
+        DataProviderService dataProviderService,
         FactionRepository factionRepository,
         ClaimedChunkRepository claimedChunkRepository,
         LockedBlockRepository lockedBlockRepository,
@@ -50,7 +63,8 @@ public class DataService {
         WarRepository warRepository,
         WorldRepository worldRepository,
         ConfigService configService
-    ) {
+    ) throws SQLException {
+        this.dataProviderService = dataProviderService;
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
         this.lockedBlockRepository = lockedBlockRepository;
@@ -60,14 +74,185 @@ public class DataService {
         this.warRepository = warRepository;
         this.worldRepository = worldRepository;
         this.configService = configService;
+        this.ephemeralData = Jdbi.create("jdbc:h2:mem:fpp-ephemeral-data");
+        this.persistentData = this.dataProviderService.getPersistentData();
+        this.initializePersistentData();
         this.initializeDefaultConfigurationFlags();
     }
 
+    public void initializeEphemeralData() {
+
+    }
+
+    public void initializePersistentData() throws SQLException {
+        this.persistentData.useHandle(handle -> {
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS default_flags (
+                    name CHAR(255),
+                    description TEXT,
+                    type TINYINT,
+                    expected_data_type VARCHAR(255),
+                    default_value VARCHAR(255),
+                    PRIMARY KEY (name)
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS factions (
+                    id BINARY(16) NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    description VARCHAR(255) DEFAULT NULL,
+                    prefix VARCHAR(255),
+                    bonus_power DOUBLE,
+                    should_autoclaim BOOLEAN NOT NULL DEFAULT 0,
+                    PRIMARY KEY (id),
+                    UNIQUE KEY UNIQUE_NAME (name)
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_flags (
+                    faction_id BINARY(16) NOT NULL,
+                    flag_name CHAR(255) NOT NULL,
+                    value VARCHAR(255),
+                    PRIMARY KEY(faction_id, flag_name),
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(flag_name) REFERENCES default_flags(name) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS worlds (
+                    id BINARY(16) NOT NULL,
+                    PRIMARY KEY (id)
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS world_flags (
+                    world_id BINARY(16) NOT NULL,
+                    flag_name CHAR(255) NOT NULL,
+                    value VARCHAR(255),
+                    PRIMARY KEY(world_id, flag_name),
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
+                    FOREIGN KEY(flag_name) REFERENCES default_flags(name) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                 CREATE TABLE IF NOT EXISTS players (
+                    id BINARY(16) NOT NULL,
+                    power DOUBLE NOT NULL DEFAULT 0,
+                    is_admin_bypassing BOOLEAN NOT NULL DEFAULT 0,
+                    login_count INTEGER NOT NULL DEFAULT 1,
+                    last_logout DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    offline_power_lost DOUBLE NOT NULL DEFAULT 0,
+                    PRIMARY KEY (id)
+                 )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_members (
+                    faction_id BINARY(16) NOT NULL,
+                    player_id BINARY(16) NOT NULL,
+                    role INTEGER NOT NULL DEFAULT 1,
+                    PRIMARY KEY(faction_id, player_id),
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS claimed_chunks (
+                    faction_id BINARY(16) NOT NULL,
+                    world_id BINARY(16) NOT NULL,
+                    x_position INTEGER NOT NULL,
+                    z_position INTEGER NOT NULL,
+                    PRIMARY KEY(world_id, x_position, z_position),
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_wars (
+                    id BINARY(16) NOT NULL,
+                    attacker_id BINARY(16) NOT NULL,
+                    defender_id BINARY(16) NOT NULL,
+                    reason VARCHAR(1024),
+                    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    ended_at DATETIME,
+                    is_active BOOLEAN NOT NULL DEFAULT 1,
+                    PRIMARY KEY(id),
+                    FOREIGN KEY(attacker_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(defender_id) REFERENCES factions(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS locked_blocks (
+                    id BINARY(16) NOT NULL,
+                    world_id BINARY(16) NOT NULL,
+                    x_position INTEGER NOT NULL,
+                    y_position INTEGER NOT NULL,
+                    z_position INTEGER NOT NULL,
+                    parent_locked_block_id BINARY(16),
+                    player_id BINARY(16) NOT NULL,
+                    allow_allies BOOLEAN NOT NULL DEFAULT 0,
+                    allow_faction_members BOOLEAN NOT NULL DEFAULT 0,
+                    PRIMARY KEY(id),
+                    UNIQUE KEY UNIQUE_POSITION (world_id, x_position, y_position, z_position),
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
+                    FOREIGN KEY(parent_locked_block_id) REFERENCES locked_blocks(id) ON DELETE CASCADE,
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
+                )        
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS locked_block_access_list (
+                    locked_block_id BINARY(16) NOT NULL,
+                    player_id BINARY(16) NOT NULL,
+                    PRIMARY KEY (locked_block_id, player_id),
+                    FOREIGN KEY(locked_block_id) REFERENCES locked_blocks(id) ON DELETE CASCADE,
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
+                )        
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_gates (
+                    id BINARY(16) NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    faction_id BINARY(16) NOT NULL,
+                    material CHAR(255) NOT NULL,
+                    world_id BINARY(16) NOT NULL,
+                    position_one_location JSON,
+                    position_two_location JSON,
+                    trigger_location JSON,
+                    is_vertical BOOLEAN NOT NULL DEFAULT 0,
+                    is_open BOOLEAN NOT NULL DEFAULT 0,
+                    PRIMARY KEY(id),
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_invites (
+                    player_id BINARY(16) NOT NULL,
+                    faction_id BINARY(16) NOT NULL,
+                    invited_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY(player_id, faction_id),
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE,
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_relations (
+                    source_faction BINARY(16) NOT NULL,
+                    target_faction BINARY(16) NOT NULL,
+                    type TINYINT NOT NULL,
+                    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY(source_faction, target_faction),
+                    FOREIGN KEY(source_faction) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(target_faction) REFERENCES factions(id) ON DELETE CASCADE
+                )
+            """);
+        });
+    }
+
     public void save() {
-        this.worldRepository.persist();
-        this.factionRepository.persist();
-        this.claimedChunkRepository.persist();
-        this.playerRecordRepository.persist();
+        //this.worldRepository.persist();
+        //this.factionRepository.persist();
+        //this.claimedChunkRepository.persist();
+        //this.playerRecordRepository.persist();
         this.lockedBlockRepository.persist();
         this.warRepository.persist();
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
@@ -80,37 +265,39 @@ public class DataService {
         this.playerRecordRepository.load();
         this.lockedBlockRepository.load();
         this.warRepository.load();
-        this.initializeWorlds();
     }
 
-    private void initializeWorlds() {
-        Bukkit.getWorlds().stream()
-            .forEach(world -> {
-                if (this.worldRepository.get(world) == null) {
-                    World newWorld = new World(world.getUID());
-                    this.worldRepository.create(newWorld);
-                }
-            });
-        this.worldRepository.addAnyMissingFlags();
+    private void addDefaultConfigurationFlag(String flagName, FlagType flagScope, ConfigurationFlag flag) {
+        this.persistentData.useExtension(DefaultConfigurationFlagDao.class, dao -> {
+            dao.insert(flagName, flagScope, flag);
+        });
+        switch(flagScope) {
+            case Faction:
+                this.factionRepository.addDefaultConfigurationFlag(flagName, flag);
+                break;
+            case World:
+                this.worldRepository.addDefaultConfigurationFlag(flagName, flag);
+                break;
+        }
     }
 
     private void initializeDefaultConfigurationFlags() {
         // Factions
-        this.factionRepository.addDefaultConfigurationFlag("mustBeOfficerToManageLand", new ConfigurationFlag(FlagType.Boolean, true), false);
-        this.factionRepository.addDefaultConfigurationFlag("mustBeOfficerToInviteOthers", new ConfigurationFlag(FlagType.Boolean, true), false);
-        this.factionRepository.addDefaultConfigurationFlag("alliesCanInteractWithLand", new ConfigurationFlag(FlagType.Boolean, this.configService.getBoolean("allowAllyInteraction")), false);
-        this.factionRepository.addDefaultConfigurationFlag("vassalageTreeCanInteractWithLand", new ConfigurationFlag(FlagType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")), false);
-        this.factionRepository.addDefaultConfigurationFlag("neutral", new ConfigurationFlag(FlagType.Boolean, false), false);
-        this.factionRepository.addDefaultConfigurationFlag("dynmapTerritoryColor", new ConfigurationFlag(FlagType.Color, "#ff0000"), false);
-        this.factionRepository.addDefaultConfigurationFlag("territoryAlertColor", new ConfigurationFlag(FlagType.Color, this.configService.getString("territoryAlertColor")), false);
-        this.factionRepository.addDefaultConfigurationFlag("prefixColor", new ConfigurationFlag(FlagType.Color, "white"), false);
-        this.factionRepository.addDefaultConfigurationFlag("allowFriendlyFire", new ConfigurationFlag(FlagType.Boolean, false), false);
-        this.factionRepository.addDefaultConfigurationFlag("acceptBonusPower", new ConfigurationFlag(FlagType.Boolean, true), false);
-        this.factionRepository.addDefaultConfigurationFlag("enableMobProtection", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.addDefaultConfigurationFlag("mustBeOfficerToManageLand", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, true));
+        this.addDefaultConfigurationFlag("mustBeOfficerToInviteOthers", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, true));
+        this.addDefaultConfigurationFlag("alliesCanInteractWithLand", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, this.configService.getBoolean("allowAllyInteraction")));
+        this.addDefaultConfigurationFlag("vassalageTreeCanInteractWithLand", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")));
+        this.addDefaultConfigurationFlag("neutral", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, false));
+        this.addDefaultConfigurationFlag("dynmapTerritoryColor", FlagType.Faction, new ConfigurationFlag(FlagDataType.Color, "#ff0000"));
+        this.addDefaultConfigurationFlag("territoryAlertColor", FlagType.Faction, new ConfigurationFlag(FlagDataType.Color, this.configService.getString("territoryAlertColor")));
+        this.addDefaultConfigurationFlag("prefixColor", FlagType.Faction, new ConfigurationFlag(FlagDataType.Color, "white"));
+        this.addDefaultConfigurationFlag("allowFriendlyFire", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, false));
+        this.addDefaultConfigurationFlag("acceptBonusPower", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, true));
+        this.addDefaultConfigurationFlag("enableMobProtection", FlagType.Faction, new ConfigurationFlag(FlagDataType.Boolean, true));
 
         // Worlds
-        this.worldRepository.addDefaultConfigurationFlag("enabled", new ConfigurationFlag(FlagType.Boolean, true), false);
-        this.worldRepository.addDefaultConfigurationFlag("allowClaims", new ConfigurationFlag(FlagType.Boolean, true), false);
+        this.addDefaultConfigurationFlag("enabled", FlagType.World, new ConfigurationFlag(FlagDataType.Boolean, true));
+        this.addDefaultConfigurationFlag("allowClaims", FlagType.World, new ConfigurationFlag(FlagDataType.Boolean, true));
     }
 
     public FactionRepository getFactionRepository() {
@@ -131,6 +318,16 @@ public class DataService {
 
     public Faction getPlayersFaction(UUID playerUUID) {
         return this.factionRepository.getForPlayer(playerUUID);
+    }
+
+    public void updatePlayersFactionRole(Faction faction, OfflinePlayer player, GroupRole role) {
+        GroupMember member = faction.getMember(player.getUniqueId());
+        if (member == null) faction.addMember(player.getUniqueId());
+        faction.setMemberRole(player.getUniqueId(), role);
+        this.persistentData.useExtension(FactionDao.class, dao -> {
+            GroupMember factionMember = faction.getMember(player.getUniqueId());
+            dao.upsert(faction.getUUID(), factionMember.getUUID(), factionMember.getRole());
+        });
     }
 
     public List<Faction> getFactionsInVassalageTree(Faction faction) {
@@ -172,6 +369,30 @@ public class DataService {
         return this.factionRepository.all().values();
     }
 
+    public void removeFactionMember(OfflinePlayer player, Faction faction) {
+        this.persistentData.useExtension(FactionDao.class, dao -> {
+            dao.deleteMember(player.getUniqueId(), faction.getUUID());
+        });
+        faction.getMembers().remove(player.getUniqueId());
+    }
+
+    public void addFactionInvite(Faction faction, OfflinePlayer player) {
+        this.persistentData.useExtension(FactionDao.class, dao -> {
+            dao.insertInvite(faction.getUUID(), player.getUniqueId());
+        });
+    }
+
+    public void removeFactionInvite(Faction faction, OfflinePlayer player) {
+        this.persistentData.useExtension(FactionDao.class, dao -> {
+            dao.deleteInvite(faction.getUUID(), player.getUniqueId());
+        });
+    }
+
+    public boolean hasFactionInvite(Faction faction, OfflinePlayer player) {
+        FactionDao dao = this.persistentData.onDemand(FactionDao.class);
+        return dao.getInvite(faction.getUUID(), player.getUniqueId()) > 0;
+    }
+
     public Gate getGate(Block targetBlock) {
         return this.getFactions()
             .stream()
@@ -199,6 +420,14 @@ public class DataService {
 
     public ClaimedChunk getClaimedChunk(Chunk chunk) {
         return this.claimedChunkRepository.get(chunk.getX(), chunk.getZ(), chunk.getWorld().getUID());
+    }
+
+    public void addClaimedChunk(ClaimedChunk chunk) {
+        this.claimedChunkRepository.create(chunk);
+    }
+
+    public void deleteClaimedChunk(ClaimedChunk chunk) {
+        this.claimedChunkRepository.delete(chunk);
     }
 
     public List<ClaimedChunk> getClaimedChunksForFaction(Faction faction) {
@@ -233,6 +462,10 @@ public class DataService {
         return this.getLockedBlock(x, y, z, world) != null;
     }
 
+    public void createPlayerRecord(PlayerRecord record) {
+        this.playerRecordRepository.create(record);
+    }
+
     public PlayerRecordRepository getPlayerRecordRepository() {
         return this.playerRecordRepository;
     }
@@ -254,7 +487,7 @@ public class DataService {
     }
 
     public Collection<PlayerRecord> getPlayerRecords() {
-        return this.playerRecordRepository.all();
+        return this.playerRecordRepository.all().values();
     }
 
     public CommandRepository getCommandRepository() {

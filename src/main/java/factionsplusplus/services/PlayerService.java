@@ -106,7 +106,7 @@ public class PlayerService {
 
     public void resetPowerLevels() {
         final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
-        this.dataService.getPlayerRecordRepository().all().forEach(record -> record.setPower(initialPowerLevel));
+        this.dataService.getPlayerRecordRepository().all().values().forEach(record -> record.setPower(initialPowerLevel));
     }
 
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
@@ -116,7 +116,7 @@ public class PlayerService {
             .forEach(player -> {
                 PlayerRecord newRecord = new PlayerRecord(player.getUniqueId(), 1, initialPowerLevel);
                 newRecord.setLastLogout(ZonedDateTime.now());
-                this.dataService.getPlayerRecordRepository().create(newRecord);
+                this.dataService.createPlayerRecord(newRecord);
             });
     }
 

@@ -10,6 +10,7 @@ import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
+import factionsplusplus.factories.FactionFactory;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.LockedBlock;
@@ -35,6 +36,7 @@ public class FactionService {
     private final Provider<DynmapIntegrationService> dynmapService;
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
+    private final FactionFactory factionFactory;
     private final Logger logger;
 
     @Inject
@@ -46,7 +48,8 @@ public class FactionService {
         Provider<DynmapIntegrationService> dynmapService,
         LockedBlockRepository lockedBlockRepository,
         ClaimedChunkRepository claimedChunkRepository,
-        Logger logger
+        Logger logger,
+        FactionFactory factionFactory
     ) {
         this.configService = configService;
         this.factionRepository = factionRepository;
@@ -56,6 +59,7 @@ public class FactionService {
         this.lockedBlockRepository = lockedBlockRepository;
         this.claimedChunkRepository = claimedChunkRepository;
         this.logger = logger;
+        this.factionFactory = factionFactory;
     }
 
     public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag) {
@@ -149,11 +153,11 @@ public class FactionService {
     }
 
     public Faction createFaction(String factionName, UUID ownerUUID) {
-        return new Faction(factionName, ownerUUID, this.factionRepository.getDefaultFlags());
+        return this.factionFactory.create(factionName, ownerUUID, this.factionRepository.getDefaultFlags());
     }
 
     public Faction createFaction(String factionName) {
-        return new Faction(factionName, this.factionRepository.getDefaultFlags());
+        return this.factionFactory.create(factionName, this.factionRepository.getDefaultFlags());
     }
 
     public void removeFaction(Faction faction) {

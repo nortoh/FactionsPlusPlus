@@ -6,6 +6,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id "io.freefair.lombok" version "6.5.1"
 }
 
 repositories {
@@ -24,9 +25,15 @@ dependencies {
     implementation 'org.spigotmc:spigot-api:1.19.1-R0.1-SNAPSHOT'
     implementation 'us.dynmap:dynmap-api:2.2'
     implementation 'org.bstats:bstats-bukkit:3.0.0'
-    implementation 'aopalliance:aopalliance:1.0'
     implementation 'com.google.inject:guice:5.1.0'
     implementation 'com.google.inject.extensions:guice-assistedinject:5.1.0'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.8'
+    implementation 'com.h2database:h2:2.1.214'
+    implementation 'org.jdbi:jdbi3-core:3.34.0'
+    implementation 'org.jdbi:jdbi3-sqlobject:3.34.0'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'com.google.guava:guava:31.1-jre'
+    testImplementation 'org.jdbi:jdbi3-guava:3.34.0'
 }
 
 group = 'factionsplusplus'
@@ -50,7 +57,16 @@ shadowJar {
         include(dependency('org.bstats:bstats-base'))
         include(dependency('aopalliance:aopalliance'))
         include(dependency('com.google.inject:guice'))
+        include(dependency('com.google.guava:guava'))
         include(dependency('com.google.inject.extensions:guice-assistedinject'))
+        include(dependency('org.mariadb.jdbc:mariadb-java-client'))
+        include(dependency('com.zaxxer:HikariCP'))
+        include(dependency('com.h2database:h2'))
+        include(dependency('org.jdbi:jdbi3-core'))
+        include(dependency('org.jdbi:jdbi3-sqlobject'))
+        include(dependency('org.jdbi:jdbi3-guava'))
+        include(dependency('com.github.ben-manes.caffeine:caffeine'))
+        include(dependency('org.projectlombok:lombok'))
     }
     relocate 'preponderous.ponder', 'factionplusplus.shadow.preponderous.ponder'
     relocate 'org.intellij', 'factionplusplus.shadow.org.intellij'

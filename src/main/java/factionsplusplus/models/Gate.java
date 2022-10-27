@@ -9,6 +9,8 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.jdbi.v3.core.mapper.Nested;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 import java.util.ArrayList;
 
@@ -25,14 +27,19 @@ public class Gate {
     @Expose
     private String name = null;
     @Expose
+    @ColumnName("is_open")
     private boolean open = false;
     @Expose
+    @ColumnName("is_vertical")
     private boolean vertical = true;
     @Expose
+    @Nested("coord1")
     private LocationData coord1 = null;
     @Expose
+    @Nested("coord2")
     private LocationData coord2 = null;
     @Expose
+    @Nested("trigger")
     private LocationData trigger = null;
     @Expose
     private Material material = Material.IRON_BARS;

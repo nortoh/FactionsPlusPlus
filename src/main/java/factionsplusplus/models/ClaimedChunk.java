@@ -1,33 +1,32 @@
 package factionsplusplus.models;
 
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 
 import java.util.UUID;
 
 import org.bukkit.Chunk;
-
-import factionsplusplus.jsonadapters.ChunkAdapter;
-
+import org.jdbi.v3.core.mapper.Nested;
 
 /**
  * @author Daniel McCoy Stephenson
  */
 public class ClaimedChunk extends Territory {
     @Expose
-    @JsonAdapter(ChunkAdapter.class)
-    private Chunk chunk;
+    @Nested
+    private LocationData chunk;
 
+    public ClaimedChunk() { }
+    
     public ClaimedChunk(Chunk initialChunk) {
-        this.chunk = initialChunk;
+        this.chunk = new LocationData(initialChunk);
     }
 
     public Chunk getChunk() {
-        return this.chunk;
+        return this.chunk.getChunk();
     }
 
     public void setChunk(Chunk chunk) {
-        this.chunk = chunk;
+        this.chunk = new LocationData(chunk);
     }
 
     public int[] getCoordinates() {
@@ -38,10 +37,18 @@ public class ClaimedChunk extends Territory {
     }
 
     public UUID getWorldUUID() {
-        return this.chunk.getWorld().getUID();
+        return this.chunk.getChunk().getWorld().getUID();
+    }
+
+    public int getX() {
+        return this.chunk.getX();
+    }
+
+    public int getZ() {
+        return this.chunk.getZ();
     }
 
     public String getWorldName() {
-        return this.chunk.getWorld().getName();
+        return this.chunk.getChunk().getWorld().getName();
     }
 }

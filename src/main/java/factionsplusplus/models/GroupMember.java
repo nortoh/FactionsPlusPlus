@@ -7,12 +7,16 @@ import com.google.gson.annotations.Expose;
 
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.interfaces.Identifiable;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class GroupMember implements Identifiable {
     @Expose
-    protected final UUID uuid;
+    @ColumnName("id")
+    protected UUID uuid;
     @Expose
     protected int role = GroupRole.Member.getLevel();
+
+    public GroupMember() { }
 
     public GroupMember(UUID playerUuid) {
         this.uuid = playerUuid;
@@ -36,6 +40,10 @@ public class GroupMember implements Identifiable {
 
     public boolean isRole(GroupRole role) {
         return this.role == role.getLevel();
+    }
+
+    public int getRole() {
+        return this.role;
     }
 
     public List<GroupRole> getRoles() {

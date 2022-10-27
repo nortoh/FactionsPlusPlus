@@ -8,25 +8,32 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import com.google.gson.annotations.Expose;
 
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+import org.jdbi.v3.core.mapper.Nested;
 /**
  * @author Daniel McCoy Stephenson
  */
 public class PlayerRecord {
     @Expose
-    private UUID playerUUID;
+    @ColumnName("id")
+    private UUID uuid;
     @Expose
+    @Nested
     private PlayerStats stats;
     @Expose
+    @ColumnName("power")
     private double powerLevel = 0;
 
-    public PlayerRecord(UUID playerUUID, int initialLogins, double initialPowerLevel) {
-        this.playerUUID = playerUUID;
+    public PlayerRecord() { }
+
+    public PlayerRecord(UUID uuid, int initialLogins, double initialPowerLevel) {
+        this.uuid = uuid;
         this.stats = new PlayerStats(initialLogins);
         this.powerLevel = initialPowerLevel;
     }
 
     public UUID getPlayerUUID() {
-        return this.playerUUID;
+        return this.uuid;
     }
 
     public double getPower() {

@@ -9,9 +9,12 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.services.DataService;
+
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -20,8 +23,10 @@ import factionsplusplus.builders.ArgumentBuilder;
 @Singleton
 public class DemoteCommand extends Command {
 
+    private final DataService dataService;
+
     @Inject
-    public DemoteCommand() {
+    public DemoteCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("demote")
@@ -39,6 +44,7 @@ public class DemoteCommand extends Command {
                         .isRequired()
                 )
         );
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -49,7 +55,7 @@ public class DemoteCommand extends Command {
             return;
         }
 
-        context.getExecutorsFaction().removeOfficer(playerToBeDemoted.getUniqueId());
+        this.dataService.updatePlayersFactionRole(context.getExecutorsFaction(), playerToBeDemoted, GroupRole.Member);
 
         if (playerToBeDemoted.isOnline()) {
             context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");

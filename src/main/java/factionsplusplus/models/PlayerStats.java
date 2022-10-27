@@ -9,15 +9,22 @@ import java.util.concurrent.TimeUnit;
 
 import factionsplusplus.jsonadapters.ZonedDateTimeAdapter;
 
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+
 public class PlayerStats {
     @Expose
+    @ColumnName("login_count")
     private int logins = 0;
     @Expose
+    @ColumnName("offline_power_lost")
     private double powerLost = 0;
     @Expose
     @JsonAdapter(ZonedDateTimeAdapter.class)
+    @ColumnName("last_logout")
     private ZonedDateTime lastLogout = ZonedDateTime.now();
 
+    public PlayerStats() { }
+    
     public PlayerStats(int initialLogins) {
         this.logins = initialLogins;
     }

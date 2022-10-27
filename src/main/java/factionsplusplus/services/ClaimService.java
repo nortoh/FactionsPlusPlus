@@ -417,7 +417,7 @@ public class ClaimService {
     private void addClaimedChunk(Chunk chunk, Faction faction, World world) {
         ClaimedChunk newChunk = new ClaimedChunk(chunk);
         newChunk.setHolder(faction.getID());
-        this.dataService.getClaimedChunkRepository().create(newChunk);            
+        this.dataService.addClaimedChunk(newChunk);       
     }
 
     /**
@@ -473,7 +473,7 @@ public class ClaimService {
             }
         }
 
-        this.dataService.getClaimedChunkRepository().delete(chunkToRemove);
+        this.dataService.deleteClaimedChunk(chunkToRemove);
     }
 
     /**

@@ -1,63 +1,75 @@
 package factionsplusplus.models;
 
-import factionsplusplus.constants.FlagType;
+import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.utils.ColorConversion;
 import factionsplusplus.utils.StringUtils;
 
 import java.awt.Color;
 
 import com.google.gson.annotations.Expose;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class ConfigurationFlag {
     @Expose
-    private final FlagType requiredType;
+    @ColumnName("expected_data_type")
+    private FlagDataType requiredType = null;
     @Expose
-    private final Object defaultValue;
+    private String description = null;
     @Expose
-    private Object currentValue;
+    @ColumnName("default_value")
+    private String defaultValue = null;
+    @Expose
+    @ColumnName("value")
+    private String currentValue = null;
 
-    public ConfigurationFlag(FlagType requiredType, Object defaultValue, Object currentValue) {
+    public ConfigurationFlag() { }
+
+    public ConfigurationFlag(FlagDataType requiredType, Object defaultValue, Object currentValue) {
         this.requiredType = requiredType;
-        this.defaultValue = defaultValue;
-        this.currentValue = currentValue;
+        this.defaultValue = defaultValue.toString();
+        this.currentValue = currentValue.toString();
     }
 
-    public ConfigurationFlag(FlagType requiredType, Object defaultValue) {
+    public ConfigurationFlag(FlagDataType requiredType, Object defaultValue) {
         this.requiredType = requiredType;
-        this.defaultValue = defaultValue;
+        this.defaultValue = defaultValue.toString();
         this.currentValue = null;
     }
 
-    public FlagType getRequiredType() {
+    public FlagDataType getRequiredType() {
         return this.requiredType;
     }
 
-    public Object getValue() {
+    public String getDefaultValue() {
+        return this.defaultValue;
+    }
+
+    public String getValue() {
         if (this.currentValue == null) return this.defaultValue;
         return this.currentValue;
     }
 
     public int toInteger() {
-        return (int)this.getValue();
+        return Integer.parseInt(this.getValue());
     }
 
     public double toDouble() {
-        return (double)this.getValue();
+        return Double.parseDouble(this.getValue());
     }
 
     public float toFloat() {
-        return (float)this.getValue();
+        return Float.parseFloat(this.getValue());
     }
 
     public String toString() {
-        if (this.requiredType == FlagType.Boolean) {
+        if (this.requiredType == FlagDataType.Boolean) {
             return (this.toBoolean() ? "true" : "false");
         }
         return String.valueOf(this.getValue());
     }
 
     public Boolean toBoolean() {
-        return (Boolean)this.getValue();
+        return Boolean.valueOf(this.getValue());
     }
 
     public Color toColor() {
@@ -91,7 +103,7 @@ public class ConfigurationFlag {
                 break;
         }
         if (newValue == null) return null;
-        this.currentValue = newValue;
+        this.currentValue = newValue.toString();
         return this.toString();
     }
 

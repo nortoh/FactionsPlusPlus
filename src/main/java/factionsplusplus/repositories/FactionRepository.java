@@ -2,84 +2,80 @@ package factionsplusplus.repositories;
 
 import com.google.inject.Singleton;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.charset.StandardCharsets;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataProviderService;
+import factionsplusplus.data.FactionDao;
+import factionsplusplus.factories.FactionFactory;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.utils.Logger;
 
 @Singleton
 public class FactionRepository {
     private Map<UUID, Faction> factionStore = new HashMap<>();
-    private final String dataPath;
-    private final static String FILE_NAME = "factions.json";
-    private final static Type JSON_TYPE = new TypeToken<Map<UUID, Faction>>() { }.getType();
     private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
+    private final DataProviderService dataProviderService;
+    private final FactionFactory factionFactory;
 
     @Inject
-    public FactionRepository(@Named("dataFolder") String dataPath, Logger logger) {
-        this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+    public FactionRepository(Logger logger, DataProviderService dataProviderService, FactionFactory factionFactory) {
         this.logger = logger;
+        this.dataProviderService = dataProviderService;
+        this.factionFactory = factionFactory;
     }
 
     // Load factions
     public void load() {
-        this.factionStore.clear();
         try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .enableComplexMapKeySerialization()
-                .create();
-            JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(this.dataPath), StandardCharsets.UTF_8));
-            this.factionStore = gson.fromJson(reader, FactionRepository.JSON_TYPE);
-            this.initializeFactions();
-        } catch (FileNotFoundException ignored) {
-            this.logger.error(String.format("File %s not found", this.dataPath), ignored);
+            this.factionStore.clear();
+            /*this.dataProviderService.getPersistentData().useExtension(FactionDao.class, dao -> {
+                dao.get();
+            });*/
+            //this.getDAO().get();
+            this.getDAO().getFactions().stream()
+                .forEach(faction -> {
+                    this.factionStore.put(faction.getId(), this.factionFactory.create(faction));
+                });
+        } catch (Exception e) {
+            this.logger.error(String.format("Error loading factions: %s", e.getMessage()));
         }
     }
 
     // Save a faction after creating
     public void create(Faction faction) {
-        this.factionStore.put(faction.getID(), faction);
+        //faction = this.getDAO().createNewFaction(faction);
+        this.factionStore.put(faction.getUUID(), faction);
     }
 
     // Delete a faction
     public void delete(UUID factionUUID) {
+        this.dataProviderService.getPersistentData().useExtension(FactionDao.class, dao -> {
+            dao.delete(factionUUID);
+        });
         this.factionStore.remove(factionUUID);
     }
     public void delete(Faction faction) {
-        this.factionStore.remove(faction.getID());
+        this.delete(faction.getUUID());
     }
     public void delete(String factionName) {
         this.delete(this.get(factionName));
+    }
+
+    // Get the DAO for this repository
+    public FactionDao getDAO() {
+        return this.dataProviderService.getPersistentData().onDemand(FactionDao.class);
     }
 
     /*
@@ -263,18 +259,9 @@ public class FactionRepository {
         return this.defaultFlags;
     }
 
-    private void initializeFactions() {
-        this.factionStore.values()
-            .stream()
-            .forEach(faction -> {
-                faction.initialize();
-                this.addAnyMissingFlagsToFaction(faction);
-            });
-    }
-
     // Write to file
     public void persist() {
-        File file = new File(this.dataPath);
+        /*File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
@@ -287,6 +274,6 @@ public class FactionRepository {
             outputStreamWriter.close();
         } catch (IOException e) {
             this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }
+        }*/
     }
 }

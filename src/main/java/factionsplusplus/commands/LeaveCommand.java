@@ -10,6 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.events.FactionLeaveEvent;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.utils.Logger;
@@ -25,12 +26,14 @@ public class LeaveCommand extends Command {
     private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DisbandCommand disbandCommand;
+    private final DataService dataService;
 
     @Inject
     public LeaveCommand(
         EphemeralData ephemeralData,
         Logger logger,
-        DisbandCommand disbandCommand
+        DisbandCommand disbandCommand,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -44,6 +47,7 @@ public class LeaveCommand extends Command {
         this.ephemeralData = ephemeralData;
         this.logger = logger;
         this.disbandCommand = disbandCommand;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -61,9 +65,8 @@ public class LeaveCommand extends Command {
             return;
         }
 
-        if (faction.isOfficer(player.getUniqueId())) faction.removeOfficer(player.getUniqueId()); // Remove Officer.
         this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId()); // Remove from Faction Chat.
-        faction.removeMember(player.getUniqueId());
+        this.dataService.removeFactionMember(player, faction);
         context.replyWith("AlertLeftFaction");
         context.messagePlayersFaction(
             this.constructMessage("AlertLeftFactionTeam")

@@ -2,49 +2,36 @@ package factionsplusplus.repositories;
 
 import com.google.inject.Singleton;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.charset.StandardCharsets;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.lang.reflect.Type;
 
 import factionsplusplus.models.War;
+import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WarRepository {
     private List<War> warStore = new ArrayList<>();
-    private final String dataPath;
-    private final static String FILE_NAME = "wars.json";
-    private final static Type JSON_TYPE = new TypeToken<List<War>>() { }.getType();
     private final Logger logger;
+    private final DataProviderService dataProviderService;
 
     @Inject
-    public WarRepository(@Named("dataFolder") String dataPath, Logger logger) {
-        this.dataPath = String.format("%s%s%s", dataPath, File.separator, FILE_NAME);
+    public WarRepository(Logger logger, DataProviderService dataProviderService) {
         this.logger = logger;
+        this.dataProviderService = dataProviderService;
     }
 
     // Load wars
     public void load() {
-        this.warStore.clear();
         try {
+            this.warStore.clear();
+        } catch(Exception e) {
+            this.logger.error(String.format("Error loading wars: %s", e.getMessage()));
+        }
+        /*try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .serializeNulls()
@@ -53,7 +40,7 @@ public class WarRepository {
             this.warStore = gson.fromJson(reader, WarRepository.JSON_TYPE);
         } catch (FileNotFoundException ignored) {
             this.logger.error(String.format("File %s not found", this.dataPath), ignored);
-        }
+        }*/
     }
 
     // Save a war
@@ -96,7 +83,7 @@ public class WarRepository {
 
     // Write to file
     public void persist() {
-        File file = new File(this.dataPath);
+        /*File file = new File(this.dataPath);
         try {
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
@@ -108,6 +95,6 @@ public class WarRepository {
             outputStreamWriter.close();
         } catch (IOException e) {
             this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }
+        }*/
     }
 }

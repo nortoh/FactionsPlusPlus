@@ -10,11 +10,13 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -24,9 +26,10 @@ import factionsplusplus.builders.ArgumentBuilder;
 public class PromoteCommand extends Command {
 
     private final FactionService factionService;
+    private final DataService dataService;
 
     @Inject
-    public PromoteCommand(FactionService factionService) {
+    public PromoteCommand(FactionService factionService, DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("promote")
@@ -46,6 +49,7 @@ public class PromoteCommand extends Command {
                 )
         );
         this.factionService = factionService;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -61,7 +65,7 @@ public class PromoteCommand extends Command {
         }
         int maxOfficers = this.factionService.calculateMaxOfficers(faction);
         if (faction.getOfficerCount() <= maxOfficers) {
-            faction.addOfficer(target.getUniqueId());
+            this.dataService.updatePlayersFactionRole(faction, target, GroupRole.Officer);
             context.replyWith("PlayerPromoted");
             if (target.isOnline() && target.getPlayer() != null) {
                 context.messagePlayer(target.getPlayer(), "PromotedToOfficer");

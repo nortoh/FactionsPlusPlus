@@ -728,8 +728,8 @@ public class CommandService implements TabCompleter {
                         .collect(Collectors.toList());
                 case Player:
                     return this.applyPlayerFilters(
-                            this.dataService.getPlayerRecordRepository().all().stream()
-                                .map(record -> Bukkit.getOfflinePlayer(record.getPlayerUUID()))
+                            this.dataService.getPlayerRecordRepository().all().keySet().stream()
+                                .map(record -> Bukkit.getOfflinePlayer(record))
                                 .filter(p -> p.getName() != null)
                                 .filter(p -> p.getName().toLowerCase().startsWith(argumentText)),
                             player,

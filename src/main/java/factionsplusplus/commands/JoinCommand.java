@@ -11,10 +11,13 @@ import factionsplusplus.events.FactionJoinEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import factionsplusplus.services.DataService;
 import factionsplusplus.utils.Logger;
+
 import org.bukkit.Bukkit;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -23,9 +26,10 @@ import factionsplusplus.builders.ArgumentBuilder;
 @Singleton
 public class JoinCommand extends Command {
     private final Logger logger;
+    private final DataService dataService;
 
     @Inject
-    public JoinCommand(Logger logger) {
+    public JoinCommand(Logger logger, DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("join")
@@ -44,11 +48,12 @@ public class JoinCommand extends Command {
                 )
         );
         this.logger = logger;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
-        if (! target.isInvited(context.getPlayer().getUniqueId())) {
+        if (! this.dataService.hasFactionInvite(target, context.getPlayer())) {
             context.replyWith("NotInvite");
             return;
         }
@@ -64,8 +69,8 @@ public class JoinCommand extends Command {
                 .with("name", context.getPlayer().getName())
                 .with("faction", target.getName())
         );
-        target.addMember(context.getPlayer().getUniqueId());
-        target.uninvite(context.getPlayer().getUniqueId());
+        this.dataService.updatePlayersFactionRole(target, context.getPlayer(), GroupRole.Member);
+        this.dataService.removeFactionInvite(target, context.getPlayer());
         context.replyWith("AlertJoinedFaction");
     }
 }
