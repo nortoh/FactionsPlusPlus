@@ -24,10 +24,10 @@ public class ConfigurationFlag {
 
     public ConfigurationFlag() { }
 
-    public ConfigurationFlag(FlagDataType requiredType, Object defaultValue, Object currentValue) {
+    public ConfigurationFlag(FlagDataType requiredType, String defaultValue, String currentValue) {
         this.requiredType = requiredType;
-        this.defaultValue = defaultValue.toString();
-        this.currentValue = currentValue.toString();
+        this.defaultValue = defaultValue;
+        this.currentValue = currentValue;
     }
 
     public ConfigurationFlag(FlagDataType requiredType, Object defaultValue) {
