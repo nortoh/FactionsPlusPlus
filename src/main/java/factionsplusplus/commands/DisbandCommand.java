@@ -13,8 +13,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.services.DataService;
-import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
