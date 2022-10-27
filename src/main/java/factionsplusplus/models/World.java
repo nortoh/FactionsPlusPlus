@@ -1,7 +1,7 @@
 package factionsplusplus.models;
 
 import java.util.UUID;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -17,7 +17,7 @@ public class World implements Identifiable {
     @ColumnName("id")
     private UUID uuid;
     @Expose
-    private Map<String, ConfigurationFlag> flags = new HashMap<>();
+    private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
 
     public World() { }
     

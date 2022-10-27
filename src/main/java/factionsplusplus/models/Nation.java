@@ -11,8 +11,9 @@ import factionsplusplus.models.interfaces.Lawful;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.annotations.Expose;
 
@@ -20,11 +21,11 @@ import com.google.gson.annotations.Expose;
  * @author Daniel McCoy Stephenson
  */
 public class Nation extends Group implements Diplomatic, Lawful {
-    protected Map<UUID, FactionRelationType> relations = new HashMap<>();
-    protected List<UUID> attemptedAlliances = new ArrayList<>();
-    protected List<UUID> attemptedTruces = new ArrayList<>();
+    protected Map<UUID, FactionRelationType> relations = new ConcurrentHashMap<>();
+    protected List<UUID> attemptedAlliances = Collections.synchronizedList(new ArrayList<>());
+    protected List<UUID> attemptedTruces = Collections.synchronizedList(new ArrayList<>());
     @Expose
-    protected final List<String> laws = new ArrayList<>();
+    protected final List<String> laws = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public void addAlly(UUID allyUUID) {

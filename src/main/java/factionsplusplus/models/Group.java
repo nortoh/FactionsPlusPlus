@@ -11,8 +11,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.bukkit.Bukkit.getServer;
@@ -29,7 +30,7 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
  * @author Daniel McCoy Stephenson
  */
 public class Group implements Identifiable {
-    private final List<UUID> invited = new ArrayList<>();
+    private final List<UUID> invited = Collections.synchronizedList(new ArrayList<>());
     @Expose
     @ColumnName("id")
     protected UUID uuid = UUID.randomUUID();
@@ -38,7 +39,7 @@ public class Group implements Identifiable {
     @Expose
     protected String description = null;
     @Expose
-    protected Map<UUID, GroupMember> members = new HashMap<>();
+    protected Map<UUID, GroupMember> members = new ConcurrentHashMap<>();
 
     @Override
     public UUID getUUID() {
@@ -110,8 +111,7 @@ public class Group implements Identifiable {
      * @param playerUUID
      */
     public void addMember(UUID playerUUID) {
-        GroupMember member = new GroupMember(playerUUID);
-        member.addRole(GroupRole.Member);
+        GroupMember member = new GroupMember(playerUUID, GroupRole.Member);
         this.members.put(playerUUID, member);
     }
 
@@ -127,8 +127,7 @@ public class Group implements Identifiable {
      * @param role
      */
     public void addMember(UUID playerUUID, GroupRole role) {
-        GroupMember member = new GroupMember(playerUUID);
-        member.addRole(role);
+        GroupMember member = new GroupMember(playerUUID, role);
         this.members.put(playerUUID, member);
     }
 
@@ -152,8 +151,8 @@ public class Group implements Identifiable {
         return this.members;
     }
 
-    public HashMap<UUID, GroupMember> getMembers(GroupRole role) {
-        return (HashMap<UUID, GroupMember>) this.members.entrySet()
+    public Map<UUID, GroupMember> getMembers(GroupRole role) {
+        return (Map<UUID, GroupMember>) this.members.entrySet()
             .stream()
             .filter(k -> k.getValue().isRole(role))
             .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
