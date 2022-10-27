@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import com.google.inject.Inject;
 
+import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
@@ -23,6 +24,7 @@ public class CommandContext {
     private List<String> commandNames = new ArrayList<>();
     @Inject private MessageService messageService;
     @Inject private LocaleService localeService;
+    @Inject private FactionsPlusPlus factionsPlusPlus;
 
     /*
      * Retrieves the Faction instance the executor of this command is a member of, if any.
@@ -31,6 +33,15 @@ public class CommandContext {
      */
     public Faction getExecutorsFaction() {
         return this.faction;
+    }
+
+    /*
+     * Retrieves an instance of the plugin.
+     * 
+     * @return a FactionPlusPlus instance (the plugin)
+     */
+    public FactionsPlusPlus getPlugin() {
+        return this.factionsPlusPlus;
     }
 
     /*
