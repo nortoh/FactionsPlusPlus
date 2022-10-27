@@ -3,8 +3,10 @@ package factionsplusplus.models;
 import factionsplusplus.beans.FactionBean;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.constants.FactionRelationType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.jsonadapters.LocationAdapter;
 import factionsplusplus.models.interfaces.Feudal;
+import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.MessageService;
 
 import org.bukkit.Location;
@@ -22,7 +24,7 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal {
     @Expose
-    private final List<Gate> gates = new ArrayList<>();
+    private final List<Gate> gates = Collections.synchronizedList(new ArrayList<>());
     @Expose
     private Map<String, ConfigurationFlag> flags;
     @Expose
@@ -37,46 +39,54 @@ public class Faction extends Nation implements Feudal {
 
     @ColumnName("should_autoclaim")
     private boolean autoclaim = false;
-    private List<UUID> attemptedVassalizations = new ArrayList<>();
+    private List<UUID> attemptedVassalizations = Collections.synchronizedList(new ArrayList<>());
 
     private final MessageService messageService;
+    private final FactionRepository factionRepository;
 
     // Constructor
     @AssistedInject
-    public Faction(MessageService messageService) {
+    public Faction(MessageService messageService, FactionRepository factionRepository) {
         this.messageService = messageService;
+        this.factionRepository = factionRepository;
     }
 
     @AssistedInject
     public Faction(
         @Assisted FactionBean bean,
-        MessageService messageService
+        MessageService messageService,
+        FactionRepository factionRepository
     ) {
         this.uuid = bean.getId();
         this.name = bean.getName();
         this.description = bean.getDescription();
-        this.prefix = bean.getDescription();
+        this.prefix = bean.getPrefix();
         this.autoclaim = bean.isShouldAutoclaim();
         this.bonusPower = bean.getBonusPower();
         this.flags = bean.getFlags();
         this.members = bean.getMembers();
         this.relations = bean.getRelations();
         this.messageService = messageService;
+        this.factionRepository = factionRepository;
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService) {
+    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, FactionRepository factionRepository) {
         this.name = factionName;
         this.flags = flags;
+        this.prefix = factionName;
         this.messageService = messageService;
+        this.factionRepository = factionRepository;
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService) {
+    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, FactionRepository factionRepository) {
         this.name = factionName;
         this.setOwner(owner);
         this.flags = flags;
+        this.prefix = factionName;
         this.messageService = messageService;
+        this.factionRepository = factionRepository;
     }
 
     /**
@@ -116,6 +126,42 @@ public class Faction extends Nation implements Feudal {
 
     public void setBonusPower(int newAmount) {
         this.bonusPower = newAmount;
+        this.persist();
+    }
+
+    // Overridden methods for persistence
+    @Override
+    public void setName(String name) {
+        this.name = name;
+        // Unset prefix if it's the current name
+        if (this.prefix != null && this.prefix.equalsIgnoreCase(name)) this.prefix = name;
+        this.persist();
+    }
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+        this.persist();
+    }
+
+    public void upsertMember(UUID uuid, GroupRole role) {
+        GroupMember member = this.members.get(uuid);
+        if (member != null) member.addRole(role);
+        else member = new GroupMember(uuid, role);
+        this.members.put(uuid, member);
+        this.factionRepository.persist(this.getUUID(), member);
+    }
+
+    public void upsertRelation(UUID uuid, FactionRelationType type) {
+        // avoid a pointless sql query
+        FactionRelationType relation = this.relations.get(uuid);
+        if (relation != null && relation == type) return;
+        // persist
+        this.relations.put(uuid, type);
+        this.factionRepository.persist(this.getUUID(), uuid, type);        
+    }
+
+    public void updateRelation(UUID uuid, FactionRelationType type) {
+        this.relations.put(uuid, type);
     }
 
     // Prefix
@@ -125,6 +171,7 @@ public class Faction extends Nation implements Feudal {
 
     public void setPrefix(String newPrefix) {
         this.prefix = newPrefix;
+        this.persist();
     }
 
     // Faction Home
@@ -139,6 +186,7 @@ public class Faction extends Nation implements Feudal {
     // Auto Claim
     public void toggleAutoClaim() {
         this.autoclaim = !autoclaim;
+        this.persist();
     }
 
     public boolean getAutoClaimStatus() {
@@ -262,5 +310,10 @@ public class Faction extends Nation implements Feudal {
 
     public void message(GenericMessageBuilder builder) {
         this.messageService.sendFactionLocalizedMessage(this, builder);
+    }
+
+    // Tools
+    public void persist() {
+        this.factionRepository.persist(this);
     }
 }

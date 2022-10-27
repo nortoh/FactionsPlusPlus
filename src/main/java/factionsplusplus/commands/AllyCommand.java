@@ -4,6 +4,8 @@
  */
 package factionsplusplus.commands;
 
+import org.bukkit.Bukkit;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -14,6 +16,7 @@ import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -66,17 +69,17 @@ public class AllyCommand extends Command {
         }
 
         // no need to allow them to ally if they're already allies
-        if (context.getExecutorsFaction().isAlly(otherFaction.getID())) {
+        if (context.getExecutorsFaction().isAlly(otherFaction.getUUID())) {
             context.replyWith("FactionAlreadyAlly");
             return;
         }
 
-        if (context.getExecutorsFaction().isEnemy(otherFaction.getID())) {
+        if (context.getExecutorsFaction().isEnemy(otherFaction.getUUID())) {
             context.replyWith("FactionIsEnemy");
             return;
         }
 
-        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getID())) {
+        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getUUID())) {
             context.replyWith("AlertAlreadyRequestedAlliance");
             return;
         }
@@ -98,26 +101,30 @@ public class AllyCommand extends Command {
         );
 
         // check if both factions have requested an alliance
-        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getID()) && otherFaction.isRequestedAlly(context.getExecutorsFaction().getID())) {
-            // ally them
-            context.getExecutorsFaction().addAlly(otherFaction.getID());
-            otherFaction.addAlly(context.getExecutorsFaction().getID());
-            // message player's faction
-            context.messagePlayersFaction(
-                this.constructMessage("AlertNowAlliedWith")
-                    .with("faction", otherFaction.getName())
-            );
+        if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getUUID()) && otherFaction.isRequestedAlly(context.getExecutorsFaction().getUUID())) {
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    // Running this against one faction will trickle down to the other.
+                    context.getExecutorsFaction().upsertRelation(otherFaction.getUUID(), FactionRelationType.Ally);
+                    // message player's faction
+                    context.messagePlayersFaction(
+                        constructMessage("AlertNowAlliedWith")
+                            .with("faction", otherFaction.getName())
+                    );
 
-            // message target faction
-            context.messageFaction(
-                otherFaction, 
-                this.constructMessage("AlertNowAlliedWith")
-                    .with("faction", context.getExecutorsFaction().getName())
-            );
+                    // message target faction
+                    context.messageFaction(
+                        otherFaction, 
+                        constructMessage("AlertNowAlliedWith")
+                            .with("faction", context.getExecutorsFaction().getName())
+                    );
 
-            // remove alliance requests
-            context.getExecutorsFaction().removeAllianceRequest(otherFaction.getID());
-            otherFaction.removeAllianceRequest(context.getExecutorsFaction().getID());
+                    // remove alliance requests
+                    context.getExecutorsFaction().removeAllianceRequest(otherFaction.getUUID());
+                    otherFaction.removeAllianceRequest(context.getExecutorsFaction().getUUID());
+                }
+            });
         }
     }
 }

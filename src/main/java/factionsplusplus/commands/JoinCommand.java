@@ -69,8 +69,13 @@ public class JoinCommand extends Command {
                 .with("name", context.getPlayer().getName())
                 .with("faction", target.getName())
         );
-        this.dataService.updatePlayersFactionRole(target, context.getPlayer(), GroupRole.Member);
-        this.dataService.removeFactionInvite(target, context.getPlayer());
-        context.replyWith("AlertJoinedFaction");
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
+                dataService.removeFactionInvite(target, context.getPlayer());
+                context.replyWith("AlertJoinedFaction");
+            }
+        });
     }
 }

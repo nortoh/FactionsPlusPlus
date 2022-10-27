@@ -7,6 +7,8 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.bukkit.Bukkit;
+
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.builders.CommandBuilder;
@@ -35,7 +37,12 @@ public class AutoClaimCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        context.getExecutorsFaction().toggleAutoClaim();
-        context.replyWith("AutoclaimToggled");
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().toggleAutoClaim();
+                context.replyWith("AutoclaimToggled");
+            }
+        });
     }
 }

@@ -83,11 +83,16 @@ public class CreateCommand extends Command {
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (! createEvent.isCancelled()) {
-            this.factionRepository.create(playerFaction);
-            context.replyWith(
-                this.constructMessage("FactionCreated")
-                    .with("name", factionName)
-            );
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    factionRepository.create(playerFaction);
+                    context.replyWith(
+                        constructMessage("FactionCreated")
+                            .with("name", factionName)
+                    );
+                }
+            });
         }
     }
 }

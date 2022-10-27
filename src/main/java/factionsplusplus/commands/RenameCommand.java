@@ -82,14 +82,12 @@ public class RenameCommand extends Command {
             return;
         }
 
-        // change name
-        context.getExecutorsFaction().setName(newName);
-        context.replyWith("FactionNameChanged");
-
-        // Prefix (if it was unset)
-        if (context.getExecutorsFaction().getPrefix().equalsIgnoreCase(oldName)) context.getExecutorsFaction().setPrefix(newName);
-
-        // Save again to overwrite current data
-        this.dataService.save();
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().setName(newName); // setName will handle changing prefix too, if necessary
+                context.replyWith("FactionNameChanged");
+            }
+        });
     }
 }
