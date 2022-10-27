@@ -84,7 +84,7 @@ public class JoinHandler implements Listener {
     private void handleDynmapMapVisibility(UUID uuid) {
         Faction playerFaction = this.dataService.getPlayersFaction(uuid);
 
-        if (playerFaction != null && ! playerFaction.getEnemyFactions().isEmpty()) {
+        if (playerFaction != null && ! playerFaction.getEnemies().isEmpty()) {
             this.dynmapIntegrationService.changePlayersVisibility(List.of(uuid), false);
             return;
         }

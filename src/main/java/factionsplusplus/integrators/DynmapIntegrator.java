@@ -248,7 +248,7 @@ public class DynmapIntegrator {
 
     private String buildNationPopupText(Faction f) {
         UUIDChecker uuidChecker = new UUIDChecker();
-        String nationMembers = f.getMembers()
+        final String nationMembers = f.getMembers()
             .keySet()
             .stream()
             .map(Bukkit::getOfflinePlayer)
@@ -263,10 +263,10 @@ public class DynmapIntegrator {
             message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";
         }
         if (f.isLiege()) {
-            message += "Vassals: " + f.getVassalsSeparatedByCommas() + "<br/>";
+            message += "Vassals: " + this.factionService.getCommaSeparatedFactionNames(f.getVassals()) + "<br/>";
         }
-        message += "Allied With: " + f.getAlliesSeparatedByCommas() + "<br/>" +
-                "At War With: " + f.getEnemiesSeparatedByCommas() + "<br/>" +
+        message += "Allied With: " + this.factionService.getCommaSeparatedFactionNames(f.getAllies()) + "<br/>" +
+                "At War With: " + this.factionService.getCommaSeparatedFactionNames(f.getEnemies()) + "<br/>" +
                 "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
                 this.dataService.getClaimedChunksForFaction(f).size(),

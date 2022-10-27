@@ -104,7 +104,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "faction_ally_count": // The total amount of allies the faction the player is in has
                 return String.valueOf(faction.getAllies().size());
             case "faction_enemy_count": // The total amount of enemies the faction the player is in has
-                return String.valueOf(faction.getEnemyFactions().size());
+                return String.valueOf(faction.getEnemies().size());
             case "faction_gate_count": // The total amount of gates the faction the player is in has
                 return String.valueOf(faction.getTotalGates());
             case "faction_vassal_count": // The total amount of vassals the faction the player is in has

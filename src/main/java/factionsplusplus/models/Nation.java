@@ -4,11 +4,14 @@
  */
 package factionsplusplus.models;
 
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.models.interfaces.Diplomatic;
 import factionsplusplus.models.interfaces.Lawful;
 
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 import com.google.gson.annotations.Expose;
@@ -17,45 +20,34 @@ import com.google.gson.annotations.Expose;
  * @author Daniel McCoy Stephenson
  */
 public class Nation extends Group implements Diplomatic, Lawful {
-    @Expose
-    protected final List<UUID> allyFactions = new ArrayList<>();
+    protected Map<UUID, FactionRelationType> relations = new HashMap<>();
     protected List<UUID> attemptedAlliances = new ArrayList<>();
-    @Expose
-    protected final List<UUID> enemyFactions = new ArrayList<>();
     protected List<UUID> attemptedTruces = new ArrayList<>();
     @Expose
     protected final List<String> laws = new ArrayList<>();
 
     @Override
     public void addAlly(UUID allyUUID) {
-        if (! this.isAlly(allyUUID)) this.allyFactions.add(allyUUID);
+        if (! this.isAlly(allyUUID)) this.relations.put(allyUUID, FactionRelationType.Ally);
     }
 
     @Override
     public void removeAlly(UUID allyUUID) {
-        if (this.isAlly(allyUUID)) this.allyFactions.remove(allyUUID);
+        if (this.isAlly(allyUUID)) this.relations.remove(allyUUID);
     }
 
     @Override
     public boolean isAlly(UUID allyUUID) {
-        return this.allyFactions.contains(allyUUID);
+        return this.getRelation(allyUUID) == FactionRelationType.Ally;
     }
 
     @Override
     public List<UUID> getAllies() {
-        return this.allyFactions;
-    }
-
-    @Override
-    public String getAlliesSeparatedByCommas() {
-        String allies = "";
-        for (int i = 0; i < this.allyFactions.size(); i++) {
-            allies = allies + this.allyFactions.get(i);
-            if (i != this.allyFactions.size() - 1) {
-                allies = allies + ", ";
-            }
-        }
-        return allies;
+        return this.relations.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().equals(FactionRelationType.Ally))
+            .map(entry -> entry.getKey())
+            .toList();
     }
 
     @Override
@@ -75,34 +67,26 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public void addEnemy(UUID enemyUUID) {
-        if (! this.isEnemy(enemyUUID)) this.enemyFactions.add(enemyUUID);
+        if (! this.isEnemy(enemyUUID)) this.relations.put(enemyUUID, FactionRelationType.Enemy);
     }
 
     @Override
     public void removeEnemy(UUID enemyUUID) {
-        if (this.isEnemy(enemyUUID)) this.enemyFactions.remove(enemyUUID);
+        if (this.isEnemy(enemyUUID)) this.relations.remove(enemyUUID);
     }
 
     @Override
     public boolean isEnemy(UUID enemyUUID) {
-        return this.enemyFactions.contains(enemyUUID);
+        return this.getRelation(enemyUUID) == FactionRelationType.Enemy;
     }
 
     @Override
-    public List<UUID> getEnemyFactions() {
-        return this.enemyFactions;
-    }
-
-    @Override
-    public String getEnemiesSeparatedByCommas() {
-        String enemies = "";
-        for (int i = 0; i < this.enemyFactions.size(); i++) {
-            enemies = enemies + this.enemyFactions.get(i);
-            if (i != this.enemyFactions.size() - 1) {
-                enemies = enemies + ", ";
-            }
-        }
-        return enemies;
+    public List<UUID> getEnemies() {
+        return this.relations.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().equals(FactionRelationType.Enemy))
+            .map(entry -> entry.getKey())
+            .toList();
     }
 
     @Override
@@ -165,6 +149,14 @@ public class Nation extends Group implements Diplomatic, Lawful {
     @Override
     public List<String> getLaws() {
         return this.laws;
+    }
+
+    public FactionRelationType getRelation(UUID factionUUID) {
+        return this.relations.get(factionUUID);
+    }
+
+    public FactionRelationType getRelation(Faction faction) {
+        return this.getRelation(faction.getUUID());
     }
 
     // helper methods ---------------

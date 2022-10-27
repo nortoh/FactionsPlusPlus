@@ -67,7 +67,7 @@ public class FPP_Faction {
     }
 
     public List<UUID> getEnemies() {
-        return this.faction.getEnemyFactions();
+        return this.faction.getEnemies();
     }
 
     public List<UUID> getAllies() {

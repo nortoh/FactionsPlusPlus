@@ -259,7 +259,7 @@ public class FactionService {
         // Allies (if applicable)
         if (! faction.getAllies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.Allies").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getAllies()))));
         // Enemies (if applicable)
-        if (! faction.getEnemyFactions().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemyFactions()))));
+        if (! faction.getEnemies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemies()))));
         // Power level
         final int claimedChunks = this.claimedChunkRepository.getAllForFaction(faction).size();
         final int cumulativePowerLevel = this.getCumulativePowerLevel(faction);

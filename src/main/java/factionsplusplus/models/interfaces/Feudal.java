@@ -33,8 +33,6 @@ public interface Feudal {
 
     List<UUID> getVassals();
 
-    String getVassalsSeparatedByCommas();
-
     void addAttemptedVassalization(UUID uuid);
 
     boolean hasBeenOfferedVassalization(UUID uuid);
