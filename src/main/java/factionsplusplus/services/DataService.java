@@ -1,6 +1,5 @@
 package factionsplusplus.services;
 
-import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +18,8 @@ import org.bukkit.Chunk;
 import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.constants.GroupRole;
-import factionsplusplus.data.ClaimedChunkDao;
 import factionsplusplus.data.DefaultConfigurationFlagDao;
 import factionsplusplus.data.FactionDao;
-import factionsplusplus.data.PlayerDao;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.PlayerRecord;
@@ -187,14 +184,12 @@ public class DataService {
                     x_position INTEGER NOT NULL,
                     y_position INTEGER NOT NULL,
                     z_position INTEGER NOT NULL,
-                    parent_locked_block_id BINARY(16),
                     player_id BINARY(16) NOT NULL,
                     allow_allies BOOLEAN NOT NULL DEFAULT 0,
                     allow_faction_members BOOLEAN NOT NULL DEFAULT 0,
                     PRIMARY KEY(id),
                     UNIQUE KEY UNIQUE_POSITION (world_id, x_position, y_position, z_position),
                     FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
-                    FOREIGN KEY(parent_locked_block_id) REFERENCES locked_blocks(id) ON DELETE CASCADE,
                     FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
                 )        
             """);
@@ -253,8 +248,8 @@ public class DataService {
         //this.factionRepository.persist();
         //this.claimedChunkRepository.persist();
         //this.playerRecordRepository.persist();
-        this.lockedBlockRepository.persist();
-        this.warRepository.persist();
+        //this.lockedBlockRepository.persist();
+        //this.warRepository.persist();
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
     }
 
