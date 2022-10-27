@@ -55,6 +55,7 @@ public class Faction extends Nation implements Feudal {
         @Assisted FactionBean bean,
         MessageService messageService
     ) {
+        this.uuid = bean.getId();
         this.name = bean.getName();
         this.description = bean.getDescription();
         this.prefix = bean.getDescription();
