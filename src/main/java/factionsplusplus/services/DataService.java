@@ -74,7 +74,6 @@ public class DataService {
         this.ephemeralData = Jdbi.create("jdbc:h2:mem:fpp-ephemeral-data");
         this.persistentData = this.dataProviderService.getPersistentData();
         this.initializePersistentData();
-        this.initializeDefaultConfigurationFlags();
     }
 
     public void initializeEphemeralData() {
@@ -246,7 +245,7 @@ public class DataService {
                     faction_id BINARY(16) NOT NULL,
                     text TEXT NOT NULL,
                     PRIMARY KEY(id),
-                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
         });
@@ -263,6 +262,7 @@ public class DataService {
     }
 
     public void load() {
+        this.initializeDefaultConfigurationFlags();
         this.worldRepository.load();
         this.factionRepository.load();
         this.claimedChunkRepository.load();
