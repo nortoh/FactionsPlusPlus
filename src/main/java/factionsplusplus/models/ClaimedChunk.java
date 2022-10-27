@@ -17,8 +17,9 @@ public class ClaimedChunk extends Territory {
 
     public ClaimedChunk() { }
     
-    public ClaimedChunk(Chunk initialChunk) {
+    public ClaimedChunk(Chunk initialChunk, UUID factionUUID) {
         this.chunk = new LocationData(initialChunk);
+        this.setHolder(factionUUID);
     }
 
     public Chunk getChunk() {
@@ -37,7 +38,7 @@ public class ClaimedChunk extends Territory {
     }
 
     public UUID getWorldUUID() {
-        return this.chunk.getChunk().getWorld().getUID();
+        return this.chunk.getWorld();
     }
 
     public int getX() {

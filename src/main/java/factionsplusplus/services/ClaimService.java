@@ -415,8 +415,7 @@ public class ClaimService {
      * @param world   The world that the claimed chunk is located in.
      */
     private void addClaimedChunk(Chunk chunk, Faction faction, World world) {
-        ClaimedChunk newChunk = new ClaimedChunk(chunk);
-        newChunk.setHolder(faction.getID());
+        ClaimedChunk newChunk = new ClaimedChunk(chunk, faction.getUUID());
         this.dataService.addClaimedChunk(newChunk);       
     }
 

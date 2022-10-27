@@ -47,6 +47,7 @@ public class UnclaimCommand extends Command {
                     new ArgumentBuilder()
                         .setDescription("the chunk radius to unclaim")
                         .expectsInteger()
+                        .isOptional()
                 )
         );
         this.ephemeralData = ephemeralData;
@@ -68,7 +69,8 @@ public class UnclaimCommand extends Command {
         if (context.getRawArguments().length == 0) {
             this.claimService.removeChunkAtPlayerLocation(player, faction);
             this.dynmapService.updateClaimsIfAble();
-            context.replyWith("UnClaimed");
+            // Claim Service currently handles the message that would be sent if the chunk was removed.
+            // TODO: Also, we don't check if the user currently has a claim??
             return;
         }
         int radius = context.getIntegerArgument("radius");
