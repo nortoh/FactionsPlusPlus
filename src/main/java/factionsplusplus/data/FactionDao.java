@@ -74,6 +74,9 @@ public interface FactionDao {
     @SqlUpdate("INSERT INTO faction_relations (source_faction, target_faction, type, updated_at) VALUES (:source, :target, :type, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE type = :type, updated_at = CURRENT_TIMESTAMP")
     void upsertRelation(@Bind("source") UUID source, @Bind("target") UUID target, @Bind("type") FactionRelationType type);
 
+    @SqlUpdate("DELETE FROM faction_relations WHERE source_faction = ? AND target_faction = ?")
+    void deleteRelation(UUID source, UUID target);
+
     @SqlUpdate("INSERT IGNORE INTO faction_invites (faction_id, player_id) VALUES (?, ?)")
     void insertInvite(UUID faction, UUID player);
 
