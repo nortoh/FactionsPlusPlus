@@ -5,9 +5,12 @@ import org.jdbi.v3.sqlobject.config.RegisterFieldMapper;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 import factionsplusplus.beans.PlayerBean;
 import factionsplusplus.models.PlayerRecord;
+
+import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,6 +20,32 @@ public interface PlayerDao {
 
     @SqlUpdate("INSERT IGNORE INTO players (id, power) VALUES (?, ?)")
     void insert(UUID uuid, double initialPower);
+
+    @SqlUpdate("""
+        UPDATE players SET
+            power = :getPower,
+            is_admin_bypassing = :isAdminBypassing,
+            login_count = :getLogins,
+            last_logout = :getLastLogout,
+            offline_power_lost = :getPowerLost,
+        WHERE
+            id = :getUUID
+        )        
+    """)
+    void update(@BindMethods PlayerRecord player);
+
+    @SqlBatch("""
+        UPDATE players SET
+            power = :getPower,
+            is_admin_bypassing = :isAdminBypassing,
+            login_count = :getLogins,
+            last_logout = :getLastLogout,
+            offline_power_lost = :getPowerLost,
+        WHERE
+            id = :getUUID
+        )        
+    """)
+    void update(@BindMethods Collection<PlayerRecord> players);
 
     @SqlUpdate("DELETE FROM players WHERE id = ?")
     void delete(UUID uuid);

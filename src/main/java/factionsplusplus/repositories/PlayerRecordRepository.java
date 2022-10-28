@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.google.inject.Inject;
 
 import java.util.UUID;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -79,20 +80,12 @@ public class PlayerRecordRepository {
         return this.playerStore.size();
     }
 
-    // Write to file
+    // Write to database
+    public void persist(PlayerRecord player) {
+        this.getDAO().update(player);
+    }
+    
     public void persist() {
-        /*File file = new File(this.dataPath);
-        try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .create();
-            file.createNewFile();
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(this.playerStore, PlayerRecordRepository.JSON_TYPE));
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }*/
+        this.getDAO().update(this.playerStore.values());
     }
 }

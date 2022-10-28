@@ -251,6 +251,9 @@ public class DataService {
         });
     }
 
+    /*
+     * Saves all data in memory to disk. In most cases, data is written immediately. Data that is updated often may be saved using this function.
+     */
     public void save() {
         //this.worldRepository.persist();
         //this.factionRepository.persist();
@@ -258,6 +261,7 @@ public class DataService {
         //this.playerRecordRepository.persist();
         //this.lockedBlockRepository.persist();
         //this.warRepository.persist();
+        this.playerRecordRepository.persist(); // save player stats
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
     }
 
@@ -371,13 +375,6 @@ public class DataService {
 
     public Collection<Faction> getFactions() {
         return this.factionRepository.all().values();
-    }
-
-    public void removeFactionMember(OfflinePlayer player, Faction faction) {
-        this.persistentData.useExtension(FactionDao.class, dao -> {
-            dao.deleteMember(faction.getUUID(), player.getUniqueId());
-        });
-        faction.getMembers().remove(player.getUniqueId());
     }
 
     public void addFactionInvite(Faction faction, OfflinePlayer player) {

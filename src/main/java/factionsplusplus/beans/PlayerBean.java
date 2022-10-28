@@ -3,6 +3,7 @@ package factionsplusplus.beans;
 import java.util.UUID;
 
 import org.jdbi.v3.core.mapper.Nested;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 import factionsplusplus.models.PlayerStats;
 import lombok.Data;
@@ -13,4 +14,6 @@ public class PlayerBean {
     @Nested
     private PlayerStats stats;
     private double power;
+    @ColumnName("is_admin_bypassing")
+    private boolean adminBypassing;
 }

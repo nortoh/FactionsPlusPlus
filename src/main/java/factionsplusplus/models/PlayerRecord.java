@@ -33,6 +33,8 @@ public class PlayerRecord implements Identifiable {
     @Expose
     @ColumnName("power")
     private double powerLevel = 0;
+    @ColumnName("is_admin_bypassing")
+    private boolean adminBypass = false;
 
     private final MessageService messageService;
 
@@ -54,6 +56,7 @@ public class PlayerRecord implements Identifiable {
         this.uuid = bean.getId();
         this.stats = bean.getStats();
         this.powerLevel = bean.getPower();
+        this.adminBypass = bean.isAdminBypassing();
         this.messageService = messageService;
     }
 
@@ -73,6 +76,13 @@ public class PlayerRecord implements Identifiable {
         this.powerLevel = newPower;
     }
 
+    public boolean isAdminBypassing() {
+        return this.adminBypass;
+    }
+
+    public void setAdminBypass(boolean value) {
+        this.adminBypass = value;
+    }
 
     // Convenience methods
     public int getLogins() {
