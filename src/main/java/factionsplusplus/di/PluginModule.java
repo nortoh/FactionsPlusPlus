@@ -27,6 +27,7 @@ public class PluginModule extends AbstractModule {
             .toInstance(this.factionsPlusPlus.getVersion());
         install(new FactoryModuleBuilder().build(InteractionContextFactory.class));
         install(new FactoryModuleBuilder().build(FactionFactory.class));
+        install(new FactoryModuleBuilder().build(LockedBlockFactory.class));
     }
 
     public Injector createInjector() {
