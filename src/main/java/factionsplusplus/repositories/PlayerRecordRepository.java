@@ -37,7 +37,7 @@ public class PlayerRecordRepository {
 
     // Save a record after creating
     public void create(PlayerRecord record) {
-        this.getDAO().insert(record, record.getPower());
+        this.getDAO().insert(record);
         this.playerStore.put(record.getPlayerUUID(), record);
     }
 

@@ -11,8 +11,8 @@ import java.util.UUID;
 import java.util.Map;
 
 public interface PlayerDao {
-    @SqlUpdate("INSERT IGNORE INTO players (id, power) VALUES (:getUUID, ?)")
-    void insert(@BindMethods PlayerRecord player, double initialPower);
+    @SqlUpdate("INSERT IGNORE INTO players (id, power) VALUES (:getPlayerUUID, :getPower)")
+    void insert(@BindMethods PlayerRecord player);
 
     @SqlUpdate("INSERT IGNORE INTO players (id, power) VALUES (?, ?)")
     void insert(UUID uuid, double initialPower);
