@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.utils.RelationChecker;
+import factionsplusplus.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -16,7 +17,6 @@ import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import preponderous.ponder.misc.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,7 +65,7 @@ public class EffectHandler implements Listener {
     public void handle(LingeringPotionSplashEvent event) {
         Player thrower = (Player) event.getEntity().getShooter();
         AreaEffectCloud cloud = event.getAreaEffectCloud();
-        Pair<Player, AreaEffectCloud> storedCloud = new Pair<>(thrower, cloud);
+        Pair<Player, AreaEffectCloud> storedCloud = Pair.of(thrower, cloud);
         this.ephemeralData.getActiveAOEClouds().add(storedCloud);
         this.addScheduledTaskToRemoveCloudFromEphemeralData(cloud, storedCloud);
     }
@@ -139,7 +139,7 @@ public class EffectHandler implements Listener {
         if (storedCloudPair == null) {
             return null;
         }
-        return storedCloudPair.getLeft();
+        return storedCloudPair.left();
     }
 
     private List<Player> getAlliedVictims(AreaEffectCloudApplyEvent event, Player attacker) {
@@ -169,7 +169,7 @@ public class EffectHandler implements Listener {
 
     private Pair<Player, AreaEffectCloud> getCloudPairStoredInEphemeralData(AreaEffectCloud cloud) {
         for (Pair<Player, AreaEffectCloud> storedCloudPair : this.ephemeralData.getActiveAOEClouds()) {
-            if (storedCloudPair.getRight() == cloud) {
+            if (storedCloudPair.right() == cloud) {
                 return storedCloudPair;
             }
         }

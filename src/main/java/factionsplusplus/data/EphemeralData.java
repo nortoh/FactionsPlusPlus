@@ -11,7 +11,7 @@ import factionsplusplus.models.InteractionContext;
 
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Player;
-import preponderous.ponder.misc.Pair;
+import factionsplusplus.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
