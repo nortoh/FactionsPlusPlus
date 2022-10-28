@@ -96,10 +96,10 @@ public interface FactionDao {
             description,
             expected_data_type,
             default_value,
-            f.value value
+            `value`
         FROM default_flags
-        LEFT JOIN faction_flags f
-            ON f.flag_name = name AND f.faction_id = ?
+        LEFT JOIN faction_flags
+            ON flag_name = name AND faction_id = ?
         WHERE type = 1
     """)
     @KeyColumn("name")
@@ -110,13 +110,13 @@ public interface FactionDao {
         INSERT INTO faction_flags (
             faction_id,
             flag_name,
-            value
+            `value`
         ) VALUES (
             :faction,
             :flag,
             :value
         ) ON DUPLICATE KEY UPDATE
-            value = :value
+            `value` = :value
     """)
     void upsertFlag(@Bind("faction") UUID factionID, @Bind("flag") String flagName, @Bind("value") String value);
 
