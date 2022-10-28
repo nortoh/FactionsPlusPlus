@@ -7,8 +7,17 @@ package factionsplusplus.models;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import com.google.gson.annotations.Expose;
+import com.google.inject.assistedinject.AssistedInject;
+
+import factionsplusplus.beans.PlayerBean;
+import factionsplusplus.builders.interfaces.GenericMessageBuilder;
+import factionsplusplus.services.MessageService;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jdbi.v3.core.mapper.Nested;
 /**
  * @author Daniel McCoy Stephenson
@@ -24,14 +33,33 @@ public class PlayerRecord {
     @ColumnName("power")
     private double powerLevel = 0;
 
-    public PlayerRecord() { }
+    private final MessageService messageService;
 
-    public PlayerRecord(UUID uuid, int initialLogins, double initialPowerLevel) {
+    @AssistedInject
+    public PlayerRecord(MessageService messageService) { 
+        this.messageService = messageService;
+    }
+
+    @AssistedInject
+    public PlayerRecord(UUID uuid, int initialLogins, double initialPowerLevel, MessageService messageService) {
         this.uuid = uuid;
         this.stats = new PlayerStats(initialLogins);
         this.powerLevel = initialPowerLevel;
+        this.messageService = messageService;
     }
 
+    @AssistedInject
+    public PlayerRecord(PlayerBean bean, MessageService messageService) {
+        this.uuid = bean.getId();
+        this.stats = bean.getStats();
+        this.powerLevel = bean.getPower();
+        this.messageService = messageService;
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
+    }
+    
     public UUID getPlayerUUID() {
         return this.uuid;
     }
@@ -84,5 +112,20 @@ public class PlayerRecord {
 
     public void increasePowerLostBy(double amount) {
         this.stats.increasePowerLostBy(amount);
+    }
+
+    // Get as bukkit OfflinePlayer
+    public OfflinePlayer asBukkitOfflinePlayer() {
+        return Bukkit.getOfflinePlayer(this.uuid);
+    }
+
+    // Get as bukkit Player
+    public Player asBukkitPlayer() {
+        return Bukkit.getPlayer(this.uuid);
+    }
+
+    // Send a message to this player
+    public void message(GenericMessageBuilder builder) {
+        this.messageService.sendLocalizedMessage((CommandSender)this.asBukkitOfflinePlayer(), builder);
     }
 }

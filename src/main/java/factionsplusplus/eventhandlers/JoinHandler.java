@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.events.FactionJoinEvent;
+import factionsplusplus.factories.PlayerFactory;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
@@ -42,6 +43,7 @@ public class JoinHandler implements Listener {
     private final MessageService messageService;
     private final ClaimService claimService;
     private final DynmapIntegrationService dynmapIntegrationService;
+    private final PlayerFactory playerFactory;
 
     @Inject
     public JoinHandler(
@@ -52,7 +54,8 @@ public class JoinHandler implements Listener {
         DataService dataService,
         MessageService messageService,
         ClaimService claimService,
-        DynmapIntegrationService dynmapIntegrationService
+        DynmapIntegrationService dynmapIntegrationService,
+        PlayerFactory playerFactory
     ) {
         this.configService = configService;
         this.logger = logger;
@@ -62,6 +65,7 @@ public class JoinHandler implements Listener {
         this.messageService = messageService;
         this.claimService = claimService;
         this.dynmapIntegrationService = dynmapIntegrationService;
+        this.playerFactory = playerFactory;
     }
 
     @EventHandler()
@@ -133,7 +137,7 @@ public class JoinHandler implements Listener {
     }
 
     private void createRecordsForPlayer(Player player) {
-        PlayerRecord record = new PlayerRecord(player.getUniqueId(), 1, this.configService.getInt("initialPowerLevel"));
+        PlayerRecord record = this.playerFactory.create(player.getUniqueId(), 1, this.configService.getInt("initialPowerLevel"));
         this.dataService.getPlayerRecordRepository().create(record);
     }
 

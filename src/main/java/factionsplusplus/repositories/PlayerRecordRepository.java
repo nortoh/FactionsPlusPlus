@@ -9,27 +9,32 @@ import java.util.Map;
 import java.util.HashMap;
 
 import factionsplusplus.data.PlayerDao;
+import factionsplusplus.factories.PlayerFactory;
 import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
+
+import java.util.stream.Collectors;
 
 @Singleton
 public class PlayerRecordRepository {
     private Map<UUID, PlayerRecord> playerStore = new HashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
+    private final PlayerFactory playerFactory;
 
     @Inject
-    public PlayerRecordRepository(Logger logger, DataProviderService dataProviderService) {
+    public PlayerRecordRepository(Logger logger, DataProviderService dataProviderService, PlayerFactory playerFactory) {
         this.logger = logger;
         this.dataProviderService = dataProviderService;
+        this.playerFactory = playerFactory;
     }
 
     // Load records
     public void load() {
         try {
             this.playerStore.clear();
-            this.playerStore = this.getDAO().get();
+            this.playerStore = this.getDAO().get().stream().map(this.playerFactory::create).collect(Collectors.toMap(player -> (UUID)player.getUUID(), player -> (PlayerRecord)player));
         } catch(Exception e) {
             this.logger.error(String.format("Error loading players: %s", e.getMessage()));
         }
