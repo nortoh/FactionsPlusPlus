@@ -4,6 +4,8 @@
  */
 package factionsplusplus.commands;
 
+import org.bukkit.Bukkit;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -54,16 +56,17 @@ public class BreakAllianceCommand extends Command {
             return;
         }
 
-        context.getExecutorsFaction().removeAlly(otherFaction.getID());
-        otherFaction.removeAlly(context.getExecutorsFaction().getID());
-        context.messagePlayersFaction(
-            this.constructMessage("AllianceBrokenWith")
-                .with("faction", otherFaction.getName())
-        );
-        context.messageFaction(
-            otherFaction, 
-            this.constructMessage("AlertAllianceHasBeenBroken")
-                .with("faction", context.getExecutorsFaction().getName())
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().clearRelation(otherFaction.getID());
+                context.getExecutorsFaction().message(
+                    constructMessage("AllianceBrokenWith").with("faction", otherFaction.getName())
+                );
+                otherFaction.message(
+                    constructMessage("AlertAllianceHasBeenBroken").with("faction", context.getExecutorsFaction().getName())
+                );
+            }
+        });
     }
 }
