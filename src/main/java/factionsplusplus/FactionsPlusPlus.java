@@ -18,11 +18,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import preponderous.ponder.minecraft.bukkit.abs.PonderBukkitPlugin;
-import preponderous.ponder.minecraft.bukkit.tools.EventHandlerRegistry;
 
 import java.io.File;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.inject.Provider;
@@ -31,7 +31,7 @@ import javax.inject.Provider;
  * @author Daniel McCoy Stephenson
  * @since May 30th, 2020
  */
-public class FactionsPlusPlus extends PonderBukkitPlugin {
+public class FactionsPlusPlus extends JavaPlugin {
 
     private final String pluginVersion = "v" + getDescription().getVersion();
     @Inject private ActionBarService actionBarService;
@@ -185,12 +185,11 @@ public class FactionsPlusPlus extends PonderBukkitPlugin {
      * Registers the event handlers of the plugin using Ponder.
      */
     private void registerEventHandlers() {
-        ArrayList<Listener> listeners = this.initializeListeners();
-        EventHandlerRegistry eventHandlerRegistry = new EventHandlerRegistry();
-        eventHandlerRegistry.registerEventHandlers(listeners, this);
+        this.initializeListeners().stream()
+            .forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
     }
 
-    private ArrayList<Listener> initializeListeners() {
+    private List<Listener> initializeListeners() {
         return new ArrayList<>(Arrays.asList(
                 this.getInjector().getInstance(ChatHandler.class),
                 this.getInjector().getInstance(DamageHandler.class),
