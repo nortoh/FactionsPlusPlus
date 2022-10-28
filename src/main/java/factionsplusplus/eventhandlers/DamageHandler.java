@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.objects.domain.Duel;
+import factionsplusplus.models.Duel;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
