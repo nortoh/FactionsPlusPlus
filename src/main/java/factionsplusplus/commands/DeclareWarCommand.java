@@ -8,11 +8,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.events.FactionWarStartEvent;
-import factionsplusplus.factories.WarFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.repositories.FactionRepository;
+import factionsplusplus.repositories.WarRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.FactionService;
 import org.bukkit.Bukkit;
@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 
@@ -30,16 +31,16 @@ import factionsplusplus.builders.ArgumentBuilder;
 public class DeclareWarCommand extends Command {
 
     private final ConfigService configService;
-    private final WarFactory warFactory;
     private final FactionRepository factionRepository;
     private final FactionService factionService;
+    private final WarRepository warRepository;
 
     @Inject
     public DeclareWarCommand(
         ConfigService configService,
-        WarFactory warFactory,
         FactionRepository factionRepository,
-        FactionService factionService
+        FactionService factionService,
+        WarRepository warRepository
     ) {
         super(
             new CommandBuilder()
@@ -69,9 +70,9 @@ public class DeclareWarCommand extends Command {
                 )
         );
         this.configService = configService;
-        this.warFactory = warFactory;
         this.factionRepository = factionRepository;
         this.factionService = factionService;
+        this.warRepository = warRepository;
     }
 
     public void execute(CommandContext context) {
@@ -131,9 +132,13 @@ public class DeclareWarCommand extends Command {
         Bukkit.getPluginManager().callEvent(warStartEvent);
         if (! warStartEvent.isCancelled()) {
             // Make enemies.
-            faction.addEnemy(opponent.getID());
-            opponent.addEnemy(faction.getID());
-            warFactory.createWar(faction, opponent, context.getStringArgument("reason"));
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    faction.upsertRelation(opponent.getID(), FactionRelationType.Enemy);
+                    warRepository.create(faction, opponent, context.getStringArgument("reason"));
+                }
+            });
         }
     }
 }
