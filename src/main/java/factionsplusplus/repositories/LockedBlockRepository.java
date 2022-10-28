@@ -30,7 +30,7 @@ public class LockedBlockRepository {
     public void load() {
         try {
             this.lockedBlockStore.clear();
-            this.lockedBlockStore = this.getDAO().get();
+            this.lockedBlockStore = this.getDAO().getAll();
         } catch(Exception e) {
             this.logger.log(String.format("Error loading locked blocks: %s", e.getMessage()));
         }
@@ -69,6 +69,18 @@ public class LockedBlockRepository {
     // Retrieve all locked blocks
     public List<LockedBlock> all() {
         return this.lockedBlockStore;
+    }
+
+    public void persist(LockedBlock lock) {
+        this.getDAO().update(lock);
+    }
+
+    public void persistPlayerAccess(LockedBlock lock, UUID player) {
+        this.getDAO().insertPlayerAccess(lock.getUUID(), player);
+    }
+
+    public void deletePlayerAccess(LockedBlock lock, UUID player) {
+        this.getDAO().removePlayerAccess(lock.getUUID(), player);
     }
 
     // Get the DAO for this repository

@@ -1,6 +1,7 @@
 package factionsplusplus.data;
 
 import org.jdbi.v3.sqlobject.config.RegisterFieldMapper;
+import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 
 import factionsplusplus.models.LockedBlock;
@@ -31,6 +32,15 @@ public interface LockedBlockDao {
     void insert(@BindMethods LockedBlock block);
 
     @SqlUpdate("""
+        UPDATE locked_blocks SET
+            allow_allies = :shouldAllowAllies,
+            allow_faction_members = :shouldAllowFactionMembers
+        WHERE
+            id = :getUUID        
+    """)
+    void update(@BindMethods LockedBlock lock);
+
+    @SqlUpdate("""
         INSERT IGNORE INTO locked_block_access_list (
             locked_block_id,
             player_id
@@ -41,9 +51,22 @@ public interface LockedBlockDao {
     """)
     void insertPlayerAccess(UUID lockId, UUID playerId);
 
+    @SqlUpdate("REMOVE FROM locked_block_access_list WHERE player_id = :player AND locked_block_id = :lock")
+    void removePlayerAccess(@Bind("lock") UUID lock, @Bind("player") UUID player);
+
     @SqlQuery("SELECT * FROM locked_blocks")
     @RegisterFieldMapper(LockedBlock.class)
     List<LockedBlock> get();
+
+    @SqlQuery("SELECT player_id FROM locked_block_access_list WHERE locked_block_id = ?")
+    List<UUID> getAccessList(UUID lockUUID);
+
+    default List<LockedBlock> getAll() {
+        List<LockedBlock> results = get();
+        results.stream()
+            .forEach(lock -> lock.setAccessList(getAccessList(lock.getUUID())));
+        return results;
+    }
 
     default void create(LockedBlock block) {
         insert(block);

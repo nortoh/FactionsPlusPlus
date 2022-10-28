@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.models.AccessList;
+import factionsplusplus.factories.LockedBlockFactory;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
@@ -37,6 +37,7 @@ public class LockService {
     private final MessageService messageService;
     private final EphemeralData ephemeralData;
     private final DataService dataService;
+    private final LockedBlockFactory lockedBlockFactory;
     private final static GenericBlockType[] LOCKABLE_BLOCKS = {
       GenericBlockType.Door,
       GenericBlockType.Chest,
@@ -48,10 +49,11 @@ public class LockService {
     };
 
     @Inject
-    public LockService(MessageService messageService, EphemeralData ephemeralData, DataService dataService) {
+    public LockService(MessageService messageService, EphemeralData ephemeralData, DataService dataService, LockedBlockFactory lockedBlockFactory) {
         this.messageService = messageService;
         this.ephemeralData = ephemeralData;
         this.dataService = dataService;
+        this.lockedBlockFactory = lockedBlockFactory;
     }
 
     public void handleLockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
@@ -90,7 +92,7 @@ public class LockService {
 
     public void lockBlock(Player player, Block block) {
         this.dataService.getLockedBlockRepository().create(
-            new LockedBlock(
+            this.lockedBlockFactory.create(
                 player.getUniqueId(),
                 this.dataService.getPlayersFaction(player.getUniqueId()).getUUID(),
                 block.getX(),
@@ -156,8 +158,7 @@ public class LockService {
 
     public void handleCheckingAccess(PlayerInteractEvent event, LockedBlock lockedBlock, Player player) {
         this.messageService.sendLocalizedMessage(player, "FollowingPlayersHaveAccess");
-        AccessList acl = lockedBlock.getAccessList();
-        for (UUID playerUUID : acl.getPlayers()) {
+        for (UUID playerUUID : lockedBlock.getAccessList()) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(playerUUID);
             this.messageService.sendLocalizedMessage(
                 player, 
@@ -165,8 +166,8 @@ public class LockService {
                     .with("name", target.getName())
             );
         }
-        if (acl.alliesPermitted()) this.messageService.sendLocalizedMessage(player, "FPHAAllies");
-        if (acl.factionMembersPermitted()) this.messageService.sendLocalizedMessage(player, "FPHAMembers");
+        if (lockedBlock.shouldAllowAllies()) this.messageService.sendLocalizedMessage(player, "FPHAAllies");
+        if (lockedBlock.shouldAllowFactionMembers()) this.messageService.sendLocalizedMessage(player, "FPHAMembers");
         this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         event.setCancelled(true);
     }

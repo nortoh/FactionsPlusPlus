@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.factories.LockedBlockFactory;
 import factionsplusplus.models.Gate;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
@@ -57,6 +58,7 @@ public class InteractionHandler implements Listener {
     private final GateService gateService;
     private final DataService dataService;
     private final ClaimService claimService;
+    private final LockedBlockFactory lockedBlockFactory;
 
     @Inject
     public InteractionHandler(
@@ -68,7 +70,8 @@ public class InteractionHandler implements Listener {
         GateService gateService,
         MessageService messageService,
         DataService dataService,
-        ClaimService claimService
+        ClaimService claimService,
+        LockedBlockFactory lockedBlockFactory
     ) {
         this.interactionAccessChecker = interactionAccessChecker;
         this.blockChecker = blockChecker;
@@ -79,6 +82,7 @@ public class InteractionHandler implements Listener {
         this.messageService = messageService;
         this.claimService = claimService;
         this.dataService = dataService;
+        this.lockedBlockFactory = lockedBlockFactory;
     }
 
     @EventHandler()
@@ -172,12 +176,12 @@ public class InteractionHandler implements Listener {
 
                     if (this.dataService.isBlockLocked(leftChest)) {
                         // lock right chest
-                        LockedBlock right = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getUID());
+                        LockedBlock right = this.lockedBlockFactory.create(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getUID());
                         this.dataService.getLockedBlockRepository().create(right);
                     } else {
                         if (this.dataService.isBlockLocked(rightChest)) {
                             // lock left chest
-                            LockedBlock left = new LockedBlock(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getUID());
+                            LockedBlock left = this.lockedBlockFactory.create(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getUID());
                             this.dataService.getLockedBlockRepository().create(left);
                         }
                     }
@@ -222,10 +226,10 @@ public class InteractionHandler implements Listener {
             Faction playersFaction = this.dataService.getFactionRepository().getForPlayer(player);
             Faction ownersFaction = this.dataService.getFactionRepository().getForPlayer(lockedBlock.getOwner());
             if (playersFaction != null && ownersFaction != null) {
-                if (lockedBlock.getAccessList().factionMembersPermitted() && playersFaction.equals(ownersFaction)) playerHasAccess = true;
-                if (lockedBlock.getAccessList().alliesPermitted() && ownersFaction.isAlly(playersFaction.getID())) playerHasAccess = true;
+                if (lockedBlock.shouldAllowFactionMembers() && playersFaction.equals(ownersFaction)) playerHasAccess = true;
+                if (lockedBlock.shouldAllowAllies() && ownersFaction.isAlly(playersFaction.getID())) playerHasAccess = true;
             }
-            if (lockedBlock.getAccessList().playerOnAccessList(player.getUniqueId())) playerHasAccess = true;
+            if (lockedBlock.hasAccess(player.getUniqueId())) playerHasAccess = true;
             boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
             if (! playerHasAccess && ! isPlayerBypassing) {
                 UUIDChecker uuidChecker = new UUIDChecker();
