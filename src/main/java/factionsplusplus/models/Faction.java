@@ -165,12 +165,21 @@ public class Faction extends Nation implements Feudal {
         FactionRelationType relation = this.relations.get(uuid);
         if (relation != null && relation == type) return;
         // persist
-        this.relations.put(uuid, type);
+        this.updateRelation(uuid, type);
         this.factionRepository.persistRelation(this.getUUID(), uuid, type);        
     }
 
     public void updateRelation(UUID uuid, FactionRelationType type) {
         this.relations.put(uuid, type);
+    }
+
+    public void clearRelation(UUID uuid) {
+        this.removeRelation(uuid);
+        this.factionRepository.deleteRelation(this.getUUID(), uuid);
+    }
+
+    public void removeRelation(UUID uuid) {
+        this.relations.remove(uuid);
     }
 
     // Prefix
