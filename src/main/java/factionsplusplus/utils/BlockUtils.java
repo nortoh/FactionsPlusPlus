@@ -55,6 +55,15 @@ public class BlockUtils {
         return ! chestData.getType().equals(Chest.Type.SINGLE);
     }
 
+    public static boolean isChest(Block block) {
+        return toGenericType(block) == GenericBlockType.Chest;
+    }
+
+    public static boolean isDoor(Block block) {
+        return toGenericType(block) == GenericBlockType.Door;
+    }
+
+
     // TODO: probably throw an error here if something that isn't a chest is sent here
     public static Block[] getDoubleChestSides(Block block) {
         org.bukkit.block.DoubleChest doubleChest = (org.bukkit.block.DoubleChest)((org.bukkit.block.Chest) block.getState()).getInventory().getHolder();

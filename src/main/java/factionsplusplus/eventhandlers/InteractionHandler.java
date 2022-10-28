@@ -16,9 +16,9 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.services.*;
+import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
 import factionsplusplus.utils.PlayerUtils;
-import factionsplusplus.utils.extended.BlockChecker;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -51,7 +51,6 @@ import java.util.Objects;
 public class InteractionHandler implements Listener {
     private final InteractionAccessChecker interactionAccessChecker;
     private final MessageService messageService;
-    private final BlockChecker blockChecker;
     private final FactionsPlusPlus factionsPlusPlus;
     private final LockService lockService;
     private final EphemeralData ephemeralData;
@@ -63,7 +62,6 @@ public class InteractionHandler implements Listener {
     @Inject
     public InteractionHandler(
         InteractionAccessChecker interactionAccessChecker,
-        BlockChecker blockChecker,
         FactionsPlusPlus factionsPlusPlus,
         LockService lockService,
         EphemeralData ephemeralData,
@@ -74,7 +72,6 @@ public class InteractionHandler implements Listener {
         LockedBlockFactory lockedBlockFactory
     ) {
         this.interactionAccessChecker = interactionAccessChecker;
-        this.blockChecker = blockChecker;
         this.factionsPlusPlus = factionsPlusPlus;
         this.lockService = lockService;
         this.ephemeralData = ephemeralData;
@@ -117,7 +114,7 @@ public class InteractionHandler implements Listener {
 
             this.dataService.getLockedBlockRepository().delete(block);
 
-            if (this.blockChecker.isDoor(block)) {
+            if (BlockUtils.isDoor(block)) {
                 this.removeLocksAboveAndBelowTheOriginalBlockAsWell(block);
             }
         }
@@ -127,10 +124,10 @@ public class InteractionHandler implements Listener {
 
         Block relativeUp = block.getRelative(BlockFace.UP);
         Block relativeDown = block.getRelative(BlockFace.DOWN);
-        if (this.blockChecker.isDoor(relativeUp)) {
+        if (BlockUtils.isDoor(relativeUp)) {
             this.dataService.getLockedBlockRepository().delete(relativeUp);
         }
-        if (this.blockChecker.isDoor(relativeDown)) {
+        if (BlockUtils.isDoor(relativeDown)) {
             this.dataService.getLockedBlockRepository().delete(relativeDown);
         }
     }
@@ -150,8 +147,8 @@ public class InteractionHandler implements Listener {
             return;
         }
 
-        if (blockChecker.isChest(event.getBlock())) {
-            boolean isNextToNonOwnedLockedChest = this.blockChecker.isNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
+        if (BlockUtils.isChest(event.getBlock())) {
+            boolean isNextToNonOwnedLockedChest = this.dataService.isBlockNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest) {
                 this.messageService.sendLocalizedMessage(player, "CannotPlaceChestsNextToUnownedLockedChests");
                 event.setCancelled(true);
@@ -162,7 +159,7 @@ public class InteractionHandler implements Listener {
             factionsPlusPlus.getServer().getScheduler().runTaskLater(factionsPlusPlus, () -> {
                 Block block = player.getWorld().getBlockAt(event.getBlock().getLocation());
 
-                if (! this.blockChecker.isChest(block)) {
+                if (! BlockUtils.isChest(block)) {
                     // There has been 2 seconds since we last confirmed this was a chest, double-checking isn't ever bad :)
                     return;
                 }
@@ -192,8 +189,8 @@ public class InteractionHandler implements Listener {
 
         // if hopper
         if (event.getBlock().getType() == Material.HOPPER) {
-            boolean isNextToNonOwnedLockedChest = this.blockChecker.isNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
-            boolean isUnderOrAboveNonOwnedLockedChest = this.blockChecker.isUnderOrAboveNonOwnedLockedChest(event.getPlayer(), event.getBlock());
+            boolean isNextToNonOwnedLockedChest = this.dataService.isBlockNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
+            boolean isUnderOrAboveNonOwnedLockedChest = this.dataService.isBlockUnderOrAboveNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest || isUnderOrAboveNonOwnedLockedChest) {
                 event.setCancelled(true);
                 this.messageService.sendLocalizedMessage(player, "CannotPlaceHoppersNextToUnownedLockedChests");

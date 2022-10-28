@@ -19,10 +19,10 @@ import factionsplusplus.events.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
+import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.ChunkUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.extended.BlockChecker;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -45,7 +45,6 @@ public class ClaimService {
     private final FactionService factionService;
     private final InteractionAccessChecker interactionAccessChecker;
     private final Logger logger;
-    private final BlockChecker blockChecker;
 
     @Inject
     public ClaimService(
@@ -55,8 +54,7 @@ public class ClaimService {
         EphemeralData ephemeralData,
         FactionService factionService,
         InteractionAccessChecker interactionAccessChecker,
-        Logger logger,
-        BlockChecker blockChecker
+        Logger logger
     ) {
         this.configService = configService;
         this.messageService = messageService;
@@ -65,7 +63,6 @@ public class ClaimService {
         this.factionService = factionService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.logger = logger;
-        this.blockChecker = blockChecker;
     }
 
     /**
@@ -247,7 +244,7 @@ public class ClaimService {
         if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
 
             Block block = event.getClickedBlock();
-            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && this.blockChecker.isDoor(block)) {
+            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -266,7 +263,7 @@ public class ClaimService {
         if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
 
             Block block = event.getClickedBlock();
-            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && this.blockChecker.isDoor(block)) {
+            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -516,7 +513,7 @@ public class ClaimService {
     private boolean canBlockBeInteractedWith(PlayerInteractEvent event) {
         if (event.getClickedBlock() != null) {
             // CHEST
-            if (this.blockChecker.isChest(event.getClickedBlock())) {
+            if (BlockUtils.isChest(event.getClickedBlock())) {
                 return false;
             }
             switch (event.getClickedBlock().getType()) {

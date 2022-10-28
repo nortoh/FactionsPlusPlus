@@ -31,6 +31,7 @@ import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.Gate;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.repositories.*;
+import factionsplusplus.utils.BlockUtils;
 
 
 @Singleton
@@ -521,5 +522,55 @@ public class DataService {
 
     public World getWorld(UUID uuid) {
         return this.worldRepository.get(uuid);
+    }
+
+    public boolean isBlockNextToNonOwnedLockedChest(OfflinePlayer player, Block block) {
+        // define blocks
+        Block neighbor1 = block.getWorld().getBlockAt(block.getX() + 1, block.getY(), block.getZ());
+        Block neighbor2 = block.getWorld().getBlockAt(block.getX() - 1, block.getY(), block.getZ());
+        Block neighbor3 = block.getWorld().getBlockAt(block.getX(), block.getY(), block.getZ() + 1);
+        Block neighbor4 = block.getWorld().getBlockAt(block.getX(), block.getY(), block.getZ() - 1);
+
+        if (BlockUtils.isChest(neighbor1)) {
+            if (this.isBlockLocked(neighbor1) && this.getLockedBlock(neighbor1).getOwner() != player.getUniqueId()) {
+                return true;
+            }
+        }
+
+        if (BlockUtils.isChest(neighbor2)) {
+            if (this.isBlockLocked(neighbor2) && this.getLockedBlock(neighbor2).getOwner() != player.getUniqueId()) {
+                return true;
+            }
+        }
+
+        if (BlockUtils.isChest(neighbor3)) {
+            if (this.isBlockLocked(neighbor3) && this.getLockedBlock(neighbor3).getOwner() != player.getUniqueId()) {
+                return true;
+            }
+        }
+
+        if (BlockUtils.isChest(neighbor4)) {
+            return this.isBlockLocked(neighbor4) && this.getLockedBlock(neighbor4).getOwner() != player.getUniqueId();
+        }
+
+        return false;
+    }
+
+    public boolean isBlockUnderOrAboveNonOwnedLockedChest(OfflinePlayer player, Block block) {
+        // define blocks
+        Block neighbor1 = block.getWorld().getBlockAt(block.getX(), block.getY() + 1, block.getZ());
+        Block neighbor2 = block.getWorld().getBlockAt(block.getX(), block.getY() - 1, block.getZ());
+
+        if (BlockUtils.isChest(neighbor1)) {
+            if (this.isBlockLocked(neighbor1) && this.getLockedBlock(neighbor1).getOwner() != player.getUniqueId()) {
+                return true;
+            }
+        }
+
+        if (BlockUtils.isChest(neighbor2)) {
+            return this.isBlockLocked(neighbor2) && this.getLockedBlock(neighbor2).getOwner() != player.getUniqueId();
+        }
+
+        return false;
     }
 }
