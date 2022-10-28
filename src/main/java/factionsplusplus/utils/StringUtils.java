@@ -31,6 +31,19 @@ public class StringUtils {
         return null;
     }
 
+    /**
+     * The parseAsChatColor method attempts to convert a color string to a bukkit ChatColor
+     * @param color string to conver to ChatColor
+     * @return resolved ChatColor or null
+     * @see org.bukkit.ChatColor
+     */
+    public static ChatColor parseAsChatColor(String color) {
+        return Arrays.stream(ChatColor.values())
+            .filter(c -> c.toString().equalsIgnoreCase(color))
+            .findFirst()
+            .orElse(ChatColor.WHITE);
+    }
+
     public static String colorize(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
     }
