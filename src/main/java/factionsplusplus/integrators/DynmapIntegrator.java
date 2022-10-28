@@ -12,6 +12,7 @@ import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.utils.Logger;
+import factionsplusplus.utils.PlayerUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -20,7 +21,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.dynmap.DynmapCommonAPI;
 import org.dynmap.markers.*;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -247,7 +247,6 @@ public class DynmapIntegrator {
     }
 
     private String buildNationPopupText(Faction f) {
-        UUIDChecker uuidChecker = new UUIDChecker();
         final String nationMembers = f.getMembers()
             .keySet()
             .stream()
@@ -255,7 +254,7 @@ public class DynmapIntegrator {
             .map(OfflinePlayer::getName)
             .collect(Collectors.joining(", "));
         String message = "<h4>" + f.getName() + "</h4>" +
-                "Owner: " + uuidChecker.findPlayerNameBasedOnUUID(f.getOwner().getUUID()) + "<br/>" +
+                "Owner: " + PlayerUtils.parseAsPlayer(f.getOwner().getUUID()).getName() + "<br/>" +
                 "Description: " + f.getDescription() + "<br/>" +
                 "<div style='display: inline;' title='" + nationMembers + "'>Population: " + f.getMembers().size() + "</div><br/>";
 
@@ -500,10 +499,9 @@ public class DynmapIntegrator {
             Faction f = this.dataService.getFaction(holder);
             if (f != null) {
                 for (PlayerRecord record : this.dataService.getPlayerRecords()) {
-                    Faction pf = this.dataService.getPlayersFaction(record.getPlayerUUID());
+                    Faction pf = this.dataService.getPlayersFaction(record.getUUID());
                     if (pf != null && pf.getName().equalsIgnoreCase(holder)) {
-                        UUIDChecker uuidChecker = new UUIDChecker();
-                        plids.add(uuidChecker.findPlayerNameBasedOnUUID(record.getPlayerUUID()));
+                        plids.add(PlayerUtils.parseAsPlayer(record.getUUID()).getName());
                     }
                 }
             }

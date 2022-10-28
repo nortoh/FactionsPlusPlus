@@ -17,6 +17,7 @@ import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.InteractionAccessChecker;
+import factionsplusplus.utils.PlayerUtils;
 import factionsplusplus.utils.extended.BlockChecker;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.Chunk;
@@ -40,7 +41,6 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.InventoryHolder;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
 import java.util.Objects;
 
@@ -232,8 +232,7 @@ public class InteractionHandler implements Listener {
             if (lockedBlock.hasAccess(player.getUniqueId())) playerHasAccess = true;
             boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
             if (! playerHasAccess && ! isPlayerBypassing) {
-                UUIDChecker uuidChecker = new UUIDChecker();
-                String owner = uuidChecker.findPlayerNameBasedOnUUID(lockedBlock.getOwner());
+                String owner = PlayerUtils.parseAsPlayer(lockedBlock.getOwner()).getName();
                 this.messageService.sendLocalizedMessage(
                     player,
                     new MessageBuilder("LockedBy")
