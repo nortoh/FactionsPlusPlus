@@ -27,10 +27,9 @@ public interface PlayerDao {
             is_admin_bypassing = :isAdminBypassing,
             login_count = :getLogins,
             last_logout = :getLastLogout,
-            offline_power_lost = :getPowerLost,
+            offline_power_lost = :getPowerLost
         WHERE
-            id = :getUUID
-        )        
+            id = :getUUID      
     """)
     void update(@BindMethods PlayerRecord player);
 
@@ -40,10 +39,9 @@ public interface PlayerDao {
             is_admin_bypassing = :isAdminBypassing,
             login_count = :getLogins,
             last_logout = :getLastLogout,
-            offline_power_lost = :getPowerLost,
+            offline_power_lost = :getPowerLost
         WHERE
-            id = :getUUID
-        )        
+            id = :getUUID       
     """)
     void update(@BindMethods Collection<PlayerRecord> players);
 

@@ -30,6 +30,7 @@ public class PluginModule extends AbstractModule {
         install(new FactoryModuleBuilder().build(LockedBlockFactory.class));
         install(new FactoryModuleBuilder().build(WorldFactory.class));
         install(new FactoryModuleBuilder().build(WarFactory.class));
+        install(new FactoryModuleBuilder().build(PlayerFactory.class));
     }
 
     public Injector createInjector() {

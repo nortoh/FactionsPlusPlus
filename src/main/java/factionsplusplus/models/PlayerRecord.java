@@ -8,6 +8,8 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import factionsplusplus.beans.PlayerBean;
@@ -46,7 +48,7 @@ public class PlayerRecord implements Identifiable {
     }
 
     @AssistedInject
-    public PlayerRecord(UUID uuid, int initialLogins, double initialPowerLevel, MessageService messageService) {
+    public PlayerRecord(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, MessageService messageService) {
         this.uuid = uuid;
         this.logins = initialLogins;
         this.powerLevel = initialPowerLevel;
@@ -54,7 +56,7 @@ public class PlayerRecord implements Identifiable {
     }
 
     @AssistedInject
-    public PlayerRecord(PlayerBean bean, MessageService messageService) {
+    public PlayerRecord(@Assisted PlayerBean bean, MessageService messageService) {
         this.uuid = bean.getId();
         this.powerLevel = bean.getPower();
         this.adminBypass = bean.isAdminBypassing();
