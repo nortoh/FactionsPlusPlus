@@ -85,6 +85,8 @@ public class FactionRepository {
     public void persistRelation(UUID source, UUID target, FactionRelationType type) {
         if (source.equals(target)) return; // no self-relationships
         this.getDAO().upsertRelation(source, target, type);
+        // If the relationship type is vassal, the opposite end should set liege
+        if (type == FactionRelationType.Vassal) type = FactionRelationType.Liege;
         this.getDAO().upsertRelation(target, source, type);
         this.get(target).updateRelation(source, type);
     }
