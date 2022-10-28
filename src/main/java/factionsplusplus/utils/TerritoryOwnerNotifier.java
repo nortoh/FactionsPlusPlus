@@ -15,7 +15,6 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import preponderous.ponder.minecraft.bukkit.tools.ColorChecker;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -55,8 +54,7 @@ public class TerritoryOwnerNotifier {
         } else {
             territoryAlertColorString = this.configService.getString("territoryAlertColor");
         }
-        ColorChecker colorChecker = new ColorChecker();
-        return colorChecker.getColorByName(territoryAlertColorString);
+        return StringUtils.parseAsChatColor(territoryAlertColorString);
     }
 
     private void setActionBar(Faction holder, Player player, ChatColor territoryAlertColor, String title) {

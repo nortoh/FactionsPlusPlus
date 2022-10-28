@@ -12,11 +12,12 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
+import factionsplusplus.utils.StringUtils;
+
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import preponderous.ponder.minecraft.bukkit.tools.ColorChecker;
 
 import java.util.List;
 
@@ -75,28 +76,25 @@ public class ChatHandler implements Listener {
     }
 
     private void addPrefix(AsyncPlayerChatEvent event, String prefixColor, String prefix) {
-        ColorChecker colorChecker = new ColorChecker();
-        event.setFormat(colorChecker.getColorByName(prefixColor) + "" + "[" + prefix + "] " + ChatColor.WHITE + " %s: %s");
+        event.setFormat(StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + ChatColor.WHITE + " %s: %s");
     }
 
     private void sendMessageToVassalageTree(Faction playersFaction, String prefixColor, String prefix, AsyncPlayerChatEvent event, String factionChatColor, String message) {
         List<Faction> factionsInVassalageTree = this.dataService.getFactionsInVassalageTree(playersFaction);
-        ColorChecker colorChecker = new ColorChecker();
         for (Faction faction : factionsInVassalageTree) {
             if (configService.getBoolean("showPrefixesInFactionChat")) {
-                this.messageService.sendToFaction(faction, colorChecker.getColorByName(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + colorChecker.getColorByName(factionChatColor) + message);
+                this.messageService.sendToFaction(faction, StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
             } else {
-                this.messageService.sendToFaction(faction, ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + colorChecker.getColorByName(factionChatColor) + message);
+                this.messageService.sendToFaction(faction, ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
             }
         }
     }
 
     private void sendMessageToFaction(Faction playersFaction, String prefix, String prefixColor, AsyncPlayerChatEvent event, String factionChatColor, String message) {
-        ColorChecker colorChecker = new ColorChecker();
         if (configService.getBoolean("showPrefixesInFactionChat")) {
-            this.messageService.sendToFaction(playersFaction, colorChecker.getColorByName(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + colorChecker.getColorByName(factionChatColor) + message);
+            this.messageService.sendToFaction(playersFaction, StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
         } else {
-            this.messageService.sendToFaction(playersFaction, ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + colorChecker.getColorByName(factionChatColor) + message);
+            this.messageService.sendToFaction(playersFaction, ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
         }
     }
 }
