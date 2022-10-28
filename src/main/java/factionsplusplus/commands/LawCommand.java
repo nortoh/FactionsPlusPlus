@@ -10,6 +10,7 @@ import factionsplusplus.services.DataService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -95,11 +96,16 @@ public class LawCommand extends Command {
     }
 
     public void createCommand(CommandContext context) {
-        context.getExecutorsFaction().addLaw(String.join(" ", context.getStringArgument("law")));
-        context.replyWith(
-            this.constructMessage("LawAdded")
-                .with("law", context.getStringArgument("law"))
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().addLaw(String.join(" ", context.getStringArgument("law")));
+                context.replyWith(
+                    constructMessage("LawAdded")
+                        .with("law", context.getStringArgument("law"))
+                );
+            }
+        });
     }
 
     public void removeCommand(CommandContext context) {

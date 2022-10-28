@@ -18,8 +18,9 @@ import org.bukkit.Chunk;
 import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.constants.FlagType;
 import factionsplusplus.constants.GroupRole;
-import factionsplusplus.data.DefaultConfigurationFlagDao;
-import factionsplusplus.data.FactionDao;
+import factionsplusplus.data.daos.DefaultConfigurationFlagDao;
+import factionsplusplus.data.daos.FactionDao;
+import factionsplusplus.data.repositories.*;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.PlayerRecord;
@@ -30,7 +31,6 @@ import factionsplusplus.models.ConfigOption;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.Gate;
 import factionsplusplus.models.GroupMember;
-import factionsplusplus.repositories.*;
 import factionsplusplus.utils.BlockUtils;
 
 

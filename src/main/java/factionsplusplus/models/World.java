@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 
-import factionsplusplus.beans.WorldBean;
+import factionsplusplus.data.beans.WorldBean;
+import factionsplusplus.data.repositories.WorldRepository;
 import factionsplusplus.models.interfaces.Identifiable;
-import factionsplusplus.repositories.WorldRepository;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;

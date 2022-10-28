@@ -11,6 +11,7 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.GroupRole;
+import factionsplusplus.data.repositories.CommandRepository;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.World;
@@ -27,8 +28,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandArgument;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigOption;
-import factionsplusplus.repositories.CommandRepository;
-
 import factionsplusplus.builders.MessageBuilder;
 
 import java.util.Arrays;

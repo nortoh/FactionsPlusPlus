@@ -7,7 +7,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.factories.*;
+import factionsplusplus.data.factories.*;
 
 public class PluginModule extends AbstractModule {
     private final FactionsPlusPlus factionsPlusPlus;

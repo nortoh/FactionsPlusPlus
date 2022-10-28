@@ -10,11 +10,11 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.utils.Logger;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;

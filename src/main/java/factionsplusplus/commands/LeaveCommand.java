@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.FactionLeaveEvent;
+import factionsplusplus.events.internal.FactionLeaveEvent;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;

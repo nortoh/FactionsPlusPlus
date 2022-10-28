@@ -14,7 +14,7 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import factionsplusplus.repositories.LockedBlockRepository;
+import factionsplusplus.data.repositories.LockedBlockRepository;
 
 /**
  * @author Daniel McCoy Stephenson

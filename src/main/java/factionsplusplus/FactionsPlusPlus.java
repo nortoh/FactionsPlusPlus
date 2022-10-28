@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import factionsplusplus.di.PluginModule;
-import factionsplusplus.eventhandlers.*;
+import factionsplusplus.events.handler.*;
 import factionsplusplus.externalapi.FactionsPlusPlusAPI;
 import factionsplusplus.integrators.PlaceholderAPI;
 import factionsplusplus.services.*;

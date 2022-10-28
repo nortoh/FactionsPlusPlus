@@ -4,9 +4,9 @@
  */
 package factionsplusplus.models;
 
-import factionsplusplus.beans.WarBean;
+import factionsplusplus.data.beans.WarBean;
+import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.models.interfaces.Identifiable;
-import factionsplusplus.repositories.WarRepository;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;

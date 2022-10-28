@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.factories.LockedBlockFactory;
+import factionsplusplus.data.factories.LockedBlockFactory;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;

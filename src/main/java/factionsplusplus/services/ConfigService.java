@@ -9,10 +9,10 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ConfigOption;
-import factionsplusplus.repositories.ConfigOptionRepository;
 import factionsplusplus.utils.StringUtils;
 import factionsplusplus.builders.ConfigOptionBuilder;
 import factionsplusplus.constants.SetConfigResult;
+import factionsplusplus.data.repositories.ConfigOptionRepository;
 
 import org.bukkit.configuration.file.FileConfiguration;
 

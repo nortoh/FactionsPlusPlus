@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import factionsplusplus.beans.PlayerBean;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
+import factionsplusplus.data.beans.PlayerBean;
 import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.StringUtils;

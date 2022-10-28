@@ -7,7 +7,6 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionJoinEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -18,6 +17,7 @@ import org.bukkit.Bukkit;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.GroupRole;
+import factionsplusplus.events.internal.FactionJoinEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**

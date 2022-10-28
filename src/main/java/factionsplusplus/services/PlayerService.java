@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.constants.FactionRank;
-import factionsplusplus.factories.PlayerFactory;
+import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
 

@@ -7,15 +7,15 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionWarStartEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.repositories.WarRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.FactionRelationType;
+import factionsplusplus.data.repositories.FactionRepository;
+import factionsplusplus.data.repositories.WarRepository;
+import factionsplusplus.events.internal.FactionWarStartEvent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

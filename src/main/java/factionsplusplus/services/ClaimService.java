@@ -14,8 +14,8 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.FactionClaimEvent;
-import factionsplusplus.events.FactionUnclaimEvent;
+import factionsplusplus.events.internal.FactionClaimEvent;
+import factionsplusplus.events.internal.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;

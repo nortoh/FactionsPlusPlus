@@ -14,7 +14,8 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import factionsplusplus.codecs.UUIDCodec;
+import factionsplusplus.data.codecs.UUIDCodec;
+
 import java.util.UUID;
 
 @Singleton

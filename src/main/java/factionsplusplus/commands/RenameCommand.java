@@ -7,7 +7,6 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionRenameEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.ConfigService;
@@ -16,6 +15,7 @@ import factionsplusplus.utils.Logger;
 import org.bukkit.Bukkit;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.events.internal.FactionRenameEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**

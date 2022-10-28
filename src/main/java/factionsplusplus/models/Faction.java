@@ -1,11 +1,11 @@
 package factionsplusplus.models;
 
-import factionsplusplus.beans.FactionBean;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.constants.GroupRole;
+import factionsplusplus.data.beans.FactionBean;
+import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.models.interfaces.Feudal;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.MessageService;
 
 import org.bukkit.Location;
