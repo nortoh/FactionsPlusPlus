@@ -11,6 +11,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.DataService;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -55,14 +56,18 @@ public class DemoteCommand extends Command {
             return;
         }
 
-        this.dataService.updatePlayersFactionRole(context.getExecutorsFaction(), playerToBeDemoted, GroupRole.Member);
-
-        if (playerToBeDemoted.isOnline()) {
-            context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
-        }
-        context.replyWith(
-            this.constructMessage("PlayerDemoted")
-                .with("name", playerToBeDemoted.getName())
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
+                if (playerToBeDemoted.isOnline()) {
+                    context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
+                }
+                context.replyWith(
+                    constructMessage("PlayerDemoted")
+                        .with("name", playerToBeDemoted.getName())
+                );
+            }
+        });
     }
 }

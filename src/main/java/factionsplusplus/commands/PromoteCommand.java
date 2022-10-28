@@ -10,8 +10,9 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
+
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -26,10 +27,9 @@ import factionsplusplus.builders.ArgumentBuilder;
 public class PromoteCommand extends Command {
 
     private final FactionService factionService;
-    private final DataService dataService;
 
     @Inject
-    public PromoteCommand(FactionService factionService, DataService dataService) {
+    public PromoteCommand(FactionService factionService) {
         super(
             new CommandBuilder()
                 .withName("promote")
@@ -49,7 +49,6 @@ public class PromoteCommand extends Command {
                 )
         );
         this.factionService = factionService;
-        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
@@ -65,11 +64,16 @@ public class PromoteCommand extends Command {
         }
         int maxOfficers = this.factionService.calculateMaxOfficers(faction);
         if (faction.getOfficerCount() <= maxOfficers) {
-            this.dataService.updatePlayersFactionRole(faction, target, GroupRole.Officer);
-            context.replyWith("PlayerPromoted");
-            if (target.isOnline() && target.getPlayer() != null) {
-                context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
-            }
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
+                    context.replyWith("PlayerPromoted");
+                    if (target.isOnline() && target.getPlayer() != null) {
+                        context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
+                    }
+                }
+            });
         } else {
             context.replyWith(
                 this.constructMessage("PlayerCantBePromotedBecauseOfLimit")
