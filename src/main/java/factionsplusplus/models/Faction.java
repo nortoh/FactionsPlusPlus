@@ -115,6 +115,15 @@ public class Faction extends Nation implements Feudal {
         return this.flags.get(flagName);
     }
 
+    public String setFlag(String flagName, String flagValue) {
+        if (! this.flags.containsKey(flagName)) return null;
+        ConfigurationFlag flag = this.flags.get(flagName);
+        String result = flag.set(flagValue);
+        if (result == null) return null;
+        this.factionRepository.persistFlag(this, flag);
+        return result;
+    }
+
     public Set<String> getFlagNames() {
         return this.flags.keySet();
     }
@@ -148,7 +157,7 @@ public class Faction extends Nation implements Feudal {
         if (member != null) member.addRole(role);
         else member = new GroupMember(uuid, role);
         this.members.put(uuid, member);
-        this.factionRepository.persist(this.getUUID(), member);
+        this.factionRepository.persistMember(this.getUUID(), member);
     }
 
     public void upsertRelation(UUID uuid, FactionRelationType type) {
@@ -157,7 +166,7 @@ public class Faction extends Nation implements Feudal {
         if (relation != null && relation == type) return;
         // persist
         this.relations.put(uuid, type);
-        this.factionRepository.persist(this.getUUID(), uuid, type);        
+        this.factionRepository.persistRelation(this.getUUID(), uuid, type);        
     }
 
     public void updateRelation(UUID uuid, FactionRelationType type) {

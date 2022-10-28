@@ -103,6 +103,23 @@ public interface FactionDao {
     @RegisterFieldMapper(ConfigurationFlag.class)
     Map<String, ConfigurationFlag> getFlags(UUID uuid);
 
+    @SqlUpdate("""
+        INSERT INTO faction_flags (
+            faction_id,
+            flag_name,
+            value
+        ) VALUES (
+            :faction,
+            :flag,
+            :value
+        ) ON DUPLICATE KEY UPDATE
+            value = :value
+    """)
+    void upsertFlag(@Bind("faction") UUID factionID, @Bind("flag") String flagName, @Bind("value") String value);
+
+    @SqlUpdate("DELETE FROM faction_flags WHERE flag_name = :flag AND faction_id = :faction")   
+    void deleteFlag(@Bind("faction") UUID factionID, @Bind("flag") String flagName);
+
     @SqlQuery("""
         SELECT
             player_id id,

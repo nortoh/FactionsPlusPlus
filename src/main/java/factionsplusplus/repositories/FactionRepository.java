@@ -78,15 +78,25 @@ public class FactionRepository {
         this.getDAO().update(faction);
     }
 
-    public void persist(UUID faction, GroupMember member) {
+    public void persistMember(UUID faction, GroupMember member) {
         this.getDAO().upsert(faction, member.getUUID(), member.getRole());
     }
 
-    public void persist(UUID source, UUID target, FactionRelationType type) {
+    public void persistRelation(UUID source, UUID target, FactionRelationType type) {
         if (source.equals(target)) return; // no self-relationships
         this.getDAO().upsertRelation(source, target, type);
         this.getDAO().upsertRelation(target, source, type);
         this.get(target).updateRelation(source, type);
+    }
+
+    public void persistFlag(Faction faction, ConfigurationFlag flag) {
+        // Check if new value is default, if so no reason to keep it
+        if (this.getDefaultFlags().get(flag.getName()).getDefaultValue() == flag.getValue()) {
+            // delete flag if it exists from faction_flags
+            this.getDAO().deleteFlag(faction.getUUID(), flag.getName());
+            return;
+        }
+        this.getDAO().upsertFlag(faction.getUUID(), flag.getName(), flag.getValue());
     }
 
     // Get the DAO for this repository
