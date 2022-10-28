@@ -9,6 +9,8 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 import factionsplusplus.data.WarDao;
+import factionsplusplus.factories.WarFactory;
+import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
 import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
@@ -18,18 +20,20 @@ public class WarRepository {
     private List<War> warStore = new ArrayList<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
+    private final WarFactory warFactory;
 
     @Inject
-    public WarRepository(Logger logger, DataProviderService dataProviderService) {
+    public WarRepository(Logger logger, DataProviderService dataProviderService, WarFactory warFactory) {
         this.logger = logger;
         this.dataProviderService = dataProviderService;
+        this.warFactory = warFactory;
     }
 
     // Load wars
     public void load() {
         try {
             this.warStore.clear();
-            this.warStore = this.getDAO().get();
+            this.warStore = this.getDAO().get().stream().map(this.warFactory::create).toList();
         } catch(Exception e) {
             this.logger.error(String.format("Error loading wars: %s", e.getMessage()));
         }
@@ -37,12 +41,17 @@ public class WarRepository {
 
     // Save a war
     public void create(War war) {
-        this.getDAO().insert(war);
+        this.getDAO().upsert(war);
         this.warStore.add(war);
+    }
+
+    public void create(Faction attacker, Faction defender, String reason) {
+        this.create(this.warFactory.create(attacker, defender, reason));
     }
 
     // Delete a war
     public void delete(War war) {
+        this.getDAO().delete(war);
         this.warStore.remove(war);
     }
 
