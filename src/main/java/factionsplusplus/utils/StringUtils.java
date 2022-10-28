@@ -34,4 +34,16 @@ public class StringUtils {
     public static String colorize(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
     }
+
+        /**
+     * Method to pad a value with a zero to its left.
+     *
+     * @param value to pad
+     * @return 00 or 0(0-9) or 10-(very big numbers)
+     * @author Callum
+     */
+    public static String prefixWithZero(Number value) {
+        String tmp = String.valueOf(value);
+        return tmp.length() == 0 ? ("00") : (tmp.length() == 1 ? ("0" + value) : (tmp));
+    }
 }

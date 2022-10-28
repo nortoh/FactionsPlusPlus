@@ -1,18 +1,21 @@
 package factionsplusplus.beans;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
-import factionsplusplus.models.PlayerStats;
 import lombok.Data;
 
 @Data
 public class PlayerBean {
     private UUID id;
-    @Nested
-    private PlayerStats stats;
+    @ColumnName("login_count")
+    private int loginCount;
+    @ColumnName("last_logout")
+    private ZonedDateTime lastLogout;
+    @ColumnName("offline_power_list")
+    private int offlinePowerLost;
     private double power;
     @ColumnName("is_admin_bypassing")
     private boolean adminBypassing;
