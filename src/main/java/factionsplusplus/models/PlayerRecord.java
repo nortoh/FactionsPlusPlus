@@ -11,6 +11,7 @@ import com.google.inject.assistedinject.AssistedInject;
 
 import factionsplusplus.beans.PlayerBean;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
+import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.services.MessageService;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
@@ -22,7 +23,7 @@ import org.jdbi.v3.core.mapper.Nested;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class PlayerRecord {
+public class PlayerRecord implements Identifiable {
     @Expose
     @ColumnName("id")
     private UUID uuid;
@@ -59,7 +60,7 @@ public class PlayerRecord {
     public UUID getUUID() {
         return this.uuid;
     }
-    
+
     public UUID getPlayerUUID() {
         return this.uuid;
     }
