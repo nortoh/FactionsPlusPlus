@@ -55,6 +55,11 @@ public class WarRepository {
         this.warStore.remove(war);
     }
 
+    // Persist a war (update if already there)
+    public void persist(War war) {
+        this.getDAO().upsert(war);
+    }
+
     // Retrieve a list of wars a faction is involved in
     public List<War> getAllForFaction(UUID factionUUID) {
         ArrayList<War> results = new ArrayList<>();

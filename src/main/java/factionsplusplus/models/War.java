@@ -134,5 +134,10 @@ public class War implements Identifiable {
     public void end() {
         this.active = false;
         this.ended = ZonedDateTime.now();
+        this.persist();
+    }
+
+    public void persist() {
+        this.warRepository.persist(this);
     }
 }
