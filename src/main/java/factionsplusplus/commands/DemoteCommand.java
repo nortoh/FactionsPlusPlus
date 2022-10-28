@@ -9,7 +9,6 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.services.DataService;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -24,10 +23,8 @@ import factionsplusplus.builders.ArgumentBuilder;
 @Singleton
 public class DemoteCommand extends Command {
 
-    private final DataService dataService;
-
     @Inject
-    public DemoteCommand(DataService dataService) {
+    public DemoteCommand() {
         super(
             new CommandBuilder()
                 .withName("demote")
@@ -45,7 +42,6 @@ public class DemoteCommand extends Command {
                         .isRequired()
                 )
         );
-        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
