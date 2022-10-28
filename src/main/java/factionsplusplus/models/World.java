@@ -10,17 +10,14 @@ import factionsplusplus.beans.WorldBean;
 import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.repositories.WorldRepository;
 
-import com.google.gson.annotations.Expose;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class World implements Identifiable {
-    @Expose
     @ColumnName("id")
     private UUID uuid;
-    @Expose
     private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
     private final WorldRepository worldRepository;
 

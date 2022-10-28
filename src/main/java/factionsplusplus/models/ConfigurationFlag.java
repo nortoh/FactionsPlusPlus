@@ -6,20 +6,15 @@ import factionsplusplus.utils.StringUtils;
 
 import java.awt.Color;
 
-import com.google.gson.annotations.Expose;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class ConfigurationFlag {
     private String name = null;
-    @Expose
     @ColumnName("expected_data_type")
     private FlagDataType requiredType = null;
-    @Expose
     private String description = null;
-    @Expose
     @ColumnName("default_value")
     private String defaultValue = null;
-    @Expose
     @ColumnName("value")
     private String currentValue = null;
 
@@ -43,6 +38,10 @@ public class ConfigurationFlag {
         return this.name;
     }
 
+    public String getDescription() {
+        return this.description;
+    }
+    
     public FlagDataType getRequiredType() {
         return this.requiredType;
     }

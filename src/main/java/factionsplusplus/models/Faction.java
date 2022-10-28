@@ -4,7 +4,6 @@ import factionsplusplus.beans.FactionBean;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.constants.GroupRole;
-import factionsplusplus.jsonadapters.LocationAdapter;
 import factionsplusplus.models.interfaces.Feudal;
 import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.MessageService;
@@ -14,29 +13,17 @@ import org.bukkit.block.Block;
 
 import java.util.*;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal {
-    @Expose
     private final List<Gate> gates = Collections.synchronizedList(new ArrayList<>());
-    @Expose
     private Map<String, ConfigurationFlag> flags;
-    @Expose
     private String prefix = "none";
-    @Expose
-    @JsonAdapter(LocationAdapter.class)
-    @SerializedName("location")
     private Location factionHome = null;
-    @Expose
-    @ColumnName("bonus_power")
     private int bonusPower = 0;
-
     @ColumnName("should_autoclaim")
     private boolean autoclaim = false;
     private List<UUID> attemptedVassalizations = Collections.synchronizedList(new ArrayList<>());

@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
 
 import static org.bukkit.Bukkit.getServer;
 
-import com.google.gson.annotations.Expose;
-
 import factionsplusplus.constants.GroupRole;
 
 import factionsplusplus.models.interfaces.Identifiable;
@@ -31,14 +29,10 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
  */
 public class Group implements Identifiable {
     private final List<UUID> invited = Collections.synchronizedList(new ArrayList<>());
-    @Expose
     @ColumnName("id")
     protected UUID uuid = UUID.randomUUID();
-    @Expose
     protected String name = null;
-    @Expose
     protected String description = null;
-    @Expose
     protected Map<UUID, GroupMember> members = new ConcurrentHashMap<>();
 
     @Override

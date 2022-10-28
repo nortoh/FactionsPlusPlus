@@ -1,7 +1,5 @@
 package factionsplusplus.models;
 
-import com.google.gson.annotations.Expose;
-
 import java.util.UUID;
 
 import org.bukkit.Chunk;
@@ -11,7 +9,6 @@ import org.jdbi.v3.core.mapper.Nested;
  * @author Daniel McCoy Stephenson
  */
 public class ClaimedChunk extends Territory {
-    @Expose
     @Nested
     private LocationData chunk;
 

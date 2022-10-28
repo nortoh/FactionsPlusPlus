@@ -3,17 +3,13 @@ package factionsplusplus.models;
 import java.util.List;
 import java.util.UUID;
 
-import com.google.gson.annotations.Expose;
-
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.interfaces.Identifiable;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class GroupMember implements Identifiable {
-    @Expose
     @ColumnName("id")
     protected UUID uuid;
-    @Expose
     protected int role = GroupRole.Member.getLevel();
 
     public GroupMember() { }

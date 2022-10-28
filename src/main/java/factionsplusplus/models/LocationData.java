@@ -1,7 +1,5 @@
 package factionsplusplus.models;
 
-import com.google.gson.annotations.Expose;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
@@ -10,16 +8,12 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import java.util.UUID;
 
 public class LocationData {
-    @Expose
     @ColumnName("x_position")
     private Integer x = null;
-    @Expose
     @ColumnName("y_position")
     private Integer y = null;
-    @Expose
     @ColumnName("z_position")
     private Integer z = null;
-    @Expose
     @ColumnName("world_id")
     private UUID world;
 

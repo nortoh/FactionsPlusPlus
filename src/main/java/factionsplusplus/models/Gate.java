@@ -16,35 +16,25 @@ import java.util.ArrayList;
 
 import static org.bukkit.Bukkit.getServer;
 
-import com.google.gson.annotations.Expose;
-
 /**
  * @author Caibinus
  * @author Daniel McCoy Stephenson
  */
 public class Gate {
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
-    @Expose
     private String name = null;
-    @Expose
     @ColumnName("is_open")
     private boolean open = false;
-    @Expose
     @ColumnName("is_vertical")
     private boolean vertical = true;
-    @Expose
     @Nested("coord1")
     private LocationData coord1 = null;
-    @Expose
     @Nested("coord2")
     private LocationData coord2 = null;
-    @Expose
     @Nested("trigger")
     private LocationData trigger = null;
-    @Expose
     private Material material = Material.IRON_BARS;
     private World _world = null;
-    @Expose
     private String world = "";
     private GateStatus gateStatus = GateStatus.Ready;
 

@@ -5,7 +5,6 @@
 package factionsplusplus.models;
 
 import factionsplusplus.beans.WarBean;
-import factionsplusplus.jsonadapters.ZonedDateTimeAdapter;
 import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.repositories.WarRepository;
 
@@ -14,10 +13,8 @@ import java.util.UUID;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
-import com.google.gson.annotations.JsonAdapter;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import com.google.gson.annotations.Expose;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -25,23 +22,15 @@ import com.google.gson.annotations.Expose;
 public class War implements Identifiable {
     @ColumnName("id")
     private UUID uuid;
-    @Expose
     @ColumnName("attacker_id")
     private UUID attacker;
-    @Expose
     @ColumnName("defender_id")
     private UUID defender;
-    @Expose
     private String reason;
-    @Expose
-    @JsonAdapter(ZonedDateTimeAdapter.class)
     @ColumnName("started_at")
     private ZonedDateTime started;
-    @Expose
-    @JsonAdapter(ZonedDateTimeAdapter.class)
     @ColumnName("ended_at")
     private ZonedDateTime ended;
-    @Expose
     @ColumnName("is_active")
     private boolean active;
 

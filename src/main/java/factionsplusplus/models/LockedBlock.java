@@ -11,7 +11,6 @@ import java.util.UUID;
 import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
-import com.google.gson.annotations.Expose;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
@@ -21,16 +20,12 @@ import factionsplusplus.repositories.LockedBlockRepository;
  * @author Daniel McCoy Stephenson
  */
 public class LockedBlock {
-    @Expose
     @ColumnName("id")
     private UUID uuid = UUID.randomUUID();
-    @Expose
     @Nested
     private LocationData block;
-    @Expose
     @ColumnName("player_id")
     private UUID owner;
-    @Expose
     @ColumnName("faction_id")
     private UUID faction = null;
     @ColumnName("allow_allies")
