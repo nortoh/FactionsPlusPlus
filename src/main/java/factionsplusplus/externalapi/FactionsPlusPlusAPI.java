@@ -127,7 +127,7 @@ public class FactionsPlusPlusAPI {
     public void createFactionFlag(String flagName, FlagDataType flagType, Object defaultValue) {
         // TODO: handle the flag name already existing  
         // Create the flag object
-        ConfigurationFlag flag = new ConfigurationFlag(flagType, defaultValue);
+        ConfigurationFlag flag = new ConfigurationFlag(flagName, flagType, defaultValue);
         // Add to default flags for new factions
         this.factionService.addDefaultConfigurationFlag(flagName, flag);
         // Add to existing factions

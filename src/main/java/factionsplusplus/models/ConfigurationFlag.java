@@ -10,6 +10,8 @@ import com.google.gson.annotations.Expose;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class ConfigurationFlag {
+    @ColumnName("flag_name")
+    private String name = null;
     @Expose
     @ColumnName("expected_data_type")
     private FlagDataType requiredType = null;
@@ -24,18 +26,24 @@ public class ConfigurationFlag {
 
     public ConfigurationFlag() { }
 
-    public ConfigurationFlag(FlagDataType requiredType, String defaultValue, String currentValue) {
+    public ConfigurationFlag(String name, FlagDataType requiredType, String defaultValue, String currentValue) {
+        this.name = name;
         this.requiredType = requiredType;
         this.defaultValue = defaultValue;
         this.currentValue = currentValue;
     }
 
-    public ConfigurationFlag(FlagDataType requiredType, Object defaultValue) {
+    public ConfigurationFlag(String name, FlagDataType requiredType, Object defaultValue) {
+        this.name = name;
         this.requiredType = requiredType;
         this.defaultValue = defaultValue.toString();
         this.currentValue = null;
     }
 
+    public String getName() {
+        return this.name;
+    }
+    
     public FlagDataType getRequiredType() {
         return this.requiredType;
     }
