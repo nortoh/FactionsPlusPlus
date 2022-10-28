@@ -9,7 +9,7 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import java.util.List;
 
 public interface WarDao {
-    @SqlUpdate("INSERT IGNORE INTO claimed_chunks (attacker_id, defender_id, reason, active) VALUES (:getAttacker, :getDefender, :getReason, 1)")
+    @SqlUpdate("INSERT IGNORE INTO faction_wars (attacker_id, defender_id, reason, active) VALUES (:getAttacker, :getDefender, :getReason, 1)")
     void insert(@BindMethods War war);
 
     @SqlQuery("SELECT * FROM faction_wars")
