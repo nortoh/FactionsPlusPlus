@@ -65,8 +65,7 @@ public class MakePeaceCommand extends Command {
             this.constructMessage("AttemptedPeace")
                 .with("name", target.getName())
         );
-        context.messageFaction(
-            target,
+        target.message(
             this.constructMessage("HasAttemptedToMakePeaceWith")
                 .with("f1", faction.getName())
                 .with("f2", target.getName())

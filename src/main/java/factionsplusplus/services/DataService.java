@@ -375,7 +375,7 @@ public class DataService {
 
     public void removeFactionMember(OfflinePlayer player, Faction faction) {
         this.persistentData.useExtension(FactionDao.class, dao -> {
-            dao.deleteMember(player.getUniqueId(), faction.getUUID());
+            dao.deleteMember(faction.getUUID(), player.getUniqueId());
         });
         faction.getMembers().remove(player.getUniqueId());
     }

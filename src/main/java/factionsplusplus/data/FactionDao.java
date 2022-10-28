@@ -57,7 +57,7 @@ public interface FactionDao {
     void insertMember(UUID faction, UUID player, int role);
 
     @SqlUpdate("DELETE FROM faction_members WHERE player_id = ? AND faction_id = ?")
-    void deleteMember(UUID player, UUID faction);
+    void deleteMember(UUID faction, UUID player);
 
     @SqlUpdate("DELETE FROM factions WHERE id = :getUUID")
     void delete(@BindMethods Faction faction);

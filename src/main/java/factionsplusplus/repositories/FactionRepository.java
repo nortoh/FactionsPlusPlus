@@ -82,6 +82,10 @@ public class FactionRepository {
         this.getDAO().upsert(faction, member.getUUID(), member.getRole());
     }
 
+    public void deleteMember(UUID faction, UUID member) {
+        this.getDAO().deleteMember(faction, member);
+    }
+
     public void persistRelation(UUID source, UUID target, FactionRelationType type) {
         if (source.equals(target)) return; // no self-relationships
         this.getDAO().upsertRelation(source, target, type);
