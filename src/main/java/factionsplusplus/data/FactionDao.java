@@ -9,6 +9,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.beans.FactionBean;
 import factionsplusplus.constants.FactionRelationType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.ConfigurationFlag;
 
 import org.jdbi.v3.sqlobject.statement.SqlBatch;
@@ -149,6 +150,7 @@ public interface FactionDao {
 
     default Faction createNewFaction(Faction faction) {
         insert(faction);
+        faction.upsertMember(faction.getOwner().getUUID(), GroupRole.Owner);
         return faction;
     }
 }
