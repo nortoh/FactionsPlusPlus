@@ -4,12 +4,18 @@
  */
 package factionsplusplus.models;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 import com.google.gson.annotations.Expose;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
+import factionsplusplus.repositories.LockedBlockRepository;
 
 /**
  * @author Daniel McCoy Stephenson
@@ -31,22 +37,25 @@ public class LockedBlock {
     private boolean allowAllies = false;
     @ColumnName("allow_faction_members")
     private boolean allowFactionMembers = false;
-    @Expose
-    private AccessList accessList;
+    private List<UUID> accessList = new ArrayList<>();
 
+    private final LockedBlockRepository lockedBlockRepository;
+
+    @AssistedInject
     public LockedBlock(
-        UUID owner,
-        UUID faction,
-        int xCoord,
-        int yCoord,
-        int zCoord,
-        UUID worldUUID
+        @Assisted("owner") UUID owner,
+        @Assisted("faction") UUID faction,
+        @Assisted("x") int xCoord,
+        @Assisted("y") int yCoord,
+        @Assisted("z") int zCoord,
+        @Assisted("world") UUID worldUUID,
+        LockedBlockRepository lockedBlockRepository
     ) {
         this.block = new LocationData(xCoord, yCoord, zCoord, worldUUID);
         this.owner = owner;
         this.faction = faction;
-        this.accessList = new AccessList();
-        this.accessList.addPlayerToAccessList(owner);
+        this.accessList.add(owner);
+        this.lockedBlockRepository = lockedBlockRepository;
     }
 
     public UUID getUUID() {
@@ -77,16 +86,26 @@ public class LockedBlock {
         this.owner = owner;
     }
 
+    public void setAccessList(List<UUID> list) {
+        this.accessList = list;
+    }
+
     public void addToAccessList(UUID player) {
-        this.accessList.addPlayerToAccessList(player);
+        if (! this.accessList.contains(player)) {
+            this.lockedBlockRepository.persistPlayerAccess(this, player);
+            this.accessList.add(player);
+        }
     }
 
     public void removeFromAccessList(UUID player) {
-        this.accessList.removePlayerFromAccessList(player);
+        if (this.accessList.contains(player)) {
+            this.lockedBlockRepository.deletePlayerAccess(this, player);
+            this.accessList.remove(player);
+        }
     }
 
     public boolean hasAccess(UUID player) {
-        return this.accessList.playerOnAccessList(player);
+        return this.accessList.contains(player);
     }
 
     public boolean shouldAllowAllies() {
@@ -99,21 +118,25 @@ public class LockedBlock {
 
     public void allowAllies() {
         this.allowAllies = true;
+        this.lockedBlockRepository.persist(this);
     }
 
     public void denyAllies() {
         this.allowAllies = false;
+        this.lockedBlockRepository.persist(this);
     }
 
     public void allowFactionMembers() {
         this.allowFactionMembers = true;
+        this.lockedBlockRepository.persist(this);
     }
 
     public void denyFactionMembers() {
         this.allowFactionMembers = false;
+        this.lockedBlockRepository.persist(this);
     }
 
-    public AccessList getAccessList() {
+    public List<UUID> getAccessList() {
         return this.accessList;
     }
 
