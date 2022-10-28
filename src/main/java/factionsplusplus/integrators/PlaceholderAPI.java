@@ -2,7 +2,7 @@
   Copyright (c) 2022 Daniel McCoy Stephenson
   GPL3 License
  */
-package factionsplusplus.placeholders;
+package factionsplusplus.integrators;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

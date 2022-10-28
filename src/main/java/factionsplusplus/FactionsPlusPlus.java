@@ -10,7 +10,7 @@ import com.google.inject.Injector;
 import factionsplusplus.di.PluginModule;
 import factionsplusplus.eventhandlers.*;
 import factionsplusplus.externalapi.FactionsPlusPlusAPI;
-import factionsplusplus.placeholders.PlaceholderAPI;
+import factionsplusplus.integrators.PlaceholderAPI;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.extended.Scheduler;
 import org.bstats.bukkit.Metrics;
