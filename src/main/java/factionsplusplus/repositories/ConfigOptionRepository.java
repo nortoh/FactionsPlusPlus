@@ -3,14 +3,15 @@ package factionsplusplus.repositories;
 import factionsplusplus.models.ConfigOption;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class ConfigOptionRepository {
-    private final Map<String, ConfigOption> optionStore = new HashMap<>();
-    private final List<String> deprecatedOptionNames = new ArrayList<>();
+    private final Map<String, ConfigOption> optionStore = new ConcurrentHashMap<>();
+    private final List<String> deprecatedOptionNames = Collections.synchronizedList(new ArrayList<>());
 
     public ConfigOption get(String nameSearch) {
         return this.optionStore.get(nameSearch);

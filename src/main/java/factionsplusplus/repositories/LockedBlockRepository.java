@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import factionsplusplus.data.LockedBlockDao;
 import factionsplusplus.models.LockedBlock;
@@ -16,7 +17,7 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class LockedBlockRepository {
-    private List<LockedBlock> lockedBlockStore = new ArrayList<>();
+    private List<LockedBlock> lockedBlockStore = Collections.synchronizedList(new ArrayList<>());
     private final Logger logger;
     private final DataProviderService dataProviderService;
 

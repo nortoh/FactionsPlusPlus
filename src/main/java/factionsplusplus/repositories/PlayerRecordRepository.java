@@ -5,9 +5,8 @@ import com.google.inject.Singleton;
 import com.google.inject.Inject;
 
 import java.util.UUID;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 import factionsplusplus.data.PlayerDao;
 import factionsplusplus.factories.PlayerFactory;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class PlayerRecordRepository {
-    private Map<UUID, PlayerRecord> playerStore = new HashMap<>();
+    private Map<UUID, PlayerRecord> playerStore = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final PlayerFactory playerFactory;
@@ -84,7 +83,7 @@ public class PlayerRecordRepository {
     public void persist(PlayerRecord player) {
         this.getDAO().update(player);
     }
-    
+
     public void persist() {
         this.getDAO().update(this.playerStore.values());
     }

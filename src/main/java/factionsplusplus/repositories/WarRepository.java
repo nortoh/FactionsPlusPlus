@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import factionsplusplus.data.WarDao;
 import factionsplusplus.factories.WarFactory;
@@ -17,7 +18,7 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WarRepository {
-    private List<War> warStore = new ArrayList<>();
+    private List<War> warStore = Collections.synchronizedList(new ArrayList<>());
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final WarFactory warFactory;

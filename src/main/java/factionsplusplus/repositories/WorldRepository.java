@@ -5,9 +5,9 @@ import com.google.inject.Singleton;
 import com.google.inject.Inject;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -21,8 +21,8 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WorldRepository {
-    private Map<UUID, World> worldStore = new HashMap<>();
-    private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
+    private Map<UUID, World> worldStore = new ConcurrentHashMap<>();
+    private final Map<String, ConfigurationFlag> defaultFlags = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final WorldFactory worldFactory;

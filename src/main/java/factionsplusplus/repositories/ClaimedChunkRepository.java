@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import factionsplusplus.data.ClaimedChunkDao;
@@ -17,7 +18,7 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class ClaimedChunkRepository {
-    private List<ClaimedChunk> claimedChunksStore = new ArrayList<>();
+    private List<ClaimedChunk> claimedChunksStore = Collections.synchronizedList(new ArrayList<>());
     private final Logger logger;
     private final DataProviderService dataProviderService;
 
