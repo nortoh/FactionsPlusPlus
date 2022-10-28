@@ -44,6 +44,7 @@ public class LockedBlockRepository {
 
     // Delete a locked block
     public void delete(LockedBlock block) {
+        this.getDAO().delete(block);
         this.lockedBlockStore.remove(block);
     }
     public void delete(Block b) {

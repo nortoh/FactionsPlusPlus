@@ -41,6 +41,11 @@ public interface LockedBlockDao {
     void update(@BindMethods LockedBlock lock);
 
     @SqlUpdate("""
+        DELETE FROM locked_blocks WHERE id = :getUUID     
+    """)
+    void delete(@BindMethods LockedBlock lock);
+
+    @SqlUpdate("""
         INSERT IGNORE INTO locked_block_access_list (
             locked_block_id,
             player_id
