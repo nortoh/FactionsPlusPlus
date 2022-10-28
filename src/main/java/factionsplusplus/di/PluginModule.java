@@ -28,6 +28,7 @@ public class PluginModule extends AbstractModule {
         install(new FactoryModuleBuilder().build(InteractionContextFactory.class));
         install(new FactoryModuleBuilder().build(FactionFactory.class));
         install(new FactoryModuleBuilder().build(LockedBlockFactory.class));
+        install(new FactoryModuleBuilder().build(WorldFactory.class));
     }
 
     public Injector createInjector() {

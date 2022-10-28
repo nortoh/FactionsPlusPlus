@@ -6,9 +6,13 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 
+import factionsplusplus.beans.WorldBean;
 import factionsplusplus.models.interfaces.Identifiable;
+import factionsplusplus.repositories.WorldRepository;
 
 import com.google.gson.annotations.Expose;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
@@ -18,19 +22,32 @@ public class World implements Identifiable {
     private UUID uuid;
     @Expose
     private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
+    private final WorldRepository worldRepository;
 
-    public World() { }
+    @AssistedInject
+    public World(WorldRepository worldRepository) {
+        this.worldRepository = worldRepository;
+     }
     
-    public World(UUID uuid) {
+    @AssistedInject
+    public World(@Assisted UUID uuid, WorldRepository worldRepository) {
         this.uuid = uuid;
+        this.worldRepository = worldRepository;
     }
 
-    public void setFlags(Map<String, ConfigurationFlag> flags) {
-        this.flags = flags;
+    @AssistedInject
+    public World(@Assisted WorldBean bean, WorldRepository worldRepository) {
+        this.uuid = bean.getId();
+        this.flags = bean.getFlags();
+        this.worldRepository = worldRepository;
     }
 
     public UUID getUUID() {
         return this.uuid;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public org.bukkit.World getWorld() {
@@ -43,5 +60,18 @@ public class World implements Identifiable {
 
     public ConfigurationFlag getFlag(String flagName) {
         return this.flags.get(flagName);
+    }
+
+    public void setFlags(Map<String, ConfigurationFlag> flags) {
+        this.flags = flags;
+    }
+
+    public String setFlag(String flagName, String flagValue) {
+        if (! this.flags.containsKey(flagName)) return null;
+        ConfigurationFlag flag = this.flags.get(flagName);
+        String result = flag.set(flagValue);
+        if (result == null) return null;
+        this.worldRepository.persistFlag(this, flag);
+        return result;
     }
 }

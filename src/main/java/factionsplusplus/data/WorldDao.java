@@ -2,7 +2,10 @@ package factionsplusplus.data;
 
 import org.jdbi.v3.sqlobject.config.KeyColumn;
 import org.jdbi.v3.sqlobject.config.RegisterFieldMapper;
+import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
+
+import factionsplusplus.beans.WorldBean;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.World;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
@@ -19,13 +22,13 @@ public interface WorldDao {
     @SqlUpdate("INSERT IGNORE INTO worlds (id) VALUES (?)")
     void insert(UUID uuid);
 
-    @SqlQuery("SELECT BIN_TO_UUID(id) AS id FROM worlds")
-    @RegisterFieldMapper(World.class)
-    List<World> get();
+    @SqlQuery("SELECT * FROM worlds")
+    @RegisterFieldMapper(WorldBean.class)
+    List<WorldBean> get();
 
-    @SqlQuery("SELECT BIN_TO_UUID(id) AS id FROM worlds WHERE id = ?")
-    @RegisterFieldMapper(World.class)
-    World get(UUID uuid);
+    @SqlQuery("SELECT * FROM worlds WHERE id = ?")
+    @RegisterFieldMapper(WorldBean.class)
+    WorldBean get(UUID uuid);
 
     @SqlQuery("""
         SELECT
@@ -42,4 +45,27 @@ public interface WorldDao {
     @KeyColumn("name")
     @RegisterFieldMapper(ConfigurationFlag.class)
     Map<String, ConfigurationFlag> getFlags(UUID uuid);
+
+    @SqlUpdate("""
+        INSERT INTO world_flags (
+            world_id,
+            flag_name,
+            value
+        ) VALUES (
+            :world,
+            :flag,
+            :value
+        ) ON DUPLICATE KEY UPDATE
+            value = :value
+    """)
+    void upsertFlag(@Bind("world") UUID worldID, @Bind("flag") String flagName, @Bind("value") String value);
+
+    @SqlUpdate("DELETE FROM world_flags WHERE flag_name = :flag AND world_id = :world")   
+    void deleteFlag(@Bind("world") UUID worldID, @Bind("flag") String flagName);
+
+    default List<WorldBean> getWorlds() {
+        List<WorldBean> worldMap = get();
+        worldMap.stream().forEach(world -> world.setFlags(getFlags(world.getId())));
+        return worldMap;
+    }
 }

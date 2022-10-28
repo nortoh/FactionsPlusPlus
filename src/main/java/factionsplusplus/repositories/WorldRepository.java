@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 
 import factionsplusplus.data.WorldDao;
+import factionsplusplus.factories.WorldFactory;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.World;
 import factionsplusplus.services.DataProviderService;
@@ -24,11 +25,13 @@ public class WorldRepository {
     private final Map<String, ConfigurationFlag> defaultFlags = new HashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
+    private final WorldFactory worldFactory;
 
     @Inject
-    public WorldRepository(Logger logger, DataProviderService dataProviderService) {
+    public WorldRepository(Logger logger, DataProviderService dataProviderService, WorldFactory worldFactory) {
         this.logger = logger;
         this.dataProviderService = dataProviderService;
+        this.worldFactory = worldFactory;
     }
 
     // Load worlds
@@ -40,9 +43,8 @@ public class WorldRepository {
                 Bukkit.getWorlds().stream().forEach(world -> {
                     dao.insert(world.getUID());
                 });
-                dao.get().stream().forEach(world -> {
-                    world.setFlags(dao.getFlags(world.getUUID()));
-                    this.worldStore.put(world.getUUID(), world);
+                this.getDAO().getWorlds().stream().forEach(world -> {
+                    this.worldStore.put(world.getId(), this.worldFactory.create(world));
                 });
             });
         } catch(Exception e) {
@@ -115,6 +117,20 @@ public class WorldRepository {
 
     public Map<String, ConfigurationFlag> getDefaultFlags() {
         return this.defaultFlags;
+    }
+
+    public WorldDao getDAO() {
+        return this.dataProviderService.getPersistentData().onDemand(WorldDao.class);
+    }
+
+    public void persistFlag(World world, ConfigurationFlag flag) {
+        // Check if new value is default, if so no reason to keep it
+        if (this.getDefaultFlags().get(flag.getName()).getDefaultValue() == flag.getValue()) {
+            // delete flag if it exists from world_flags
+            this.getDAO().deleteFlag(world.getUUID(), flag.getName());
+            return;
+        }
+        this.getDAO().upsertFlag(world.getUUID(), flag.getName(), flag.getValue());
     }
 
     // Write to file
