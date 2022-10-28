@@ -7,10 +7,10 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
-import factionsplusplus.objects.helper.ChunkFlags;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
+import factionsplusplus.utils.ChunkFlags;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.PlayerUtils;
 

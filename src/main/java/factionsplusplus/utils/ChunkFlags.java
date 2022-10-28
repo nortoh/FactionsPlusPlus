@@ -2,7 +2,7 @@
   Copyright (c) 2022 Daniel McCoy Stephenson
   GPL3 License
  */
-package factionsplusplus.objects.helper;
+package factionsplusplus.utils;
 
 import java.util.HashMap;
 
