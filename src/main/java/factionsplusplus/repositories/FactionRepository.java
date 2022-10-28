@@ -299,20 +299,7 @@ public class FactionRepository {
 
     // Write to file
     public void persist() {
-        /*File file = new File(this.dataPath);
-        try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .enableComplexMapKeySerialization()
-                .create();
-            file.createNewFile();
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(this.factionStore, FactionRepository.JSON_TYPE));
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }*/
+
     }
 
     public enum PersistType {

@@ -96,18 +96,6 @@ public class WarRepository {
 
     // Write to file
     public void persist() {
-        /*File file = new File(this.dataPath);
-        try {
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .serializeNulls()
-                .create();
-            file.createNewFile();
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
-            outputStreamWriter.write(gson.toJson(this.warStore, WarRepository.JSON_TYPE));
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            this.logger.error(String.format("Failed to write to %s", this.dataPath), e);
-        }*/
+
     }
 }
