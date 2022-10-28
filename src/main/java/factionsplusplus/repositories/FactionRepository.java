@@ -89,6 +89,12 @@ public class FactionRepository {
         this.get(target).updateRelation(source, type);
     }
 
+    public void deleteRelation(UUID source, UUID target) {
+        this.getDAO().deleteRelation(source, target);
+        this.getDAO().deleteRelation(target, source);
+        this.get(target).removeRelation(source);
+    }
+
     public void persistFlag(Faction faction, ConfigurationFlag flag) {
         // Check if new value is default, if so no reason to keep it
         if (this.getDefaultFlags().get(flag.getName()).getDefaultValue() == flag.getValue()) {
