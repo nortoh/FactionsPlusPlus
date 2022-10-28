@@ -11,16 +11,19 @@ plugins {
 
 repositories {
     mavenCentral()
+    // For Spigot-API
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url 'https://oss.sonatype.org/content/groups/public/' }
-    maven { url 'https://repo.mikeprimm.com/' }
+    // For BungeeCord ChatComponent-API (required by Spigot-API)
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+    // For Placeholder API
     maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://repo.maven.apache.org/maven2/' }
+    // For Dynmap
+    maven { url 'https://repo.mikeprimm.com/' }
+
 }
 
 dependencies {
-    implementation 'com.github.Preponderous-Software:Ponder:1.1'
     implementation 'me.clip:placeholderapi:2.11.1'
     implementation 'org.spigotmc:spigot-api:1.19.1-R0.1-SNAPSHOT'
     implementation 'us.dynmap:dynmap-api:2.2'
@@ -34,6 +37,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'com.google.guava:guava:31.1-jre'
     testImplementation 'org.jdbi:jdbi3-guava:3.34.0'
+    implementation 'org.jetbrains:annotations:20.1.0'
 }
 
 group = 'factionsplusplus'
@@ -52,7 +56,6 @@ shadowJar {
     archiveClassifier.set('')
     mergeServiceFiles()
     dependencies {
-        include(dependency('com.github.Preponderous-Software:Ponder'))
         include(dependency('org.bstats:bstats-bukkit'))
         include(dependency('org.bstats:bstats-base'))
         include(dependency('aopalliance:aopalliance'))
@@ -68,7 +71,6 @@ shadowJar {
         include(dependency('com.github.ben-manes.caffeine:caffeine'))
         include(dependency('org.projectlombok:lombok'))
     }
-    relocate 'preponderous.ponder', 'factionplusplus.shadow.preponderous.ponder'
     relocate 'org.intellij', 'factionplusplus.shadow.org.intellij'
     relocate 'org.jetbrains', 'factionplusplus.shadow.org.jetbrains'
     relocate 'org.bstats', 'factionplusplus.shadow.org.bstats'
