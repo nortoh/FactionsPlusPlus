@@ -75,7 +75,7 @@ public class FactionRepository {
 
     // Persist faction
     public void persist(Faction faction) {
-        this.persist(faction, PersistType.Faction);
+        this.getDAO().update(faction);
     }
 
     public void persist(UUID faction, GroupMember member) {
@@ -87,16 +87,6 @@ public class FactionRepository {
         this.getDAO().upsertRelation(source, target, type);
         this.getDAO().upsertRelation(target, source, type);
         this.get(target).updateRelation(source, type);
-    }
-
-    public void persist(Faction faction, PersistType type) {
-        switch(type) {
-            case Faction:
-                this.getDAO().update(faction);
-                break;
-            default:
-                break;
-        }
     }
 
     // Get the DAO for this repository
