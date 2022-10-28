@@ -45,7 +45,6 @@ public class DescCommand extends Command {
 
     public void execute(CommandContext context) {
         final String description = context.getStringArgument("description");
-        System.out.println("desc: "+description);
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
