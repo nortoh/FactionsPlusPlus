@@ -9,10 +9,13 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;
@@ -53,20 +56,24 @@ public class TransferCommand extends Command {
             return;
         }
 
-        if (context.getExecutorsFaction().isOfficer(targetUUID)) context.getExecutorsFaction().removeOfficer(targetUUID); // Remove Officer (if there is one)
-
-        // set owner
-        context.getExecutorsFaction().setOwner(targetUUID);
-        context.replyWith(
-            this.constructMessage("OwnerShipTransferredTo")
-                .with("name", target.getName())
-        );
-        if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
-            context.messagePlayer(
-                target.getPlayer(),
-                this.constructMessage("OwnershipTransferred")
-                    .with("name", context.getExecutorsFaction().getName())
-            );
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                // Promote new owner
+                context.getExecutorsFaction().upsertMember(targetUUID, GroupRole.Owner);
+                // Demote old owner
+                context.getExecutorsFaction().upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
+                // Notify
+                context.replyWith(
+                    constructMessage("OwnerShipTransferredTo").with("name", target.getName())
+                );
+                if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
+                    context.messagePlayer(
+                        target.getPlayer(),
+                        constructMessage("OwnershipTransferred").with("name", context.getExecutorsFaction().getName())
+                    );
+                }
+            }
+        });
     }
 }
