@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.codec.CodecFactory;
 import org.jdbi.v3.core.qualifier.QualifiedType;
+import org.jdbi.v3.gson2.Gson2Plugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -53,7 +54,9 @@ public class DataProviderService {
         }
         this.persistentDataSource = new HikariDataSource(configuration);
         this.persistentDataSource.setLogWriter(new PrintWriter(System.out));
-        Jdbi persistentData = Jdbi.create(this.persistentDataSource).installPlugin(new SqlObjectPlugin());
+        Jdbi persistentData = Jdbi.create(this.persistentDataSource)
+            .installPlugin(new SqlObjectPlugin())
+            .installPlugin(new Gson2Plugin());
         persistentData.registerCodecFactory(CodecFactory.forSingleCodec(QualifiedType.of(UUID.class), new UUIDCodec()));
         return persistentData;
     }

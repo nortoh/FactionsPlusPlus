@@ -45,6 +45,7 @@ public class DataService {
     private final ConfigOptionRepository configOptionRepository;
     private final WarRepository warRepository;
     private final WorldRepository worldRepository;
+    private final GateRepository gateRepository;
     private final ConfigService configService;
     private final Jdbi ephemeralData;
     private Jdbi persistentData;
@@ -60,7 +61,8 @@ public class DataService {
         ConfigOptionRepository configOptionRepository,
         WarRepository warRepository,
         WorldRepository worldRepository,
-        ConfigService configService
+        ConfigService configService,
+        GateRepository gateRepository
     ) throws SQLException {
         this.dataProviderService = dataProviderService;
         this.factionRepository = factionRepository;
@@ -72,6 +74,7 @@ public class DataService {
         this.warRepository = warRepository;
         this.worldRepository = worldRepository;
         this.configService = configService;
+        this.gateRepository = gateRepository;
         this.ephemeralData = Jdbi.create("jdbc:h2:mem:fpp-ephemeral-data");
         this.persistentData = this.dataProviderService.getPersistentData();
         this.initializePersistentData();
@@ -274,6 +277,7 @@ public class DataService {
         this.claimedChunkRepository.load();
         this.playerRecordRepository.load();
         this.lockedBlockRepository.load();
+        this.gateRepository.load();
         this.warRepository.load();
     }
 
@@ -573,5 +577,9 @@ public class DataService {
         }
 
         return false;
+    }
+
+    public GateRepository getGateRepository() {
+        return this.gateRepository;
     }
 }

@@ -197,7 +197,9 @@ public class GateService {
                         switch(e) {
                             case None:
                                 ClaimedChunk claim = this.dataService.getClaimedChunk(clickedBlock.getChunk());
-                                this.dataService.getFaction(claim.getHolder()).addGate(g);
+                                g.setFaction(claim.getHolder());
+                                //this.dataService.getFaction(claim.getHolder()).addGate(g);
+                                this.dataService.getGateRepository().create(g);
                                 messagesToSend.add("Point4TriggeredSuccessfully");
                                 messagesToSend.add("GateCreated");
                                 break;

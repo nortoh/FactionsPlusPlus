@@ -11,8 +11,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
+import org.jdbi.v3.json.Json;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.bukkit.Bukkit.getServer;
 
@@ -23,15 +25,22 @@ import static org.bukkit.Bukkit.getServer;
 public class Gate {
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
     private String name = null;
+    @ColumnName("id")
+    private UUID uuid;
+    @ColumnName("faction_id")
+    private UUID factionUUID;
     @ColumnName("is_open")
     private boolean open = false;
     @ColumnName("is_vertical")
     private boolean vertical = true;
-    @Nested("coord1")
+    @Nested
+    @ColumnName("position_one_location")
     private LocationData coord1 = null;
-    @Nested("coord2")
+    @Nested
+    @ColumnName("position_two_location")
     private LocationData coord2 = null;
-    @Nested("trigger")
+    @Nested
+    @ColumnName("trigger_location")
     private LocationData trigger = null;
     private Material material = Material.IRON_BARS;
     private World _world = null;
@@ -44,6 +53,7 @@ public class Gate {
 
     public Gate(String name) {
         this.name = name;
+        this.uuid = UUID.randomUUID();
     }
 
     public World getWorld() {
@@ -61,6 +71,18 @@ public class Gate {
 
     public boolean isVertical() {
         return this.vertical;
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
+    }
+
+    public UUID getFaction() {
+        return this.factionUUID;
+    }
+
+    public void setFaction(UUID factionUUID) {
+        this.factionUUID = factionUUID;
     }
 
     public void setOpen(boolean open) {

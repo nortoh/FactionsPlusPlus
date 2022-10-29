@@ -36,8 +36,10 @@ dependencies {
     implementation 'org.jdbi:jdbi3-sqlobject:3.34.0'
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'com.google.guava:guava:31.1-jre'
-    testImplementation 'org.jdbi:jdbi3-guava:3.34.0'
+    implementation 'org.jdbi:jdbi3-gson2:3.34.0'
     implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'com.google.code.gson:gson:2.10'
+    testImplementation 'org.jdbi:jdbi3-guava:3.34.0'
 }
 
 group = 'factionsplusplus'
@@ -60,6 +62,7 @@ shadowJar {
         include(dependency('org.bstats:bstats-base'))
         include(dependency('aopalliance:aopalliance'))
         include(dependency('com.google.inject:guice'))
+        include(dependency('com.google.code.gson:gson'))
         include(dependency('com.google.guava:guava'))
         include(dependency('com.google.inject.extensions:guice-assistedinject'))
         include(dependency('org.mariadb.jdbc:mariadb-java-client'))
@@ -68,6 +71,8 @@ shadowJar {
         include(dependency('org.jdbi:jdbi3-core'))
         include(dependency('org.jdbi:jdbi3-sqlobject'))
         include(dependency('org.jdbi:jdbi3-guava'))
+        include(dependency('org.jdbi:jdbi3-gson2'))
+        include(dependency('org.jdbi:jdbi3-json'))
         include(dependency('com.github.ben-manes.caffeine:caffeine'))
         include(dependency('org.projectlombok:lombok'))
     }
