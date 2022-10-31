@@ -64,7 +64,7 @@ public class GateService {
         Faction faction = this.dataService.getFaction(claim.getHolder());
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
 
-        if (! faction.getName().equals(playersFaction.getName())) {
+        if (! faction.getUUID().equals(playersFaction.getUUID())) {
             return;
         }
 

@@ -397,9 +397,10 @@ public class DataService {
 
 
     public List<Gate> getGatesForFactionsTriggerBlock(UUID factionUUID, Block targetBlock) {
-        List<Gate> result = this.getGatesForTriggerBlock(targetBlock);
-        result.removeIf(g -> ! g.getFaction().equals(factionUUID));
-        return result;
+        return this.getGatesForTriggerBlock(targetBlock)
+            .stream()
+            .filter(g -> g.getFaction().equals(factionUUID))
+            .toList();
     }
 
     public List<Gate> getGatesForTriggerBlock(Block targetBlock) {
