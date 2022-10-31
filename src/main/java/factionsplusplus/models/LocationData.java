@@ -4,7 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
-import org.jdbi.v3.json.Json;
+
+import factionsplusplus.data.beans.LocationDataBean;
 
 import java.util.UUID;
 
@@ -38,6 +39,13 @@ public class LocationData {
         this.x = chunk.getX();
         this.z = chunk.getZ();
         this.world = chunk.getWorld().getUID();
+    }
+
+    public LocationData(LocationDataBean bean) {
+        this.x = bean.getX();
+        this.y = bean.getY();
+        this.z = bean.getZ();
+        this.world = bean.getWorld();
     }
 
     public Integer getX() {

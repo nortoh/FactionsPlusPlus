@@ -5,13 +5,12 @@
 package factionsplusplus.models;
 
 import factionsplusplus.constants.GateStatus;
+import factionsplusplus.data.beans.GateBean;
+
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.jdbi.v3.core.mapper.Nested;
-import org.jdbi.v3.core.mapper.reflect.ColumnName;
-import org.jdbi.v3.json.Json;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -25,26 +24,16 @@ import static org.bukkit.Bukkit.getServer;
 public class Gate {
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
     private String name = null;
-    @ColumnName("id")
     private UUID uuid;
-    @ColumnName("faction_id")
     private UUID factionUUID;
-    @ColumnName("is_open")
     private boolean open = false;
-    @ColumnName("is_vertical")
     private boolean vertical = true;
-    @Nested
-    @ColumnName("position_one_location")
     private LocationData coord1 = null;
-    @Nested
-    @ColumnName("position_two_location")
     private LocationData coord2 = null;
-    @Nested
-    @ColumnName("trigger_location")
     private LocationData trigger = null;
     private Material material = Material.IRON_BARS;
     private World _world = null;
-    private String world = "";
+    private UUID world;
     private GateStatus gateStatus = GateStatus.Ready;
 
     public Gate() {
@@ -56,6 +45,19 @@ public class Gate {
         this.uuid = UUID.randomUUID();
     }
 
+    public Gate(GateBean bean) {
+        this.name = bean.getName();
+        this.uuid = bean.getId();
+        this.factionUUID = bean.getFaction();
+        this.world = bean.getWorld();
+        this.open = bean.isOpen();
+        this.vertical = bean.isVertical();
+        this.material = bean.getMaterial();
+        this.coord1 = new LocationData(bean.getPositionOne());
+        this.coord2 = new LocationData(bean.getPositionTwo());
+        this.trigger = new LocationData(bean.getTriggerLocation());
+    }
+
     public World getWorld() {
         if (this._world != null) {
             return this._world;
@@ -64,8 +66,8 @@ public class Gate {
         return this._world;
     }
 
-    public void setWorld(String worldName) {
-        this.world = worldName;
+    public void setWorld(UUID worldUUID) {
+        this.world = worldUUID;
         this._world = null;
     }
 

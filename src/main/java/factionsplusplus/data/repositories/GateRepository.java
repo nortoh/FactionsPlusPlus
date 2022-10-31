@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import factionsplusplus.data.beans.GateBean;
 import factionsplusplus.data.daos.GateDao;
 import factionsplusplus.models.Gate;
 import factionsplusplus.services.DataProviderService;
@@ -29,15 +28,9 @@ public class GateRepository {
     public void load() {
         try {
             this.gateStore.clear();
-            //this.gateStore = this.getDAO().get();
-            for (GateBean g : this.getDAO().get()) {
-                System.out.println("Gate ID: "+g.getId());
-                System.out.println("Trigger X: "+g.getTrigger_location().getX());
-            }
+            this.gateStore = this.getDAO().getAll();
         } catch(Exception e) {
-            System.out.println("ERROR!");
             this.logger.log(String.format("Error loading gates: %s", e.getMessage()));
-            e.printStackTrace();
         }
     }
 

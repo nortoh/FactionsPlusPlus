@@ -421,7 +421,7 @@ public class GateService {
 
     public ErrorCodeAddCoord addCoord(Gate gate, Block clickedBlock) {
         if (gate.getCoord1() == null) {
-            gate.setWorld(clickedBlock.getWorld().getName());
+            gate.setWorld(clickedBlock.getWorld().getUID());
             gate.setCoord1(new LocationData(clickedBlock));
             gate.setMaterial(clickedBlock.getType());
         } else if (gate.getCoord2() == null) {
