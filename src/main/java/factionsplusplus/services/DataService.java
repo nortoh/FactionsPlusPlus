@@ -114,8 +114,8 @@ public class DataService {
                     flag_name CHAR(255) NOT NULL,
                     `value` VARCHAR(255),
                     PRIMARY KEY(faction_id, flag_name),
-                    FOREIGN KEY(faction_id) REFERENCES factions ON DELETE CASCADE,
-                    FOREIGN KEY(flag_name) REFERENCES default_flags ON DELETE CASCADE
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(flag_name) REFERENCES default_flags(name) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -130,8 +130,8 @@ public class DataService {
                     flag_name CHAR(255) NOT NULL,
                     `value` VARCHAR(255),
                     PRIMARY KEY(world_id, flag_name),
-                    FOREIGN KEY(world_id) REFERENCES worlds ON DELETE CASCADE,
-                    FOREIGN KEY(flag_name) REFERENCES default_flags ON DELETE CASCADE
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
+                    FOREIGN KEY(flag_name) REFERENCES default_flags(name) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -151,8 +151,8 @@ public class DataService {
                     player_id BINARY(16) NOT NULL,
                     role INTEGER NOT NULL DEFAULT 1,
                     PRIMARY KEY(faction_id, player_id),
-                    FOREIGN KEY(faction_id) REFERENCES factions ON DELETE CASCADE,
-                    FOREIGN KEY(player_id) REFERENCES players ON DELETE CASCADE
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -162,8 +162,8 @@ public class DataService {
                     x_position INTEGER NOT NULL,
                     z_position INTEGER NOT NULL,
                     PRIMARY KEY(world_id, x_position, z_position),
-                    FOREIGN KEY(faction_id) REFERENCES factions ON DELETE CASCADE,
-                    FOREIGN KEY(world_id) REFERENCES worlds ON DELETE CASCADE
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -176,14 +176,15 @@ public class DataService {
                     ended_at DATETIME,
                     is_active BOOLEAN NOT NULL DEFAULT 1,
                     PRIMARY KEY(id),
-                    FOREIGN KEY(attacker_id) REFERENCES factions ON DELETE CASCADE,
-                    FOREIGN KEY(defender_id) REFERENCES factions ON DELETE CASCADE
+                    FOREIGN KEY(attacker_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(defender_id) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
                 CREATE TABLE IF NOT EXISTS locked_blocks (
                     id BINARY(16) NOT NULL,
                     world_id BINARY(16) NOT NULL,
+                    faction_id BINARY(16) NOT NULL,
                     x_position INTEGER NOT NULL,
                     y_position INTEGER NOT NULL,
                     z_position INTEGER NOT NULL,
@@ -192,8 +193,9 @@ public class DataService {
                     allow_faction_members BOOLEAN NOT NULL DEFAULT 0,
                     PRIMARY KEY(id),
                     UNIQUE KEY UNIQUE_POSITION (world_id, x_position, y_position, z_position),
-                    FOREIGN KEY(world_id) REFERENCES worlds ON DELETE CASCADE,
-                    FOREIGN KEY(player_id) REFERENCES players ON DELETE CASCADE
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE,
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
                 )        
             """);
             handle.execute("""
@@ -201,8 +203,8 @@ public class DataService {
                     locked_block_id BINARY(16) NOT NULL,
                     player_id BINARY(16) NOT NULL,
                     PRIMARY KEY (locked_block_id, player_id),
-                    FOREIGN KEY(locked_block_id) REFERENCES locked_blocks ON DELETE CASCADE,
-                    FOREIGN KEY(player_id) REFERENCES players ON DELETE CASCADE
+                    FOREIGN KEY(locked_block_id) REFERENCES locked_blocks(id) ON DELETE CASCADE,
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
                 )        
             """);
             handle.execute("""
@@ -218,8 +220,8 @@ public class DataService {
                     is_vertical BOOLEAN NOT NULL DEFAULT 0,
                     is_open BOOLEAN NOT NULL DEFAULT 0,
                     PRIMARY KEY(id),
-                    FOREIGN KEY(world_id) REFERENCES worlds ON DELETE CASCADE,
-                    FOREIGN KEY(faction_id) REFERENCES factions ON DELETE CASCADE
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -228,8 +230,8 @@ public class DataService {
                     faction_id BINARY(16) NOT NULL,
                     invited_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY(player_id, faction_id),
-                    FOREIGN KEY(player_id) REFERENCES players ON DELETE CASCADE,
-                    FOREIGN KEY(faction_id) REFERENCES factions ON DELETE CASCADE
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE,
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -239,8 +241,8 @@ public class DataService {
                     type TINYINT NOT NULL,
                     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY(source_faction, target_faction),
-                    FOREIGN KEY(source_faction) REFERENCES factions ON DELETE CASCADE,
-                    FOREIGN KEY(target_faction) REFERENCES factions ON DELETE CASCADE
+                    FOREIGN KEY(source_faction) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(target_faction) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
             handle.execute("""
@@ -249,7 +251,7 @@ public class DataService {
                     faction_id BINARY(16) NOT NULL,
                     text TEXT NOT NULL,
                     PRIMARY KEY(id),
-                    FOREIGN KEY(faction_id) REFERENCES factions ON DELETE CASCADE
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
         });
@@ -259,12 +261,6 @@ public class DataService {
      * Saves all data in memory to disk. In most cases, data is written immediately. Data that is updated often may be saved using this function.
      */
     public void save() {
-        //this.worldRepository.persist();
-        //this.factionRepository.persist();
-        //this.claimedChunkRepository.persist();
-        //this.playerRecordRepository.persist();
-        //this.lockedBlockRepository.persist();
-        //this.warRepository.persist();
         this.playerRecordRepository.persist(); // save player stats
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
     }
@@ -408,7 +404,7 @@ public class DataService {
     }
 
     public List<Gate> getFactionsGates(UUID factionUUID) {
-        return this.gateRepository.allForFaction(factionUUID);
+        return this.gateRepository.getAllForFaction(factionUUID);
     }
 
     public List<Gate> getFactionsGates(Faction faction) {
