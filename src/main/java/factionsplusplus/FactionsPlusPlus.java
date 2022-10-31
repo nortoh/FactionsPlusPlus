@@ -177,7 +177,6 @@ public class FactionsPlusPlus extends JavaPlugin {
     private void scheduleRecurringTasks() {
         this.scheduler.schedulePowerIncrease();
         this.scheduler.schedulePowerDecrease();
-        this.scheduler.scheduleAutosave();
         this.actionBarService.schedule(this);
     }
 

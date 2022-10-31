@@ -39,23 +39,6 @@ public class Scheduler {
     @Inject private DataService dataService;
 
     @SuppressWarnings("deprecation")
-    public void scheduleAutosave() {
-        this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingHourlyAutoSave"));
-        int delay = this.configService.getInt("secondsBeforeInitialAutosave");
-        int secondsUntilRepeat = this.configService.getInt("secondsBetweenAutosaves");
-        if (delay == 0 || secondsUntilRepeat == 0) {
-            return;
-        }
-        Bukkit.getScheduler().scheduleAsyncRepeatingTask(factionsPlusPlus, new Runnable() {
-            @Override
-            public void run() {
-                logger.debug(localeService.get("ConsoleAlerts.HourlySaveAlert"));
-                dataService.save();
-            }
-        }, delay * 20L, secondsUntilRepeat * 20L);
-    }
-
-    @SuppressWarnings("deprecation")
     public void schedulePowerIncrease() {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerIncrease"));
         final int delay = this.configService.getInt("minutesBeforeInitialPowerIncrease") * 60; // 30 minutes
