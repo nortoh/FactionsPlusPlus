@@ -107,12 +107,12 @@ public class PlayerService {
     }
 
     public void resetPowerLevels() {
-        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
+        final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
         this.dataService.getPlayerRecordRepository().all().values().forEach(record -> record.setPower(initialPowerLevel));
     }
 
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
-        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
+        final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
         Arrays.stream(Bukkit.getOfflinePlayers())
             .filter(player -> this.dataService.getPlayerRecord(player.getUniqueId()) == null)
             .forEach(player -> {

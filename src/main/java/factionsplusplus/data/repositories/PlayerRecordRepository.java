@@ -43,13 +43,13 @@ public class PlayerRecordRepository {
     // Save a record after creating
     public void create(PlayerRecord record) {
         this.getDAO().insert(record);
-        this.playerStore.put(record.getPlayerUUID(), record);
+        this.playerStore.put(record.getUUID(), record);
     }
 
     // Delete a record
     public void delete(PlayerRecord record) {
-        this.getDAO().delete(record.getPlayerUUID());
-        this.playerStore.remove(record.getPlayerUUID());
+        this.getDAO().delete(record.getUUID());
+        this.playerStore.remove(record.getUUID());
     }
     public void delete(UUID playerUUID) {
         this.delete(this.get(playerUUID));

@@ -18,7 +18,6 @@ import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.StringUtils;
 
-import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -27,17 +26,11 @@ import org.bukkit.entity.Player;
  * @author Daniel McCoy Stephenson
  */
 public class PlayerRecord implements Identifiable {
-    @ColumnName("id")
     private UUID uuid;
-    @ColumnName("power")
-    private double powerLevel = 0;
-    @ColumnName("is_admin_bypassing")
+    private double powerLevel;
     private boolean adminBypass = false;
-    @ColumnName("login_count")
     private int logins = 0;
-    @ColumnName("offline_power_lost")
     private double powerLost = 0;
-    @ColumnName("last_logout")
     private ZonedDateTime lastLogout = ZonedDateTime.now();
 
     private final MessageService messageService;
@@ -60,7 +53,7 @@ public class PlayerRecord implements Identifiable {
         this.uuid = bean.getId();
         this.powerLevel = bean.getPower();
         this.adminBypass = bean.isAdminBypassing();
-        this.powerLevel = bean.getOfflinePowerLost();
+        this.powerLost = bean.getOfflinePowerLost();
         this.lastLogout = bean.getLastLogout();
         this.logins = bean.getLoginCount();
         this.messageService = messageService;
@@ -104,7 +97,7 @@ public class PlayerRecord implements Identifiable {
     }
 
     public void setPowerLost(int power) {
-        this.powerLevel = power;
+        this.powerLost = power;
     }
 
     public void setLastLogout(ZonedDateTime dateTime) {
