@@ -90,7 +90,7 @@ public class FactionsPlusPlus extends JavaPlugin {
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("mf")) return false; // ignore commands not meant for us
+        if (! cmd.getName().equalsIgnoreCase("fpp")) return false; // ignore commands not meant for us
         return this.commandService.interpretCommand(sender, label, args);
     }
 
