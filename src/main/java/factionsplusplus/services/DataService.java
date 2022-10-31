@@ -348,14 +348,6 @@ public class DataService {
         return this.factionRepository.getInVassalageTree(faction);
     }
 
-    public Faction getGatesFaction(Gate gate) {
-        return this.getFactions()
-            .stream()
-            .filter(faction -> faction.getGates().contains(gate))
-            .findFirst()
-            .orElse(null);
-    }
-
     public boolean isPlayerInVassalageTree(OfflinePlayer player, Faction faction) {
         return this.getFactionsInVassalageTree(faction)
             .stream()
@@ -400,17 +392,35 @@ public class DataService {
         return dao.getInvite(faction.getUUID(), player.getUniqueId()) > 0;
     }
 
-    public Gate getGate(Block targetBlock) {
-        return this.getFactions()
-            .stream()
-            .flatMap(faction -> faction.getGates().stream())
-            .filter(gate -> gate.hasBlock(targetBlock))
-            .findFirst()
-            .orElse(null);
+
+    public List<Gate> getGatesForFactionsTriggerBlock(UUID factionUUID, Block targetBlock) {
+        List<Gate> result = this.getGatesForTriggerBlock(targetBlock);
+        result.removeIf(g -> ! g.getFaction().equals(factionUUID));
+        return result;
+    }
+
+    public List<Gate> getGatesForTriggerBlock(Block targetBlock) {
+        return this.gateRepository.getGatesForTriggerBlock(targetBlock);
+    }
+
+    public List<Gate> getFactionsGates(UUID factionUUID) {
+        return this.gateRepository.allForFaction(factionUUID);
+    }
+
+    public List<Gate> getFactionsGates(Faction faction) {
+        return this.getFactionsGates(faction.getUUID());
+    }
+
+    public Gate getGateWithBlock(Block targetBlock) {
+        return this.gateRepository.getGateForBlock(targetBlock);
     }
 
     public boolean isGateBlock(Block targetBlock) {
-        return this.getGate(targetBlock) != null;
+        return this.getGateWithBlock(targetBlock) != null;
+    }
+
+    public void removeGate(Gate gate) {
+        this.gateRepository.delete(gate);
     }
 
     public ClaimedChunkRepository getClaimedChunkRepository() {

@@ -2,6 +2,7 @@ package factionsplusplus.data.daos;
 
 import org.jdbi.v3.json.Json;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
+import org.jdbi.v3.sqlobject.customizer.BindMethods;
 
 import factionsplusplus.models.LocationData;
 import factionsplusplus.models.Gate;
@@ -31,6 +32,12 @@ public interface GateDao {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """)
     void create(UUID id, String name, UUID faction, String material, UUID world, boolean open, boolean vertical, @Json LocationData coord1, @Json LocationData coord2, @Json LocationData trigger);
+
+    @SqlUpdate("DELETE FROM faction_gates WHERE id = ?")
+    void delete(UUID id);
+
+    @SqlUpdate("UPDATE faction_gates SET name = :getName WHERE id = :getUUID")
+    void update(@BindMethods Gate g);
 
     @SqlQuery("SELECT * FROM faction_gates")
     @RegisterRowMapper(GateMapper.class)

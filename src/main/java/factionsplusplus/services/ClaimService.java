@@ -460,11 +460,11 @@ public class ClaimService {
                 block.getWorld().equals(chunkToRemove.getWorldUUID()));
 
         // remove any gates in this chunk
-        Iterator<Gate> gtr = holdingFaction.getGates().iterator();
+        Iterator<Gate> gtr = this.dataService.getFactionsGates(holdingFaction).iterator();
         while (gtr.hasNext()) {
             Gate gate = gtr.next();
             if (ChunkUtils.isGateInChunk(gate, chunkToRemove)) {
-                holdingFaction.removeGate(gate);
+                this.dataService.removeGate(gate);
                 gtr.remove();
             }
         }

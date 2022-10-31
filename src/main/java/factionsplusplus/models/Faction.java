@@ -6,10 +6,10 @@ import factionsplusplus.constants.GroupRole;
 import factionsplusplus.data.beans.FactionBean;
 import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.models.interfaces.Feudal;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
 
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 
 import java.util.*;
 
@@ -19,7 +19,6 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal {
-    private final List<Gate> gates = Collections.synchronizedList(new ArrayList<>());
     private Map<String, ConfigurationFlag> flags;
     private String prefix = "none";
     private Location factionHome = null;
@@ -30,19 +29,22 @@ public class Faction extends Nation implements Feudal {
 
     private final MessageService messageService;
     private final FactionRepository factionRepository;
+    private final DataService dataService;
 
     // Constructor
     @AssistedInject
-    public Faction(MessageService messageService, FactionRepository factionRepository) {
+    public Faction(MessageService messageService, DataService dataService) {
         this.messageService = messageService;
-        this.factionRepository = factionRepository;
+        this.dataService = dataService;
+        this.factionRepository = this.dataService.getFactionRepository();
     }
 
     @AssistedInject
     public Faction(
         @Assisted FactionBean bean,
         MessageService messageService,
-        FactionRepository factionRepository
+        FactionRepository factionRepository,
+        DataService dataService
     ) {
         this.uuid = bean.getId();
         this.name = bean.getName();
@@ -55,25 +57,28 @@ public class Faction extends Nation implements Feudal {
         this.relations = bean.getRelations();
         this.messageService = messageService;
         this.factionRepository = factionRepository;
+        this.dataService = dataService;
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, FactionRepository factionRepository) {
+    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService) {
         this.name = factionName;
         this.flags = flags;
         this.prefix = factionName;
         this.messageService = messageService;
-        this.factionRepository = factionRepository;
+        this.dataService = dataService;
+        this.factionRepository = this.dataService.getFactionRepository();
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, FactionRepository factionRepository) {
+    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService) {
         this.name = factionName;
         this.setOwner(owner);
         this.flags = flags;
         this.prefix = factionName;
         this.messageService = messageService;
-        this.factionRepository = factionRepository;
+        this.dataService = dataService;
+        this.factionRepository = this.dataService.getFactionRepository();
     }
 
     /**
@@ -232,44 +237,6 @@ public class Faction extends Nation implements Feudal {
 
     public void unsetIfLiege(UUID uuid) {
         if (this.isLiege(uuid)) this.relations.remove(this.getLiege());
-    }
-
-    // Gates
-    public int getTotalGates() {
-        return this.gates.size();
-    }
-
-    public void addGate(Gate gate) {
-        this.gates.add(gate);
-    }
-
-    public void removeGate(Gate gate) {
-        this.gates.remove(gate);
-    }
-
-    public List<Gate> getGates() {
-        return this.gates;
-    }
-
-    public boolean hasGateTrigger(Block block) {
-        for (Gate g : this.gates) {
-            if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equals(block.getWorld().getUID())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<Gate> getGatesForTrigger(Block block) {
-        ArrayList<Gate> gateList = new ArrayList<>();
-        for (Gate g : this.gates) {
-            if (g.getTrigger().getX() == block.getX() && g.getTrigger().getY() == block.getY() && g.getTrigger().getZ() == block.getZ() &&
-                    g.getTrigger().getWorld().equals(block.getWorld().getUID())) {
-                gateList.add(g);
-            }
-        }
-        return gateList;
     }
 
     // Vassals

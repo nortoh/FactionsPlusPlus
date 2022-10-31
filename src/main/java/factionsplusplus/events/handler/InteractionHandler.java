@@ -93,7 +93,7 @@ public class InteractionHandler implements Listener {
             return;
         }
 
-        final Gate gate = this.dataService.getGate(block);
+        final Gate gate = this.dataService.getGateWithBlock(block);
         if (gate != null) {
             event.setCancelled(true);
             this.messageService.sendLocalizedMessage(
