@@ -21,14 +21,16 @@ public interface LockedBlockDao {
             x_position,
             y_position,
             z_position,
-            player_id
+            player_id,
+            faction_id
         ) VALUES (
             :getUUID,
             :getWorld,
             :getX,
             :getY,
             :getZ,
-            :getOwner
+            :getOwner,
+            :getFaction
         )
     """)
     void insert(@BindMethods LockedBlock block);
