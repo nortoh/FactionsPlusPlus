@@ -13,15 +13,13 @@ import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.data.factories.FactionFactory;
 import factionsplusplus.data.repositories.ClaimedChunkRepository;
 import factionsplusplus.data.repositories.FactionRepository;
+import factionsplusplus.data.repositories.GateRepository;
 import factionsplusplus.data.repositories.LockedBlockRepository;
 import factionsplusplus.data.repositories.PlayerRecordRepository;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
-import factionsplusplus.models.LockedBlock;
-import factionsplusplus.models.ClaimedChunk;
 
 import javax.inject.Provider;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.Collection;
@@ -37,6 +35,7 @@ public class FactionService {
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
     private final FactionFactory factionFactory;
+    private final GateRepository gateRepository;
     private final Logger logger;
 
     @Inject
@@ -48,6 +47,7 @@ public class FactionService {
         Provider<DynmapIntegrationService> dynmapService,
         LockedBlockRepository lockedBlockRepository,
         ClaimedChunkRepository claimedChunkRepository,
+        GateRepository gateRepository,
         Logger logger,
         FactionFactory factionFactory
     ) {
@@ -60,6 +60,7 @@ public class FactionService {
         this.claimedChunkRepository = claimedChunkRepository;
         this.logger = logger;
         this.factionFactory = factionFactory;
+        this.gateRepository = gateRepository;
     }
 
     public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag) {
@@ -161,21 +162,23 @@ public class FactionService {
     }
 
     public void removeFaction(Faction faction) {
+        // SQL will handle this for us but for persistence sake, we need to update our local cache too.
         this.unclaimAllClaimedChunks(faction);
         this.removeAllOwnedLocks(faction);
         this.removePoliticalTiesToFaction(faction);
+        this.removeAllOwnedGates(faction);
         this.factionRepository.delete(faction);
     }
 
     public void unclaimAllClaimedChunks(Faction faction) {
-        this.removeAllClaimedChunks(faction);
+        this.claimedChunkRepository.getAllForFaction(faction).stream().forEach(this.claimedChunkRepository::remove);
         this.dynmapService.get().updateClaimsIfAble();
     }
 
     public void removePoliticalTiesToFaction(Faction targetFaction) {
         this.factionRepository.all().values()
             .stream()
-            .filter(faction -> !faction.equals(targetFaction))
+            .filter(faction -> ! faction.equals(targetFaction))
             .forEach(faction -> {
                 faction.removeAlly(targetFaction.getID());
                 faction.removeEnemy(targetFaction.getID());
@@ -184,21 +187,12 @@ public class FactionService {
             });
     }
 
-    public void removeAllClaimedChunks(Faction faction) {
-        Iterator<ClaimedChunk> itr = this.claimedChunkRepository.all().iterator();
-        while (itr.hasNext()) {
-            ClaimedChunk currentChunk = itr.next();
-            if (currentChunk.getHolder().equals(faction.getID())) itr.remove();
-        }
+    public void removeAllOwnedGates(Faction faction) {
+        this.gateRepository.getAllForFaction(faction.getUUID()).stream().forEach(this.gateRepository::remove);
     }
 
     public void removeAllOwnedLocks(Faction faction) {
-        Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
-
-        while (itr.hasNext()) {
-            LockedBlock currentBlock = itr.next();
-            if (currentBlock.getFactionID().equals(faction.getID())) itr.remove();
-        }
+        this.lockedBlockRepository.getAllForFaction(faction.getUUID()).stream().forEach(this.lockedBlockRepository::remove);
     }
 
     public void disbandAllZeroPowerFactions() {

@@ -47,6 +47,11 @@ public class ClaimedChunkRepository {
     // Delete a claimed chunk
     public void delete(ClaimedChunk chunk) {
         this.getDAO().delete(chunk);
+        this.remove(chunk);
+    }
+
+    // Remove a claimed chunk from internal storage
+    public void remove(ClaimedChunk chunk) {
         this.claimedChunksStore.remove(chunk);
     }
 

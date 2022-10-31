@@ -46,6 +46,11 @@ public class GateRepository {
     // Delete a gate
     public void delete(Gate gate) {
         this.getDAO().delete(gate.getUUID());
+        this.remove(gate);
+    }
+
+    // Removes a gate from internal storage
+    public void remove(Gate gate) {
         this.gateStore.remove(gate.getUUID());
     }
 
@@ -55,7 +60,7 @@ public class GateRepository {
     }
 
     // Get factions gates
-    public List<Gate> allForFaction(UUID factionUUID) {
+    public List<Gate> getAllForFaction(UUID factionUUID) {
         return this.gateStore.values().stream()
             .filter(gate -> gate.getFaction().equals(factionUUID))
             .toList();
