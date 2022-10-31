@@ -25,4 +25,5 @@ public class FactionBean {
     private Map<String, ConfigurationFlag> flags = new HashMap<>();
     private Map<UUID, GroupMember> members = new HashMap<>();
     private Map<UUID, FactionRelationType> relations = new HashMap<>();
+    private Map<UUID, String> laws = new HashMap<>();
 }

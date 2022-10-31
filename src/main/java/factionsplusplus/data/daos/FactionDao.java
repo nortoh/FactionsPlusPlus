@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface FactionDao {
+    // FACTIONS
     @SqlUpdate("INSERT IGNORE INTO factions (id, name) VALUES (:getUUID, :getName)")
     void insert(@BindMethods Faction faction);
 
@@ -53,17 +54,22 @@ public interface FactionDao {
     """)
     void update(@BindMethods Faction faction);
 
-    @SqlUpdate("INSERT IGNORE INTO faction_members (faction_id, player_id, role) VALUES (?, ?, ?)")
-    void insertMember(UUID faction, UUID player, int role);
-
-    @SqlUpdate("DELETE FROM faction_members WHERE player_id = ? AND faction_id = ?")
-    void deleteMember(UUID faction, UUID player);
-
     @SqlUpdate("DELETE FROM factions WHERE id = :getUUID")
     void delete(@BindMethods Faction faction);
 
     @SqlUpdate("DELETE FROM factions WHERE id = ?")
     void delete(UUID faction);
+
+    @SqlQuery("SELECT * FROM factions")
+    @RegisterFieldMapper(FactionBean.class)
+    List<FactionBean> get();
+
+    // MEMBERS
+    @SqlUpdate("INSERT IGNORE INTO faction_members (faction_id, player_id, role) VALUES (?, ?, ?)")
+    void insertMember(UUID faction, UUID player, int role);
+
+    @SqlUpdate("DELETE FROM faction_members WHERE player_id = ? AND faction_id = ?")
+    void deleteMember(UUID faction, UUID player);
 
     @SqlUpdate("UPDATE faction_members SET role = :getRole WHERE player_id = :getUUID")
     void update(@BindMethods GroupMember member);
@@ -71,12 +77,37 @@ public interface FactionDao {
     @SqlUpdate("INSERT INTO faction_members (faction_id, player_id, role) VALUES (:faction, :player, :role) ON DUPLICATE KEY UPDATE role = :role")
     void upsert(@Bind("faction") UUID faction, @Bind("player") UUID player, @Bind("role") int role);
 
+    @SqlQuery("""
+        SELECT
+            player_id id,
+            role
+        FROM faction_members
+        WHERE faction_id = ?
+    """)
+    @KeyColumn("id")
+    @RegisterFieldMapper(GroupMember.class)
+    Map<UUID, GroupMember> getMembers(UUID uuid);
+
+    // RELATIONS
+
     @SqlUpdate("INSERT INTO faction_relations (source_faction, target_faction, type, updated_at) VALUES (:source, :target, :type, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE type = :type, updated_at = CURRENT_TIMESTAMP")
     void upsertRelation(@Bind("source") UUID source, @Bind("target") UUID target, @Bind("type") FactionRelationType type);
 
     @SqlUpdate("DELETE FROM faction_relations WHERE source_faction = ? AND target_faction = ?")
     void deleteRelation(UUID source, UUID target);
 
+    @SqlQuery("""
+        SELECT
+            target_faction,
+            type
+        FROM faction_relations
+        WHERE source_faction = ?     
+    """)
+    @KeyColumn("target_faction")
+    @ValueColumn("type")
+    Map<UUID, FactionRelationType> getRelations(UUID uuid);
+
+    // INVITES
     @SqlUpdate("INSERT IGNORE INTO faction_invites (faction_id, player_id) VALUES (?, ?)")
     void insertInvite(UUID faction, UUID player);
 
@@ -85,11 +116,8 @@ public interface FactionDao {
 
     @SqlQuery("SELECT COUNT(1) FROM faction_invites WHERE faction_id = ? AND player_id = ?")
     int getInvite(UUID faction, UUID player);
-    
-    @SqlQuery("SELECT * FROM factions")
-    @RegisterFieldMapper(FactionBean.class)
-    List<FactionBean> get();
 
+    // CONFIGURATION FLAGS
     @SqlQuery("""
         SELECT
             name,
@@ -123,27 +151,23 @@ public interface FactionDao {
     @SqlUpdate("DELETE FROM faction_flags WHERE flag_name = :flag AND faction_id = :faction")   
     void deleteFlag(@Bind("faction") UUID factionID, @Bind("flag") String flagName);
 
-    @SqlQuery("""
-        SELECT
-            player_id id,
-            role
-        FROM faction_members
-        WHERE faction_id = ?
+    // LAWS
+    @SqlUpdate("""
+        INSERT INTO faction_laws (
+            id,
+            faction_id,
+            text
+        ) VALUES (
+            :id,
+            :faction,
+            :law
+        ) ON DUPLICATE KEY UPDATE
+            text = :law
     """)
-    @KeyColumn("id")
-    @RegisterFieldMapper(GroupMember.class)
-    Map<UUID, GroupMember> getMembers(UUID uuid);
+    void upsertLaw(@Bind("faction") UUID factionID, @Bind("id") UUID lawID, @Bind("law") String text);
 
-    @SqlQuery("""
-        SELECT
-            target_faction,
-            type
-        FROM faction_relations
-        WHERE source_faction = ?     
-    """)
-    @KeyColumn("target_faction")
-    @ValueColumn("type")
-    Map<UUID, FactionRelationType> getRelations(UUID uuid);
+    @SqlUpdate("DELETE FROM faction_laws WHERE id = ?")
+    void deleteLaw(UUID lawID);
 
     @SqlQuery("""
         SELECT
@@ -163,6 +187,7 @@ public interface FactionDao {
             faction.setFlags(getFlags(faction.getId()));
             faction.setMembers(getMembers(faction.getId()));
             faction.setRelations(getRelations(faction.getId()));
+            faction.setLaws(getLaws(faction.getId()));
             results.add(faction);
         });
         return results;

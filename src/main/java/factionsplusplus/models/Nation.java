@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,9 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Nation extends Group implements Diplomatic, Lawful {
     protected Map<UUID, FactionRelationType> relations = new ConcurrentHashMap<>();
-    protected List<UUID> attemptedAlliances = Collections.synchronizedList(new ArrayList<>());
-    protected List<UUID> attemptedTruces = Collections.synchronizedList(new ArrayList<>());
-    protected final List<String> laws = Collections.synchronizedList(new ArrayList<>());
+    protected final List<UUID> attemptedAlliances = Collections.synchronizedList(new ArrayList<>());
+    protected final List<UUID> attemptedTruces = Collections.synchronizedList(new ArrayList<>());
+    protected final Map<UUID, String> laws = Collections.synchronizedMap(new LinkedHashMap<>());
 
     @Override
     public void addAlly(UUID allyUUID) {
@@ -109,33 +110,16 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public void addLaw(String newLaw) {
-        this.laws.add(newLaw);
-    }
-
-    @Override
-    public boolean removeLaw(String lawToRemove) {
-        if (containsIgnoreCase(this.laws, lawToRemove)) {
-            this.laws.remove(lawToRemove);
-            return true;
-        }
-        return false;
+        this.laws.put(UUID.randomUUID(), newLaw);
     }
 
     @Override
     public boolean removeLaw(int i) {
-        if (this.laws.size() > i) {
-            this.laws.remove(i);
-            return true;
-        }
         return false;
     }
 
     @Override
     public boolean editLaw(int i, String newString) {
-        if (this.laws.size() > i) {
-            this.laws.set(i, newString);
-            return true;
-        }
         return false;
     }
 
@@ -146,7 +130,7 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     @Override
     public List<String> getLaws() {
-        return this.laws;
+        return this.laws.values().stream().toList();
     }
 
     public FactionRelationType getRelation(UUID factionUUID) {
@@ -155,16 +139,5 @@ public class Nation extends Group implements Diplomatic, Lawful {
 
     public FactionRelationType getRelation(Faction faction) {
         return this.getRelation(faction.getUUID());
-    }
-
-    // helper methods ---------------
-
-    private boolean containsIgnoreCase(List<String> list, String str) {
-        for (String string : list) {
-            if (string.equalsIgnoreCase(str)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

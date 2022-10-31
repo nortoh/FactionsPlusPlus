@@ -179,6 +179,37 @@ public class Faction extends Nation implements Feudal {
         this.relations.remove(uuid);
     }
 
+    // Laws
+    public void addLaw(String lawText) {
+        UUID lawUUID = UUID.randomUUID();
+        this.laws.put(lawUUID, lawText);
+        this.factionRepository.persistLaw(this.uuid, lawUUID, lawText);
+    }
+
+    @Override
+    public boolean editLaw(int index, String text) {
+        try {
+            UUID foundUUID = (UUID)this.laws.keySet().toArray()[index];
+            this.laws.put(foundUUID, text);
+            this.factionRepository.persistLaw(this.uuid, foundUUID, text);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeLaw(int index) {
+        try {
+            UUID foundUUID = (UUID)this.laws.keySet().toArray()[index];
+            this.laws.remove(foundUUID);
+            this.factionRepository.deleteLaw(foundUUID);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+
     // Prefix
     public String getPrefix() {
         return this.prefix;

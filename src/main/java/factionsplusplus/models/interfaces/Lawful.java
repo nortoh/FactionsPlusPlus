@@ -12,8 +12,6 @@ import java.util.List;
 public interface Lawful {
     void addLaw(String newLaw);
 
-    boolean removeLaw(String lawToRemove);
-
     boolean removeLaw(int i);
 
     boolean editLaw(int i, String newString);
