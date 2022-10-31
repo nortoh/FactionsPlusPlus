@@ -75,6 +75,7 @@ public class FactionsPlusPlus extends JavaPlugin {
     @Override
     public void onDisable() {
         this.dataService.save();
+        this.dataService.disable();
         this.localeService.saveLanguage();
     }
 

@@ -267,6 +267,9 @@ public class DataService {
         //this.warRepository.persist();
         this.playerRecordRepository.persist(); // save player stats
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
+    }
+
+    public void disable() {
         this.dataProviderService.onDisable();
     }
 
