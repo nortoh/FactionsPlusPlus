@@ -6,9 +6,10 @@ import com.google.inject.Inject;
 import org.bukkit.block.Block;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;
 
 import factionsplusplus.data.daos.LockedBlockDao;
 import factionsplusplus.models.LockedBlock;
@@ -17,7 +18,7 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class LockedBlockRepository {
-    private List<LockedBlock> lockedBlockStore = Collections.synchronizedList(new ArrayList<>());
+    private Map<UUID, LockedBlock> lockedBlockStore = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
 
@@ -40,22 +41,27 @@ public class LockedBlockRepository {
     // Save a locked block
     public void create(LockedBlock block) {
         this.getDAO().create(block);
-        this.lockedBlockStore.add(block);
+        this.lockedBlockStore.put(block.getUUID(), block);
     }
 
     // Delete a locked block
     public void delete(LockedBlock block) {
         this.getDAO().delete(block);
-        this.lockedBlockStore.remove(block);
+        this.remove(block);
     }
     public void delete(Block b) {
         LockedBlock block = this.get(b.getX(), b.getY(), b.getZ(), b.getWorld().getUID());
         if (block != null) this.delete(block);
     }
 
+    // Remove a locked block from internal storage
+    public void remove(LockedBlock block) {
+        this.lockedBlockStore.remove(block.getUUID());
+    }
+
     // Retrieve a locked block by location
     public LockedBlock get(int x, int y, int z, UUID world) {
-        for (LockedBlock block : this.lockedBlockStore) {
+        for (LockedBlock block : this.lockedBlockStore.values()) {
             if (
                 block.getX() == x &&
                 block.getY() == y &&
@@ -69,8 +75,8 @@ public class LockedBlockRepository {
     }
 
     // Retrieve all locked blocks
-    public List<LockedBlock> all() {
-        return this.lockedBlockStore;
+    public Collection<LockedBlock> all() {
+        return this.lockedBlockStore.values();
     }
 
     public void persist(LockedBlock lock) {
@@ -83,6 +89,13 @@ public class LockedBlockRepository {
 
     public void deletePlayerAccess(LockedBlock lock, UUID player) {
         this.getDAO().removePlayerAccess(lock.getUUID(), player);
+    }
+
+    // Get factions locked blocks
+    public List<LockedBlock> getAllForFaction(UUID factionUUID) {
+        return this.lockedBlockStore.values().stream()
+            .filter(lock -> lock.getFaction().equals(factionUUID))
+            .toList();
     }
 
     // Get the DAO for this repository

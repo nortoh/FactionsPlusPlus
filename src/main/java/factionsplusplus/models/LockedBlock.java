@@ -139,7 +139,7 @@ public class LockedBlock {
         this.faction = uuid;
     }
 
-    public UUID getFactionID() {
+    public UUID getFaction() {
         return this.faction;
     }
 }

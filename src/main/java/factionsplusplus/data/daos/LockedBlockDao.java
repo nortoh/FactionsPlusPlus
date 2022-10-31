@@ -9,7 +9,9 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public interface LockedBlockDao {
     @SqlUpdate("""
@@ -66,11 +68,12 @@ public interface LockedBlockDao {
     @SqlQuery("SELECT player_id FROM locked_block_access_list WHERE locked_block_id = ?")
     List<UUID> getAccessList(UUID lockUUID);
 
-    default List<LockedBlock> getAll() {
+    default Map<UUID, LockedBlock> getAll() {
         List<LockedBlock> results = get();
         results.stream()
             .forEach(lock -> lock.setAccessList(getAccessList(lock.getUUID())));
-        return results;
+        
+        return results.stream().collect(Collectors.toMap(l -> l.getUUID(), l -> l));
     }
 
     default void create(LockedBlock block) {
