@@ -16,5 +16,6 @@ public enum ArgumentType {
     FactionMember,
     FactionOfficer,
     ConfigOptionName,
-    WorldFlagName
+    WorldFlagName,
+    FactionBaseName
 }
