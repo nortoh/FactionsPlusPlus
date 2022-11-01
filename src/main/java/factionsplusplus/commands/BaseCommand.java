@@ -226,6 +226,7 @@ public class BaseCommand extends Command {
         final String newName = context.getStringArgument("new name");
         context.getExecutorsFaction().renameBase(base.getName(), newName);
         context.getExecutorsFaction().persistBase(base);
+        // TODO: localize
         context.reply("Updated.");
     }
 
