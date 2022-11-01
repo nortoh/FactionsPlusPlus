@@ -35,7 +35,6 @@ public class BaseCommand extends Command {
                 .withDescription("Manage your factions bases.")
                 .expectsPlayerExecution()
                 .expectsFactionMembership()
-                .expectsFactionOfficership()
                 .setExecutorMethod("teleportCommand")
                 .addSubCommand(
                     new CommandBuilder()
@@ -52,6 +51,7 @@ public class BaseCommand extends Command {
                         .requiresPermissions("mf.addbase")
                         .withDescription("Adds a new base to your faction.")
                         .setExecutorMethod("createCommand")
+                        .expectsFactionOfficership()
                         .addArgument(
                             "name",
                             new ArgumentBuilder()
@@ -68,6 +68,7 @@ public class BaseCommand extends Command {
                         .requiresPermissions("mf.removebase")
                         .withDescription("Removes a base from your faction.")
                         .setExecutorMethod("removeCommand")
+                        .expectsFactionOfficership()
                         .addArgument(
                             "base to remove",
                             new ArgumentBuilder()
@@ -84,6 +85,7 @@ public class BaseCommand extends Command {
                         .requiresPermissions("mf.editbase")
                         .withDescription("Edits a base for your faction.")
                         .setExecutorMethod("editCommand")
+                        .expectsFactionOfficership()
                         .addArgument(
                             "base to edit",
                             new ArgumentBuilder()
@@ -116,6 +118,7 @@ public class BaseCommand extends Command {
                         .requiresPermissions("mf.renamebase")
                         .withDescription("Rename a base")
                         .setExecutorMethod("renameCommand")
+                        .expectsFactionOfficership()
                         .addArgument(
                             "name",
                             new ArgumentBuilder()
