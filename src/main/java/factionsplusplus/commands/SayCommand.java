@@ -53,8 +53,8 @@ public class SayCommand extends Command {
         final String prefix = context.getExecutorsFaction().getPrefix();
         if (this.configService.getBoolean("showPrefixesInFactionChat")) {
             this.messageService.sendToFaction(context.getExecutorsFaction(), StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + context.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
-        } else {
-            this.messageService.sendToFaction(context.getExecutorsFaction(), ChatColor.WHITE + "" + context.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
+            return;
         }
+        this.messageService.sendToFaction(context.getExecutorsFaction(), ChatColor.WHITE + "" + context.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
     }
 }
