@@ -147,7 +147,7 @@ public class Faction extends Nation implements Feudal {
 
     public void upsertMember(UUID uuid, GroupRole role) {
         GroupMember member = this.members.get(uuid);
-        if (member != null) member.addRole(role);
+        if (member != null) member.setRole(role);
         else member = new GroupMember(uuid, role);
         this.members.put(uuid, member);
         this.factionRepository.persistMember(this.getUUID(), member);
@@ -298,12 +298,16 @@ public class Faction extends Nation implements Feudal {
     }
 
     public UUID getLiege() {
-        return this.relations.entrySet()
-            .stream()
-            .filter(entry -> entry.getValue() == FactionRelationType.Liege)
-            .map(entry -> entry.getKey())
-            .findFirst()
-            .orElse(null);
+        try {
+            return this.relations.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() == FactionRelationType.Liege)
+                .map(entry -> entry.getKey())
+                .findFirst()
+                .orElse(null);
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     public void setLiege(UUID newLiege) {
