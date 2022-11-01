@@ -114,7 +114,6 @@ public class CommandService implements TabCompleter {
             RenameCommand.class,
             ResetPowerLevelsCommand.class,
             RevokeAccessCommand.class,
-            SetHomeCommand.class,
             StatsCommand.class,
             SwearFealtyCommand.class,
             TransferCommand.class,

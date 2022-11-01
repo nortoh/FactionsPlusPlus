@@ -26,7 +26,7 @@ public class FactionBase implements Identifiable {
     private boolean isDefault = false;
 
     public FactionBase() { }
-    
+
     public FactionBase(UUID uuid, String name, Faction faction, Location location) {
         this.uuid = uuid;
         this.name = name;
@@ -69,5 +69,17 @@ public class FactionBase implements Identifiable {
 
     public Location getBukkitLocation() {
         return this.location.getLocation();
+    }
+
+    public void toggleDefault() {
+        this.isDefault = ! this.isDefault;
+    }
+
+    public void toggleAllowAllFactionMembers() {
+        this.allowAllFactionMembers = ! this.allowAllFactionMembers;
+    }
+
+    public void toggleAllowAllies() {
+        this.allowAllies = ! this.allowAllies;
     }
 }

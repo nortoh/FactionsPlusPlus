@@ -291,6 +291,7 @@ ErrorCreatingBase: "&cThere was an error creating a base."
 ErrorRemovingBase: "&cThere was an error removing the specified base."
 NoSuchBase: "&cA base with that name does not exist."
 NoBases: "&cNo bases found."
+NoDefaultBase: "&cYour faction does not have a default base set."
 FactionBaseList:
   Title: "&a==== Faction Bases ====="
   Base: "&b - #name#"

@@ -9,6 +9,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionBase;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
+import factionsplusplus.utils.StringUtils;
 import factionsplusplus.utils.extended.Scheduler;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
@@ -145,7 +146,51 @@ public class BaseCommand extends Command {
     }
 
     public void editCommand(CommandContext context) {
-        // TODO: all of this
+        // TODO: localize these
+        final FactionBase base = context.getFactionBaseArgument("base to edit");
+        final String option = context.getStringArgument("option");
+        final String value = context.getStringArgument("value");
+        switch(option.toLowerCase()) {
+            case "factiondefault":
+                boolean isDefault = StringUtils.parseAsBoolean(value);
+                if (isDefault == true) {
+                    FactionBase defaultBase = context.getExecutorsFaction().getDefaultBase();
+                    if (defaultBase != null && defaultBase.equals(base)) {
+                        context.reply("&cThis base is already your factions default base.");
+                        return;
+                    } else {
+                        if (defaultBase != null) { 
+                            defaultBase.toggleDefault();
+                            context.getExecutorsFaction().persistBase(defaultBase);
+                        }
+                        base.toggleDefault();
+                        context.reply("&aBase set as default.");
+                    }
+                } else {
+                    if (base.isFactionDefault()) {
+                        base.toggleDefault();
+                        context.reply("&aBase no longer set as default.");
+                    } else {
+                        context.reply("&cThis base isn't your factions default base.");
+                        return;
+                    }
+                }
+                break;
+            case "allowallies":
+                String newText = base.shouldAllowAllies() ? "are not" : "are";
+                base.toggleAllowAllies();
+                context.reply(String.format("&aAllies %s allowed to teleport to this base.", newText));
+                break;
+            case "allowallfactionmembers":
+                newText = base.shouldAllowAllFactionMembers() ? "are not" : "are";
+                base.toggleAllowAllFactionMembers();
+                context.reply(String.format("&aRanks below officer %s allowed to teleport to this base.", newText));
+                break;
+            default:
+                context.reply("&cUnknown setting name.");
+                return;
+        }
+        context.getExecutorsFaction().persistBase(base);
     }
 
     public void renameCommand(CommandContext context) {
@@ -184,10 +229,14 @@ public class BaseCommand extends Command {
     public void teleportCommand(CommandContext context) {
         // TODO: make sure executor has access to the base
         // TODO: add ability for allies to go to an allied factions bases if permissable, probably adding an optional faction param 
-        final FactionBase base = context.getFactionBaseArgument("name");
+        FactionBase base = context.getFactionBaseArgument("name");
         if (base == null) {
             // must be a fall through, try to final a default base
-            return;
+            base = context.getExecutorsFaction().getDefaultBase();
+            if (base == null) {
+                context.replyWith("NoDefaultBase");
+                return;
+            }
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), base.getBukkitLocation());
     }

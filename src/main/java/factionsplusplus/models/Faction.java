@@ -256,6 +256,13 @@ public class Faction extends Nation implements Feudal {
         }
     }
 
+    public FactionBase getDefaultBase() {
+        return this.bases.values().stream()
+            .filter(b -> b.isFactionDefault())
+            .findFirst()
+            .orElse(null);
+    }
+    
     public FactionBase getBase(String name) {
         return this.bases.entrySet().stream()
             .filter(b -> b.getKey().toLowerCase().equals(name.toLowerCase()))
