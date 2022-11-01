@@ -124,7 +124,6 @@ public class DamageHandler implements Listener {
         }
 
         final Faction chunkHolder = this.dataService.getFaction(this.dataService.getClaimedChunk(entity.getLocation().getChunk()).getHolder());
-        final Faction attackerFaction = this.dataService.getPlayersFaction(attacker.getUniqueId());
 
         if (! chunkHolder.getFlag("enableMobProtection").toBoolean()) {
             this.logger.debug("Mob Protection is disabled");
@@ -137,16 +136,23 @@ public class DamageHandler implements Listener {
             return false;
         }
 
+        // If attacker is null, return true
+        if (attacker == null) {
+            this.logger.debug("attacker is null");
+            return true;
+        }
+
+        final Faction attackerFaction = this.dataService.getPlayersFaction(attacker.getUniqueId());
+        // If attacker is factionless or null, return true
+        if (attackerFaction == null) {
+            this.logger.debug("attacker is factionless");
+            return true;
+        }
+
         // If attacker is in faction which owns the chunk, return false
         if (this.dataService.getPlayersFaction(attacker.getUniqueId()) == chunkHolder) {
             this.logger.debug("Attacker is in same faction as Chunkholder");
             return false;
-        }
-
-        // If attacker is factionless, return true
-        if (attackerFaction == null) {
-            this.logger.debug("attacker is factionless");
-            return true;
         }
 
         // If attacker is at war with the faction, return false
@@ -158,9 +164,8 @@ public class DamageHandler implements Listener {
     private Player getVictim(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
             return (Player) event.getEntity();
-        } else {
-            return null;
         }
+        return null;
     }
 
     private Player getAttacker(EntityDamageByEntityEvent event) {
@@ -172,10 +177,8 @@ public class DamageHandler implements Listener {
         }
         else if (this.isDamagerPlayer(event)) {
             return (Player) event.getDamager();
-
-        } else {
-            return null;
         }
+        return null;
     }
 
     private ProjectileSource getProjectileSource(EntityDamageByEntityEvent event) {
