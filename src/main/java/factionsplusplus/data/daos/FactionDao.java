@@ -6,6 +6,7 @@ import org.jdbi.v3.sqlobject.config.ValueColumn;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.FactionBase;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.constants.GroupRole;
@@ -180,14 +181,86 @@ public interface FactionDao {
     @ValueColumn("text")
     Map<UUID, String> getLaws(UUID uuid);
 
+    // BASES
+
+    @SqlQuery("SELECT * FROM faction_bases WHERE faction_id = ?")
+    @KeyColumn("name")
+    @RegisterFieldMapper(FactionBase.class)
+    Map<String, FactionBase> getBases(UUID uuid);
+
+    @SqlUpdate("""
+        INSERT INTO faction_bases (
+            id,
+            faction_id,
+            world_id,
+            x_position,
+            y_position,
+            z_position,
+            name
+        ) VALUES (
+            :getUUID,
+            :getFaction,
+            :getWorld,
+            :getLocationData.getX,
+            :getLocationData.getY,
+            :getLocationData.getZ,
+            :getName
+        ) ON DUPLICATE KEY UPDATE
+            allow_allies = :shouldAllowAllies,
+            allow_all_members = :shouldAllowAllFactionMembers,
+            is_faction_default = :isFactionDefault,
+            name = :getName
+    """)
+    void upsertBase(@BindMethods FactionBase base);
+
+    @SqlUpdate("""
+        INSERT INTO faction_bases (
+            id,
+            faction_id,
+            world_id,
+            x_position,
+            y_position,
+            z_position,
+            name
+        ) VALUES (
+            :getUUID,
+            :getFaction,
+            :getWorld,
+            :getLocationData.getX,
+            :getLocationData.getY,
+            :getLocationData.getZ,
+            :getName
+        )
+    """)
+    void insertBase(@BindMethods FactionBase base);
+
+    @SqlUpdate("""
+        UPDATE faction_bases SET
+            allow_allies = :shouldAllowAllies,
+            allow_all_members = :shouldAllowAllFactionMembers,
+            is_faction_default = :isFactionDefault,
+            name = :getName
+        WHERE
+            id = :getUUID    
+    """)
+    void updateBase(@BindMethods FactionBase base);
+
+    @SqlUpdate("DELETE FROM faction_bases WHERE id = :getUUID")
+    void deleteBase(@BindMethods FactionBase base);
+
     default List<FactionBean> getFactions() {
         List<FactionBean> results = new ArrayList<>();
         List<FactionBean> factionMap = get();
         factionMap.stream().forEach(faction -> {
-            faction.setFlags(getFlags(faction.getId()));
-            faction.setMembers(getMembers(faction.getId()));
-            faction.setRelations(getRelations(faction.getId()));
-            faction.setLaws(getLaws(faction.getId()));
+            try {
+                faction.setFlags(getFlags(faction.getId()));
+                faction.setMembers(getMembers(faction.getId()));
+                faction.setRelations(getRelations(faction.getId()));
+                faction.setLaws(getLaws(faction.getId()));
+                faction.setBases(getBases(faction.getId()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             results.add(faction);
         });
         return results;

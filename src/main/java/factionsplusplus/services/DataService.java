@@ -109,6 +109,31 @@ public class DataService {
                 )
             """);
             handle.execute("""
+                CREATE TABLE IF NOT EXISTS worlds (
+                    id BINARY(16) NOT NULL,
+                    PRIMARY KEY (id)
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS faction_bases (
+                    id BINARY(16) NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    faction_id BINARY(16) NOT NULL,
+                    world_id BINARY(16) NOT NULL,
+                    x_position DOUBLE NOT NULL,
+                    y_position DOUBLE NOT NULL,
+                    z_position DOUBLE NOT NULL,
+                    allow_all_members BOOLEAN NOT NULL DEFAULT 0,
+                    allow_allies BOOLEAN NOT NULL DEFAULT 0,
+                    is_faction_default BOOLEAN NOT NULL DEFAULT 0,
+                    PRIMARY KEY(id),
+                    UNIQUE KEY FB_UNIQUE_LOCATION (world_id, x_position, y_position, z_position),
+                    UNIQUE KEY FB_UNIQUE_NAME (name, faction_id),
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
                 CREATE TABLE IF NOT EXISTS faction_flags (
                     faction_id BINARY(16) NOT NULL,
                     flag_name CHAR(255) NOT NULL,
@@ -116,12 +141,6 @@ public class DataService {
                     PRIMARY KEY(faction_id, flag_name),
                     FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
                     FOREIGN KEY(flag_name) REFERENCES default_flags(name) ON DELETE CASCADE
-                )
-            """);
-            handle.execute("""
-                CREATE TABLE IF NOT EXISTS worlds (
-                    id BINARY(16) NOT NULL,
-                    PRIMARY KEY (id)
                 )
             """);
             handle.execute("""

@@ -130,6 +130,15 @@ public class CommandContext {
     }
 
     /*
+     * Retrieves an argument as a FactionBase, if able.
+     */
+    public FactionBase getFactionBaseArgument(String name) {
+        Object possibleArgument = this.arguments.get(name);
+        if (possibleArgument != null) return (FactionBase)possibleArgument;
+        return null;
+    }
+
+    /*
      * Retrieves an argument as an OfflinePlayer, if able.
      */
     public OfflinePlayer getOfflinePlayerArgument(String name) {

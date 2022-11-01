@@ -20,6 +20,7 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal {
     private Map<String, ConfigurationFlag> flags;
+    private Map<String, FactionBase> bases;
     private String prefix = "none";
     private Location factionHome = null;
     private int bonusPower = 0;
@@ -55,6 +56,7 @@ public class Faction extends Nation implements Feudal {
         this.flags = bean.getFlags();
         this.members = bean.getMembers();
         this.relations = bean.getRelations();
+        this.bases = bean.getBases();
         this.messageService = messageService;
         this.factionRepository = factionRepository;
         this.dataService = dataService;
@@ -218,6 +220,52 @@ public class Faction extends Nation implements Feudal {
     public void setPrefix(String newPrefix) {
         this.prefix = newPrefix;
         this.persist();
+    }
+
+    // Faction Bases
+    public Map<String, FactionBase> getBases() {
+        return this.bases;
+    }
+
+    public boolean addBase(String name, Location location) {
+        UUID baseUUID = UUID.randomUUID();
+        try {
+            FactionBase base = new FactionBase(baseUUID, name, this, location);
+            this.bases.put(name, base);
+            this.factionRepository.persistBase(base);
+            return true;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean removeBase(String name) {
+        try {
+            FactionBase base = this.bases.entrySet().stream()
+                .filter(b -> b.getKey().toLowerCase().equals(name.toLowerCase()))
+                .map(b -> b.getValue())
+                .findFirst()
+                .orElse(null);
+            if (base == null) return false;
+            this.bases.remove(base.getName());
+            this.factionRepository.deleteBase(base);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public FactionBase getBase(String name) {
+        return this.bases.entrySet().stream()
+            .filter(b -> b.getKey().toLowerCase().equals(name.toLowerCase()))
+            .map(b -> b.getValue())
+            .findFirst()
+            .orElse(null);
+    }
+
+    public void persistBase(FactionBase base) {
+        this.factionRepository.persistBase(base);
     }
 
     // Faction Home

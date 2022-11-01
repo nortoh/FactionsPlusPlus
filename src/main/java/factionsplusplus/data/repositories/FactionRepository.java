@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.FactionBase;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.services.DataProviderService;
 import factionsplusplus.constants.FactionRelationType;
@@ -107,6 +108,14 @@ public class FactionRepository {
 
     public void deleteLaw(UUID law) {
         this.getDAO().deleteLaw(law);
+    }
+
+    public void persistBase(FactionBase base) {
+        this.getDAO().upsertBase(base);
+    } 
+
+    public void deleteBase(FactionBase base) {
+        this.getDAO().deleteBase(base);
     }
 
     public void persistFlag(Faction faction, ConfigurationFlag flag) {
