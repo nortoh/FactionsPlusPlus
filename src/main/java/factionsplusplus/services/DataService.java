@@ -47,7 +47,6 @@ public class DataService {
     private final WorldRepository worldRepository;
     private final GateRepository gateRepository;
     private final ConfigService configService;
-    private final Jdbi ephemeralData;
     private Jdbi persistentData;
 
     @Inject
@@ -75,13 +74,8 @@ public class DataService {
         this.worldRepository = worldRepository;
         this.configService = configService;
         this.gateRepository = gateRepository;
-        this.ephemeralData = Jdbi.create("jdbc:h2:mem:fpp-ephemeral-data");
         this.persistentData = this.dataProviderService.getPersistentData();
         this.initializePersistentData();
-    }
-
-    public void initializeEphemeralData() {
-
     }
 
     public void initializePersistentData() throws SQLException {
