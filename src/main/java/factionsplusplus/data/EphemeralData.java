@@ -26,7 +26,6 @@ public class EphemeralData {
     private final HashMap<UUID, InteractionContext> playersPendingInteraction = new HashMap<>();
 
     private final ArrayList<UUID> playersInFactionChat = new ArrayList<>();
-    private final ArrayList<UUID> adminsBypassingProtections = new ArrayList<>();
 
     // List of players who made the cloud and the cloud itself in a pair
     private final ArrayList<Pair<Player, AreaEffectCloud>> activeAOEClouds = new ArrayList<>();
@@ -42,10 +41,6 @@ public class EphemeralData {
 
     public ArrayList<UUID> getPlayersInFactionChat() {
         return playersInFactionChat;
-    }
-
-    public ArrayList<UUID> getAdminsBypassingProtections() {
-        return adminsBypassingProtections;
     }
 
     public ArrayList<Pair<Player, AreaEffectCloud>> getActiveAOEClouds() {

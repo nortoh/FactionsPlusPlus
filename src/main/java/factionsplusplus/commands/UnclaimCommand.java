@@ -7,11 +7,11 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ClaimService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
 import org.bukkit.entity.Player;
 
@@ -24,15 +24,15 @@ import factionsplusplus.builders.ArgumentBuilder;
 @Singleton
 public class UnclaimCommand extends Command {
 
-    private final EphemeralData ephemeralData;
     private final DynmapIntegrationService dynmapService;
     private final ClaimService claimService;
+    private final DataService dataService;
 
     @Inject
     public UnclaimCommand(
-        EphemeralData ephemeralData,
         DynmapIntegrationService dynmapService,
-        ClaimService claimService
+        ClaimService claimService,
+        DataService dataService
     ) {
         super(
             new CommandBuilder()
@@ -50,15 +50,15 @@ public class UnclaimCommand extends Command {
                         .isOptional()
                 )
         );
-        this.ephemeralData = ephemeralData;
         this.dynmapService = dynmapService;
         this.claimService = claimService;
+        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
         final Faction faction = context.getExecutorsFaction();
         final Player player = context.getPlayer();
-        final boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
+        final boolean isPlayerBypassing = this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
         if (faction.getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
             if (! faction.isOfficer(player.getUniqueId()) && ! faction.isOwner(player.getUniqueId()) && ! isPlayerBypassing) {

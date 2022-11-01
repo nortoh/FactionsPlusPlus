@@ -13,7 +13,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.builders.MessageBuilder;
-import factionsplusplus.data.EphemeralData;
 import factionsplusplus.events.internal.FactionClaimEvent;
 import factionsplusplus.events.internal.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
@@ -41,7 +40,6 @@ public class ClaimService {
     private final ConfigService configService;
     private final MessageService messageService;
     private final DataService dataService;
-    private final EphemeralData ephemeralData;
     private final FactionService factionService;
     private final InteractionAccessChecker interactionAccessChecker;
     private final Logger logger;
@@ -51,7 +49,6 @@ public class ClaimService {
         ConfigService configService,
         MessageService messageService,
         DataService dataService,
-        EphemeralData ephemeralData,
         FactionService factionService,
         InteractionAccessChecker interactionAccessChecker,
         Logger logger
@@ -59,7 +56,6 @@ public class ClaimService {
         this.configService = configService;
         this.messageService = messageService;
         this.dataService = dataService;
-        this.ephemeralData = ephemeralData;
         this.factionService = factionService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.logger = logger;
@@ -158,7 +154,7 @@ public class ClaimService {
         playerCoords[1] = player.getLocation().getChunk().getZ();
 
         // handle admin bypass
-        if (this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId())) {
+        if (this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing()) {
             ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
             if (chunk != null) {
                 this.removeChunk(chunk, player, this.dataService.getFaction(chunk.getHolder()));
@@ -241,7 +237,7 @@ public class ClaimService {
      */
     public void handleClaimedChunkInteraction(PlayerInteractEvent event, ClaimedChunk claimedChunk) {
         // player not in a faction and isn't overriding
-        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.dataService.getPlayerRecord(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
             if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
@@ -260,7 +256,7 @@ public class ClaimService {
         }
 
         // if player's faction is not the same as the holder of the chunk and player isn't overriding
-        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayerRecord(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
             if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {

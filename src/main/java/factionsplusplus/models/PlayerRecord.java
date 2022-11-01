@@ -83,6 +83,10 @@ public class PlayerRecord implements Identifiable {
         this.adminBypass = value;
     }
 
+    public void toggleAdminBypassing() {
+        this.adminBypass = ! this.adminBypass;
+    }
+
     // Convenience methods
     public int getLogins() {
         return this.logins;

@@ -227,7 +227,7 @@ public class InteractionHandler implements Listener {
                 if (lockedBlock.shouldAllowAllies() && ownersFaction.isAlly(playersFaction.getID())) playerHasAccess = true;
             }
             if (lockedBlock.hasAccess(player.getUniqueId())) playerHasAccess = true;
-            boolean isPlayerBypassing = this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
+            boolean isPlayerBypassing = this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
             if (! playerHasAccess && ! isPlayerBypassing) {
                 String owner = PlayerUtils.parseAsPlayer(lockedBlock.getOwner()).getName();
                 this.messageService.sendLocalizedMessage(
