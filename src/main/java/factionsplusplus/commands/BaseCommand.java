@@ -111,6 +111,30 @@ public class BaseCommand extends Command {
                 )
                 .addSubCommand(
                     new CommandBuilder()
+                        .withName("rename")
+                        .withAliases(LOCALE_PREFIX + "CmdRenameBase")
+                        .requiresPermissions("mf.renamebase")
+                        .withDescription("Rename a base")
+                        .setExecutorMethod("renameCommand")
+                        .addArgument(
+                            "name",
+                            new ArgumentBuilder()
+                                .setDescription("the current name of the base to rename")
+                                .expectsFactionBaseName()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                        .addArgument(
+                            "new name",
+                            new ArgumentBuilder()
+                                .setDescription("the new name of the base you wish to rename")
+                                .expectsString()
+                                .expectsDoubleQuotes()
+                                .isRequired()
+                        )
+                )
+                .addSubCommand(
+                    new CommandBuilder()
                         .withName("teleport")
                         .withAliases("go", LOCALE_PREFIX + "CmdTeleportBase")
                         .requiresPermissions("mf.teleport")
@@ -145,7 +169,7 @@ public class BaseCommand extends Command {
         context.replyWith("ErrorCreatingBase");
     }
 
-    public void editCommand(CommandContext context) {
+    public void configCommand(CommandContext context) {
         // TODO: localize these
         final FactionBase base = context.getFactionBaseArgument("base to edit");
         final String option = context.getStringArgument("option");
@@ -194,7 +218,12 @@ public class BaseCommand extends Command {
     }
 
     public void renameCommand(CommandContext context) {
-        // TODO: all of this
+        // TODO: check if base name already in use for this faction
+        final FactionBase base = context.getFactionBaseArgument("name");
+        final String newName = context.getStringArgument("new name");
+        context.getExecutorsFaction().renameBase(base.getName(), newName);
+        context.getExecutorsFaction().persistBase(base);
+        context.reply("Updated.");
     }
 
     public void listCommand(CommandContext context) {

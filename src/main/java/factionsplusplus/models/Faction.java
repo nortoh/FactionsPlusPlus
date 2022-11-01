@@ -262,13 +262,21 @@ public class Faction extends Nation implements Feudal {
             .findFirst()
             .orElse(null);
     }
-    
+
     public FactionBase getBase(String name) {
         return this.bases.entrySet().stream()
             .filter(b -> b.getKey().toLowerCase().equals(name.toLowerCase()))
             .map(b -> b.getValue())
             .findFirst()
             .orElse(null);
+    }
+
+    public void renameBase(String oldName, String newName) {
+        FactionBase base = this.getBase(oldName);
+        if (base == null) return;
+        this.bases.remove(base.getName());
+        base.setName(newName);
+        this.bases.put(newName, base);
     }
 
     public void persistBase(FactionBase base) {

@@ -82,4 +82,8 @@ public class FactionBase implements Identifiable {
     public void toggleAllowAllies() {
         this.allowAllies = ! this.allowAllies;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
