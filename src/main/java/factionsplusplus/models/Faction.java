@@ -21,8 +21,7 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
 public class Faction extends Nation implements Feudal {
     private Map<String, ConfigurationFlag> flags;
     private Map<String, FactionBase> bases;
-    private String prefix = "none";
-    private Location factionHome = null;
+    private String prefix = null;
     private int bonusPower = 0;
     @ColumnName("should_autoclaim")
     private boolean autoclaim = false;
@@ -281,15 +280,6 @@ public class Faction extends Nation implements Feudal {
 
     public void persistBase(FactionBase base) {
         this.factionRepository.persistBase(base);
-    }
-
-    // Faction Home
-    public Location getFactionHome() {
-        return this.factionHome;
-    }
-
-    public void setFactionHome(Location location) {
-        this.factionHome = location;
     }
 
     // Auto Claim

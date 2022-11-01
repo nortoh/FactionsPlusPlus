@@ -209,7 +209,7 @@ TargetFactionNotOverClaiming: "&cTarget faction does not have more land than the
 AlertLandConqueredFromAnotherFaction: "&aLand conquered from #name#. Demesne Size: #number#/#max#"
 AlertLandConqueredFromYourFaction: "&c#name# has conquered land from your faction."
 AlertLandClaimed: "&aLand claimed. Demesne Size: #number#/#max#"
-AlertFactionHomeRemoved: "&cYour faction home has been removed."
+AlertFactionBaseRemoved: "&cYour faction base, #name#, has been removed."
 AlertNonOwnership: "&cYou don't own this."
 CannotPlaceChestsNextToUnownedLockedChests: "&cYou can't place chests next to locked chests you don't own."
 CannotPlaceHoppersNextToUnownedLockedChests: "&cYou can't place hoppers next to, under or above locked chests you don't own."
@@ -296,6 +296,8 @@ MaxBasesReached: "&cYour faction has reached the maximum number of bases allowed
 BaseTeleportDenied: "&cYou do not have permission to teleport to this base."
 BaseManageDenied: "&cYou do not have permission to manage this base."
 DuplicateBaseName: "&cA base with this name already exists in your faction."
+CanOnlyCreateBasesInClaimedTerritory: "&cYou can only create bases in claimed territory."
+
 FactionBaseList:
   Title: "&a==== Faction Bases ====="
   Base: "&b - #name#"

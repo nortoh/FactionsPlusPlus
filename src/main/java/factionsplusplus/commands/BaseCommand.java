@@ -7,6 +7,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionBase;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.utils.StringUtils;
@@ -24,11 +25,12 @@ import java.util.List;
 @Singleton
 public class BaseCommand extends Command {
     private final ConfigService configService;
+    private final ClaimService claimService;
     private final DataService dataService;
     private final Scheduler scheduler;
 
     @Inject
-    public BaseCommand(ConfigService configService, DataService dataService, Scheduler scheduler) {
+    public BaseCommand(ConfigService configService, DataService dataService, ClaimService claimService, Scheduler scheduler) {
         super(
             new CommandBuilder()
                 .withName("base")
@@ -155,6 +157,7 @@ public class BaseCommand extends Command {
                 )
         );
         this.configService = configService;
+        this.claimService = claimService;
         this.scheduler = scheduler;
         this.dataService = dataService;
     }
@@ -162,6 +165,10 @@ public class BaseCommand extends Command {
     public void createCommand(CommandContext context) {
         if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("factionMaxNumberBases")) {
             context.replyWith("MaxBasesReached");
+            return;
+        }
+        if (! this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer()).equals(context.getExecutorsFaction())) {
+            context.replyWith("CanOnlyCreateBasesInClaimedTerritory");
             return;
         }
         final String baseName = context.getStringArgument("name");
