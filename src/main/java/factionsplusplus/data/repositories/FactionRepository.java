@@ -218,8 +218,9 @@ public class FactionRepository {
                 // record number of factions
                 numFactionsFound = foundFactions.size();
 
-                Faction liege = this.get(current.getLiege());
-                if (liege != null) {
+                UUID liegeUUID = current.getLiege();
+                Faction liege = this.get(liegeUUID);
+                if (liegeUUID != null && liege != null) {
                     if (! toAdd.contains(liege) && ! foundFactions.contains(liege)) {
                         toAdd.add(liege);
                         numFactionsFound++;
