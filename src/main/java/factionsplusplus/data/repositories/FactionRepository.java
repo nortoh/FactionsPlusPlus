@@ -43,10 +43,6 @@ public class FactionRepository {
     public void load() {
         try {
             this.factionStore.clear();
-            /*this.dataProviderService.getPersistentData().useExtension(FactionDao.class, dao -> {
-                dao.get();
-            });*/
-            //this.getDAO().get();
             this.getDAO().getFactions().stream()
                 .forEach(faction -> {
                     this.factionStore.put(faction.getId(), this.factionFactory.create(faction));
