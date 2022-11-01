@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class LocationDataBean {
-    private Integer x;
-    private Integer y;
-    private Integer z;
+    private Double x;
+    private Double y;
+    private Double z;
     private UUID world;
 }
