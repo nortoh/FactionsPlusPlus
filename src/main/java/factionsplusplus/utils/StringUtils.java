@@ -48,7 +48,7 @@ public class StringUtils {
         return ChatColor.translateAlternateColorCodes('&', input);
     }
 
-        /**
+    /**
      * Method to pad a value with a zero to its left.
      *
      * @param value to pad
