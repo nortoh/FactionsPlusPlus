@@ -39,14 +39,7 @@ public class WorldRepository {
         try {
             this.worldStore.clear();
             // TODO: check if world no longer exists
-            this.dataProviderService.getPersistentData().useExtension(WorldDao.class, dao -> {
-                Bukkit.getWorlds().stream().forEach(world -> {
-                    dao.insert(world.getUID());
-                });
-                this.getDAO().getWorlds().stream().forEach(world -> {
-                    this.worldStore.put(world.getId(), this.worldFactory.create(world));
-                });
-            });
+            Bukkit.getWorlds().stream().forEach(this::create);
         } catch(Exception e) {
             this.logger.error(String.format("Error loading worlds: %s", e.getMessage()));
         }
@@ -54,7 +47,14 @@ public class WorldRepository {
 
     // Save a world after creating
     public void create(World world) {
+        this.getDAO().insert(world);
+        world.setFlags(this.getDAO().getFlags(world.getUUID()));
         this.worldStore.put(world.getUUID(), world);
+    }
+
+    public void create(org.bukkit.World bukkitWorld) {
+        World world = this.worldFactory.create(bukkitWorld.getUID());
+        this.create(world);
     }
 
     /*

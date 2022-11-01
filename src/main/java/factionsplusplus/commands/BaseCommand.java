@@ -7,11 +7,13 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionBase;
+import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.utils.StringUtils;
 import factionsplusplus.utils.extended.Scheduler;
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import org.bukkit.command.CommandSender;
@@ -23,11 +25,12 @@ import java.util.List;
 @Singleton
 public class BaseCommand extends Command {
     private final ConfigService configService;
+    private final ClaimService claimService;
     private final DataService dataService;
     private final Scheduler scheduler;
 
     @Inject
-    public BaseCommand(ConfigService configService, DataService dataService, Scheduler scheduler) {
+    public BaseCommand(ConfigService configService, DataService dataService, ClaimService claimService, Scheduler scheduler) {
         super(
             new CommandBuilder()
                 .withName("base")
@@ -154,12 +157,21 @@ public class BaseCommand extends Command {
                 )
         );
         this.configService = configService;
+        this.claimService = claimService;
         this.scheduler = scheduler;
         this.dataService = dataService;
     }
 
     public void createCommand(CommandContext context) {
-        // TODO: implement max bases and faction flag to only allow owners to create bases
+        if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("factionMaxNumberBases")) {
+            context.replyWith("MaxBasesReached");
+            return;
+        }
+        final Faction chunkOwner = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
+        if (chunkOwner == null || ! chunkOwner.equals(context.getExecutorsFaction())) {
+            context.replyWith("CanOnlyCreateBasesInClaimedTerritory");
+            return;
+        }
         final String baseName = context.getStringArgument("name");
         final boolean ok = context.getExecutorsFaction().addBase(baseName, context.getPlayer().getLocation());
         if (ok) {
@@ -221,33 +233,37 @@ public class BaseCommand extends Command {
     }
 
     public void renameCommand(CommandContext context) {
-        // TODO: check if base name already in use for this faction
         final FactionBase base = context.getFactionBaseArgument("name");
         final String newName = context.getStringArgument("new name");
+        if (context.getExecutorsFaction().getBase(newName) != null) {
+            context.replyWith("DuplicateBaseName");
+            return;
+        }
         context.getExecutorsFaction().renameBase(base.getName(), newName);
         context.getExecutorsFaction().persistBase(base);
-        // TODO: localize
-        context.reply("Updated.");
+        context.replyWith("Done");
     }
 
     public void listCommand(CommandContext context) {
-        // TODO: only show bases the executor has access to (i.e. if allow all members is off, only officers and above can tp to it)
         if (context.getExecutorsFaction().getBases().isEmpty()) {
             context.replyWith("NoBases");
             return;
         }
         context.replyWith("FactionBaseList.Title");
-        context.getExecutorsFaction().getBases().keySet().stream()
-            .forEach(baseName -> {
-                context.replyWith(
-                    this.constructMessage("FactionBaseList.Base")
-                        .with("name", baseName)
-                );
+        // TODO: if they have access to another factions bases, include in this list
+        context.getExecutorsFaction().getBases().values().stream()
+            .forEach(base -> {
+                if (base.shouldAllowAllFactionMembers() || context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
+                    context.replyWith(
+                        this.constructMessage("FactionBaseList.Base")
+                            .with("name", base.getName())
+                    );
+                }
             });
     }
 
     public void removeCommand(CommandContext context) {
-        final FactionBase base = context.getFactionBaseArgument("name");
+        final FactionBase base = context.getFactionBaseArgument("base to remove");
         final boolean ok = context.getExecutorsFaction().removeBase(base.getName());
         if (ok) {
             context.replyWith(
@@ -260,7 +276,6 @@ public class BaseCommand extends Command {
     }
 
     public void teleportCommand(CommandContext context) {
-        // TODO: make sure executor has access to the base
         // TODO: add ability for allies to go to an allied factions bases if permissable, probably adding an optional faction param 
         FactionBase base = context.getFactionBaseArgument("name");
         if (base == null) {
@@ -270,6 +285,21 @@ public class BaseCommand extends Command {
                 context.replyWith("NoDefaultBase");
                 return;
             }
+        }
+        // Check if they have permissions
+        if (
+            (
+                ! base.shouldAllowAllFactionMembers() && 
+                ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)
+            )
+            ||
+            (
+                base.shouldAllowAllies() &&
+                context.getExecutorsFaction().isAlly(null) // TODO: this should be replaced when we support a target faction
+            )
+        ) {
+            context.replyWith("BaseTeleportDenied");
+            return;
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), base.getBukkitLocation());
     }

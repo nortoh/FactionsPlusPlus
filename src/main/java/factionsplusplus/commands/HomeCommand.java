@@ -7,6 +7,7 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -38,6 +39,11 @@ public class HomeCommand extends Command {
         Faction faction = context.getExecutorsFaction();
         if (faction.getDefaultBase() == null) {
             context.replyWith("NoDefeaultBase");
+            return;
+        }
+        // Do they have permission?
+        if (! faction.getDefaultBase().shouldAllowAllFactionMembers() && ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
+            context.replyWith("BaseTeleportDenied");
             return;
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), faction.getDefaultBase().getBukkitLocation());

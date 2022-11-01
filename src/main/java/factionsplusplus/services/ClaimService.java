@@ -17,6 +17,7 @@ import factionsplusplus.events.internal.FactionClaimEvent;
 import factionsplusplus.events.internal.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.FactionBase;
 import factionsplusplus.models.Gate;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.ChunkUtils;
@@ -194,15 +195,15 @@ public class ClaimService {
      * @param player The player whose location we will be checking.
      * @return The name of the faction that has claimed the chunk. A value of "unclaimed" will be returned if the chunk is unclaimed.
      */
-    public String checkOwnershipAtPlayerLocation(Player player) {
+    public Faction checkOwnershipAtPlayerLocation(Player player) {
         double[] playerCoords = new double[2];
         playerCoords[0] = player.getLocation().getChunk().getX();
         playerCoords[1] = player.getLocation().getChunk().getZ();
         ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
         if (chunk != null) {
-            return this.dataService.getFactionRepository().get(chunk.getHolder()).getName();
+            return this.dataService.getFactionRepository().get(chunk.getHolder());
         }
-        return "unclaimed";
+        return null;
     }
 
     /**
@@ -434,19 +435,24 @@ public class ClaimService {
         Faction playersFaction = this.dataService.getPlayersFaction(unclaimingPlayer.getUniqueId());
 
         // ensure that the claimed chunk is owned by the player's faction
-        if (! chunkToRemove.getHolder().equals(playersFaction.getID())) {
+        if (! chunkToRemove.getHolder().equals(playersFaction.getUUID())) {
             // TODO: add locale message
             return;
         }
 
-        // if faction home is located on this chunk
-        Location factionHome = holdingFaction.getFactionHome();
-        if (factionHome != null) {
-            if (factionHome.getChunk().getX() == chunkToRemove.getChunk().getX() && factionHome.getChunk().getZ() == chunkToRemove.getChunk().getZ()
-                    && chunkToRemove.getWorldName().equalsIgnoreCase(Objects.requireNonNull(unclaimingPlayer.getLocation().getWorld()).getName())) {
-                // remove faction home
-                holdingFaction.setFactionHome(null);
-                this.messageService.sendFactionLocalizedMessage(holdingFaction, "AlertFactionHomeRemoved");
+        // if a faction base is located on this chunk
+        for (FactionBase base : holdingFaction.getBases().values()) {
+            Chunk baseChunk = base.getBukkitLocation().getChunk();
+            if (
+                baseChunk.getX() == chunkToRemove.getChunk().getX() && 
+                baseChunk.getZ() == chunkToRemove.getChunk().getZ() &&
+                chunkToRemove.getWorldUUID().equals(baseChunk.getWorld().getUID())
+            ) {
+                holdingFaction.removeBase(base.getName());
+                holdingFaction.message(
+                    new MessageBuilder("AlertFactionBaseRemoved")
+                        .with("name", base.getName())
+                );
             }
         }
 

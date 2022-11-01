@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+import factionsplusplus.models.Faction;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.builders.CommandBuilder;
 
@@ -34,14 +35,14 @@ public class CheckClaimCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        final String result = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
+        final Faction owner = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
 
-        if (result.equals("unclaimed")) {
+        if (owner == null) {
             context.replyWith("LandIsUnclaimed");
         } else {
             context.replyWith(
                 this.constructMessage("LandClaimedBy")
-                    .with("player", result)
+                    .with("player", owner.getName())
             );
         }
     }

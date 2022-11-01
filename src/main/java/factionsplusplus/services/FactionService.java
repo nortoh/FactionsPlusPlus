@@ -187,6 +187,10 @@ public class FactionService {
             });
     }
 
+    public void removeAllBases(Faction faction) {
+        faction.getBases().keySet().stream().forEach(faction::removeBase);
+    }
+
     public void removeAllOwnedGates(Faction faction) {
         this.gateRepository.getAllForFaction(faction.getUUID()).stream().forEach(this.gateRepository::remove);
     }

@@ -58,7 +58,7 @@ public class SwearFealtyCommand extends Command {
             @Override
             public void run() {
                 // set vassal
-                target.updateRelation(faction.getID(), FactionRelationType.Vassal);
+                target.upsertRelation(faction.getID(), FactionRelationType.Vassal);
                 target.removeAttemptedVassalization(faction.getID());
                 
                 // inform target faction that they have a new vassal

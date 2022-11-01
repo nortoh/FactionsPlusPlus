@@ -36,7 +36,7 @@ public interface WorldDao {
             description,
             expected_data_type,
             default_value,
-            w.value value
+            w.`value` `value`
         FROM default_flags
         LEFT JOIN world_flags w
             ON w.flag_name = name AND w.world_id = ?
@@ -56,7 +56,7 @@ public interface WorldDao {
             :flag,
             :value
         ) ON DUPLICATE KEY UPDATE
-            value = :value
+            `value` = :value
     """)
     void upsertFlag(@Bind("world") UUID worldID, @Bind("flag") String flagName, @Bind("value") String value);
 

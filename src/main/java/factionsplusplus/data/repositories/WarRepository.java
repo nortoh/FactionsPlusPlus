@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -34,7 +35,7 @@ public class WarRepository {
     public void load() {
         try {
             this.warStore.clear();
-            this.warStore = this.getDAO().get().stream().map(this.warFactory::create).toList();
+            this.warStore = this.getDAO().get().stream().map(this.warFactory::create).collect(Collectors.toList());
         } catch(Exception e) {
             this.logger.error(String.format("Error loading wars: %s", e.getMessage()));
         }
