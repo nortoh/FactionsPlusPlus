@@ -74,7 +74,10 @@ public class JoinCommand extends Command {
             public void run() {
                 target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
                 dataService.removeFactionInvite(target, context.getPlayer());
-                context.replyWith("AlertJoinedFaction");
+                context.replyWith(
+                    constructMessage("AlertJoinedFaction")
+                        .with("faction", target.getName())
+                );
             }
         });
     }

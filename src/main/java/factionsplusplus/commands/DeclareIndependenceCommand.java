@@ -61,10 +61,6 @@ public class DeclareIndependenceCommand extends Command {
 
         final Faction liege = this.factionRepository.get(faction.getLiege());
 
-        // break vassal agreement.
-        liege.removeVassal(faction.getID());
-        faction.setLiege(null);
-
         // Does declaring independence mean war?
         if (! this.configService.getBoolean("allowNeutrality") || (! (faction.getFlag("neutral").toBoolean()) && ! (liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
@@ -75,7 +71,7 @@ public class DeclareIndependenceCommand extends Command {
                 Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                     @Override
                     public void run() {
-                        faction.updateRelation(liege.getID(), FactionRelationType.Enemy);
+                        faction.upsertRelation(liege.getID(), FactionRelationType.Enemy);
                         warRepository.create(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
                     }
                 });
@@ -85,7 +81,7 @@ public class DeclareIndependenceCommand extends Command {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    faction.updateRelation(liege.getID(), null);
+                    faction.upsertRelation(liege.getID(), null);
                 }
             });
         }

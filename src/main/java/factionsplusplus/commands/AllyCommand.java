@@ -96,8 +96,8 @@ public class AllyCommand extends Command {
         context.messageFaction(
             otherFaction,
             this.constructMessage("AlertAttemptedAlliance")
-                .with("faction_a", otherFaction.getName())
-                .with("faction_b", context.getExecutorsFaction().getName())
+                .with("faction_a", context.getExecutorsFaction().getName())
+                .with("faction_b", otherFaction.getName())
         );
 
         // check if both factions have requested an alliance

@@ -77,7 +77,7 @@ public class InviteCommand extends Command {
             context.replyWith("PlayerAlreadyInFaction");
             return;
         }
-        this.dataService.addFactionInvite(faction, player);
+        this.dataService.addFactionInvite(faction, target);
         context.replyWith("InvitationSent");
         if (target.isOnline() && target.getPlayer() != null) {
             context.messagePlayer(
