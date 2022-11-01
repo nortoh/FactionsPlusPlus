@@ -279,7 +279,7 @@ public class Faction extends Nation implements Feudal {
 
     // Auto Claim
     public void toggleAutoClaim() {
-        this.autoclaim = !autoclaim;
+        this.autoclaim = ! autoclaim;
         this.persist();
     }
 
