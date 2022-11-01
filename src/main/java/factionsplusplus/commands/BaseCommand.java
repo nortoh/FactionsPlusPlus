@@ -167,7 +167,8 @@ public class BaseCommand extends Command {
             context.replyWith("MaxBasesReached");
             return;
         }
-        if (! this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer()).equals(context.getExecutorsFaction())) {
+        final Faction chunkOwner = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
+        if (chunkOwner == null || ! chunkOwner.equals(context.getExecutorsFaction())) {
             context.replyWith("CanOnlyCreateBasesInClaimedTerritory");
             return;
         }
@@ -262,7 +263,7 @@ public class BaseCommand extends Command {
     }
 
     public void removeCommand(CommandContext context) {
-        final FactionBase base = context.getFactionBaseArgument("name");
+        final FactionBase base = context.getFactionBaseArgument("base to remove");
         final boolean ok = context.getExecutorsFaction().removeBase(base.getName());
         if (ok) {
             context.replyWith(

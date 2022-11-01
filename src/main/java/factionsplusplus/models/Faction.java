@@ -12,6 +12,7 @@ import factionsplusplus.services.MessageService;
 import org.bukkit.Location;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -19,8 +20,8 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal {
-    private Map<String, ConfigurationFlag> flags;
-    private Map<String, FactionBase> bases;
+    private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
+    private Map<String, FactionBase> bases = new ConcurrentHashMap<>();
     private String prefix = null;
     private int bonusPower = 0;
     @ColumnName("should_autoclaim")
