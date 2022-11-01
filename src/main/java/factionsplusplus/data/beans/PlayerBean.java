@@ -14,7 +14,7 @@ public class PlayerBean {
     private int loginCount;
     @ColumnName("last_logout")
     private ZonedDateTime lastLogout;
-    @ColumnName("offline_power_list")
+    @ColumnName("offline_power_lost")
     private int offlinePowerLost;
     private double power;
     @ColumnName("is_admin_bypassing")
