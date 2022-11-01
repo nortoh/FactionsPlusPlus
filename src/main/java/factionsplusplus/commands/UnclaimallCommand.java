@@ -64,9 +64,8 @@ public class UnclaimallCommand extends Command {
         } else {
             faction = context.getFactionArgument("faction name");
         }
-        // remove faction home
-        faction.setFactionHome(null);
-        context.messageFaction(faction, "AlertFactionHomeRemoved");
+        // remove faction bases
+        this.factionService.removeAllBases(faction);
 
         // remove claimed chunks
         this.factionService.unclaimAllClaimedChunks(faction);

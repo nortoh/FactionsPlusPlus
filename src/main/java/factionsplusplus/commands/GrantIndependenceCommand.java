@@ -29,7 +29,7 @@ public class GrantIndependenceCommand extends Command {
                 .withDescription("Grants independence to a vassaled faction.")
                 .requiresPermissions("mf.grantindependence")
                 .expectsPlayerExecution()
-                .expectsNoFactionMembership()
+                .expectsFactionMembership()
                 .expectsFactionOwnership()
                 .addArgument(
                     "faction name",
@@ -44,8 +44,7 @@ public class GrantIndependenceCommand extends Command {
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
-        target.setLiege(null);
-        context.getExecutorsFaction().removeVassal(target.getID());
+        context.getExecutorsFaction().upsertRelation(target.getUUID(), null);
         
         // inform all players in that faction that they are now independent
         context.messageFaction(

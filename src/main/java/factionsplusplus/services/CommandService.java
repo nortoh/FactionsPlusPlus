@@ -114,6 +114,7 @@ public class CommandService implements TabCompleter {
             RenameCommand.class,
             ResetPowerLevelsCommand.class,
             RevokeAccessCommand.class,
+            SayCommand.class,
             StatsCommand.class,
             SwearFealtyCommand.class,
             TransferCommand.class,
@@ -774,7 +775,7 @@ public class CommandService implements TabCompleter {
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());
                 case EnemyFaction:
-                    return playersFaction.getAllies().stream()
+                    return playersFaction.getEnemies().stream()
                         .map(id -> this.dataService.getFaction(id).getName().toLowerCase())
                         .filter(name -> name.startsWith(argumentText))
                         .collect(Collectors.toList());

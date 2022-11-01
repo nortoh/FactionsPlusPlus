@@ -148,6 +148,11 @@ public class ConfigService {
                 .setDefaultValue(1)
                 .isInteger(),
             new ConfigOptionBuilder()
+                .withName("factionMaxNumberBases")
+                .withDescription("The maximum number of bases a faction may have")
+                .setDefaultValue(3)
+                .isInteger(),
+            new ConfigOptionBuilder()
                 .withName("factionMaxNameLength")
                 .withDescription("The maximum length of a faction name")
                 .setDefaultValue(20)

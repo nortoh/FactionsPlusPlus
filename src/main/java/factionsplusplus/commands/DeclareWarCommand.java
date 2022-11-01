@@ -136,7 +136,9 @@ public class DeclareWarCommand extends Command {
                 @Override
                 public void run() {
                     faction.upsertRelation(opponent.getID(), FactionRelationType.Enemy);
-                    warRepository.create(faction, opponent, context.getStringArgument("reason"));
+                    String reason = context.getStringArgument("reason");
+                    if (reason == null) reason = "No reason";
+                    warRepository.create(faction, opponent, reason);
                 }
             });
         }

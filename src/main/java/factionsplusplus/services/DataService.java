@@ -388,20 +388,15 @@ public class DataService {
     }
 
     public void addFactionInvite(Faction faction, OfflinePlayer player) {
-        this.persistentData.useExtension(FactionDao.class, dao -> {
-            dao.insertInvite(faction.getUUID(), player.getUniqueId());
-        });
+        this.factionRepository.getDAO().insertInvite(faction.getUUID(), player.getUniqueId());
     }
 
     public void removeFactionInvite(Faction faction, OfflinePlayer player) {
-        this.persistentData.useExtension(FactionDao.class, dao -> {
-            dao.deleteInvite(faction.getUUID(), player.getUniqueId());
-        });
+        this.factionRepository.getDAO().deleteInvite(faction.getUUID(), player.getUniqueId());
     }
 
     public boolean hasFactionInvite(Faction faction, OfflinePlayer player) {
-        FactionDao dao = this.persistentData.onDemand(FactionDao.class);
-        return dao.getInvite(faction.getUUID(), player.getUniqueId()) > 0;
+        return this.factionRepository.getDAO().getInvite(faction.getUUID(), player.getUniqueId()) > 0;
     }
 
 

@@ -27,6 +27,10 @@ public class GroupMember implements Identifiable {
         return this.uuid;
     }
 
+    public void setRole(GroupRole role) {
+        this.role = role.getLevel();
+    }
+
     public void addRole(GroupRole role) {
         this.role |= role.getLevel();
     }
