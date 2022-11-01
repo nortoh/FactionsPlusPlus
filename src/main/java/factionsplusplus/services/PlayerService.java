@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.constants.FactionRank;
+import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
 
@@ -25,6 +26,7 @@ import static org.bukkit.Bukkit.getServer;
 public class PlayerService {
     @Inject private ConfigService configService;
     @Inject private DataService dataService;
+    @Inject private PlayerFactory playerFactory;
 
     public FactionRank getFactionRank(UUID playerUUID) {
         Faction playerFaction = this.dataService.getPlayersFaction(playerUUID);
@@ -105,18 +107,18 @@ public class PlayerService {
     }
 
     public void resetPowerLevels() {
-        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
-        this.dataService.getPlayerRecordRepository().all().forEach(record -> record.setPower(initialPowerLevel));
+        final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
+        this.dataService.getPlayerRecordRepository().all().values().forEach(record -> record.setPower(initialPowerLevel));
     }
 
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
-        final int initialPowerLevel = this.configService.getInt("initialPowerLevel");
+        final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
         Arrays.stream(Bukkit.getOfflinePlayers())
             .filter(player -> this.dataService.getPlayerRecord(player.getUniqueId()) == null)
             .forEach(player -> {
-                PlayerRecord newRecord = new PlayerRecord(player.getUniqueId(), 1, initialPowerLevel);
+                PlayerRecord newRecord = this.playerFactory.create(player.getUniqueId(), 1, initialPowerLevel);
                 newRecord.setLastLogout(ZonedDateTime.now());
-                this.dataService.getPlayerRecordRepository().create(newRecord);
+                this.dataService.createPlayerRecord(newRecord);
             });
     }
 

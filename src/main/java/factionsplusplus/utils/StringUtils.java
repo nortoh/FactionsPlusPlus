@@ -31,7 +31,32 @@ public class StringUtils {
         return null;
     }
 
+    /**
+     * The parseAsChatColor method attempts to convert a color string to a bukkit ChatColor
+     * @param color string to conver to ChatColor
+     * @return resolved ChatColor or null
+     * @see org.bukkit.ChatColor
+     */
+    public static ChatColor parseAsChatColor(String color) {
+        return Arrays.stream(ChatColor.values())
+            .filter(c -> c.toString().equalsIgnoreCase(color))
+            .findFirst()
+            .orElse(ChatColor.WHITE);
+    }
+
     public static String colorize(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
+    }
+
+    /**
+     * Method to pad a value with a zero to its left.
+     *
+     * @param value to pad
+     * @return 00 or 0(0-9) or 10-(very big numbers)
+     * @author Callum
+     */
+    public static String prefixWithZero(Number value) {
+        String tmp = String.valueOf(value);
+        return tmp.length() == 0 ? ("00") : (tmp.length() == 1 ? ("0" + value) : (tmp));
     }
 }

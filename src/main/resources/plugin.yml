@@ -89,8 +89,6 @@ permissions:
     default: true
   mf.revokeaccess:
     default: true
-  mf.sethome:
-    default: true
   mf.swearfealty:
     default: true
   mf.transfer:
@@ -106,6 +104,16 @@ permissions:
   mf.flags:
     default: true
   mf.map:
+    default: true
+  mf.addbase:
+    default: true
+  mf.editbase:
+    default: true
+  mf.listbases:
+    default: true
+  mf.teleport:
+    default: true
+  mf.removebase:
     default: true
   mf.bypass:
     default: op

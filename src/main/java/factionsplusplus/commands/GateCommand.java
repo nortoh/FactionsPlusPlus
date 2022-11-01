@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.factories.InteractionContextFactory;
+import factionsplusplus.data.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -21,6 +21,8 @@ import org.bukkit.block.Block;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
+
+import java.util.List;
 
 /**
  * @author Callum Johnson
@@ -112,12 +114,12 @@ public class GateCommand extends Command {
             context.replyWith("NoBlockDetectedToCheckForGate");
             return null;
         }
-        final Gate gate = this.dataService.getGate(targetBlock);
+        final Gate gate = this.dataService.getGateWithBlock(targetBlock);
         if (gate == null) {
             context.replyWith("TargetBlockNotPartOfGate");
             return null;
         }
-        final Faction gateFaction = this.dataService.getGatesFaction(gate);
+        final Faction gateFaction = this.dataService.getFaction(gate.getFaction());
         if (gateFaction == null) {
             context.replyWith(
                 this.constructMessage("ErrorCouldNotFindGatesFaction")
@@ -131,8 +133,7 @@ public class GateCommand extends Command {
     public void removeCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
-            final Faction gateFaction = this.dataService.getGatesFaction(targetGate);
-            gateFaction.removeGate(targetGate);
+            this.dataService.removeGate(targetGate);
             context.replyWith(
                 this.constructMessage("RemovedGate")
                     .with("name", targetGate.getName())
@@ -145,6 +146,7 @@ public class GateCommand extends Command {
         if (targetGate != null) {
             final String newName = context.getStringArgument("new name");
             targetGate.setName(newName);
+            this.dataService.getGateRepository().persist(targetGate);
             context.replyWith(
                 this.constructMessage("AlertChangedGateName")
                     .with("name", targetGate.getName())
@@ -163,9 +165,10 @@ public class GateCommand extends Command {
     }
 
     public void listCommand(CommandContext context) {
-        if (context.getExecutorsFaction().getGates().size() > 0) {
+        List<Gate> factionGates = this.dataService.getFactionsGates(context.getExecutorsFaction());
+        if (factionGates.size() > 0) {
             context.replyWith("FactionGate");
-            for (Gate gate : context.getExecutorsFaction().getGates()) {
+            for (Gate gate : factionGates) {
                 context.replyWith(
                     this.constructMessage("GateLocation")
                         .with("name", gate.getName())

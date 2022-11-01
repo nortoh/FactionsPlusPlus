@@ -9,9 +9,12 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
+
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -49,14 +52,18 @@ public class DemoteCommand extends Command {
             return;
         }
 
-        context.getExecutorsFaction().removeOfficer(playerToBeDemoted.getUniqueId());
-
-        if (playerToBeDemoted.isOnline()) {
-            context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
-        }
-        context.replyWith(
-            this.constructMessage("PlayerDemoted")
-                .with("name", playerToBeDemoted.getName())
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
+                if (playerToBeDemoted.isOnline()) {
+                    context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
+                }
+                context.replyWith(
+                    constructMessage("PlayerDemoted")
+                        .with("name", playerToBeDemoted.getName())
+                );
+            }
+        });
     }
 }

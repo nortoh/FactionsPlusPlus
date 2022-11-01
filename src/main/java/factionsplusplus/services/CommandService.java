@@ -11,7 +11,9 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.commands.*;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.GroupRole;
+import factionsplusplus.data.repositories.CommandRepository;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.FactionBase;
 import factionsplusplus.models.GroupMember;
 import factionsplusplus.models.World;
 import factionsplusplus.models.ConfigurationFlag;
@@ -27,8 +29,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandArgument;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigOption;
-import factionsplusplus.repositories.CommandRepository;
-
 import factionsplusplus.builders.MessageBuilder;
 
 import java.util.Arrays;
@@ -73,6 +73,7 @@ public class CommandService implements TabCompleter {
         Class<?>[] coreCommands = new Class<?>[]{
             AllyCommand.class,
             AutoClaimCommand.class,
+            BaseCommand.class,
             BreakAllianceCommand.class,
             BypassCommand.class,
             ChatCommand.class,
@@ -113,7 +114,6 @@ public class CommandService implements TabCompleter {
             RenameCommand.class,
             ResetPowerLevelsCommand.class,
             RevokeAccessCommand.class,
-            SetHomeCommand.class,
             StatsCommand.class,
             SwearFealtyCommand.class,
             TransferCommand.class,
@@ -380,6 +380,14 @@ public class CommandService implements TabCompleter {
                             parsedArgumentData = flag;
                             break;
                         }
+                        return false;
+                    case FactionBaseName:
+                        FactionBase base = context.getExecutorsFaction().getBase(argumentData);
+                        if (base != null) {
+                            parsedArgumentData = base;
+                            break;
+                        }
+                        context.replyWith("NoSuchBase");
                         return false;
                     case Integer:
                         Integer intValue = StringUtils.parseAsInteger(argumentData);
@@ -728,8 +736,8 @@ public class CommandService implements TabCompleter {
                         .collect(Collectors.toList());
                 case Player:
                     return this.applyPlayerFilters(
-                            this.dataService.getPlayerRecordRepository().all().stream()
-                                .map(record -> Bukkit.getOfflinePlayer(record.getPlayerUUID()))
+                            this.dataService.getPlayerRecordRepository().all().keySet().stream()
+                                .map(record -> Bukkit.getOfflinePlayer(record))
                                 .filter(p -> p.getName() != null)
                                 .filter(p -> p.getName().toLowerCase().startsWith(argumentText)),
                             player,
@@ -755,6 +763,11 @@ public class CommandService implements TabCompleter {
             if (playersFaction == null) return results;
 
             switch(argument.getType()) {
+                case FactionBaseName:
+                    return playersFaction.getBases().keySet().stream()
+                        .filter(name -> name.toLowerCase().startsWith(argumentText))
+                        .map(name -> this.quoteifyIfNeeded(name, argument))
+                        .collect(Collectors.toList());
                 case AlliedFaction:
                     return playersFaction.getAllies().stream()
                         .map(id -> this.dataService.getFaction(id).getName().toLowerCase())

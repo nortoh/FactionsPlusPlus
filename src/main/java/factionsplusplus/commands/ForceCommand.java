@@ -9,8 +9,12 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.*;
-import factionsplusplus.factories.InteractionContextFactory;
+import factionsplusplus.data.factories.InteractionContextFactory;
+import factionsplusplus.events.internal.FactionCreateEvent;
+import factionsplusplus.events.internal.FactionJoinEvent;
+import factionsplusplus.events.internal.FactionKickEvent;
+import factionsplusplus.events.internal.FactionRenameEvent;
+import factionsplusplus.events.internal.FactionWarEndEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;

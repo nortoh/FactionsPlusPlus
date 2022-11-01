@@ -8,17 +8,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.FactionDisbandEvent;
+import factionsplusplus.data.repositories.FactionRepository;
+import factionsplusplus.events.internal.FactionDisbandEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 
 /**
  * @author Callum Johnson
@@ -28,13 +26,13 @@ public class DisbandCommand extends Command {
 
     private final EphemeralData ephemeralData;
     private final Logger logger;
-    private final FactionService factionService;
+    private final FactionRepository factionRepository;
 
     @Inject
     public DisbandCommand(
         Logger logger,
         EphemeralData ephemeralData,
-        FactionService factionService
+        FactionRepository factionRepository
     ) {
         super(
             new CommandBuilder()
@@ -54,13 +52,12 @@ public class DisbandCommand extends Command {
         );
         this.logger = logger;
         this.ephemeralData = ephemeralData;
-        this.factionService = factionService;
+        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {
         Faction disband = null;
         final boolean self;
-        final CommandSender sender = context.getSender();
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
                 context.replyWith("OnlyPlayersCanUseCommand");
@@ -83,36 +80,36 @@ public class DisbandCommand extends Command {
             );
             return;
         }
-        boolean ok = this.removeFaction(disband, self ? ((OfflinePlayer) sender) : null);
-        if (! ok) {
-            context.replyWith(
-                this.constructMessage("ErrorDisbanding")
-                    .with("faction", disband.getName())
-            );
-            return;
-        }
-        if (self) {
-            context.replyWith("FactionSuccessfullyDisbanded");
-            this.ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
-        } else {
-            context.replyWith(
-                this.constructMessage("SuccessfulDisbandment")
-                    .with("faction", disband.getName())
-            );
-        }
-    }
-
-    private boolean removeFaction(Faction faction, OfflinePlayer disbandingPlayer) {
+        final Faction targetFaction = disband;
+        // Check if anybody wants us to not disband
         FactionDisbandEvent event = new FactionDisbandEvent(
-                faction,
-                disbandingPlayer
+            targetFaction,
+            context.getPlayer()
         );
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             this.logger.debug("Disband event was cancelled.");
-            return false;
+            context.replyWith(
+                this.constructMessage("ErrorDisbanding")
+                    .with("faction", targetFaction.getName())
+            );
+            return;
         }
-        this.factionService.removeFaction(faction);
-        return true;
+
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                factionRepository.delete(targetFaction);
+                if (self) {
+                    context.replyWith("FactionSuccessfullyDisbanded");
+                    ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
+                } else {
+                    context.replyWith(
+                        constructMessage("SuccessfulDisbandment")
+                            .with("faction", targetFaction.getName())
+                    );
+                }
+            }
+        });
     }
 }

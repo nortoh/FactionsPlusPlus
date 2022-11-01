@@ -7,19 +7,17 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionWarEndEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
-import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.repositories.WarRepository;
+
 import org.bukkit.Bukkit;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.data.repositories.WarRepository;
+import factionsplusplus.events.internal.FactionWarEndEvent;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.UUID;
 
 /**
  * @author Callum Johnson
@@ -27,14 +25,10 @@ import java.util.UUID;
 @Singleton
 public class MakePeaceCommand extends Command {
 
-    private final FactionRepository factionRepository;
     private final WarRepository warRepository;
 
     @Inject
-    public MakePeaceCommand(
-        FactionRepository factionRepository,
-        WarRepository warRepository
-    ) {
+    public MakePeaceCommand(WarRepository warRepository) {
         super(
             new CommandBuilder()
                 .withName("makepeace")
@@ -53,7 +47,6 @@ public class MakePeaceCommand extends Command {
                         .isRequired()
                 )
         );
-        this.factionRepository = factionRepository;
         this.warRepository = warRepository;
     }
     
@@ -73,8 +66,7 @@ public class MakePeaceCommand extends Command {
             this.constructMessage("AttemptedPeace")
                 .with("name", target.getName())
         );
-        context.messageFaction(
-            target,
+        target.message(
             this.constructMessage("HasAttemptedToMakePeaceWith")
                 .with("f1", faction.getName())
                 .with("f2", target.getName())
@@ -87,29 +79,24 @@ public class MakePeaceCommand extends Command {
                 faction.removeRequestedTruce(target.getID());
                 target.removeRequestedTruce(faction.getID());
 
-                // make peace between factions
-                faction.removeEnemy(target.getID());
-                target.removeEnemy(faction.getID());
-
-                War war = this.warRepository.getActiveWarsBetween(target.getID(), faction.getID());
-                war.end();
-
-                // Notify
-                context.messageAllPlayers(
-                    this.constructMessage("AlertNowAtPeaceWith")
-                        .with("p1", faction.getName())
-                        .with("p2", target.getName())
-                );
-            }
-        }
-
-        // if faction was a liege, then make peace with all of their vassals as well
-        if (target.isLiege()) {
-            for (UUID vassalID : target.getVassals()) {
-                faction.removeEnemy(vassalID);
-
-                Faction vassal = this.factionRepository.get(vassalID);
-                vassal.removeEnemy(faction.getID());
+                Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                    @Override
+                    public void run() {
+                        faction.clearRelation(target.getUUID());
+                        if (target.isLiege()) {
+                            target.getVassals().stream().forEach(vassal -> {
+                                faction.clearRelation(vassal);
+                            });
+                        }
+                        War war = warRepository.getActiveWarsBetween(target.getID(), faction.getID());
+                        war.end();
+                        context.messageAllPlayers(
+                            constructMessage("AlertNowAtPeaceWith")
+                                .with("p1", faction.getName())
+                                .with("p2", target.getName())
+                        );
+                    }
+                });
             }
         }
     }

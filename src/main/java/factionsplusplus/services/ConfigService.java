@@ -9,10 +9,10 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ConfigOption;
-import factionsplusplus.repositories.ConfigOptionRepository;
 import factionsplusplus.utils.StringUtils;
 import factionsplusplus.builders.ConfigOptionBuilder;
 import factionsplusplus.constants.SetConfigResult;
+import factionsplusplus.data.repositories.ConfigOptionRepository;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -43,6 +43,34 @@ public class ConfigService {
                 .withName("version")
                 .withDescription("Current version of this plugin")
                 .setDefaultValue(this.factionsPlusPlus.get().getVersion())
+                .notUserSettable(),
+            new ConfigOptionBuilder()
+                .withName("database.host")
+                .withDescription("The host of the database to connect to (if not flatfile)")
+                .setDefaultValue("127.0.0.1")
+                .notUserSettable(),
+            new ConfigOptionBuilder()
+                .withName("database.port")
+                .withDescription("The port of the database server to connect to (if not flatfile)")
+                .notUserSettable(),
+            new ConfigOptionBuilder()
+                .withName("database.username")
+                .withDescription("The username to connect to the database server with (if not flatfile)")
+                .notUserSettable(),
+            new ConfigOptionBuilder()
+                .withName("database.password")
+                .withDescription("The password to connect to the database server with (if not flatfile)")
+                .notUserSettable(),  
+            new ConfigOptionBuilder()
+                .withName("database.name")
+                .withDescription("The name of the database to store data in (filename for flatfile, database name  for remote)")
+                .setDefaultValue("fpp")
+                .notUserSettable(),
+            new ConfigOptionBuilder()
+                .withName("database.flatfile")
+                .withDescription("If Factions Plus Plus should use a flatfile database")
+                .isBoolean()
+                .setDefaultValue(true)
                 .notUserSettable(),
             new ConfigOptionBuilder()
                 .withName("initialMaxPowerLevel")

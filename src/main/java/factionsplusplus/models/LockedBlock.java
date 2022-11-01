@@ -4,36 +4,57 @@
  */
 package factionsplusplus.models;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-import com.google.gson.annotations.Expose;
+import org.jdbi.v3.core.mapper.Nested;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
+import factionsplusplus.data.repositories.LockedBlockRepository;
 
 /**
  * @author Daniel McCoy Stephenson
  */
 public class LockedBlock {
-    @Expose
-    private final LocationData block;
-    @Expose
-    private UUID owner = UUID.randomUUID();
-    @Expose
+    @ColumnName("id")
+    private UUID uuid = UUID.randomUUID();
+    @Nested
+    private LocationData block;
+    @ColumnName("player_id")
+    private UUID owner;
+    @ColumnName("faction_id")
     private UUID faction = null;
-    @Expose
-    private AccessList accessList;
+    @ColumnName("allow_allies")
+    private boolean allowAllies = false;
+    @ColumnName("allow_faction_members")
+    private boolean allowFactionMembers = false;
+    private List<UUID> accessList = new ArrayList<>();
 
+    private final LockedBlockRepository lockedBlockRepository;
+
+    @AssistedInject
     public LockedBlock(
-        UUID owner,
-        UUID faction,
-        int xCoord,
-        int yCoord,
-        int zCoord,
-        UUID worldUUID
+        @Assisted("owner") UUID owner,
+        @Assisted("faction") UUID faction,
+        @Assisted("x") int xCoord,
+        @Assisted("y") int yCoord,
+        @Assisted("z") int zCoord,
+        @Assisted("world") UUID worldUUID,
+        LockedBlockRepository lockedBlockRepository
     ) {
         this.block = new LocationData(xCoord, yCoord, zCoord, worldUUID);
         this.owner = owner;
         this.faction = faction;
-        this.accessList = new AccessList();
-        this.accessList.addPlayerToAccessList(owner);
+        this.accessList.add(owner);
+        this.lockedBlockRepository = lockedBlockRepository;
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
     }
 
     public UUID getWorld() {
@@ -60,35 +81,57 @@ public class LockedBlock {
         this.owner = owner;
     }
 
+    public void setAccessList(List<UUID> list) {
+        this.accessList = list;
+    }
+
     public void addToAccessList(UUID player) {
-        this.accessList.addPlayerToAccessList(player);
+        if (! this.accessList.contains(player)) {
+            this.lockedBlockRepository.persistPlayerAccess(this, player);
+            this.accessList.add(player);
+        }
     }
 
     public void removeFromAccessList(UUID player) {
-        this.accessList.removePlayerFromAccessList(player);
+        if (this.accessList.contains(player)) {
+            this.lockedBlockRepository.deletePlayerAccess(this, player);
+            this.accessList.remove(player);
+        }
     }
 
     public boolean hasAccess(UUID player) {
-        return this.accessList.playerOnAccessList(player);
+        return this.accessList.contains(player);
+    }
+
+    public boolean shouldAllowAllies() {
+        return this.allowAllies;
+    }
+
+    public boolean shouldAllowFactionMembers() {
+        return this.allowFactionMembers;
     }
 
     public void allowAllies() {
-        this.accessList.addAlliesToAccessList();
+        this.allowAllies = true;
+        this.lockedBlockRepository.persist(this);
     }
 
     public void denyAllies() {
-        this.accessList.removeAlliesFromAccessList();
+        this.allowAllies = false;
+        this.lockedBlockRepository.persist(this);
     }
 
     public void allowFactionMembers() {
-        this.accessList.addFactionMembersToAccessList();
+        this.allowFactionMembers = true;
+        this.lockedBlockRepository.persist(this);
     }
 
     public void denyFactionMembers() {
-        this.accessList.removeFactionMembersFromAccessList();
+        this.allowFactionMembers = false;
+        this.lockedBlockRepository.persist(this);
     }
 
-    public AccessList getAccessList() {
+    public List<UUID> getAccessList() {
         return this.accessList;
     }
 
@@ -96,7 +139,7 @@ public class LockedBlock {
         this.faction = uuid;
     }
 
-    public UUID getFactionID() {
+    public UUID getFaction() {
         return this.faction;
     }
 }

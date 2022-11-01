@@ -7,14 +7,16 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionWarStartEvent;
-import factionsplusplus.factories.WarFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.FactionRelationType;
+import factionsplusplus.data.repositories.FactionRepository;
+import factionsplusplus.data.repositories.WarRepository;
+import factionsplusplus.events.internal.FactionWarStartEvent;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -26,13 +28,13 @@ public class DeclareIndependenceCommand extends Command {
 
     private final ConfigService configService;
     private final FactionRepository factionRepository;
-    private final WarFactory warFactory;
+    private final WarRepository warRepository;
 
     @Inject
     public DeclareIndependenceCommand(
         ConfigService configService,
         FactionRepository factionRepository,
-        WarFactory warFactory
+        WarRepository warRepository
     ) {
         super(
             new CommandBuilder()
@@ -46,7 +48,7 @@ public class DeclareIndependenceCommand extends Command {
         );
         this.configService = configService;
         this.factionRepository = factionRepository;
-        this.warFactory = warFactory;
+        this.warRepository = warRepository;
     }
 
     public void execute(CommandContext context) {
@@ -63,24 +65,29 @@ public class DeclareIndependenceCommand extends Command {
         liege.removeVassal(faction.getID());
         faction.setLiege(null);
 
+        // Does declaring independence mean war?
         if (! this.configService.getBoolean("allowNeutrality") || (! (faction.getFlag("neutral").toBoolean()) && ! (liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
             FactionWarStartEvent warStartEvent = new FactionWarStartEvent(faction, liege, player);
             Bukkit.getPluginManager().callEvent(warStartEvent);
 
             if (! warStartEvent.isCancelled()) {
-                faction.addEnemy(liege.getID());
-                liege.addEnemy(faction.getID());
-
-                // TODO: check if they're already at war (which would be weird since they were a previous vassal?)
-                this.warFactory.createWar(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
-
-                // break alliance if allied
-                if (faction.isAlly(liege.getID())) {
-                    faction.removeAlly(liege.getID());
-                    liege.removeAlly(faction.getID());
-                }
+                Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                    @Override
+                    public void run() {
+                        faction.updateRelation(liege.getID(), FactionRelationType.Enemy);
+                        warRepository.create(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
+                    }
+                });
             }
+        } else {
+            // No war, break ties.
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    faction.updateRelation(liege.getID(), null);
+                }
+            });
         }
         context.messageAllPlayers(
             this.constructMessage("HasDeclaredIndependence")

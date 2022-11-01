@@ -7,7 +7,6 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionWarStartEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -16,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.events.internal.FactionWarStartEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
 

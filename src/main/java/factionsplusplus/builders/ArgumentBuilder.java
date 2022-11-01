@@ -103,6 +103,11 @@ public class ArgumentBuilder {
         return this;
     }
 
+    public ArgumentBuilder expectsFactionBaseName() {
+        this.type = ArgumentType.FactionBaseName;
+        return this;
+    }
+
     public ArgumentBuilder expectsFaction() {
         this.type = ArgumentType.Faction;
         return this;

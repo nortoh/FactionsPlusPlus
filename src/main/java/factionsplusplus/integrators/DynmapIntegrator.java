@@ -7,11 +7,12 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.PlayerRecord;
-import factionsplusplus.objects.helper.ChunkFlags;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
+import factionsplusplus.utils.ChunkFlags;
 import factionsplusplus.utils.Logger;
+import factionsplusplus.utils.PlayerUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -20,7 +21,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.dynmap.DynmapCommonAPI;
 import org.dynmap.markers.*;
-import preponderous.ponder.minecraft.bukkit.tools.UUIDChecker;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -247,15 +247,14 @@ public class DynmapIntegrator {
     }
 
     private String buildNationPopupText(Faction f) {
-        UUIDChecker uuidChecker = new UUIDChecker();
-        String nationMembers = f.getMembers()
+        final String nationMembers = f.getMembers()
             .keySet()
             .stream()
             .map(Bukkit::getOfflinePlayer)
             .map(OfflinePlayer::getName)
             .collect(Collectors.joining(", "));
         String message = "<h4>" + f.getName() + "</h4>" +
-                "Owner: " + uuidChecker.findPlayerNameBasedOnUUID(f.getOwner().getUUID()) + "<br/>" +
+                "Owner: " + PlayerUtils.parseAsPlayer(f.getOwner().getUUID()).getName() + "<br/>" +
                 "Description: " + f.getDescription() + "<br/>" +
                 "<div style='display: inline;' title='" + nationMembers + "'>Population: " + f.getMembers().size() + "</div><br/>";
 
@@ -263,10 +262,10 @@ public class DynmapIntegrator {
             message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";
         }
         if (f.isLiege()) {
-            message += "Vassals: " + f.getVassalsSeparatedByCommas() + "<br/>";
+            message += "Vassals: " + this.factionService.getCommaSeparatedFactionNames(f.getVassals()) + "<br/>";
         }
-        message += "Allied With: " + f.getAlliesSeparatedByCommas() + "<br/>" +
-                "At War With: " + f.getEnemiesSeparatedByCommas() + "<br/>" +
+        message += "Allied With: " + this.factionService.getCommaSeparatedFactionNames(f.getAllies()) + "<br/>" +
+                "At War With: " + this.factionService.getCommaSeparatedFactionNames(f.getEnemies()) + "<br/>" +
                 "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
                 this.dataService.getClaimedChunksForFaction(f).size(),
@@ -500,10 +499,9 @@ public class DynmapIntegrator {
             Faction f = this.dataService.getFaction(holder);
             if (f != null) {
                 for (PlayerRecord record : this.dataService.getPlayerRecords()) {
-                    Faction pf = this.dataService.getPlayersFaction(record.getPlayerUUID());
+                    Faction pf = this.dataService.getPlayersFaction(record.getUUID());
                     if (pf != null && pf.getName().equalsIgnoreCase(holder)) {
-                        UUIDChecker uuidChecker = new UUIDChecker();
-                        plids.add(uuidChecker.findPlayerNameBasedOnUUID(record.getPlayerUUID()));
+                        plids.add(PlayerUtils.parseAsPlayer(record.getUUID()).getName());
                     }
                 }
             }

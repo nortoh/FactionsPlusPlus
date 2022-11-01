@@ -13,16 +13,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.builders.MessageBuilder;
-import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.FactionClaimEvent;
-import factionsplusplus.events.FactionUnclaimEvent;
+import factionsplusplus.events.internal.FactionClaimEvent;
+import factionsplusplus.events.internal.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
+import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.ChunkUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.extended.BlockChecker;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -41,31 +40,25 @@ public class ClaimService {
     private final ConfigService configService;
     private final MessageService messageService;
     private final DataService dataService;
-    private final EphemeralData ephemeralData;
     private final FactionService factionService;
     private final InteractionAccessChecker interactionAccessChecker;
     private final Logger logger;
-    private final BlockChecker blockChecker;
 
     @Inject
     public ClaimService(
         ConfigService configService,
         MessageService messageService,
         DataService dataService,
-        EphemeralData ephemeralData,
         FactionService factionService,
         InteractionAccessChecker interactionAccessChecker,
-        Logger logger,
-        BlockChecker blockChecker
+        Logger logger
     ) {
         this.configService = configService;
         this.messageService = messageService;
         this.dataService = dataService;
-        this.ephemeralData = ephemeralData;
         this.factionService = factionService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.logger = logger;
-        this.blockChecker = blockChecker;
     }
 
     /**
@@ -161,7 +154,7 @@ public class ClaimService {
         playerCoords[1] = player.getLocation().getChunk().getZ();
 
         // handle admin bypass
-        if (this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId())) {
+        if (this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing()) {
             ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
             if (chunk != null) {
                 this.removeChunk(chunk, player, this.dataService.getFaction(chunk.getHolder()));
@@ -244,10 +237,10 @@ public class ClaimService {
      */
     public void handleClaimedChunkInteraction(PlayerInteractEvent event, ClaimedChunk claimedChunk) {
         // player not in a faction and isn't overriding
-        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.dataService.getPlayerRecord(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
-            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && this.blockChecker.isDoor(block)) {
+            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -263,10 +256,10 @@ public class ClaimService {
         }
 
         // if player's faction is not the same as the holder of the chunk and player isn't overriding
-        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.ephemeralData.getAdminsBypassingProtections().contains(event.getPlayer().getUniqueId())) {
+        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayerRecord(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
-            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && this.blockChecker.isDoor(block)) {
+            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -415,9 +408,8 @@ public class ClaimService {
      * @param world   The world that the claimed chunk is located in.
      */
     private void addClaimedChunk(Chunk chunk, Faction faction, World world) {
-        ClaimedChunk newChunk = new ClaimedChunk(chunk);
-        newChunk.setHolder(faction.getID());
-        this.dataService.getClaimedChunkRepository().create(newChunk);            
+        ClaimedChunk newChunk = new ClaimedChunk(chunk, faction.getUUID());
+        this.dataService.addClaimedChunk(newChunk);       
     }
 
     /**
@@ -464,16 +456,16 @@ public class ClaimService {
                 block.getWorld().equals(chunkToRemove.getWorldUUID()));
 
         // remove any gates in this chunk
-        Iterator<Gate> gtr = holdingFaction.getGates().iterator();
+        Iterator<Gate> gtr = this.dataService.getFactionsGates(holdingFaction).iterator();
         while (gtr.hasNext()) {
             Gate gate = gtr.next();
             if (ChunkUtils.isGateInChunk(gate, chunkToRemove)) {
-                holdingFaction.removeGate(gate);
+                this.dataService.removeGate(gate);
                 gtr.remove();
             }
         }
 
-        this.dataService.getClaimedChunkRepository().delete(chunkToRemove);
+        this.dataService.deleteClaimedChunk(chunkToRemove);
     }
 
     /**
@@ -517,7 +509,7 @@ public class ClaimService {
     private boolean canBlockBeInteractedWith(PlayerInteractEvent event) {
         if (event.getClickedBlock() != null) {
             // CHEST
-            if (this.blockChecker.isChest(event.getClickedBlock())) {
+            if (BlockUtils.isChest(event.getClickedBlock())) {
                 return false;
             }
             switch (event.getClickedBlock().getType()) {

@@ -27,6 +27,7 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Caibinus
@@ -63,18 +64,19 @@ public class GateService {
         Faction faction = this.dataService.getFaction(claim.getHolder());
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
 
-        if (! faction.getName().equals(playersFaction.getName())) {
+        if (! faction.getUUID().equals(playersFaction.getUUID())) {
             return;
         }
 
-        if (! faction.hasGateTrigger(clickedBlock)) {
+        List<Gate> gatesForTrigger = this.dataService.getGatesForFactionsTriggerBlock(faction.getUUID(), clickedBlock);
+        if (gatesForTrigger.isEmpty()) {
             return;
         }
 
-        for (Gate g : faction.getGatesForTrigger(clickedBlock)) {
+        for (Gate g : gatesForTrigger) {
             BlockData blockData = clickedBlock.getBlockData();
             Powerable powerable = (Powerable) blockData;
-            if (faction.getGatesForTrigger(clickedBlock).get(0).isReady()) {
+            if (gatesForTrigger.get(0).isReady()) {
                 if (powerable.isPowered()) this.open(g);
                 else this.close(g);
                 return;
@@ -89,19 +91,17 @@ public class GateService {
     }
 
     public void handlePotentialGateInteraction(Block block, BlockRedstoneEvent event) {
-        if (this.dataService.isChunkClaimed(block.getChunk())) {
-            ClaimedChunk claim = this.dataService.getClaimedChunk(block.getChunk());
-            Faction faction = this.dataService.getFaction(claim.getHolder());
-
-            if (faction.hasGateTrigger(block)) {
-                for (Gate g : faction.getGatesForTrigger(block)) {
-                    BlockData blockData = block.getBlockData();
-                    Powerable powerable = (Powerable) blockData;
-                    if (faction.getGatesForTrigger(block).get(0).isReady()) {
-                        if (powerable.isPowered()) this.open(g);
-                        else this.close(g);
-                        return;
-                    }
+        ClaimedChunk claim = this.dataService.getClaimedChunk(block.getChunk());
+        if (claim != null) {
+            List<Gate> gates = this.dataService.getGatesForFactionsTriggerBlock(claim.getHolder(), block);
+            if (gates.size() == 0) return;
+            for (Gate g : gates) {
+                BlockData blockData = block.getBlockData();
+                Powerable powerable = (Powerable) blockData;
+                if (gates.get(0).isReady()) {
+                    if (powerable.isPowered()) this.open(g);
+                    else this.close(g);
+                    return;
                 }
             }
         }
@@ -197,7 +197,8 @@ public class GateService {
                         switch(e) {
                             case None:
                                 ClaimedChunk claim = this.dataService.getClaimedChunk(clickedBlock.getChunk());
-                                this.dataService.getFaction(claim.getHolder()).addGate(g);
+                                g.setFaction(claim.getHolder());
+                                this.dataService.getGateRepository().create(g);
                                 messagesToSend.add("Point4TriggeredSuccessfully");
                                 messagesToSend.add("GateCreated");
                                 break;
@@ -419,7 +420,7 @@ public class GateService {
 
     public ErrorCodeAddCoord addCoord(Gate gate, Block clickedBlock) {
         if (gate.getCoord1() == null) {
-            gate.setWorld(clickedBlock.getWorld().getName());
+            gate.setWorld(clickedBlock.getWorld().getUID());
             gate.setCoord1(new LocationData(clickedBlock));
             gate.setMaterial(clickedBlock.getType());
         } else if (gate.getCoord2() == null) {

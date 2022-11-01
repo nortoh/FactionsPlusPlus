@@ -11,11 +11,11 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.services.ConfigService;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.util.stream.Collectors;
 import factionsplusplus.builders.CommandBuilder;
-import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
 // TODO: implement tab complete for basic values (i.e. true/false for boolean)
@@ -75,18 +75,21 @@ public class FlagsCommand extends Command {
     public void setCommand(CommandContext context) {
         final ConfigurationFlag flag = context.getConfigurationFlagArgument("flag name");
         final String flagValue = context.getStringArgument("value");
-        String newValue = flag.set(flagValue);
-        if (newValue == null) {
-            context.replyWith(
-                new MessageBuilder("ConfigurationFlagValueInvalid")
-                    .with("type", flag.getRequiredType().toString())
-            );
-            return;
-        }
-        context.replyWith(
-            new MessageBuilder("ConfigurationFlagValueSet")
-                .with("value", newValue)
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+                public void run() {
+                String newValue = context.getExecutorsFaction().setFlag(flag.getName(), flagValue);
+                if (newValue == null) {
+                    context.replyWith(
+                        constructMessage("ConfigurationFlagValueInvalid").with("type", flag.getRequiredType().toString())
+                    );
+                    return;
+                }
+                context.replyWith(
+                    constructMessage("ConfigurationFlagValueSet").with("value", newValue)
+                );
+            }
+        });
     }
 
     public void showCommand(CommandContext context) {

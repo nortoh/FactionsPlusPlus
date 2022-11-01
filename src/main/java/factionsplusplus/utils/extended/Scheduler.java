@@ -38,27 +38,12 @@ public class Scheduler {
     @Inject private FactionService factionService;
     @Inject private DataService dataService;
 
-    public void scheduleAutosave() {
-        this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingHourlyAutoSave"));
-        int delay = this.configService.getInt("secondsBeforeInitialAutosave");
-        int secondsUntilRepeat = this.configService.getInt("secondsBetweenAutosaves");
-        if (delay == 0 || secondsUntilRepeat == 0) {
-            return;
-        }
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, new Runnable() {
-            @Override
-            public void run() {
-                logger.debug(localeService.get("ConsoleAlerts.HourlySaveAlert"));
-                dataService.save();
-            }
-        }, delay * 20L, secondsUntilRepeat * 20L);
-    }
-
+    @SuppressWarnings("deprecation")
     public void schedulePowerIncrease() {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerIncrease"));
-        int delay = this.configService.getInt("minutesBeforeInitialPowerIncrease") * 60; // 30 minutes
-        int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerIncreases") * 60; // 1 hour
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, new Runnable() {
+        final int delay = this.configService.getInt("minutesBeforeInitialPowerIncrease") * 60; // 30 minutes
+        final int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerIncreases") * 60; // 1 hour
+        Bukkit.getScheduler().scheduleAsyncRepeatingTask(this.factionsPlusPlus, new Runnable() {
             @Override
             public void run() {
                 logger.debug(
@@ -71,11 +56,12 @@ public class Scheduler {
         }, delay * 20L, secondsUntilRepeat * 20L);
     }
 
+    @SuppressWarnings("deprecation")
     public void schedulePowerDecrease() {
         this.logger.debug(localeService.get("ConsoleAlerts.SchedulingPowerDecrease"));
         int delay = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
         int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(factionsPlusPlus, () -> {
+        Bukkit.getScheduler().scheduleAsyncRepeatingTask(factionsPlusPlus, () -> {
             logger.debug(
                 localeService.get("ConsoleAlerts.DecreasingThePowerOfEveryPlayer")
                     .replace("#amount#", String.valueOf(configService.getInt("powerDecreaseAmount")))

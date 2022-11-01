@@ -11,7 +11,7 @@ import factionsplusplus.models.ConfigurationFlag;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,7 +67,7 @@ public class FPP_Faction {
     }
 
     public List<UUID> getEnemies() {
-        return this.faction.getEnemyFactions();
+        return this.faction.getEnemies();
     }
 
     public List<UUID> getAllies() {
@@ -78,7 +78,7 @@ public class FPP_Faction {
         return this.faction.getOfficers();
     }
 
-    public HashMap<UUID, GroupMember> getMembers() {
+    public Map<UUID, GroupMember> getMembers() {
         return this.faction.getMembers();
     }
 

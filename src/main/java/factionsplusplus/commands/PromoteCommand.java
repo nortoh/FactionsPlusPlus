@@ -11,10 +11,13 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.FactionService;
+
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -61,11 +64,16 @@ public class PromoteCommand extends Command {
         }
         int maxOfficers = this.factionService.calculateMaxOfficers(faction);
         if (faction.getOfficerCount() <= maxOfficers) {
-            faction.addOfficer(target.getUniqueId());
-            context.replyWith("PlayerPromoted");
-            if (target.isOnline() && target.getPlayer() != null) {
-                context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
-            }
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
+                    context.replyWith("PlayerPromoted");
+                    if (target.isOnline() && target.getPlayer() != null) {
+                        context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
+                    }
+                }
+            });
         } else {
             context.replyWith(
                 this.constructMessage("PlayerCantBePromotedBecauseOfLimit")

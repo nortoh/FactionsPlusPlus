@@ -21,8 +21,6 @@ public interface Diplomatic {
 
     List<UUID> getAllies();
 
-    String getAlliesSeparatedByCommas();
-
     // requests
     void requestAlly(UUID uuid);
 
@@ -37,9 +35,7 @@ public interface Diplomatic {
 
     boolean isEnemy(UUID uuid);
 
-    List<UUID> getEnemyFactions();
-
-    String getEnemiesSeparatedByCommas();
+    List<UUID> getEnemies();
 
     // truces
     void requestTruce(UUID uuid);

@@ -7,7 +7,6 @@ package factionsplusplus.utils;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
@@ -24,14 +23,12 @@ import static org.bukkit.Material.LADDER;
 @Singleton
 public class InteractionAccessChecker {
     private final ConfigService configService;
-    private final EphemeralData ephemeralData;
     private final Logger logger;
     private final DataService dataService;
 
     @Inject
-    public InteractionAccessChecker(ConfigService configService, EphemeralData ephemeralData, Logger logger, DataService dataService) {
+    public InteractionAccessChecker(ConfigService configService, Logger logger, DataService dataService) {
         this.configService = configService;
-        this.ephemeralData = ephemeralData;
         this.logger = logger;
         this.dataService = dataService;
     }
@@ -66,7 +63,7 @@ public class InteractionAccessChecker {
     }
 
     private boolean isPlayerBypassing(Player player) {
-        return this.ephemeralData.getAdminsBypassingProtections().contains(player.getUniqueId());
+        return this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
     }
 
     public boolean isOutsiderInteractionAllowed(Player player, ClaimedChunk chunk, Faction playersFaction) {

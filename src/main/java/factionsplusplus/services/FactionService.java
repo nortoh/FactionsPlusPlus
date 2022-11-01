@@ -10,17 +10,16 @@ import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
+import factionsplusplus.data.factories.FactionFactory;
+import factionsplusplus.data.repositories.ClaimedChunkRepository;
+import factionsplusplus.data.repositories.FactionRepository;
+import factionsplusplus.data.repositories.GateRepository;
+import factionsplusplus.data.repositories.LockedBlockRepository;
+import factionsplusplus.data.repositories.PlayerRecordRepository;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
-import factionsplusplus.models.LockedBlock;
-import factionsplusplus.models.ClaimedChunk;
-import factionsplusplus.repositories.FactionRepository;
-import factionsplusplus.repositories.PlayerRecordRepository;
-import factionsplusplus.repositories.ClaimedChunkRepository;
-import factionsplusplus.repositories.LockedBlockRepository;
 
 import javax.inject.Provider;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.Collection;
@@ -35,6 +34,8 @@ public class FactionService {
     private final Provider<DynmapIntegrationService> dynmapService;
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
+    private final FactionFactory factionFactory;
+    private final GateRepository gateRepository;
     private final Logger logger;
 
     @Inject
@@ -46,7 +47,9 @@ public class FactionService {
         Provider<DynmapIntegrationService> dynmapService,
         LockedBlockRepository lockedBlockRepository,
         ClaimedChunkRepository claimedChunkRepository,
-        Logger logger
+        GateRepository gateRepository,
+        Logger logger,
+        FactionFactory factionFactory
     ) {
         this.configService = configService;
         this.factionRepository = factionRepository;
@@ -56,6 +59,8 @@ public class FactionService {
         this.lockedBlockRepository = lockedBlockRepository;
         this.claimedChunkRepository = claimedChunkRepository;
         this.logger = logger;
+        this.factionFactory = factionFactory;
+        this.gateRepository = gateRepository;
     }
 
     public void addDefaultConfigurationFlag(String flagName, ConfigurationFlag flag) {
@@ -149,22 +154,24 @@ public class FactionService {
     }
 
     public Faction createFaction(String factionName, UUID ownerUUID) {
-        return new Faction(factionName, ownerUUID, this.factionRepository.getDefaultFlags());
+        return this.factionFactory.create(factionName, ownerUUID, this.factionRepository.getDefaultFlags());
     }
 
     public Faction createFaction(String factionName) {
-        return new Faction(factionName, this.factionRepository.getDefaultFlags());
+        return this.factionFactory.create(factionName, this.factionRepository.getDefaultFlags());
     }
 
     public void removeFaction(Faction faction) {
+        // SQL will handle this for us but for persistence sake, we need to update our local cache too.
         this.unclaimAllClaimedChunks(faction);
         this.removeAllOwnedLocks(faction);
         this.removePoliticalTiesToFaction(faction);
+        this.removeAllOwnedGates(faction);
         this.factionRepository.delete(faction);
     }
 
     public void unclaimAllClaimedChunks(Faction faction) {
-        this.removeAllClaimedChunks(faction);
+        this.claimedChunkRepository.getAllForFaction(faction).stream().forEach(this.claimedChunkRepository::remove);
         this.dynmapService.get().updateClaimsIfAble();
     }
 
@@ -180,21 +187,12 @@ public class FactionService {
             });
     }
 
-    public void removeAllClaimedChunks(Faction faction) {
-        Iterator<ClaimedChunk> itr = this.claimedChunkRepository.all().iterator();
-        while (itr.hasNext()) {
-            ClaimedChunk currentChunk = itr.next();
-            if (currentChunk.getHolder().equals(faction.getID())) itr.remove();
-        }
+    public void removeAllOwnedGates(Faction faction) {
+        this.gateRepository.getAllForFaction(faction.getUUID()).stream().forEach(this.gateRepository::remove);
     }
 
     public void removeAllOwnedLocks(Faction faction) {
-        Iterator<LockedBlock> itr = this.lockedBlockRepository.all().iterator();
-
-        while (itr.hasNext()) {
-            LockedBlock currentBlock = itr.next();
-            if (currentBlock.getFactionID().equals(faction.getID())) itr.remove();
-        }
+        this.lockedBlockRepository.getAllForFaction(faction.getUUID()).stream().forEach(this.lockedBlockRepository::remove);
     }
 
     public void disbandAllZeroPowerFactions() {
@@ -255,7 +253,7 @@ public class FactionService {
         // Allies (if applicable)
         if (! faction.getAllies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.Allies").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getAllies()))));
         // Enemies (if applicable)
-        if (! faction.getEnemyFactions().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemyFactions()))));
+        if (! faction.getEnemies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemies()))));
         // Power level
         final int claimedChunks = this.claimedChunkRepository.getAllForFaction(faction).size();
         final int cumulativePowerLevel = this.getCumulativePowerLevel(faction);

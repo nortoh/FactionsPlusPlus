@@ -4,68 +4,129 @@
  */
 package factionsplusplus.models;
 
-import factionsplusplus.jsonadapters.ZonedDateTimeAdapter;
-
+import factionsplusplus.data.beans.WarBean;
+import factionsplusplus.data.repositories.WarRepository;
+import factionsplusplus.models.interfaces.Identifiable;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.Expose;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 /**
  * @author Daniel McCoy Stephenson
  */
-public class War {
-    @Expose
+public class War implements Identifiable {
+    @ColumnName("id")
+    private UUID uuid;
+    @ColumnName("attacker_id")
     private UUID attacker;
-    @Expose
+    @ColumnName("defender_id")
     private UUID defender;
-    @Expose
     private String reason;
-    @Expose
-    @JsonAdapter(ZonedDateTimeAdapter.class)
+    @ColumnName("started_at")
     private ZonedDateTime started;
-    @Expose
-    @JsonAdapter(ZonedDateTimeAdapter.class)
+    @ColumnName("ended_at")
     private ZonedDateTime ended;
-    @Expose
+    @ColumnName("is_active")
     private boolean active;
 
-    public War(Faction attacker, Faction defender, String reason) {
+    private final WarRepository warRepository;
+
+    @AssistedInject
+    public War(WarRepository warRepository) {
+        this.warRepository = warRepository;
+     }
+    
+    @AssistedInject
+    public War(@Assisted("attacker") Faction attacker, @Assisted("defender") Faction defender, @Assisted String reason, WarRepository warRepository) {
+        this.uuid = UUID.randomUUID();
         this.attacker = attacker.getID();
         this.defender = defender.getID();
         this.reason = reason;
         this.started = ZonedDateTime.now();
         this.active = true;
+        this.warRepository = warRepository;
+    }
+
+    @AssistedInject
+    public War(@Assisted WarBean bean, WarRepository warRepository) {
+        this.uuid = bean.getId();
+        this.attacker = bean.getAttacker();
+        this.defender = bean.getDefender();
+        this.reason = bean.getReason();
+        this.started = bean.getStartedAt();
+        this.ended = bean.getEndedAt();
+        this.active = bean.isActive();
+        this.warRepository = warRepository;
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public UUID getAttacker() {
         return this.attacker;
+    }
+    
+    public void setAttacker(UUID uuid) {
+        this.attacker = uuid;
     }
 
     public UUID getDefender() {
         return this.defender;
     }
 
+    public void setDefender(UUID uuid) {
+        this.defender = uuid;
+    }
+
     public String getReason() {
         return this.reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public ZonedDateTime getStartDate() {
         return this.started;
     }
 
+    public void setStartDate(ZonedDateTime dateTime) {
+        this.started = dateTime;
+    }
+
     public ZonedDateTime getEndDate() {
         return this.ended;
+    }
+
+    public void setEndDate(ZonedDateTime dateTime) {
+        this.ended = dateTime;
     }
 
     public boolean isActive() {
         return this.active;
     }
 
+    public void setActive(boolean value) {
+        this.active = value;
+    }
+
     public void end() {
         this.active = false;
         this.ended = ZonedDateTime.now();
+        this.persist();
+    }
+
+    public void persist() {
+        this.warRepository.persist(this);
     }
 }

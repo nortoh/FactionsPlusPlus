@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.FactionKickEvent;
+import factionsplusplus.events.internal.FactionKickEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
@@ -74,22 +74,24 @@ public class KickCommand extends Command {
             this.logger.debug("Kick event was cancelled.");
             return;
         }
-        if (faction.isOfficer(target.getUniqueId())) {
-            faction.removeOfficer(target.getUniqueId()); // Remove Officer (if one)
-        }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
-        faction.removeMember(target.getUniqueId());
-        context.messagePlayersFaction(
-            this.constructMessage("HasBeenKickedFrom")
-                .with("name", target.getName())
-                .with("faction", faction.getName())
-        );
-        if (target.isOnline() && target.getPlayer() != null) {
-            context.messagePlayer(
-                target.getPlayer(),
-                this.constructMessage("AlertKicked")
-                    .with("name", player.getName())
-            );
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                faction.clearMember(target.getUniqueId());
+                faction.message(
+                    constructMessage("HasBeenKickedFrom")
+                        .with("name", target.getName())
+                        .with("faction", faction.getName())
+                );
+                if (target.isOnline() && target.getPlayer() != null) {
+                    context.messagePlayer(
+                        target.getPlayer(),
+                        constructMessage("AlertKicked")
+                            .with("name", player.getName())
+                    );
+                }
+            }
+        });
     }
 }

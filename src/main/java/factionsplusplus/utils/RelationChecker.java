@@ -6,7 +6,6 @@ import com.google.inject.Singleton;
 import factionsplusplus.services.DataService;
 
 import org.bukkit.entity.Player;
-import preponderous.ponder.misc.Pair;
 
 import java.util.UUID;
 
@@ -26,21 +25,21 @@ public class RelationChecker {
 
     public boolean arePlayersInSameFaction(Player player1, Player player2) {
         Pair<UUID, UUID> factionIndices = this.getFactionIndices(player1, player2);
-        UUID attackersFactionIndex = factionIndices.getLeft();
-        UUID victimsFactionIndex = factionIndices.getRight();
+        UUID attackersFactionIndex = factionIndices.left();
+        UUID victimsFactionIndex = factionIndices.right();
         return this.arePlayersInAFaction(player1, player2) && attackersFactionIndex.equals(victimsFactionIndex);
     }
 
     public boolean arePlayersFactionsNotEnemies(Player player1, Player player2) {
         Pair<UUID, UUID> factionIndices = this.getFactionIndices(player1, player2);
-        UUID attackersFactionIndex = factionIndices.getLeft();
-        UUID victimsFactionIndex = factionIndices.getRight();
+        UUID attackersFactionIndex = factionIndices.left();
+        UUID victimsFactionIndex = factionIndices.right();
 
         return ! (this.dataService.getFaction(attackersFactionIndex).isEnemy(this.dataService.getFaction(victimsFactionIndex).getID())) &&
                 ! (this.dataService.getFaction(victimsFactionIndex).isEnemy(this.dataService.getFaction(attackersFactionIndex).getID()));
     }
 
     private Pair<UUID, UUID> getFactionIndices(Player player1, Player player2) {
-        return new Pair<>(this.dataService.getPlayersFaction(player1).getID(), this.dataService.getPlayersFaction(player2).getID());
+        return Pair.of(this.dataService.getPlayersFaction(player1).getID(), this.dataService.getPlayersFaction(player2).getID());
     }
 }

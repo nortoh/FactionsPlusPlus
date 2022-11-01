@@ -7,7 +7,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.factories.InteractionContextFactory;
+import factionsplusplus.data.factories.*;
 
 public class PluginModule extends AbstractModule {
     private final FactionsPlusPlus factionsPlusPlus;
@@ -26,9 +26,16 @@ public class PluginModule extends AbstractModule {
             .annotatedWith(Names.named("pluginVersion"))
             .toInstance(this.factionsPlusPlus.getVersion());
         install(new FactoryModuleBuilder().build(InteractionContextFactory.class));
+        install(new FactoryModuleBuilder().build(FactionFactory.class));
+        install(new FactoryModuleBuilder().build(LockedBlockFactory.class));
+        install(new FactoryModuleBuilder().build(WorldFactory.class));
+        install(new FactoryModuleBuilder().build(WarFactory.class));
+        install(new FactoryModuleBuilder().build(PlayerFactory.class));
     }
 
     public Injector createInjector() {
-        return Guice.createInjector(this);
+        return Guice.createInjector(
+            this
+        );
     }
 }

@@ -4,6 +4,8 @@
  */
 package factionsplusplus.commands;
 
+import org.bukkit.Bukkit;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -13,6 +15,7 @@ import factionsplusplus.models.Faction;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -51,24 +54,25 @@ public class SwearFealtyCommand extends Command {
             context.replyWith("AlertNotOfferedVassalizationBy");
             return;
         }
-        // set vassal
-        target.addVassal(faction.getID());
-        target.removeAttemptedVassalization(faction.getID());
-
-        // set liege
-        faction.setLiege(target.getID());
-
-        
-        // inform target faction that they have a new vassal
-        context.messageFaction(
-            target,
-            this.constructMessage("AlertFactionHasNewVassal")
-                .with("name", faction.getName())
-        );
-        // inform players faction that they have a new liege
-        context.messagePlayersFaction(
-            this.constructMessage("AlertFactionHasBeenVassalized")
-                .with("name", target.getName())
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                // set vassal
+                target.updateRelation(faction.getID(), FactionRelationType.Vassal);
+                target.removeAttemptedVassalization(faction.getID());
+                
+                // inform target faction that they have a new vassal
+                context.messageFaction(
+                    target,
+                    constructMessage("AlertFactionHasNewVassal")
+                        .with("name", faction.getName())
+                );
+                // inform players faction that they have a new liege
+                context.messagePlayersFaction(
+                    constructMessage("AlertFactionHasBeenVassalized")
+                        .with("name", target.getName())
+                );
+            }
+        });
     }
 }

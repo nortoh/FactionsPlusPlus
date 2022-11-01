@@ -7,16 +7,16 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.events.FactionCreateEvent;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.repositories.FactionRepository;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.FactionService;
 import org.bukkit.Bukkit;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.data.repositories.FactionRepository;
+import factionsplusplus.events.internal.FactionCreateEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
 /**
@@ -83,11 +83,16 @@ public class CreateCommand extends Command {
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (! createEvent.isCancelled()) {
-            this.factionRepository.create(playerFaction);
-            context.replyWith(
-                this.constructMessage("FactionCreated")
-                    .with("name", factionName)
-            );
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    factionRepository.create(playerFaction);
+                    context.replyWith(
+                        constructMessage("FactionCreated")
+                            .with("name", factionName)
+                    );
+                }
+            });
         }
     }
 }

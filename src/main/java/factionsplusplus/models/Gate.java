@@ -5,16 +5,17 @@
 package factionsplusplus.models;
 
 import factionsplusplus.constants.GateStatus;
+import factionsplusplus.data.beans.GateBean;
+
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.bukkit.Bukkit.getServer;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * @author Caibinus
@@ -22,23 +23,17 @@ import com.google.gson.annotations.Expose;
  */
 public class Gate {
     private final Sound soundEffect = Sound.BLOCK_ANVIL_HIT;
-    @Expose
     private String name = null;
-    @Expose
+    private UUID uuid;
+    private UUID factionUUID;
     private boolean open = false;
-    @Expose
     private boolean vertical = true;
-    @Expose
     private LocationData coord1 = null;
-    @Expose
     private LocationData coord2 = null;
-    @Expose
     private LocationData trigger = null;
-    @Expose
     private Material material = Material.IRON_BARS;
     private World _world = null;
-    @Expose
-    private String world = "";
+    private UUID world;
     private GateStatus gateStatus = GateStatus.Ready;
 
     public Gate() {
@@ -47,6 +42,20 @@ public class Gate {
 
     public Gate(String name) {
         this.name = name;
+        this.uuid = UUID.randomUUID();
+    }
+
+    public Gate(GateBean bean) {
+        this.name = bean.getName();
+        this.uuid = bean.getId();
+        this.factionUUID = bean.getFaction();
+        this.world = bean.getWorld();
+        this.open = bean.isOpen();
+        this.vertical = bean.isVertical();
+        this.material = bean.getMaterial();
+        this.coord1 = new LocationData(bean.getPositionOne());
+        this.coord2 = new LocationData(bean.getPositionTwo());
+        this.trigger = new LocationData(bean.getTriggerLocation());
     }
 
     public World getWorld() {
@@ -57,13 +66,25 @@ public class Gate {
         return this._world;
     }
 
-    public void setWorld(String worldName) {
-        this.world = worldName;
+    public void setWorld(UUID worldUUID) {
+        this.world = worldUUID;
         this._world = null;
     }
 
     public boolean isVertical() {
         return this.vertical;
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
+    }
+
+    public UUID getFaction() {
+        return this.factionUUID;
+    }
+
+    public void setFaction(UUID factionUUID) {
+        this.factionUUID = factionUUID;
     }
 
     public void setOpen(boolean open) {

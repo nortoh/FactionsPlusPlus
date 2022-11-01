@@ -9,12 +9,12 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.repositories.CommandRepository;
 import factionsplusplus.utils.StringUtils;
 import org.bukkit.command.CommandSender;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.MultiMessageBuilder;
+import factionsplusplus.data.repositories.CommandRepository;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.ArrayList;

@@ -10,35 +10,38 @@ import org.bukkit.entity.Player;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.bukkit.Bukkit.getServer;
-
-import com.google.gson.annotations.Expose;
 
 import factionsplusplus.constants.GroupRole;
 
 import factionsplusplus.models.interfaces.Identifiable;
 
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+
 /**
  * @author Daniel McCoy Stephenson
  */
 public class Group implements Identifiable {
-    private final List<UUID> invited = new ArrayList<>();
-    @Expose
+    private final List<UUID> invited = Collections.synchronizedList(new ArrayList<>());
+    @ColumnName("id")
     protected UUID uuid = UUID.randomUUID();
-    @Expose
     protected String name = null;
-    @Expose
     protected String description = null;
-    @Expose
-    protected HashMap<UUID, GroupMember> members = new HashMap<>();
+    protected Map<UUID, GroupMember> members = new ConcurrentHashMap<>();
 
     @Override
     public UUID getUUID() {
         return this.uuid;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -59,6 +62,10 @@ public class Group implements Identifiable {
 
     public boolean isOwner(UUID playerUuid) {
         return this.getMember(playerUuid).hasRole(GroupRole.Owner);
+    }
+
+    public void setMembers(Map<UUID, GroupMember> members) {
+        this.members = members;
     }
 
     public GroupMember getOwner() {
@@ -98,8 +105,7 @@ public class Group implements Identifiable {
      * @param playerUUID
      */
     public void addMember(UUID playerUUID) {
-        GroupMember member = new GroupMember(playerUUID);
-        member.addRole(GroupRole.Member);
+        GroupMember member = new GroupMember(playerUUID, GroupRole.Member);
         this.members.put(playerUUID, member);
     }
 
@@ -115,8 +121,7 @@ public class Group implements Identifiable {
      * @param role
      */
     public void addMember(UUID playerUUID, GroupRole role) {
-        GroupMember member = new GroupMember(playerUUID);
-        member.addRole(role);
+        GroupMember member = new GroupMember(playerUUID, role);
         this.members.put(playerUUID, member);
     }
 
@@ -136,12 +141,12 @@ public class Group implements Identifiable {
         return this.isMember(player.getUniqueId());
     }
 
-    public HashMap<UUID, GroupMember> getMembers() {
+    public Map<UUID, GroupMember> getMembers() {
         return this.members;
     }
 
-    public HashMap<UUID, GroupMember> getMembers(GroupRole role) {
-        return (HashMap<UUID, GroupMember>) this.members.entrySet()
+    public Map<UUID, GroupMember> getMembers(GroupRole role) {
+        return (Map<UUID, GroupMember>) this.members.entrySet()
             .stream()
             .filter(k -> k.getValue().isRole(role))
             .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
@@ -183,6 +188,33 @@ public class Group implements Identifiable {
 
     public Collection<GroupMember> getOfficers() {
         return this.getMembers(GroupRole.Officer).values();
+    }
+
+    public void setMemberRole(UUID playerUUID, GroupRole role) {
+        GroupMember member = this.getMember(playerUUID);
+        if (member != null) member.addRole(role);
+    }
+
+    public boolean addLaborer(UUID playerUuid) {
+        GroupMember member = this.getMember(playerUuid);
+        if (! member.hasRole(GroupRole.Laborer)) {
+            member.addRole(GroupRole.Laborer);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean removeLaborer(UUID playerUuid) {
+        if (! this.isMember(playerUuid)) return false;
+
+        GroupMember member = this.getMember(playerUuid);
+        if (member.hasRole(GroupRole.Laborer)) {
+            member.removeRole(GroupRole.Laborer);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean isLaborer(UUID playerUUID) {

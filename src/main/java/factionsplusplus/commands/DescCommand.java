@@ -4,6 +4,8 @@
  */
 package factionsplusplus.commands;
 
+import org.bukkit.Bukkit;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -42,11 +44,16 @@ public class DescCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        String description = context.getStringArgument("description");
-        context.getExecutorsFaction().setDescription(description);
-        context.replyWith(
-            this.constructMessage("DescriptionSet")
-                .with("desc", description)
-        );
+        final String description = context.getStringArgument("description");
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().setDescription(description);
+                context.replyWith(
+                    constructMessage("DescriptionSet")
+                        .with("desc", description)
+                );
+            }
+        });
     }
 }

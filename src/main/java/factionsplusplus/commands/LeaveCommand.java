@@ -8,7 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.events.FactionLeaveEvent;
+import factionsplusplus.events.internal.FactionLeaveEvent;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
@@ -61,14 +61,18 @@ public class LeaveCommand extends Command {
             return;
         }
 
-        if (faction.isOfficer(player.getUniqueId())) faction.removeOfficer(player.getUniqueId()); // Remove Officer.
         this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId()); // Remove from Faction Chat.
-        faction.removeMember(player.getUniqueId());
-        context.replyWith("AlertLeftFaction");
-        context.messagePlayersFaction(
-            this.constructMessage("AlertLeftFactionTeam")
-                .with("name", player.getName())
-                .with("faction", faction.getName())
-        );
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                faction.clearMember(player.getUniqueId());
+                context.replyWith("AlertLeftFaction");
+                faction.message(
+                    constructMessage("AlertLeftFactionTeam")
+                        .with("name", player.getName())
+                        .with("faction", faction.getName())
+                );
+            }
+        });
     }
 }

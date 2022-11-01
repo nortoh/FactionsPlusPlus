@@ -5,13 +5,14 @@
 package factionsplusplus.models;
 
 import java.util.UUID;
-import com.google.gson.annotations.Expose;
+
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 /**
  * @author Daniel McCoy Stephenson
  */
 public class Territory {
-    @Expose
+    @ColumnName("faction_id")
     protected UUID holder;
 
     public UUID getHolder() {

@@ -55,9 +55,8 @@ public class ClaimCommand extends Command {
             }
         }
 
-        Object depthArgument = context.getArgument("radius");
-        if (depthArgument != null) {
-            int depth = (int)depthArgument;
+        Integer depth = context.getIntegerArgument("radius");
+        if (depth != null) {
             if (depth <= 0) {
                 context.replyWith("UsageClaimRadius");
             } else {

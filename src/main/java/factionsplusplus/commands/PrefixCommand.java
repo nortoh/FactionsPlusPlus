@@ -7,6 +7,8 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.bukkit.Bukkit;
+
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.DataService;
@@ -51,7 +53,12 @@ public class PrefixCommand extends Command {
             context.replyWith("PrefixTaken");
             return;
         }
-        context.getExecutorsFaction().setPrefix(newPrefix);
-        context.replyWith("PrefixSet");
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
+            @Override
+            public void run() {
+                context.getExecutorsFaction().setPrefix(newPrefix);
+                context.replyWith("PrefixSet");
+            }
+        });
     }
 }

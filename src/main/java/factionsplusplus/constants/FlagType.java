@@ -1,10 +1,10 @@
 package factionsplusplus.constants;
 
+import org.jdbi.v3.core.enums.DatabaseValue;
+
 public enum FlagType {
-    String,
-    Boolean,
-    Float,
-    Double,
-    Integer,
-    Color
+    @DatabaseValue("1")
+    Faction,
+    @DatabaseValue("2")
+    World;
 }
