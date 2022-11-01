@@ -146,7 +146,7 @@ public class CommandService implements TabCompleter {
                 alias = this.localeService.get(alias);
                 if (alias == null) continue;
             }
-            if (! newAliases.contains(alias) && !command.getName().equalsIgnoreCase(alias)) newAliases.add(alias);
+            if (! newAliases.contains(alias) && ! command.getName().equalsIgnoreCase(alias)) newAliases.add(alias);
         }
         Object[] aliasesToSet = newAliases.toArray();
         command.setAliases(Arrays.copyOf(aliasesToSet, aliasesToSet.length, String[].class));
@@ -615,7 +615,7 @@ public class CommandService implements TabCompleter {
             commandStack.add(currentCommand);
         } else currentCommand = commandStack.get(commandStack.size() - 1);
         // Bail if nothing left to do
-        if (!currentCommand.hasSubCommands() && currentCommand.getArguments().isEmpty()) return results;
+        if (! currentCommand.hasSubCommands() && currentCommand.getArguments().isEmpty()) return results;
         // Look for subcommands first
         if (currentCommand.hasSubCommands()) {
             String nextArg = argumentList.get(0); // we don't remove here because it could be a consumes all argument

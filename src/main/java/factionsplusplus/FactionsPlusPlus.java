@@ -113,7 +113,7 @@ public class FactionsPlusPlus extends JavaPlugin {
         if (configVersion == null || this.getVersion() == null) {
             return true;
         } else {
-            return !configVersion.equalsIgnoreCase(this.getVersion());
+            return ! configVersion.equalsIgnoreCase(this.getVersion());
         }
     }
 

@@ -75,7 +75,7 @@ public class InvokeCommand extends Command {
         }
         FactionWarStartEvent warStartEvent = new FactionWarStartEvent(invokee, warringFaction, player);
         Bukkit.getPluginManager().callEvent(warStartEvent);
-        if (!warStartEvent.isCancelled()) {
+        if (! warStartEvent.isCancelled()) {
             invokee.addEnemy(warringFaction.getID());
             warringFaction.addEnemy(invokee.getID());
 
