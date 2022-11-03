@@ -204,7 +204,7 @@ public class FactionService {
             .stream()
             .filter(faction -> this.getCumulativePowerLevel(faction) == 0)
             .forEach(faction -> {
-                // TODO: send "AlertDisbandmentDueToZeroPower" in some way to the faction
+                faction.alert("FactionNotice.Disbandment.ZeroPower");
                 this.removeFaction(faction);
             });
     }
