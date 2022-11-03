@@ -19,7 +19,6 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -105,11 +104,11 @@ public class LocaleService {
     }
 
     public void reloadLanguage() {
-        // TODO: reimplement
+        
     }
 
     public void saveLanguage() {
-        // TODO: reimplement
+        
     }
 
     public Locale getDefaultLocale() {
@@ -129,11 +128,6 @@ public class LocaleService {
             this.logger.error(String.format("Missing translation for %s", key), e);
             return key;
         }
-    }
-
-    public List<String> getStrings(String key) {
-        // TODO: reimplement
-        return List.of();
     }
 
     /**
