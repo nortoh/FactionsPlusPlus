@@ -18,6 +18,7 @@ import factionsplusplus.services.MessageService;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -269,18 +270,48 @@ public class CommandContext {
         );
     }
 
+    private Component generateErrorComponent(String localizationKey, Object... arguments) {
+        return Component.text()
+            .append(
+                Component.translatable("Generic.Error").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+            )
+            .append(Component.text(" "))
+            .append(
+                Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+            )
+            .asComponent();
+    }
+
     public void error(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(this.generateErrorComponent(localizationKey, arguments));
+    }
+
+    public void cancellableError(String localizationKey, String commandToRun) {
         this.getExecutorsAudience().sendMessage(
-            Component.text()
-                .append(
-                    Component.translatable("Generic.Error").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
-                )
+            this.generateErrorComponent(localizationKey, new Object[]{})
                 .append(Component.text(" "))
                 .append(
-                    Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                    Component.translatable("Generic.ClickHere.Cancel").color(NamedTextColor.GOLD).clickEvent(
+                        ClickEvent.runCommand("/fpp checkaccess cancel")
+                    )
                 )
-                .asComponent()
         );
+    }
+
+    public void cancellable(String localizationKey, String commandToRun, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable("Generic.ClickHere.Cancel").color(NamedTextColor.GOLD).clickEvent(
+                        ClickEvent.runCommand(commandToRun)
+                    )
+                )
+        );
+    }
+
+    public void cancellable(String localizationKey, String commandToRun) {
+        this.cancellable(localizationKey, commandToRun, new Object[]{});
     }
 
     public void messagePlayer(Player player, String localizationKey) {
