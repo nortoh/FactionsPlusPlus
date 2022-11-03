@@ -10,7 +10,6 @@ import com.google.inject.name.Named;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
@@ -18,18 +17,15 @@ import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.services.PlayerService;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.utils.StringUtils;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.translation.GlobalTranslator;
 import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Arrays;
 import java.util.Random;
 
 /**
