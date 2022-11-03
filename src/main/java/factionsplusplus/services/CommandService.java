@@ -522,7 +522,6 @@ public class CommandService implements TabCompleter {
         // Create a context
         CommandContext context = this.factionsPlusPlus.getInjector().getInstance(CommandContext.class);
         context.setSender(sender);
-        context.setRawArguments(Arrays.copyOf(argumentList.toArray(), argumentList.size(), String[].class));
 
         // no arguments check
         if (args.length == 0) {
@@ -535,7 +534,11 @@ public class CommandService implements TabCompleter {
                 
         // Get & remove command name
         String commandName = argumentList.remove(0);
-        
+
+        // Set arguments
+        context.setRawArguments(Arrays.copyOf(argumentList.toArray(), argumentList.size(), String[].class));
+
+
         // Try to find the command
         Command command = this.commandRepository.get(commandName);
 
