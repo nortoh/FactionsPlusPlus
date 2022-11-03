@@ -59,13 +59,10 @@ public class LeaveCommand extends Command {
         }
 
         this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId()); // Remove from Faction Chat.
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                faction.clearMember(player.getUniqueId());
-                context.success("PlayerNotice.LeftFaction");
-                faction.alert("FactionNotice.PlayerLeft", player.getName());
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            faction.clearMember(player.getUniqueId());
+            context.success("PlayerNotice.LeftFaction");
+            faction.alert("FactionNotice.PlayerLeft", player.getName());
         });
     }
 }

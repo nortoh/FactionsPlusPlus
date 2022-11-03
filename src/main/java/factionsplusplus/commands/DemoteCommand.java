@@ -49,15 +49,10 @@ public class DemoteCommand extends Command {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
-                if (playerToBeDemoted.isOnline()) {
-                    context.alertPlayer(playerToBeDemoted, "PlayerNotice.Demoted", context.getLocalizedString("Generic.Role.Member"));
-                }
-                context.success("CommandResponse.Member.Demoted", playerToBeDemoted.getName());
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
+            if (playerToBeDemoted.isOnline()) context.alertPlayer(playerToBeDemoted, "PlayerNotice.Demoted", context.getLocalizedString("Generic.Role.Member"));
+            context.success("CommandResponse.Member.Demoted", playerToBeDemoted.getName());
         });
     }
 }

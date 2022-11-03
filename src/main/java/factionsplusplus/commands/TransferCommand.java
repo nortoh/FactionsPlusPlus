@@ -53,18 +53,15 @@ public class TransferCommand extends Command {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                // Promote new owner
-                context.getExecutorsFaction().upsertMember(targetUUID, GroupRole.Owner);
-                // Demote old owner
-                context.getExecutorsFaction().upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
-                // Notify
-                context.success("CommandResponse.FactionOwnershipTransferred", context.getExecutorsFaction().getName(), target.getName());
-                if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
-                    context.alertPlayer(target, "PlayerNotice.FactionOwnershipTransferred", context.getExecutorsFaction().getName());
-                }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            // Promote new owner
+            context.getExecutorsFaction().upsertMember(targetUUID, GroupRole.Owner);
+            // Demote old owner
+            context.getExecutorsFaction().upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
+            // Notify
+            context.success("CommandResponse.FactionOwnershipTransferred", context.getExecutorsFaction().getName(), target.getName());
+            if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
+                context.alertPlayer(target, "PlayerNotice.FactionOwnershipTransferred", context.getExecutorsFaction().getName());
             }
         });
     }

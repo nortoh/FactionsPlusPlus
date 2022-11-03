@@ -72,12 +72,9 @@ public class RenameCommand extends Command {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                context.getExecutorsFaction().setName(newName); // setName will handle changing prefix too, if necessary
-                context.success("CommandResponse.Faction.Renamed", newName);
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            context.getExecutorsFaction().setName(newName); // setName will handle changing prefix too, if necessary
+            context.success("CommandResponse.Faction.Renamed", newName);
         });
     }
 }

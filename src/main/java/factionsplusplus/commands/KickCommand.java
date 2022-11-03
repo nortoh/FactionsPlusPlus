@@ -72,16 +72,11 @@ public class KickCommand extends Command {
             return;
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                faction.clearMember(target.getUniqueId());
-                context.error("CommandResponse.Kick", target.getName(), faction.getName());
-                faction.alert("FactionNotice.PlayerKicked", target.getName());
-                if (target.isOnline() && target.getPlayer() != null) {
-                    context.alertPlayer(player, "PlayerNotice.KickedFromFaction", faction.getName(), player.getName());
-                }
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            faction.clearMember(target.getUniqueId());
+            context.error("CommandResponse.Kick", target.getName(), faction.getName());
+            faction.alert("FactionNotice.PlayerKicked", target.getName());
+            if (target.isOnline() && target.getPlayer() != null) context.alertPlayer(player, "PlayerNotice.KickedFromFaction", faction.getName(), player.getName());
         });
     }
 }

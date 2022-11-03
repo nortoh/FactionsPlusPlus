@@ -87,15 +87,10 @@ public class DisbandCommand extends Command {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                factionRepository.delete(targetFaction);
-                if (self) {
-                    ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
-                }
-                context.success("CommandResponse.Faction.Disbanded", targetFaction.getName());
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            factionRepository.delete(targetFaction);
+            if (self) ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
+            context.success("CommandResponse.Faction.Disbanded", targetFaction.getName());
         });
     }
 }

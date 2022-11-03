@@ -61,18 +61,15 @@ public class PromoteCommand extends Command {
         }
         int maxOfficers = this.factionService.calculateMaxOfficers(faction);
         if (faction.getOfficerCount() <= maxOfficers) {
-            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-                @Override
-                public void run() {
-                    faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
-                    context.success("CommandResponse.Member.Promoted", target.getName());
-                    if (target.isOnline() && target.getPlayer() != null) {
-                        context.alertPlayer(target, "PlayerNotice.Promoted", context.getLocalizedString("Generic.Role.Officer"));
-                    }
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+                faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
+                context.success("CommandResponse.Member.Promoted", target.getName());
+                if (target.isOnline() && target.getPlayer() != null) {
+                    context.alertPlayer(target, "PlayerNotice.Promoted", context.getLocalizedString("Generic.Role.Officer"));
                 }
             });
-        } else {
-            context.error("Error.OfficerLimit");
+            return;
         }
+        context.error("Error.OfficerLimit");
     }
 }

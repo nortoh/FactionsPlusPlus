@@ -61,13 +61,10 @@ public class JoinCommand extends Command {
             return;
         }
         target.alert("FactionNotice.PlayerJoined", context.getPlayer().getName());
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
-                dataService.removeFactionInvite(target, context.getPlayer());
-                context.success("PlayerNotice.JoinedFaction", target.getName());
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
+            dataService.removeFactionInvite(target, context.getPlayer());
+            context.success("PlayerNotice.JoinedFaction", target.getName());
         });
     }
 }

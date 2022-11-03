@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.events.internal.FactionWarStartEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
@@ -69,17 +70,16 @@ public class InvokeCommand extends Command {
         FactionWarStartEvent warStartEvent = new FactionWarStartEvent(invokee, warringFaction, player);
         Bukkit.getPluginManager().callEvent(warStartEvent);
         if (! warStartEvent.isCancelled()) {
-            invokee.addEnemy(warringFaction.getID());
-            warringFaction.addEnemy(invokee.getID());
-
-            // Alert ally faction
-            invokee.alert("FactionNotice.WarCall.Target", context.getExecutorsFaction().getName(), warringFaction.getName());
-
-            // Alert warring faction
-            warringFaction.alert("FactionNotice.WarCall.Enemy", context.getExecutorsFaction().getName(), invokee.getName());
-
-            // Alert player faction
-            context.getExecutorsFaction().alert("FactionNotice.WarCall.Source", invokee.getName(), warringFaction.getName());
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+                // Update relationship
+                invokee.upsertRelation(warringFaction.getID(), FactionRelationType.Enemy);
+                // Alert ally faction
+                invokee.alert("FactionNotice.WarCall.Target", context.getExecutorsFaction().getName(), warringFaction.getName());
+                // Alert warring faction
+                warringFaction.alert("FactionNotice.WarCall.Enemy", context.getExecutorsFaction().getName(), invokee.getName());
+                // Alert player faction
+                context.getExecutorsFaction().alert("FactionNotice.WarCall.Source", invokee.getName(), warringFaction.getName());
+            });
         }
     }
 }

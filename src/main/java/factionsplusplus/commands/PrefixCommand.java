@@ -50,12 +50,9 @@ public class PrefixCommand extends Command {
             context.error("Error.Prefix.Taken", newPrefix);
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                context.getExecutorsFaction().setPrefix(newPrefix);
-                context.success("CommandResponse.Faction.PrefixSet", newPrefix);
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            context.getExecutorsFaction().setPrefix(newPrefix);
+            context.success("CommandResponse.Faction.PrefixSet", newPrefix);
         });
     }
 }
