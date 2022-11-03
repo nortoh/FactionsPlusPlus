@@ -59,4 +59,14 @@ public class StringUtils {
         String tmp = String.valueOf(value);
         return tmp.length() == 0 ? ("00") : (tmp.length() == 1 ? ("0" + value) : (tmp));
     }
+
+    /**
+     * Method to create an array of objects for parameter parsing.
+     * 
+     * @param list of values
+     * @return Object[]
+     */
+    public static Object[] arrayFrom(Object... objects) {
+        return objects;
+    }
 }
