@@ -2,10 +2,15 @@ package factionsplusplus.services;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.utils.StringUtils;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 
 import org.bukkit.Bukkit;
@@ -19,10 +24,12 @@ import java.util.Objects;
 public class MessageService {
 
     private final LocaleService localeService;
+    private final BukkitAudiences adventure;
 
     @Inject
-    public MessageService(LocaleService localeService) {
+    public MessageService(LocaleService localeService, @Named("adventure") BukkitAudiences adventure) {
         this.localeService = localeService;
+        this.adventure = adventure;
     }
 
     public void send(Player player, String message) {
@@ -98,7 +105,7 @@ public class MessageService {
      * @param message message to send to the players.
      */
     public void sendToAllPlayers(String message) {
-        Bukkit.getOnlinePlayers().forEach(player -> this.send(player, message));
+        this.adventure.players().sendMessage(Component.text(message), MessageType.CHAT);
     }
 
     /**
@@ -107,20 +114,15 @@ public class MessageService {
      * @param message message to broadcast.
      */
     public void broadcast(String message) {
-        Bukkit.broadcastMessage(message);
+        this.adventure.players().sendMessage(Component.text(message), MessageType.SYSTEM);
     }
 
-    public void sendInvalidSyntaxMessage(CommandSender sender, String commandName, String commandSyntax) {
-        this.sendLocalizedMessage(
-            sender,
-            new MessageBuilder("InvalidSyntax")
-                .with("command", commandName)
-                .with("syntax", commandSyntax)
-        );
+    public void sendInvalidSyntaxMessage(CommandContext context, String commandName, String commandSyntax) {
+        context.error("Error.Syntax", commandName, commandSyntax);
     }
 
-    public void sendInvalidSyntaxMessage(CommandSender sender, List<String> commandNameList, String commandSyntax) {
-        this.sendInvalidSyntaxMessage(sender, String.join(" ", commandNameList), commandSyntax);
+    public void sendInvalidSyntaxMessage(CommandContext context, List<String> commandNameList, String commandSyntax) {
+        this.sendInvalidSyntaxMessage(context, String.join(" ", commandNameList), commandSyntax);
     }
 
 }
