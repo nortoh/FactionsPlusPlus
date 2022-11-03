@@ -13,9 +13,6 @@ import factionsplusplus.services.PlayerService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class ResetPowerLevelsCommand extends Command {
 
@@ -36,10 +33,8 @@ public class ResetPowerLevelsCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        // TODO: localize
-        String msg = this.translate("&aPower Levels Resetting...");
-        context.reply(msg);
-        this.logger.info(msg);
+        context.success("CommandResponse.ResetPowerLevels");
+        this.logger.info("Power Levels Resetting...");
         this.playerService.resetPowerLevels();
     }
 }

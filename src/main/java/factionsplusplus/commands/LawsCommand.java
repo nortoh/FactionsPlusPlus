@@ -10,11 +10,15 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.text.Component;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * @author Callum Johnson
@@ -61,12 +65,27 @@ public class LawsCommand extends Command {
                 return;
             }
         }
-        context.replyWith(
-            this.constructMessage("LawsTitle")
-                .with("name", target.getName())
+
+        ArrayList<Component> lawComponents = new ArrayList<>();
+
+        lawComponents.add(
+            Component.text()
+                .append(
+                    Component.text(String.format("%s %s", target.getName(), context.getLocalizedString("Generic.Law.Plural")))
+                        .decorate(TextDecoration.BOLD)
+                )
+                .append(
+                    Component.text("\n\nThis would be some text about the law book and how to use it.")
+                )
+                .asComponent()       
         );
-        IntStream.range(0, target.getNumLaws())
-                .mapToObj(i -> translate("&b" + (i + 1) + ". " + target.getLaws().get(i)))
-                .forEach(context::reply);
+
+        lawComponents.addAll(
+            target.getLaws().stream()
+                .map(law -> Component.text(law).color(NamedTextColor.BLACK))
+                .collect(Collectors.toList())
+        );
+
+        context.getExecutorsAudience().openBook(Book.book(Component.translatable("Generic.Law.Plural"), Component.text(target.getName()), lawComponents));
     }
 }

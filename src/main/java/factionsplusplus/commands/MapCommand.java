@@ -13,6 +13,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.DataService;
+import factionsplusplus.utils.StringUtils;
 
 import org.bukkit.Chunk;
 
@@ -100,10 +101,10 @@ public class MapCommand extends Command {
                 }
             }
             // TODO: new messaging api
-            context.reply(this.translate(line.toString()));
+            context.reply(StringUtils.colorize(line.toString()));
         }
         // TODO: new messaging api
-        context.reply(this.translate(" &5+&7 = You"));
+        context.reply(StringUtils.colorize(" &5+&7 = You"));
         final List<String> added = new ArrayList<>();
         int index = 0;
         for (String printedHolder : printedHolders.keySet()) {
@@ -128,7 +129,7 @@ public class MapCommand extends Command {
         }
         if (! added.isEmpty()) { // We don't wanna send an empty line, so check if the added lines is empty or not.
             // TODO: new messaging api
-            context.reply(" " + this.translate(String.join(", ", added)));
+            context.reply(" " + StringUtils.colorize(String.join(", ", added)));
         }
     }
 

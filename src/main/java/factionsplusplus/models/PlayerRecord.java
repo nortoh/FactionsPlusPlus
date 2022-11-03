@@ -14,7 +14,6 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 
-import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.data.beans.PlayerBean;
 import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.utils.StringUtils;
@@ -185,11 +184,6 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     // Get as bukkit Player
     public Player asBukkitPlayer() {
         return Bukkit.getPlayer(this.uuid);
-    }
-
-    // Send a message to this player
-    public void message(GenericMessageBuilder builder) {
-        this.alert(builder);
     }
 
     @Override

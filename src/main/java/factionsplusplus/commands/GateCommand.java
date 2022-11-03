@@ -105,11 +105,10 @@ public class GateCommand extends Command {
         this.interactionContextFactory = interactionContextFactory;
     }
 
-    // TODO: new messaging api
     public Gate doCommonBlockChecks(CommandContext context) {
         final Block targetBlock = context.getPlayer().getTargetBlock(null, 16);
         if (targetBlock.getType().equals(Material.AIR)) {
-            context.replyWith("NoBlockDetectedToCheckForGate");
+            context.error("Error.Gate.NoBlock");
             return null;
         }
         final Gate gate = this.dataService.getGateWithBlock(targetBlock);
@@ -119,67 +118,51 @@ public class GateCommand extends Command {
         }
         final Faction gateFaction = this.dataService.getFaction(gate.getFaction());
         if (gateFaction == null) {
-            context.replyWith(
-                this.constructMessage("ErrorCouldNotFindGatesFaction")
-                    .with("name", gate.getName())
-            );
+            context.error("Error.Gate.UnknownFaction", gate.getName());
             return null;
         }
         return gate;
     }
 
-    // TODO: new messaging api
     public void removeCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
             this.dataService.removeGate(targetGate);
-            context.replyWith(
-                this.constructMessage("RemovedGate")
-                    .with("name", targetGate.getName())
-            );
+            context.success("CommandResponse.Gate.Removed", targetGate.getName());
         }
     }
 
-    // TODO: new messaging api
     public void renameCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
+            final String oldName = targetGate.getName();
             final String newName = context.getStringArgument("new name");
             targetGate.setName(newName);
             this.dataService.getGateRepository().persist(targetGate);
-            context.replyWith(
-                this.constructMessage("AlertChangedGateName")
-                    .with("name", targetGate.getName())
-            );
+            context.success("CommandResponse.Gate.Renamed", oldName, newName);
         }
     }
 
-    // TODO: new messaging api
     public void cancelCommand(CommandContext context) {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext != null) {
             if (interactionContext.isGateCreating()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
-                context.replyWith("CreatingGateCancelled");
+                context.success("CommandResponse.Gate.Cancelled");
             }
         }
     }
 
-    // TODO: new messaging api
     public void listCommand(CommandContext context) {
         List<Gate> factionGates = this.dataService.getFactionsGates(context.getExecutorsFaction());
         if (factionGates.size() > 0) {
-            context.replyWith("FactionGate");
+            context.replyWith("GateList.Title", context.getExecutorsFaction().getName());
             for (Gate gate : factionGates) {
-                context.replyWith(
-                    this.constructMessage("GateLocation")
-                        .with("name", gate.getName())
-                        .with("location", gate.coordsToString())
-                );
+                context.replyWith("GateList.Gate", gate.getName(), gate.coordsToString());
             }
             return;
         }
-        context.replyWith("AlertNoGatesDefined");
+        context.error("Error.Gate.NoneDefined");
     }
 
     public void createCommand(CommandContext context) {
@@ -189,11 +172,7 @@ public class GateCommand extends Command {
                 context.error("Error.Gate.AlreadyCreating");
                 return;
             }
-            // TODO: new messaging api
-            context.replyWith(
-                this.constructMessage("CancelInteraction")
-                    .with("type", interactionContext.toString())
-            );
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
         String gateName = context.getStringArgument("gate name");
         // TODO: new messaging api

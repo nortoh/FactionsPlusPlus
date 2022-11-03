@@ -47,7 +47,6 @@ public class CommandService implements TabCompleter {
     private final LocaleService localeService;
     private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
-    private final MessageService messageService;
     private final CommandRepository commandRepository;
     private final DataService dataService;
 
@@ -56,14 +55,12 @@ public class CommandService implements TabCompleter {
         LocaleService localeService,
         FactionsPlusPlus factionsPlusPlus,
         ConfigService configService,
-        MessageService messageService,
         CommandRepository commandRepository,
         DataService dataService
     ) {
         this.localeService = localeService;
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
-        this.messageService = messageService;
         this.commandRepository = commandRepository;
         this.dataService = dataService;
     }
@@ -168,14 +165,14 @@ public class CommandService implements TabCompleter {
         context.addCommandName(command.getName());
         // If arguments are missing, let the user know.
         if (command.getRequiredArgumentCount() > arguments.size()) {
-            this.messageService.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
+            this.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
             return false;
         }
 
         // Check permissions. If permissions are missing, let the user know.
         List<String> missingPermissions = this.checkPermissions(sender, command.getRequiredPermissions());
         if (missingPermissions.size() > 0) {
-            this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+            this.sendPermissionMissingMessage(context, missingPermissions);
             return false;
         }
 
@@ -240,7 +237,7 @@ public class CommandService implements TabCompleter {
             if (newCommand == null) {
                 // If a subcommand is required, we bail now.
                 if (command.shouldRequireSubCommand()) {
-                    this.messageService.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
+                    this.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
                     return false;
                 }
                 // Otherwise, we execute the normal executor with the remaining parameters.
@@ -272,7 +269,7 @@ public class CommandService implements TabCompleter {
                 }
                 missingPermissions = this.checkPermissions(sender, permissionsToCheck);
                 if (missingPermissions.size() > 0) {
-                    this.messageService.sendPermissionMissingMessage(sender, missingPermissions);
+                    this.sendPermissionMissingMessage(context, missingPermissions);
                     return false;
                 }
             }
@@ -299,7 +296,7 @@ public class CommandService implements TabCompleter {
                         argumentData = argumentData + " " + arguments.remove(0);
                     }
                     if (! foundEnd) {
-                        this.messageService.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
+                        this.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
                         return false;
                     }
                     argumentData = argumentData.substring(0, argumentData.length() - 1); // remove closing quote
@@ -404,7 +401,7 @@ public class CommandService implements TabCompleter {
                         break;
                 }
                 if (sendInvalidMessage) {
-                    this.messageService.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
+                    this.sendInvalidSyntaxMessage(context, context.getCommandNames(), command.buildSyntax());
                     return false;
                 }
                 if (player != null) parsedArgumentData = player;
@@ -518,28 +515,27 @@ public class CommandService implements TabCompleter {
     }
 
     public boolean interpretCommand(CommandSender sender, String label, String[] args) {
-        // no arguments check
-        if (args.length == 0) {
-            this.localeService.getStrings("PluginInfo")
-                .forEach(s -> {
-                    s = s.replace("#version", this.factionsPlusPlus.getVersion()).replace("#dev", this.factionsPlusPlus.getDescription().getAuthors().toString());
-                    this.messageService.send(sender, s);
-                });
-            return true;
-        }
-
         // Convert arguments to an array list
         ArrayList<String> argumentList = new ArrayList<>();
         argumentList.addAll(Arrays.asList(args));
-
-        // Get & remove command name
-        String commandName = argumentList.remove(0);
 
         // Create a context
         CommandContext context = this.factionsPlusPlus.getInjector().getInstance(CommandContext.class);
         context.setSender(sender);
         context.setRawArguments(Arrays.copyOf(argumentList.toArray(), argumentList.size(), String[].class));
 
+        // no arguments check
+        if (args.length == 0) {
+            context.replyWith("PluginInfo.Name", this.factionsPlusPlus.getVersion());
+            context.replyWith("PluginInfo.Developers", this.factionsPlusPlus.getDescription().getAuthors().toString());
+            context.replyWith("PluginInfo.Wiki");
+            return true;
+        }
+
+                
+        // Get & remove command name
+        String commandName = argumentList.remove(0);
+        
         // Try to find the command
         Command command = this.commandRepository.get(commandName);
 
@@ -841,6 +837,18 @@ public class CommandService implements TabCompleter {
     private String quoteifyIfNeeded(String option, CommandArgument argument) {
         if (argument.expectsDoubleQuotes()) return String.format("\"%s\"", option);
         return option;
+    }
+
+    private void sendInvalidSyntaxMessage(CommandContext context, String commandName, String commandSyntax) {
+        context.error("Error.Syntax", commandName, commandSyntax);
+    }
+
+    private void sendInvalidSyntaxMessage(CommandContext context, List<String> commandNameList, String commandSyntax) {
+        this.sendInvalidSyntaxMessage(context, String.join(" ", commandNameList), commandSyntax);
+    }
+
+    public void sendPermissionMissingMessage(CommandContext context, List<String> missingPermissions) {
+        context.error("Error.PermissionDenied", String.join(", ", missingPermissions));
     }
 
     @Override

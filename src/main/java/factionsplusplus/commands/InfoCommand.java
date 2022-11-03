@@ -54,8 +54,6 @@ public class InfoCommand extends Command {
         } else {
             target = context.getFactionArgument("faction name");
         }
-        context.replyWith(
-            this.factionService.generateFactionInfo(target)
-        );
+        this.factionService.generateFactionInfo(target).forEach(component -> context.getExecutorsAudience().sendMessage(component));
     }
 }

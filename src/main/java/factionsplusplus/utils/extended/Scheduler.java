@@ -14,13 +14,12 @@ import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.services.PlayerService;
 import factionsplusplus.utils.Logger;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
-import factionsplusplus.builders.MessageBuilder;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -38,7 +37,6 @@ public class Scheduler {
     @Inject private FactionsPlusPlus factionsPlusPlus;
     @Inject private ConfigService configService;
     @Inject private PlayerService playerService;
-    @Inject private MessageService messageService;
     @Inject private FactionService factionService;
     @Inject private DataService dataService;
     @Inject @Named("adventure") BukkitAudiences adventure;
@@ -104,11 +102,7 @@ public class Scheduler {
 
     public void scheduleTeleport(Player player, Location destinationLocation) {
         int teleport_delay = this.configService.getInt("teleportDelay");
-        this.messageService.sendLocalizedMessage(
-            player,
-            new MessageBuilder("Teleport")
-                .with("time", String.valueOf(teleport_delay))
-        );
+        this.dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.Teleport", teleport_delay);
         DelayedTeleportTask delayedTeleportTask = new DelayedTeleportTask(player, destinationLocation);
         delayedTeleportTask.runTaskLater(this.factionsPlusPlus, (long) teleport_delay * this.getRandomNumberBetween(15, 25));
     }
@@ -135,7 +129,7 @@ public class Scheduler {
             if (playerHasNotMoved()) {
                 teleportPlayer();
             } else {
-                messageService.sendLocalizedMessage(player, "TeleportCancelled");
+                dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.Teleport.Cancelled", NamedTextColor.AQUA);
             }
         }
 

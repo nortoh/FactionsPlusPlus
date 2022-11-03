@@ -248,15 +248,12 @@ public class BaseCommand extends Command {
             return;
         }
         // TODO: new messaging api
-        context.replyWith("FactionBaseList.Title");
+        context.replyWith("BaseList.Title");
         // TODO: if they have access to another factions bases, include in this list
         context.getExecutorsFaction().getBases().values().stream()
             .forEach(base -> {
                 if (base.shouldAllowAllFactionMembers() || context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
-                    context.replyWith(
-                        this.constructMessage("FactionBaseList.Base")
-                            .with("name", base.getName())
-                    );
+                    context.replyWith("BaseList.Base", base.getName());
                 }
             });
     }

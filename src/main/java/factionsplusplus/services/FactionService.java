@@ -5,11 +5,10 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.utils.Pair;
 import factionsplusplus.utils.PlayerUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import factionsplusplus.utils.Comparators;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.builders.MessageBuilder;
-import factionsplusplus.builders.MultiMessageBuilder;
-import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.data.factories.FactionFactory;
 import factionsplusplus.data.repositories.ClaimedChunkRepository;
 import factionsplusplus.data.repositories.FactionRepository;
@@ -22,6 +21,7 @@ import factionsplusplus.models.ConfigurationFlag;
 import javax.inject.Provider;
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -243,14 +243,19 @@ public class FactionService {
     }
     
     // TODO: new messaging api
-    public GenericMessageBuilder generateFactionInfo(Faction faction) {
-        MultiMessageBuilder builder = new MultiMessageBuilder();
-        // Faction header
-        builder.add(new MessageBuilder("FactionInfo.Title"));
-        // Faction name
-        builder.add(new MessageBuilder("FactionInfo.Name").with("name", faction.getName()));
+    public List<ComponentLike> generateFactionInfo(Faction faction) {
+        List<ComponentLike> factionInfo = new ArrayList<>();
+
+        // Header
+        factionInfo.add(Component.translatable("FactionInfo.Title"));
+        // Name
+        factionInfo.add(Component.translatable("FactionInfo.Name").args(Component.text(faction.getName())));
         // Owner
-        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName()));
+        factionInfo.add(Component.translatable("FactionInfo.Name").args(Component.text(PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName())));
+
+        return factionInfo;
+
+/*
         // Description (if applicable)
         if (faction.getDescription() != null) builder.add(new MessageBuilder("FactionInfo.Description").with("desc", faction.getDescription()));
         // Population
@@ -285,5 +290,6 @@ public class FactionService {
 
         // Send off!
         return builder;
+        */
     }
 }

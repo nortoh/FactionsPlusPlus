@@ -54,7 +54,7 @@ public class DemoteCommand extends Command {
             public void run() {
                 context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
                 if (playerToBeDemoted.isOnline()) {
-                    context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
+                    context.alertPlayer(playerToBeDemoted, "PlayerNotice.Demoted", context.getLocalizedString("Generic.Role.Member"));
                 }
                 context.success("CommandResponse.Member.Demoted", playerToBeDemoted.getName());
             }

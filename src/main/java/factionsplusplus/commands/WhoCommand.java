@@ -51,6 +51,6 @@ public class WhoCommand extends Command {
             context.error("Error.Player.NotMemberOfFaction", context.getOfflinePlayerArgument("player").getName());
             return;
         }
-        context.replyWith(this.factionService.generateFactionInfo(temp));
+        this.factionService.generateFactionInfo(temp).forEach(component -> context.getExecutorsAudience().sendMessage(component));
     }
 }

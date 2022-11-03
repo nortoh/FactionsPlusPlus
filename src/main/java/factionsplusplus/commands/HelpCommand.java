@@ -10,10 +10,14 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.utils.StringUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import org.bukkit.command.CommandSender;
 
 import factionsplusplus.builders.CommandBuilder;
-import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.data.repositories.CommandRepository;
 import factionsplusplus.builders.ArgumentBuilder;
 
@@ -58,20 +62,20 @@ public class HelpCommand extends Command {
                 context.error("Error.CommandNotFound");
                 return;
             }
-            // TODO: new messaging api
-            MultiMessageBuilder builder = new MultiMessageBuilder();
-            builder
-                .add(this.constructMessage("CommandInfo.Title").with("name", command.getName()))
-                .add(this.constructMessage("CommandInfo.Description").with("desc", command.getDescription()));
-            if (command.getAliases().length > 0) builder.add(this.constructMessage("CommandInfo.Aliases").with("aliases", String.join(", ", command.getAliases())));
+            List<ComponentLike> components = new ArrayList<>();
+            components.add(Component.translatable("Help.Command.Title").args(Component.text(command.getName())).decorate(TextDecoration.BOLD).color(NamedTextColor.LIGHT_PURPLE));
+            components.add(Component.translatable("Help.Command.Description").color(NamedTextColor.AQUA).args(Component.text(command.getDescription())));
+            if (command.getAliases().length > 0) components.add(Component.translatable("Help.Command.Aliases").color(NamedTextColor.AQUA).args(Component.text(String.join(", ", command.getAliases()))));
             if (command.hasSubCommands()) {
-                builder.add(this.constructMessage("CommandInfo.SubcommandHeader"));
+                components.add(Component.translatable("Help.Command.Subcommands.Header").color(NamedTextColor.AQUA).decorate(TextDecoration.BOLD));
                 for (Command subCommand : command.getSubCommands().values()) {
-                    builder.add(this.constructMessage("CommandInfo.Subcommand").with("command", subCommand.getName()));
+                    components.add(Component.translatable("Help.Command.Subcommand").color(NamedTextColor.AQUA).args(Component.text(subCommand.getName())));
                 }
             }
-            if (command.getRequiredPermissions().length > 0) builder.add(this.constructMessage("CommandInfo.Permissions").with("permissions", String.join(", ", command.getRequiredPermissions())));
-            context.replyWith(builder);
+            if (command.getRequiredPermissions().length > 0) components.add(Component.translatable("Help.Command.Permissions").color(NamedTextColor.AQUA).args(Component.text(String.join(", ", command.getRequiredPermissions()))));
+            components.stream().forEach(component -> {
+                context.getExecutorsAudience().sendMessage(component);
+            });
             return;
         }
         final ArrayList<ArrayList<Command>> partitionedList = this.generateHelpPages();
@@ -83,12 +87,12 @@ public class HelpCommand extends Command {
             requestedPage = 0; // Lower Limit to 0
         }
         // TODO: new messaging api
-        context.replyWith(
-            this.constructMessage("CommandsPageTitle")
-                .with("page", String.valueOf(requestedPage+1))
-                .with("pages", String.valueOf(partitionedList.size()))
-        );
-        partitionedList.get(requestedPage).forEach(line -> context.reply(this.constructHelpTextForCommand(line)));
+        context.replyWith("Help.ListTitle", requestedPage+1, partitionedList.size());
+        partitionedList.get(requestedPage).forEach(line -> {
+            context.getExecutorsAudience().sendMessage(
+                Component.text(String.format("/mf %s %s - %s", line.getName(), line.buildSyntax(), line.getDescription()))
+            );
+        });
     }
 
     public ArrayList<ArrayList<Command>> generateHelpPages() {
@@ -101,10 +105,6 @@ public class HelpCommand extends Command {
             result.add(chunk);
         }
         return result;
-    }
-
-    public String constructHelpTextForCommand(Command command) {
-        return String.format("&b/mf %s %s - %s", command.getName(), command.buildSyntax(), command.getDescription());
     }
 
     public List<String> autocompletePage(CommandSender sender, String argument) {

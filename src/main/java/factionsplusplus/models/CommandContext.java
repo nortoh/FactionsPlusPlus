@@ -12,9 +12,7 @@ import org.bukkit.entity.Player;
 import com.google.inject.Inject;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.MessageService;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -29,7 +27,6 @@ public class CommandContext {
     private HashMap<String, Object> arguments = new HashMap<>();
     private String[] rawArguments = new String[]{};
     private List<String> commandNames = new ArrayList<>();
-    @Inject private MessageService messageService;
     @Inject private LocaleService localeService;
     @Inject private FactionsPlusPlus factionsPlusPlus;
 
@@ -241,15 +238,6 @@ public class CommandContext {
         );
     }
 
-    /*
-     * Sends a localized message using a MessageBuilder instance.
-     * 
-     * @param builder the MessageBuilder instance
-     */
-    public void replyWith(GenericMessageBuilder builder) {
-        this.messageService.sendLocalizedMessage(this.sender, builder);
-    }
-
     public void alertPlayer(OfflinePlayer player, String localizationKey, Object... arguments) {
         this.factionsPlusPlus.getAdventure().player(player.getUniqueId()).sendMessage(
             Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
@@ -292,7 +280,7 @@ public class CommandContext {
                 .append(Component.text(" "))
                 .append(
                     Component.translatable("Generic.ClickHere.Cancel").color(NamedTextColor.GOLD).clickEvent(
-                        ClickEvent.runCommand("/fpp checkaccess cancel")
+                        ClickEvent.runCommand(commandToRun)
                     )
                 )
         );
@@ -314,43 +302,8 @@ public class CommandContext {
         this.cancellable(localizationKey, commandToRun, new Object[]{});
     }
 
-    public void messagePlayer(Player player, String localizationKey) {
-        this.messageService.sendLocalizedMessage(player, localizationKey);
-    }
-
-    public void messagePlayer(Player player, GenericMessageBuilder builder) {
-        this.messageService.sendLocalizedMessage(player, builder);
-    }
-
-    public void messageFaction(Faction faction, String localizationKey) {
-        this.messageFaction(faction, localizationKey, new Object[]{});
-    }
-
-    public void messageFaction(Faction faction, String localizationKey, Object... arguments) {
-        faction.alert(localizationKey, arguments);
-    }
-
-    public void messageFaction(Faction faction, GenericMessageBuilder builder) {
-        this.messageService.sendFactionLocalizedMessage(faction, builder);
-    }
-
-    public void messagePlayersFaction(String localizationKey) {
-        this.messageFaction(this.getExecutorsFaction(), localizationKey);
-    }
-
-    public void messagePlayersFaction(GenericMessageBuilder builder) {
-        this.messageFaction(this.getExecutorsFaction(), builder);
-    }
-
-    public void messageAllPlayers(GenericMessageBuilder builder) {
-        this.messageService.sendAllPlayersLocalizedMessage(builder);
-    }
-
     public String getLocalizedString(String localizationKey) {
         return this.localeService.get(localizationKey);
     }
 
-    public List<String> getLocalizedStrings(String localizationKey) {
-        return this.localeService.getStrings(localizationKey);
-    }
 }

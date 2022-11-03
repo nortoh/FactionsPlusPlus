@@ -24,7 +24,6 @@ public class VassalizeCommand extends Command {
 
     private final Logger logger;
     private final FactionRepository factionRepository;
-
     
     @Inject
     public VassalizeCommand(
@@ -80,20 +79,11 @@ public class VassalizeCommand extends Command {
         // add faction to attemptedVassalizations
         context.getExecutorsFaction().addAttemptedVassalization(target.getID());
 
-        // TODO: localize
         // inform all players in that faction that they are trying to be vassalized
-        context.messageFaction(
-            target,
-            this.constructMessage("AlertAttemptedVassalization")
-                .with("name", context.getExecutorsFaction().getName())
-        );
+        target.alert("FactionNotice.VassalizationAttempted.Target", context.getExecutorsFaction().getName());
 
-        // TODO: localize
         // inform all players in players faction that a vassalization offer was sent
-        context.messagePlayersFaction(
-            this.constructMessage("AlertFactionAttemptedToVassalize")
-                .with("name", target.getName())
-        );
+        context.getExecutorsFaction().alert("FactionNotice.VassalizationAttempted.Source", target.getName());
     }
 
     private int willVassalizationResultInLoop(Faction vassalizer, Faction potentialVassal) {
