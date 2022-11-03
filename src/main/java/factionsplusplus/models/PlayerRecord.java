@@ -6,17 +6,25 @@ package factionsplusplus.models;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.data.beans.PlayerBean;
 import factionsplusplus.models.interfaces.Identifiable;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.StringUtils;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -25,7 +33,7 @@ import org.bukkit.entity.Player;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class PlayerRecord implements Identifiable {
+public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     private UUID uuid;
     private double powerLevel;
     private boolean adminBypass = false;
@@ -34,22 +42,25 @@ public class PlayerRecord implements Identifiable {
     private ZonedDateTime lastLogout = ZonedDateTime.now();
 
     private final MessageService messageService;
+    private final BukkitAudiences adventure;
 
     @AssistedInject
-    public PlayerRecord(MessageService messageService) { 
+    public PlayerRecord(MessageService messageService, @Named("adventure") BukkitAudiences adventure) { 
         this.messageService = messageService;
+        this.adventure = adventure;
     }
 
     @AssistedInject
-    public PlayerRecord(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, MessageService messageService) {
+    public PlayerRecord(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, MessageService messageService, @Named("adventure") BukkitAudiences adventure) {
         this.uuid = uuid;
         this.logins = initialLogins;
         this.powerLevel = initialPowerLevel;
         this.messageService = messageService;
+        this.adventure = adventure;
     }
 
     @AssistedInject
-    public PlayerRecord(@Assisted PlayerBean bean, MessageService messageService) {
+    public PlayerRecord(@Assisted PlayerBean bean, MessageService messageService, @Named("adventure") BukkitAudiences adventure) {
         this.uuid = bean.getId();
         this.powerLevel = bean.getPower();
         this.adminBypass = bean.isAdminBypassing();
@@ -57,6 +68,7 @@ public class PlayerRecord implements Identifiable {
         this.lastLogout = bean.getLastLogout();
         this.logins = bean.getLoginCount();
         this.messageService = messageService;
+        this.adventure = adventure;
     }
 
     public UUID getUUID() {
@@ -180,6 +192,19 @@ public class PlayerRecord implements Identifiable {
 
     // Send a message to this player
     public void message(GenericMessageBuilder builder) {
-        this.messageService.sendLocalizedMessage((CommandSender)this.asBukkitOfflinePlayer(), builder);
+        this.alert(builder);
+    }
+
+    @Override
+    public Audience audience() {
+        return this.asBukkitPlayer() == null ? Audience.empty() : this.adventure.player(this.asBukkitPlayer());
+    }
+
+    public void message(ComponentLike message, MessageType type) {
+        this.audience().sendMessage(message, type);
+    }
+
+    public void alert(ComponentLike message) {
+        this.message(message, MessageType.SYSTEM);
     }
 }

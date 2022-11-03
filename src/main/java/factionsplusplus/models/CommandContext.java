@@ -3,6 +3,7 @@ package factionsplusplus.models;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.OfflinePlayer;
@@ -14,6 +15,11 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.services.LocaleService;
 import factionsplusplus.services.MessageService;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class CommandContext {
     private Faction faction = null;
@@ -206,6 +212,13 @@ public class CommandContext {
         return this.commandNames;
     }
 
+    public BukkitAudiences getAdventure() {
+        return this.factionsPlusPlus.getAdventure();
+    }
+
+    public Audience getExecutorsAudience() {
+        return this.getAdventure().sender(sender);
+    }
 
     /*
      * Sends a raw message to a sender. This will go through colorization in MessageService but no translations will happen.
@@ -213,7 +226,7 @@ public class CommandContext {
      * @param message the message to send
      */
     public void reply(String message) {
-        this.messageService.send(this.sender, message);
+        this.getExecutorsAudience().sendMessage(Component.text(message));
     }
 
     /*
@@ -221,8 +234,10 @@ public class CommandContext {
      * 
      * @param localizationKey the language key as defined in the language YAML file to send
      */
-    public void replyWith(String localizationKey) {
-        this.messageService.sendLocalizedMessage(this.sender, localizationKey);
+    public void replyWith(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+        );
     }
 
     /*
@@ -234,6 +249,34 @@ public class CommandContext {
         this.messageService.sendLocalizedMessage(this.sender, builder);
     }
 
+    public void success(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.text()
+                .append(
+                    Component.translatable("Generic.Success").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
+                )
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable(localizationKey).color(NamedTextColor.AQUA).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                )
+                .asComponent()
+        );
+    }
+
+    public void error(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.text()
+                .append(
+                    Component.translatable("Generic.Error").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+                )
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                )
+                .asComponent()
+        );
+    }
+
     public void messagePlayer(Player player, String localizationKey) {
         this.messageService.sendLocalizedMessage(player, localizationKey);
     }
@@ -243,7 +286,11 @@ public class CommandContext {
     }
 
     public void messageFaction(Faction faction, String localizationKey) {
-        this.messageService.sendFactionLocalizedMessage(faction, localizationKey);
+        this.messageFaction(faction, localizationKey, new Object[]{});
+    }
+
+    public void messageFaction(Faction faction, String localizationKey, Object... arguments) {
+        faction.alert(localizationKey, arguments);
     }
 
     public void messageFaction(Faction faction, GenericMessageBuilder builder) {
