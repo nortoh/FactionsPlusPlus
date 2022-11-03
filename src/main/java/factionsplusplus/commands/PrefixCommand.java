@@ -50,14 +50,14 @@ public class PrefixCommand extends Command {
     public void execute(CommandContext context) {
         final String newPrefix = context.getStringArgument("new prefix");
         if (this.dataService.isFactionPrefixTaken(newPrefix)) {
-            context.replyWith("PrefixTaken");
+            context.error("Error.Prefix.Taken", newPrefix);
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
                 context.getExecutorsFaction().setPrefix(newPrefix);
-                context.replyWith("PrefixSet");
+                context.success("CommandResponse.Faction.PrefixSet", newPrefix);
             }
         });
     }

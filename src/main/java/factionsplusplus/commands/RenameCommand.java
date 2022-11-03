@@ -60,19 +60,12 @@ public class RenameCommand extends Command {
     public void execute(CommandContext context) {
         final String newName = context.getStringArgument("new faction name");
         if (newName.length() > this.configService.getInt("factionMaxNameLength")) {
-            context.replyWith(
-                this.constructMessage("FactionNameTooLong")
-                    .with("name", newName)
-            );
-            context.replyWith("FactionNameTooLong");
+            context.error("Error.Faction.NameTooLong", newName);
             return;
         }
         final String oldName = context.getExecutorsFaction().getName();
         if (this.dataService.getFaction(newName) != null) {
-            context.replyWith(
-                this.constructMessage("FactionAlreadyExists")
-                    .with("name", newName)
-            );
+            context.error("Error.Faction.AlreadyExists", newName);
             return;
         }
         final FactionRenameEvent renameEvent = new FactionRenameEvent(context.getExecutorsFaction(), oldName, newName);
@@ -86,7 +79,7 @@ public class RenameCommand extends Command {
             @Override
             public void run() {
                 context.getExecutorsFaction().setName(newName); // setName will handle changing prefix too, if necessary
-                context.replyWith("FactionNameChanged");
+                context.success("CommandResponse.Faction.Renamed", newName);
             }
         });
     }

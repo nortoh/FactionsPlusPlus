@@ -61,6 +61,7 @@ public class BreakAllianceCommand extends Command {
             public void run() {
                 context.getExecutorsFaction().clearRelation(otherFaction.getID());
                 context.getExecutorsFaction().message(
+                    
                     constructMessage("AllianceBrokenWith").with("faction", otherFaction.getName())
                 );
                 otherFaction.message(

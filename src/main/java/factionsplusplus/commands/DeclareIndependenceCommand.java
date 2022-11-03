@@ -55,7 +55,7 @@ public class DeclareIndependenceCommand extends Command {
         Faction faction = context.getExecutorsFaction();
         Player player = context.getPlayer();
         if (! (faction.hasLiege()) || faction.getLiege() == null) {
-            context.replyWith("NotAVassalOfAFaction");
+            context.error("Error.NotAVassal");
             return;
         }
 

@@ -58,23 +58,17 @@ public class CreateCommand extends Command {
 
     public void execute(CommandContext context) {
         if (context.getExecutorsFaction() != null) {
-            context.replyWith("AlreadyInFaction");
+            context.error("Error.AlreadyInFaction.Self");
             return;
         }
         final String factionName = context.getStringArgument("faction name");
         if (factionName.length() > this.configService.getInt("factionMaxNameLength")) {
-            context.replyWith(
-                this.constructMessage("FactionNameTooLong")
-                    .with("name", factionName)
-            );
+            context.error("Error.Faction.NameTooLong", factionName);
             return;
         }
 
         if (this.factionRepository.get(factionName) != null) {
-            context.replyWith(
-                this.constructMessage("FactionAlreadyExists")
-                    .with("name", factionName)
-            );
+            context.error("Error.Faction.AlreadyExists", factionName);
             return;
         }
 
@@ -87,10 +81,7 @@ public class CreateCommand extends Command {
                 @Override
                 public void run() {
                     factionRepository.create(playerFaction);
-                    context.replyWith(
-                        constructMessage("FactionCreated")
-                            .with("name", factionName)
-                    );
+                    context.success("CommandResponse.Faction.Created", factionName);
                 }
             });
         }

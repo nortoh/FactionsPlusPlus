@@ -54,7 +54,7 @@ public class MakePeaceCommand extends Command {
         final Faction target = context.getFactionArgument("faction name");
         final Faction faction = context.getExecutorsFaction();
         if (target == faction) {
-            context.replyWith("CannotMakePeaceWithSelf");
+            context.error("Error.MakePeace.Self");
             return;
         }
         if (faction.isTruceRequested(target.getID())) {

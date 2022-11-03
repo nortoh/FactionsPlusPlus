@@ -4,6 +4,7 @@
  */
 package factionsplusplus.events.handler;
 
+import com.avaje.ebeaninternal.server.cluster.mcast.Message;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -18,6 +19,11 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.events.internal.FactionJoinEvent;
@@ -101,20 +107,18 @@ public class JoinHandler implements Listener {
         double newPower = getNewPower(player);
 
         if (record.getLastLogout() != null && record.getMinutesSinceLastLogout() > 1) {
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("WelcomeBackLastLogout")
-                    .with("name", event.getPlayer().getName())
-                    .with("duration", record.getTimeSinceLastLogout())
+            record.alert(
+                Component.translatable("PlayerNotice.WelcomeBack")
+                    .color(NamedTextColor.GREEN)
+                    .args(Component.text(event.getPlayer().getName()), Component.text(record.getTimeSinceLastLogout()))
             );
         }
 
         if (record.getPowerLost() > 0) {
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("PowerHasDecayed")
-                    .with("loss", String.valueOf(record.getPowerLost()))
-                    .with("power", String.valueOf(newPower))
+            record.alert(
+                Component.translatable("PlayerNotice.PowerDecayed")
+                    .color(NamedTextColor.YELLOW)
+                    .args(Component.text(record.getPowerLost()), Component.text(newPower))
             );
         }
 

@@ -100,16 +100,16 @@ public class DuelCommand extends Command {
     public void cancelCommand(CommandContext context) {
         Player player = context.getPlayer();
         if (! this.isDuelling(player)) {
-            context.replyWith("AlertNoPendingChallenges");
+            context.error("Error.Duel.NoSentChallenges");
             return;
         }
         final Duel duel = this.getDuel(player);
         if (duel == null) {
-            context.replyWith("AlertNoPendingChallenges");
+            context.error("Error.Duel.NoSentChallenges");
             return;
         }
         if (duel.getStatus().equals(DuelState.DUELLING)) {
-            context.replyWith("CannotCancelActiveDuel");
+            context.error("Error.Duel.CannotCancelActive");
             return;
         }
         this.ephemeralData.getDuelingPlayers().remove(duel);
@@ -119,7 +119,7 @@ public class DuelCommand extends Command {
     public void acceptCommand(CommandContext context) {
         Player player = context.getPlayer();
         if (this.isDuelling(player)) {
-            context.replyWith("AlertAlreadyDuelingSomeone");
+            context.error("Error.Duel.InDuel");
             return;
         }
         Player target = context.getPlayerArgument("player");
@@ -131,24 +131,15 @@ public class DuelCommand extends Command {
             duel = this.ephemeralData.getDuel(player, target);
         }
         if (duel == null) {
-            context.replyWith(
-                this.constructMessage("AlertNotBeenChallengedByPlayer")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.NotChallengedBy", target.getName());
             return;
         }
         if (duel.getStatus().equals(DuelState.DUELLING)) {
-            context.replyWith(
-                this.constructMessage("AlertAlreadyDuelingPlayer")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.AlreadyInDuelWith", target.getName());
             return;
         }
         if (! duel.isChallenged(player)) {
-            context.replyWith(
-                this.constructMessage("AlertNotBeenChallengedByPlayer")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.NotChallengedBy", target.getName());
         }
         duel.acceptDuel();
     }
@@ -157,18 +148,15 @@ public class DuelCommand extends Command {
         Player target = context.getPlayerArgument("player");
         Player player = context.getPlayer();
         if (target == player) {
-            context.replyWith("CannotDuelSelf");
+            context.error("Error.Duel.Self");
             return;
         }
         if (this.isDuelling(player)) {
-            context.replyWith("AlertAlreadyDuelingSomeone");
+            context.error("Error.Duel.InDuel");
             return;
         }
         if (this.isDuelling(target)) {
-            context.replyWith(
-                this.constructMessage("PlayerAlreadyDueling")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.TargetAlreadyDueling", target.getName());
             return;
         }
         Integer timeLimit = context.getIntegerArgument("time limit");

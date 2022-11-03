@@ -81,7 +81,7 @@ public class DeclareWarCommand extends Command {
         final Faction opponent = context.getFactionArgument("faction name");
 
         if (opponent == faction) {
-            context.replyWith("CannotDeclareWarOnYourself");
+            context.error("Error.War.Self");
             return;
         }
 
@@ -95,7 +95,7 @@ public class DeclareWarCommand extends Command {
 
         if (faction.hasLiege() && opponent.hasLiege()) {
             if (faction.isVassal(opponent.getID())) {
-                context.replyWith("CannotDeclareWarOnVassal");
+                context.error("Error.War.Vassal");
                 return;
             }
 
@@ -114,17 +114,17 @@ public class DeclareWarCommand extends Command {
         }
 
         if (faction.isAlly(opponent.getID())) {
-            context.replyWith("CannotDeclareWarOnAlly");
+            context.error("Error.War.Ally");
             return;
         }
 
         if (this.configService.getBoolean("allowNeutrality") && (opponent.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotDeclareWarOnNeutralFaction");
+            context.error("Error.War.Neutral.Target");
             return;
         }
 
         if (this.configService.getBoolean("allowNeutrality") && (faction.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotDeclareWarIfNeutralFaction");
+            context.error("Error.War.Neutral.Source");
             return;
         }
 

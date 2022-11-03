@@ -99,11 +99,8 @@ public class LawCommand extends Command {
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
-                context.getExecutorsFaction().addLaw(String.join(" ", context.getStringArgument("law")));
-                context.replyWith(
-                    constructMessage("LawAdded")
-                        .with("law", context.getStringArgument("law"))
-                );
+                context.getExecutorsFaction().addLaw(context.getStringArgument("law"));
+                context.success("CommandResponse.Law.Created");
             }
         });
     }
@@ -111,23 +108,23 @@ public class LawCommand extends Command {
     public void removeCommand(CommandContext context) {
         final int lawToRemove = context.getIntegerArgument("law to remove") - 1;
         if (lawToRemove < 0 || lawToRemove > context.getExecutorsFaction().getNumLaws()-1) {
-            context.replyWith("LawNotFound");
+            context.error("Error.Law.NotFound", lawToRemove);
             return;
         }
         // Technically this returns a bool if we actually removed the law, but the checks it does are already done above.
         context.getExecutorsFaction().removeLaw(lawToRemove);
-        context.replyWith("LawRemoved");
+        context.success("CommandResponse.Law.Removed");
     }
 
     public void editCommand(CommandContext context) {
         final int lawToEdit = context.getIntegerArgument("law to edit") - 1;
         if (lawToEdit < 0 || lawToEdit > context.getExecutorsFaction().getLaws().size()-1) {
-            context.replyWith("LawNotFound");
+            context.error("Error.Law.NotFound", lawToEdit);
             return;
         }
         final String editedLaw = context.getStringArgument("new law text");
         context.getExecutorsFaction().editLaw(lawToEdit, editedLaw);
-        context.replyWith("LawEdited");
+        context.success("CommandResponse.Law.Edited");
     }
 
     public List<String> autocompleteLawNumbers(CommandSender sender, String argument) {

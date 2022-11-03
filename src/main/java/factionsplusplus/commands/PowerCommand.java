@@ -55,26 +55,22 @@ public class PowerCommand extends Command {
         double maxPower;
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
-                context.replyWith("OnlyPlayersCanUseCommand");
+                context.error("Error.PlayerExecutionRequired");
                 return;
             }
             record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
             maxPower = this.playerService.getMaxPower(context.getPlayer().getUniqueId());
-            context.replyWith(
-                this.constructMessage("AlertCurrentPowerLevel")
-                    .with("power", String.valueOf(record.getPower()))
-                    .with("max", String.valueOf(maxPower))
-            );
+            context.replyWith("CommandResponse.Power.Self", record.getPower(), maxPower);
             return;
         }
         final UUID target = context.getOfflinePlayerArgument("player").getUniqueId();
         record = this.dataService.getPlayerRecord(target);
         maxPower = this.playerService.getMaxPower(target);
         context.replyWith(
-            this.constructMessage("CurrentPowerLevel")
-                .with("power", String.valueOf(record.getPower()))
-                .with("max", String.valueOf(maxPower))
-                .with("name", context.getOfflinePlayerArgument("player").getName())
+            "CommandResponse.Power.Other",
+            context.getOfflinePlayerArgument("player").getName(),
+            record.getPower(),
+            maxPower
         );
     }
 }

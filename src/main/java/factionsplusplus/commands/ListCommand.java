@@ -44,7 +44,7 @@ public class ListCommand extends Command {
 
     public void execute(CommandContext context) {
         if (this.dataService.getNumberOfFactions() == 0) {
-            context.replyWith("CurrentlyNoFactions");
+            context.replyWith("CommandResponse.Faction.NoneFound");
             return;
         }
         context.replyWith("FactionsTitle");

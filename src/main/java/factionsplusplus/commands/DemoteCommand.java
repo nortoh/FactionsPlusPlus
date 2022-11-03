@@ -48,7 +48,7 @@ public class DemoteCommand extends Command {
         OfflinePlayer playerToBeDemoted = context.getOfflinePlayerArgument("player");
 
         if (playerToBeDemoted.getUniqueId().equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotDemoteSelf");
+            context.error("Error.Demote.Self");
             return;
         }
 
@@ -59,10 +59,7 @@ public class DemoteCommand extends Command {
                 if (playerToBeDemoted.isOnline()) {
                     context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
                 }
-                context.replyWith(
-                    constructMessage("PlayerDemoted")
-                        .with("name", playerToBeDemoted.getName())
-                );
+                context.success("CommandResponse.Member.Demoted", playerToBeDemoted.getName());
             }
         });
     }

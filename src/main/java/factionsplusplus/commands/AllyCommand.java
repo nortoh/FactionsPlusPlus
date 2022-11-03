@@ -13,6 +13,8 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.LocaleService;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.FactionRelationType;
@@ -87,17 +89,16 @@ public class AllyCommand extends Command {
         // send the request
         context.getExecutorsFaction().requestAlly(otherFaction.getID());
 
-        context.messagePlayersFaction(
-            this.constructMessage("AlertAttemptedAlliance")
-                .with("faction_a", context.getExecutorsFaction().getName())
-                .with("faction_b", otherFaction.getName())
+        context.getExecutorsFaction().alert(
+            Component.translatable("FactionNotice.AllianceRequest.Source")
+                .color(NamedTextColor.AQUA)
+                .args(Component.text(otherFaction.getName()))
         );
 
-        context.messageFaction(
-            otherFaction,
-            this.constructMessage("AlertAttemptedAlliance")
-                .with("faction_a", context.getExecutorsFaction().getName())
-                .with("faction_b", otherFaction.getName())
+        otherFaction.alert(
+            Component.translatable("FactionNotice.AllianceRequest.Target")
+                .color(NamedTextColor.AQUA)
+                .args(Component.text(context.getExecutorsFaction().getName()))
         );
 
         // check if both factions have requested an alliance

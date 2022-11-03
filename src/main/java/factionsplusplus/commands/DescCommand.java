@@ -49,10 +49,7 @@ public class DescCommand extends Command {
             @Override
             public void run() {
                 context.getExecutorsFaction().setDescription(description);
-                context.replyWith(
-                    constructMessage("DescriptionSet")
-                        .with("desc", description)
-                );
+                context.success("CommandResponse.Faction.DescriptionSet", description);
             }
         });
     }

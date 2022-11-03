@@ -59,7 +59,7 @@ public class PromoteCommand extends Command {
             return;
         }
         if (context.getPlayer().getUniqueId().equals(target.getUniqueId())) {
-            context.replyWith("CannotPromoteSelf");
+            context.error("Error.Promote.Self");
             return;
         }
         int maxOfficers = this.factionService.calculateMaxOfficers(faction);
@@ -68,7 +68,7 @@ public class PromoteCommand extends Command {
                 @Override
                 public void run() {
                     faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
-                    context.replyWith("PlayerPromoted");
+                    context.success("CommandResponse.Member.Promoted", target.getName());
                     if (target.isOnline() && target.getPlayer() != null) {
                         context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
                     }

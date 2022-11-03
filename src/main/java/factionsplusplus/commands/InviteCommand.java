@@ -74,7 +74,7 @@ public class InviteCommand extends Command {
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID playerUUID = target.getUniqueId();
         if (this.dataService.isPlayerInFaction(target)) {
-            context.replyWith("PlayerAlreadyInFaction");
+            context.error("Error.AlreadyInFaction.Other", target.getName());
             return;
         }
         this.dataService.addFactionInvite(faction, target);

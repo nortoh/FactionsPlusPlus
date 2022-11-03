@@ -54,7 +54,7 @@ public class JoinCommand extends Command {
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         if (! this.dataService.hasFactionInvite(target, context.getPlayer())) {
-            context.replyWith("NotInvite");
+            context.error("Error.NotInvited", target.getName());
             return;
         }
         FactionJoinEvent joinEvent = new FactionJoinEvent(target, context.getPlayer());
@@ -74,10 +74,7 @@ public class JoinCommand extends Command {
             public void run() {
                 target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
                 dataService.removeFactionInvite(target, context.getPlayer());
-                context.replyWith(
-                    constructMessage("AlertJoinedFaction")
-                        .with("faction", target.getName())
-                );
+                context.success("PlayerNotice.JoinedFaction", target.getName());
             }
         });
     }
