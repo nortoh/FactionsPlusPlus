@@ -12,14 +12,10 @@ import factionsplusplus.data.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
-
 import factionsplusplus.builders.CommandBuilder;
 
 import java.util.UUID;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class CheckAccessCommand extends Command {
 
@@ -50,42 +46,22 @@ public class CheckAccessCommand extends Command {
         this.interactionContextFactory = interactionContextFactory;
     }
 
-    public boolean doCommonChecks(CommandContext context) {
-        UUID playerUUID = context.getPlayer().getUniqueId();
-        if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
-            InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
-            if (interactionContext.isLockedBlockGrant()) {
-                context.replyWith("AlertAlreadyGrantingAccess");
-                return false;
-            }
-            context.replyWith(
-                this.constructMessage("CancelInteraction")
-                    .with("type", interactionContext.toString())
-            );
-        }
-        return true;
-    }
-
     public void execute(CommandContext context) {
         UUID playerUUID = context.getPlayer().getUniqueId();
         if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
             InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
             if (interactionContext.isLockedBlockInquiry()) {
-                context.replyWith("AlreadyEnteredCheckAccess");
+                context.cancellableError("Error.Lock.AlreadyChecking", "/fpp lock cancel");
                 return;
             }
-            context.replyWith(
-                this.constructMessage("CancelInteraction")
-                    .with("type", interactionContext.toString())
-            );
-            this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
 
         this.ephemeralData.getPlayersPendingInteraction().put(
             playerUUID,
             this.interactionContextFactory.create(InteractionContext.Type.LockedBlockInquiry)
         );
-        context.replyWith("RightClickCheckAccess");
+        context.cancellable("CommandResponse.RightClick.CheckAccess", "/fpp checkaccess cancel");
     }
 
     public void cancelCommand(CommandContext context) {
@@ -94,7 +70,7 @@ public class CheckAccessCommand extends Command {
             InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
             if (interactionContext.isLockedBlockInquiry()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
-                context.replyWith("Cancelled");
+                context.success("CommandResponse.RightClick.Cancelled");
             }
         }
     }

@@ -23,10 +23,6 @@ import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.events.internal.FactionWarStartEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DeclareWarCommand extends Command {
 

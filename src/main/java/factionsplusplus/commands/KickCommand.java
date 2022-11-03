@@ -21,9 +21,6 @@ import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class KickCommand extends Command {
     private final EphemeralData ephemeralData;
@@ -79,17 +76,10 @@ public class KickCommand extends Command {
             @Override
             public void run() {
                 faction.clearMember(target.getUniqueId());
-                faction.message(
-                    constructMessage("HasBeenKickedFrom")
-                        .with("name", target.getName())
-                        .with("faction", faction.getName())
-                );
+                context.error("CommandResponse.Kick", target.getName(), faction.getName());
+                faction.alert("FactionNotice.PlayerKicked", target.getName());
                 if (target.isOnline() && target.getPlayer() != null) {
-                    context.messagePlayer(
-                        target.getPlayer(),
-                        constructMessage("AlertKicked")
-                            .with("name", player.getName())
-                    );
+                    context.alertPlayer(player, "PlayerNotice.KickedFromFaction", faction.getName(), player.getName());
                 }
             }
         });

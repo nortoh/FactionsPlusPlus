@@ -34,8 +34,7 @@ public class BypassCommand extends Command {
     public void execute(CommandContext context) {
         PlayerRecord record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
         final boolean currentlyBypassing = record.isAdminBypassing();
-        final String path = (currentlyBypassing ? "NoLonger" : "Now") + "BypassingProtections";
         record.toggleAdminBypassing();
-        context.replyWith(path);
+        context.success("PlayerNotice.AdminBypass." + (currentlyBypassing ? "Disabled" : "Enabled"));
     }
 }

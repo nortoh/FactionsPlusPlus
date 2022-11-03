@@ -20,9 +20,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 // TODO: implement tab complete for basic values (i.e. true/false for boolean)
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class FlagsCommand extends Command {
 
@@ -80,18 +77,15 @@ public class FlagsCommand extends Command {
                 public void run() {
                 String newValue = context.getExecutorsFaction().setFlag(flag.getName(), flagValue);
                 if (newValue == null) {
-                    context.replyWith(
-                        constructMessage("ConfigurationFlagValueInvalid").with("type", flag.getRequiredType().toString())
-                    );
+                    context.error("Error.Setting.InvalidValue", flagValue, flag.getName());
                     return;
                 }
-                context.replyWith(
-                    constructMessage("ConfigurationFlagValueSet").with("value", newValue)
-                );
+                context.success("CommandResponse.Flag.Set", flag.getName(), newValue);
             }
         });
     }
 
+    // TODO: new messaging api
     public void showCommand(CommandContext context) {
         String flagOutput = context.getExecutorsFaction().getFlags()
             .keySet()

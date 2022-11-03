@@ -26,4 +26,11 @@ public enum GroupRole {
 
         return roles;
     }
+
+    public static GroupRole getFromLevel(int level){
+        for(GroupRole e : GroupRole.values()){
+            if(e.getLevel() == level) return e;
+        }
+        return null;
+    }
 }

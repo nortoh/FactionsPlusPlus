@@ -78,8 +78,8 @@ public class InteractionAccessChecker {
         boolean allyInteractionAllowed = chunkHolder.getFlag("alliesCanInteractWithLand").toBoolean();
         boolean vassalageTreeInteractionAllowed = chunkHolder.getFlag("vassalageTreeCanInteractWithLand").toBoolean();
 
-        logger.debug("allyInteractionAllowed: " + allyInteractionAllowed);
-        logger.debug("vassalageTreeInteractionAllowed: " + vassalageTreeInteractionAllowed);
+        this.logger.debug("allyInteractionAllowed: " + allyInteractionAllowed);
+        this.logger.debug("vassalageTreeInteractionAllowed: " + vassalageTreeInteractionAllowed);
 
         boolean allowed = allyInteractionAllowed && isAlly;
 

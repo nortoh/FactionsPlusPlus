@@ -19,9 +19,6 @@ import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.events.internal.FactionCreateEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class CreateCommand extends Command {
     private final ConfigService configService;

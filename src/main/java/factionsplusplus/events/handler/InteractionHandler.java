@@ -19,6 +19,7 @@ import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
+import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.PlayerUtils;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -57,6 +58,7 @@ public class InteractionHandler implements Listener {
     private final DataService dataService;
     private final ClaimService claimService;
     private final LockedBlockFactory lockedBlockFactory;
+    private final Logger logger;
 
     @Inject
     public InteractionHandler(
@@ -67,7 +69,8 @@ public class InteractionHandler implements Listener {
         GateService gateService,
         DataService dataService,
         ClaimService claimService,
-        LockedBlockFactory lockedBlockFactory
+        LockedBlockFactory lockedBlockFactory,
+        Logger logger
     ) {
         this.interactionAccessChecker = interactionAccessChecker;
         this.factionsPlusPlus = factionsPlusPlus;
@@ -77,6 +80,7 @@ public class InteractionHandler implements Listener {
         this.claimService = claimService;
         this.dataService = dataService;
         this.lockedBlockFactory = lockedBlockFactory;
+        this.logger = logger;
     }
 
     @EventHandler()
@@ -289,10 +293,8 @@ public class InteractionHandler implements Listener {
             // get chunk that armor stand is in
             location = armorStand.getLocation();
         } else if (clickedEntity instanceof ItemFrame) {
-            if (this.factionsPlusPlus.isDebugEnabled()) {
-                // TODO: use logger here
-                System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
-            }
+            this.logger.debug("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
+
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
 
             // get chunk that armor stand is in
@@ -329,10 +331,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerBucketFillEvent event) {
-        if (this.factionsPlusPlus.isDebugEnabled()) {
-            // TODO: use logger here
-            System.out.println("DEBUG: A player is attempting to fill a bucket!");
-        }
+        this.logger.debug("A player is attempting to fill a bucket!");
 
         Player player = event.getPlayer();
 
@@ -347,10 +346,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerBucketEmptyEvent event) {
-        if (this.factionsPlusPlus.isDebugEnabled()) {
-            // TODO: use logger here
-            System.out.println("DEBUG: A player is attempting to empty a bucket!");
-        }
+        this.logger.debug("A player is attempting to empty a bucket!");
 
         Player player = event.getPlayer();
 
@@ -365,10 +361,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(EntityPlaceEvent event) {
-        if (this.factionsPlusPlus.isDebugEnabled()) {
-            // TODO: use logger here
-            System.out.println("DEBUG: A player is attempting to place an entity!");
-        }
+        this.logger.debug("A player is attempting to place an entity!");
 
         Player player = event.getPlayer();
 
@@ -387,10 +380,7 @@ public class InteractionHandler implements Listener {
         Entity clickedEntity = event.getRightClicked();
 
         if (clickedEntity instanceof ItemFrame) {
-            if (this.factionsPlusPlus.isDebugEnabled()) {
-                // TODO: use logger here
-                System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractEntityEvent!");
-            }
+            this.logger.debug("ItemFrame interaction captured in PlayerInteractEntityEvent!");
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
 
             // get chunk that armor stand is in

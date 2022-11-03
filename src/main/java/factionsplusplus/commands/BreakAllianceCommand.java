@@ -46,7 +46,7 @@ public class BreakAllianceCommand extends Command {
         final Faction otherFaction = context.getFactionArgument("faction name");
 
         if (otherFaction == context.getExecutorsFaction()) {
-            context.error("CannotBreakAllianceWithSelf");
+            context.error("Error.BreakAlliance.Self");
             return;
         }
 

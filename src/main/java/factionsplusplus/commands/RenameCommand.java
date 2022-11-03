@@ -18,9 +18,6 @@ import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.events.internal.FactionRenameEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class RenameCommand extends Command {
     private final ConfigService configService;

@@ -51,6 +51,7 @@ public class SayCommand extends Command {
         final String factionChatColor = this.configService.getString("factionChatColor");
         final String prefixColor = context.getExecutorsFaction().getFlag("prefixColor").toString();
         final String prefix = context.getExecutorsFaction().getPrefix();
+        // TODO: use new messaging api for this
         if (this.configService.getBoolean("showPrefixesInFactionChat")) {
             this.messageService.sendToFaction(context.getExecutorsFaction(), StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + context.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);
             return;

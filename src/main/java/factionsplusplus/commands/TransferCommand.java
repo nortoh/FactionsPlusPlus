@@ -20,9 +20,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class TransferCommand extends Command {
 
@@ -64,9 +61,6 @@ public class TransferCommand extends Command {
                 // Demote old owner
                 context.getExecutorsFaction().upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
                 // Notify
-                context.replyWith(
-                    constructMessage("OwnerShipTransferredTo").with("name", target.getName())
-                );
                 context.success("CommandResponse.FactionOwnershipTransferred", context.getExecutorsFaction().getName(), target.getName());
                 if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
                     context.alertPlayer(target, "PlayerNotice.FactionOwnershipTransferred", context.getExecutorsFaction().getName());

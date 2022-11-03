@@ -24,9 +24,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.List;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class GateCommand extends Command {
 
@@ -108,6 +105,7 @@ public class GateCommand extends Command {
         this.interactionContextFactory = interactionContextFactory;
     }
 
+    // TODO: new messaging api
     public Gate doCommonBlockChecks(CommandContext context) {
         final Block targetBlock = context.getPlayer().getTargetBlock(null, 16);
         if (targetBlock.getType().equals(Material.AIR)) {
@@ -116,7 +114,7 @@ public class GateCommand extends Command {
         }
         final Gate gate = this.dataService.getGateWithBlock(targetBlock);
         if (gate == null) {
-            context.replyWith("TargetBlockNotPartOfGate");
+            context.error("Error.Gate.BlockNotPartOf");
             return null;
         }
         final Faction gateFaction = this.dataService.getFaction(gate.getFaction());
@@ -130,6 +128,7 @@ public class GateCommand extends Command {
         return gate;
     }
 
+    // TODO: new messaging api
     public void removeCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
@@ -141,6 +140,7 @@ public class GateCommand extends Command {
         }
     }
 
+    // TODO: new messaging api
     public void renameCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
@@ -154,6 +154,7 @@ public class GateCommand extends Command {
         }
     }
 
+    // TODO: new messaging api
     public void cancelCommand(CommandContext context) {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext != null) {
@@ -164,6 +165,7 @@ public class GateCommand extends Command {
         }
     }
 
+    // TODO: new messaging api
     public void listCommand(CommandContext context) {
         List<Gate> factionGates = this.dataService.getFactionsGates(context.getExecutorsFaction());
         if (factionGates.size() > 0) {
@@ -184,15 +186,17 @@ public class GateCommand extends Command {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext != null) {
             if (interactionContext.isGateCreating()) {
-                context.replyWith("AlertAlreadyCreatingGate");
+                context.error("Error.Gate.AlreadyCreating");
                 return;
             }
+            // TODO: new messaging api
             context.replyWith(
                 this.constructMessage("CancelInteraction")
                     .with("type", interactionContext.toString())
             );
         }
         String gateName = context.getStringArgument("gate name");
+        // TODO: new messaging api
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
@@ -201,6 +205,7 @@ public class GateCommand extends Command {
                 new Gate(gateName)
             )
         );
+        // TODO: new messaging api
         context.replyWith("CreatingGateClickWithHoe");
     }
 }

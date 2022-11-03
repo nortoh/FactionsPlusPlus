@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.stream.IntStream;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class HelpCommand extends Command {
     private final CommandRepository commandRepository;
@@ -58,9 +55,10 @@ public class HelpCommand extends Command {
             String requestedCommand = context.getStringArgument("page or command");
             Command command = this.commandRepository.get(requestedCommand);
             if (command == null) {
-                context.replyWith("CommandNotRecognized");
+                context.error("Error.CommandNotFound");
                 return;
             }
+            // TODO: new messaging api
             MultiMessageBuilder builder = new MultiMessageBuilder();
             builder
                 .add(this.constructMessage("CommandInfo.Title").with("name", command.getName()))
@@ -84,6 +82,7 @@ public class HelpCommand extends Command {
         if (requestedPage < 0) {
             requestedPage = 0; // Lower Limit to 0
         }
+        // TODO: new messaging api
         context.replyWith(
             this.constructMessage("CommandsPageTitle")
                 .with("page", String.valueOf(requestedPage+1))

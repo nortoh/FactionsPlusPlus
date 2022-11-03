@@ -14,9 +14,6 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DescCommand extends Command {
 

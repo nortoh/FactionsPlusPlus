@@ -14,9 +14,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class GrantIndependenceCommand extends Command {
 

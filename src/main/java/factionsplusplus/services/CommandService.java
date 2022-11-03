@@ -29,7 +29,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandArgument;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigOption;
-import factionsplusplus.builders.MessageBuilder;
 
 import java.util.Arrays;
 import java.lang.reflect.Method;
@@ -230,7 +229,7 @@ public class CommandService implements TabCompleter {
             if (context.isConsole()) return false; // bail if console
             UUID senderUUID = ((Player)sender).getUniqueId();
             if (playerFaction != null && ! playerFaction.getOwner().getUUID().equals(senderUUID) && ! playerFaction.isOfficer(senderUUID)) {
-                context.replyWith("AlertMustBeOwnerOrOfficeToUseCommand");
+                context.error("Error.Faction.RoleOrAboveNeeded", context.getLocalizedString("Generic.Role.Officer"));
                 return false;
             }
         }
@@ -320,10 +319,7 @@ public class CommandService implements TabCompleter {
                             parsedArgumentData = option;
                             break;
                         }
-                        context.replyWith(
-                            new MessageBuilder("ConfigOptionDoesNotExist")
-                                .with("option", argumentData)
-                        );
+                        context.error("Error.Setting.NotFound", argumentData);
                         return false;
                     case Player:
                         player = this.getPlayer(context, argumentData);
@@ -377,7 +373,7 @@ public class CommandService implements TabCompleter {
                             parsedArgumentData = base;
                             break;
                         }
-                        context.replyWith("NoSuchBase");
+                        context.error("Error.Base.NotFound", argumentData);
                         return false;
                     case Integer:
                         Integer intValue = StringUtils.parseAsInteger(argumentData);
@@ -437,10 +433,7 @@ public class CommandService implements TabCompleter {
         final org.bukkit.World playersWorld = context.getPlayer().getWorld();
         final ConfigurationFlag flag = this.dataService.getWorld(playersWorld.getUID()).getFlag(argumentData);
         if (flag == null) {
-            context.replyWith(
-                new MessageBuilder("InvalidConfigurationFlag")
-                    .with("flag", argumentData)
-            );
+            context.error("Error.Flag.NotFound", argumentData);
         }
         return flag;
     }
@@ -448,10 +441,7 @@ public class CommandService implements TabCompleter {
     private ConfigurationFlag getFactionFlag(CommandContext context, String argumentData) {
         final ConfigurationFlag flag = context.getExecutorsFaction().getFlag(argumentData);
         if (flag == null) {
-            context.replyWith(
-                new MessageBuilder("InvalidConfigurationFlag")
-                    .with("flag", argumentData)
-            );
+            context.error("Error.Flag.NotFound", argumentData);
         }
         return flag;
     }
@@ -522,7 +512,7 @@ public class CommandService implements TabCompleter {
             if (context.getExecutorsFaction().isOfficer(player.getUniqueId())) {
                 return player;
             }
-            context.replyWith("PlayerIsNotOfficerOfFaction");
+            context.error("Error.Player.NotRole.OrAbove", player.getName(), context.getLocalizedString("Generic.Role.Officer"));
         }
         return null;
     }

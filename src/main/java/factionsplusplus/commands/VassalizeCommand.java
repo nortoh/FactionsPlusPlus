@@ -19,9 +19,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class VassalizeCommand extends Command {
 
@@ -61,17 +58,17 @@ public class VassalizeCommand extends Command {
         final Faction target = context.getFactionArgument("faction name");
         // make sure player isn't trying to vassalize their own faction
         if (context.getExecutorsFaction().getID().equals(target.getID())) {
-            context.replyWith("CannotVassalizeSelf");
+            context.error("Error.Vassalization.Self");
             return;
         }
         // make sure player isn't trying to vassalize their liege
         if (target.getID().equals(context.getExecutorsFaction().getLiege())) {
-            context.replyWith("CannotVassalizeLiege");
+            context.error("Error.Vassalization.Liege");
             return;
         }
         // make sure player isn't trying to vassalize a vassal
         if (target.hasLiege()) {
-            context.replyWith("CannotVassalizeVassal");
+            context.error("Error.Vassalization.Vassaled");
             return;
         }
         // make sure this vassalization won't result in a vassalization loop
@@ -83,6 +80,7 @@ public class VassalizeCommand extends Command {
         // add faction to attemptedVassalizations
         context.getExecutorsFaction().addAttemptedVassalization(target.getID());
 
+        // TODO: localize
         // inform all players in that faction that they are trying to be vassalized
         context.messageFaction(
             target,
@@ -90,6 +88,7 @@ public class VassalizeCommand extends Command {
                 .with("name", context.getExecutorsFaction().getName())
         );
 
+        // TODO: localize
         // inform all players in players faction that a vassalization offer was sent
         context.messagePlayersFaction(
             this.constructMessage("AlertFactionAttemptedToVassalize")

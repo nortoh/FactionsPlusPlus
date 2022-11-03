@@ -25,6 +25,7 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
@@ -204,10 +205,14 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
         this.message(message, MessageType.SYSTEM);
     }
 
-    public void alert(String localizationKey, Object... arguments) {
+    public void alert(String localizationKey, TextColor color, Object... arguments) {
         this.alert(
-            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+            Component.translatable(localizationKey).color(color).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
         );
+    }
+
+    public void alert(String localizationKey, Object... arguments) {
+        this.alert(localizationKey, NamedTextColor.YELLOW, arguments);
     }
 
     public void success(String localizationKey, Object... arguments) {

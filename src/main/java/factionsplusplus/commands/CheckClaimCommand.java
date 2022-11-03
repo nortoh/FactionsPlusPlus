@@ -13,9 +13,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class CheckClaimCommand extends Command {
 

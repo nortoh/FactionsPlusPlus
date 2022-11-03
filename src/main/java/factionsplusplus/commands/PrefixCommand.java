@@ -15,9 +15,6 @@ import factionsplusplus.services.DataService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class PrefixCommand extends Command {
 

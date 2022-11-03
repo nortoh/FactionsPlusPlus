@@ -10,13 +10,15 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class MembersCommand extends Command {
 
@@ -55,33 +57,19 @@ public class MembersCommand extends Command {
             faction = context.getFactionArgument("faction name");
         }
         // send Faction Members
-        context.replyWith(
-            this.constructMessage("MembersFaction.Title")
-                .with("faction", faction.getName())
+        context.getExecutorsAudience().sendMessage(
+            Component.translatable("FactionMemberList.Title").args(Component.text(faction.getName())).color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD)
         );
         faction.getMembers().keySet().stream()
                 .map(Bukkit::getOfflinePlayer)
                 .forEach(player -> {
-                    String rank = context.getLocalizedString("MembersFaction.Rank.Member.Rank");
-                    String color = context.getLocalizedString("MembersFaction.Rank.Member.Color");
-                    if (faction.isOfficer(player.getUniqueId())) {
-                        rank = context.getLocalizedString("MembersFaction.Rank.Officer.Rank");
-                        color = context.getLocalizedString("MembersFaction.Rank.Officer.Color");
-                    }
-                    if (faction.isOwner(player.getUniqueId())) {
-                        rank = context.getLocalizedString("MembersFaction.Rank.Owner.Rank");
-                        color = context.getLocalizedString("MembersFaction.Rank.Owner.Color");
-                    }
-                    context.replyWith(
-                        this.constructMessage("MembersFaction.Message")
-                            .with("color", color)
-                            .with("rank", rank)
-                            .with("name", player.getName())
+                    final GroupRole role = GroupRole.getFromLevel(faction.getMember(player.getUniqueId()).getRole());
+                    context.getExecutorsAudience().sendMessage(
+                        Component
+                            .translatable("FactionMemberList.Member")
+                            .args(Component.text(player.getName()))
+                            .hoverEvent(HoverEvent.showText(Component.translatable("Generic.Role."+role.name())))
                     );
                 });
-        context.replyWith(
-            this.constructMessage("MembersFaction.SubTitle")
-                .with("faction", faction.getName())
-        );
     }
 }

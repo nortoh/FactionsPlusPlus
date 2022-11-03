@@ -16,9 +16,6 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class WhoCommand extends Command {
     private final FactionService factionService;

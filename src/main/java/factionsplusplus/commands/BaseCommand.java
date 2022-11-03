@@ -164,12 +164,12 @@ public class BaseCommand extends Command {
 
     public void createCommand(CommandContext context) {
         if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("factionMaxNumberBases")) {
-            context.replyWith("MaxBasesReached");
+            context.error("Error.Base.MaximumReached");
             return;
         }
         final Faction chunkOwner = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
         if (chunkOwner == null || ! chunkOwner.equals(context.getExecutorsFaction())) {
-            context.replyWith("CanOnlyCreateBasesInClaimedTerritory");
+            context.error("Error.Base.ClaimedTerritory");
             return;
         }
         final String baseName = context.getStringArgument("name");
@@ -247,6 +247,7 @@ public class BaseCommand extends Command {
             context.error("Error.Base.NoneAccessible");
             return;
         }
+        // TODO: new messaging api
         context.replyWith("FactionBaseList.Title");
         // TODO: if they have access to another factions bases, include in this list
         context.getExecutorsFaction().getBases().values().stream()

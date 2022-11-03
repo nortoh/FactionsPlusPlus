@@ -36,6 +36,7 @@ public class ResetPowerLevelsCommand extends Command {
     }
 
     public void execute(CommandContext context) {
+        // TODO: localize
         String msg = this.translate("&aPower Levels Resetting...");
         context.reply(msg);
         this.logger.info(msg);

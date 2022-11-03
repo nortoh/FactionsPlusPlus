@@ -19,17 +19,11 @@ import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class AllyCommand extends Command {
     protected final LocaleService localeService;
     protected final FactionRepository factionRepository;
 
-    /**
-     * Constructor to initialise a Command.
-     */
     @Inject
     public AllyCommand(
         LocaleService localeService,
@@ -64,23 +58,23 @@ public class AllyCommand extends Command {
 
         // the faction can't be itself
         if (otherFaction == context.getExecutorsFaction()) {
-            context.error("CannotAllyWithSelf");
+            context.error("Error.Alliance.Self");
             return;
         }
 
         // no need to allow them to ally if they're already allies
         if (context.getExecutorsFaction().isAlly(otherFaction.getUUID())) {
-            context.error("FactionAlreadyAlly");
+            context.error("Error.Alliance.Exists", otherFaction.getName());
             return;
         }
 
         if (context.getExecutorsFaction().isEnemy(otherFaction.getUUID())) {
-            context.error("FactionIsEnemy");
+            context.error("Error.Alliance.Enemy", otherFaction.getName());
             return;
         }
 
         if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getUUID())) {
-            context.error("AlertAlreadyRequestedAlliance");
+            context.error("Error.Alliance.AlreadyRequested", otherFaction.getName());
             return;
         }
 

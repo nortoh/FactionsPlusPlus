@@ -66,7 +66,7 @@ public class LocaleService {
     public Set<String> getMissingLanguageFiles() {
         return Stream.of(SUPPORTED_LOCALES)
             .filter(name -> {
-                return !(new File(this.languageDirectory.getAbsolutePath(), String.format("locale_%s.properties", name))).exists();
+                return ! (new File(this.languageDirectory.getAbsolutePath(), String.format("locale_%s.properties", name))).exists();
             })
             .collect(Collectors.toSet());
     }
@@ -98,14 +98,6 @@ public class LocaleService {
         // Go ahead and cache the default locale
         this.getBundleForLocale(this.defaultLocaleTag);
         this.registry.defaultLocale(Translator.parseLocale(this.defaultLocaleTag));
-        /*this.languageFile = new File(this.dataPath, "language.yml");
-        if (! this.languageFile.exists()) this.factionsPlusPlus.get().saveResource("language.yml", false);
-        this.language = new YamlConfiguration();
-        try {
-            this.language.load(this.languageFile);
-        } catch (IOException | InvalidConfigurationException e) {
-            this.factionsPlusPlus.get().getLogger().log(Level.WARNING, e.getCause().toString());
-        }*/
     }
 
     public ResourceBundle getLanguage() {
@@ -113,22 +105,11 @@ public class LocaleService {
     }
 
     public void reloadLanguage() {
-        /*if (languageFile.exists()) {
-            this.language = YamlConfiguration.loadConfiguration(this.languageFile);
-        } else {
-            this.createLanguageFile();
-        }*/
+        // TODO: reimplement
     }
 
     public void saveLanguage() {
-        /*if (this.languageFile.exists()) {
-            try {
-                this.language.save(this.languageFile);
-            } catch (IOException ignored) {
-            }
-        } else {
-            this.createLanguageFile();
-        }*/
+        // TODO: reimplement
     }
 
     public Locale getDefaultLocale() {
@@ -151,6 +132,7 @@ public class LocaleService {
     }
 
     public List<String> getStrings(String key) {
+        // TODO: reimplement
         return List.of();
     }
 

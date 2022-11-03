@@ -51,16 +51,16 @@ public class DamageHandler implements Listener {
      */
     @EventHandler()
     public void handle(EntityDamageByEntityEvent event) {
-        Player attacker = getAttacker(event);
-        Player victim = getVictim(event);
+        Player attacker = this.getAttacker(event);
+        Player victim = this.getVictim(event);
 
         if (attacker == null || victim == null) {
-            logger.debug("Attacker and/or victim was null in the DamageHandler class.");
-            handleEntityDamage(attacker, event);
+            this.logger.debug("Attacker and/or victim was null in the DamageHandler class.");
+            this.handleEntityDamage(attacker, event);
             return;
         }
 
-        handlePlayerVersusPlayer(attacker, victim, event);
+        this.handlePlayerVersusPlayer(attacker, victim, event);
     }
 
     /**

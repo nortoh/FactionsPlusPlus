@@ -14,9 +14,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.utils.extended.Scheduler;
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class HomeCommand extends Command {
     private final Scheduler scheduler;

@@ -38,6 +38,7 @@ public class PluginModule extends AbstractModule {
         install(new FactoryModuleBuilder().build(WorldFactory.class));
         install(new FactoryModuleBuilder().build(WarFactory.class));
         install(new FactoryModuleBuilder().build(PlayerFactory.class));
+        install(new FactoryModuleBuilder().build(DuelFactory.class));
     }
 
     public Injector createInjector() {

@@ -67,6 +67,7 @@ public class ChatHandler implements Listener {
         this.message = event.getMessage();
     }
 
+    // TODO: new messaging api
     private void sendMessage(Faction playersFaction, String prefixColor, String prefix, AsyncPlayerChatEvent event, String factionChatColor, String message) {
         if (this.configService.getBoolean("chatSharedInVassalageTrees")) {
             this.sendMessageToVassalageTree(playersFaction, prefixColor, prefix, event, factionChatColor, message);
@@ -79,6 +80,7 @@ public class ChatHandler implements Listener {
         event.setFormat(StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + ChatColor.WHITE + " %s: %s");
     }
 
+    // TODO: new messaging api
     private void sendMessageToVassalageTree(Faction playersFaction, String prefixColor, String prefix, AsyncPlayerChatEvent event, String factionChatColor, String message) {
         List<Faction> factionsInVassalageTree = this.dataService.getFactionsInVassalageTree(playersFaction);
         for (Faction faction : factionsInVassalageTree) {
@@ -90,6 +92,7 @@ public class ChatHandler implements Listener {
         }
     }
 
+    // TODO: new messaging api
     private void sendMessageToFaction(Faction playersFaction, String prefix, String prefixColor, AsyncPlayerChatEvent event, String factionChatColor, String message) {
         if (configService.getBoolean("showPrefixesInFactionChat")) {
             this.messageService.sendToFaction(playersFaction, StringUtils.parseAsChatColor(prefixColor) + "" + "[" + prefix + "] " + "" + ChatColor.WHITE + "" + event.getPlayer().getName() + ": " + StringUtils.parseAsChatColor(factionChatColor) + message);

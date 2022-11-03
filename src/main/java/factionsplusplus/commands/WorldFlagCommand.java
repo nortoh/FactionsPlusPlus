@@ -71,20 +71,15 @@ public class WorldFlagCommand extends Command {
             public void run() {
                 String newValue = context.getExecutorsWorld().setFlag(flag.getName(), flagValue);
                 if (newValue == null) {
-                    context.replyWith(
-                        constructMessage("ConfigurationFlagValueInvalid")
-                            .with("type", flag.getRequiredType().toString())
-                    );
+                    context.error("Error.Setting.InvalidValue", flagValue, flag.getName());
                     return;
                 }
-                context.replyWith(
-                    constructMessage("ConfigurationFlagValueSet")
-                        .with("value", newValue)
-                );
+                context.success("CommandResponse.Flag.Set", flag.getName(), newValue);
             }
         });
     }
 
+    // TODO: use new messaging stuff here
     public void showCommand(CommandContext context) {
         String flagOutput = context.getExecutorsWorld().getFlags()
             .keySet()

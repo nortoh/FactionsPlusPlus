@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class MapCommand extends Command {
     private final char[] map_keys = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789abcdeghjmnopqrsuvwxyz?".toCharArray();
@@ -44,6 +41,7 @@ public class MapCommand extends Command {
         this.dataService = dataService;
     }
 
+    // TODO: this can really slow down the server, probably should run in another thread. probably refactor too....
     public void execute(CommandContext context) {
         final Chunk center = context.getPlayer().getLocation().getChunk();
         // Needs to be Odd.
@@ -101,8 +99,10 @@ public class MapCommand extends Command {
                     }
                 }
             }
+            // TODO: new messaging api
             context.reply(this.translate(line.toString()));
         }
+        // TODO: new messaging api
         context.reply(this.translate(" &5+&7 = You"));
         final List<String> added = new ArrayList<>();
         int index = 0;
@@ -127,6 +127,7 @@ public class MapCommand extends Command {
             index++;
         }
         if (! added.isEmpty()) { // We don't wanna send an empty line, so check if the added lines is empty or not.
+            // TODO: new messaging api
             context.reply(" " + this.translate(String.join(", ", added)));
         }
     }

@@ -6,6 +6,7 @@ package factionsplusplus.commands;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
@@ -26,16 +27,16 @@ import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
-import factionsplusplus.builders.MessageBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class ForceCommand extends Command {
     private final FactionsPlusPlus factionsPlusPlus;
@@ -45,6 +46,7 @@ public class ForceCommand extends Command {
     private final DataService dataService;
     private final ClaimService claimService;
     private final InteractionContextFactory interactionContextFactory;
+    private final BukkitAudiences adventure;
 
     @Inject
     public ForceCommand(
@@ -54,7 +56,8 @@ public class ForceCommand extends Command {
         FactionService factionService,
         DataService dataService,
         ClaimService claimService,
-        InteractionContextFactory interactionContextFactory
+        InteractionContextFactory interactionContextFactory,
+        @Named("adventure") BukkitAudiences adventure
     ) {
         super(
             new CommandBuilder()
@@ -371,19 +374,20 @@ public class ForceCommand extends Command {
         this.factionService = factionService;
         this.dataService = dataService;
         this.interactionContextFactory = interactionContextFactory;
+        this.adventure = adventure;
     }
 
     // "mf.force.save", "mf.force.*", "mf.admin"
     public void saveCommand(CommandContext context) {
         this.dataService.save();
-        context.replyWith("AlertForcedSave");
+        context.success("CommandResponse.Save.Force");
     }
 
     // "mf.force.load", "mf.force.*", "mf.admin"
     public void loadCommand(CommandContext context) {
         this.dataService.load();
         this.factionsPlusPlus.reloadConfig();
-        context.replyWith("AlertForcedLoad");
+        context.success("CommandResponse.Save.Load");
     }
 
     //  "mf.force.peace", "mf.force.*", "mf.admin"
@@ -399,11 +403,8 @@ public class ForceCommand extends Command {
             War war = this.dataService.getWarRepository().getActiveWarsBetween(former.getID(), latter.getID());
             war.end();
 
-            // announce peace to all players on server.
-            context.messageAllPlayers(
-                this.constructMessage("AlertNowAtPeaceWith")
-                    .with("p1", former.getName())
-                    .with("p2", latter.getName())
+            this.adventure.players().sendMessage(
+                Component.translatable("GlobalNotice.War.Ended").color(NamedTextColor.GREEN).args(Component.text(former.getName()), Component.text(latter.getName()))
             );
         }
     }
@@ -413,18 +414,18 @@ public class ForceCommand extends Command {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Faction faction = this.dataService.getPlayersFaction(player);
         if (faction == null) {
-            context.replyWith("PlayerIsNotInAFaction");
+            context.error("Error.Player.NotMemberOfFaction", player.getName());
             return;
         }
         if (! faction.isOfficer(player.getUniqueId())) {
-            context.replyWith("PlayerIsNotOfficerOfFaction");
+            context.error("Error.Player.NotRole", context.getLocalizedString("Generic.Role.Officer"));
             return;
         }
         faction.removeOfficer(player.getUniqueId()); // Remove Officer.
         if (player.isOnline() && player.getPlayer() != null) {
-            context.messagePlayer(player.getPlayer(), "AlertForcedDemotion");
+            context.alertPlayer(player, "PlayerNotice.Demoted.Forced", context.getLocalizedString("Generic.Role.Member"));
         }
-        context.replyWith("SuccessOfficerRemoval");
+        context.success("CommandResponse.Member.Demoted.Force", player.getName(), faction.getName());
     }
 
     // "mf.force.join", "mf.force.*", "mf.admin"
@@ -432,7 +433,7 @@ public class ForceCommand extends Command {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Faction faction = context.getFactionArgument("faction");
         if (this.dataService.isPlayerInFaction(player)) {
-            context.replyWith("PlayerAlreadyInFaction");
+            context.error("Error.AlreadyInFaction.Other", player.getName());
             return;
         }
         FactionJoinEvent joinEvent = new FactionJoinEvent(faction, player);
@@ -441,17 +442,12 @@ public class ForceCommand extends Command {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        context.messageFaction(
-            faction,
-            this.constructMessage("HasJoined")
-                .with("player", player.getName())
-                .with("faction", faction.getName())
-        );
+        faction.alert("FactionNotice.PlayerJoined", player.getName());
         faction.addMember(player.getUniqueId());
         if (player.isOnline() && player.getPlayer() != null) {
-            context.messagePlayer(player.getPlayer(), "AlertForcedToJoinFaction");
+            context.alertPlayer(player, "PlayerNotice.JoinedFaction.Forced", faction.getName());
         }
-        context.replyWith("SuccessForceJoin");
+        context.success("CommandResponse.Join.Force", player.getName(), faction.getName());
     }
 
     // "mf.force.kick", "mf.force.*", "mf.admin"
@@ -459,11 +455,11 @@ public class ForceCommand extends Command {
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final Faction faction = this.dataService.getPlayersFaction(target);
         if (faction == null) {
-            context.replyWith("PlayerIsNotInAFaction");
+            context.error("Error.Player.NotMemberOfFaction", target.getName());
             return;
         }
         if (faction.isOwner(target.getUniqueId())) {
-            context.replyWith("CannotForciblyKickOwner");
+            context.error("Error.Kick.Owner");
             return;
         }
         FactionKickEvent kickEvent = new FactionKickEvent(faction, target, null); // no kicker so null is used
@@ -477,20 +473,11 @@ public class ForceCommand extends Command {
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
         faction.removeMember(target.getUniqueId());
-        context.messageFaction(
-            faction,
-            this.constructMessage("HasBeenKickedFrom")
-                .with("player", target.getName())
-                .with("faction", faction.getName())
-        );
+        faction.alert("FactionNotice.PlayerKicked", target.getName());
         if (target.isOnline() && target.getPlayer() != null) {
-            context.messagePlayer(
-                target.getPlayer(),
-                this.constructMessage("AlertKicked")
-                    .with("name", "an admin")
-            );
+            context.alertPlayer(target, "PlayerNotice.KickedFromFaction.Forced", faction.getName());
         }
-        context.replyWith("SuccessFactionMemberRemoval");
+        context.error("CommandResponse.Kick", target.getName(), faction.getName());
     }
 
     // "mf.force.power", "mf.force.*", "mf.admin"
@@ -499,10 +486,8 @@ public class ForceCommand extends Command {
         final Integer desiredPower = context.getIntegerArgument("desired power");
         final PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
         record.setPower(desiredPower); // Set power :)
-        context.replyWith(
-            this.constructMessage("PowerLevelHasBeenSetTo")
-                .with("level", String.valueOf(desiredPower))
-        );
+        record.alert("PlayerNotice.PowerSet.Forced", desiredPower);
+        context.success("CommandResponse.PowerSet.Force", player.getName(), desiredPower);
     }
 
     // "mf.force.renounce", "mf.force.*", "mf.admin"
@@ -518,8 +503,8 @@ public class ForceCommand extends Command {
             changes = changes + faction.getNumVassals();
             faction.clearVassals();
         }
-        if (changes == 0) context.replyWith("NoVassalOrLiegeReferences");
-        else context.replyWith("SuccessReferencesRemoved");
+        if (changes == 0) context.error("Error.Faction.NotVassalOrLiege", faction.getName());
+        else context.success("CommandResponse.Renounce.Force", faction.getName());
     }
 
     // "mf.force.transfer", "mf.force.*", "mf.admin"
@@ -527,27 +512,20 @@ public class ForceCommand extends Command {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Faction faction = context.getFactionArgument("faction");
         if (faction.isOwner(player.getUniqueId())) {
-            context.replyWith("AlertPlayerAlreadyOwner");
+            context.error("Error.Player.AlreadyOwnerOf", player.getName(), faction.getName());
             return;
         }
         if (! faction.isMember(player.getUniqueId())) {
-            context.replyWith("AlertPlayerNotInFaction");
+            context.error("Error.Player.NotMemberOf", player.getName(), faction.getName());
             return;
         }
         if (faction.isOfficer(player.getUniqueId())) faction.removeOfficer(player.getUniqueId()); // Remove Officer.
         faction.setOwner(player.getUniqueId());
 
         if (player.isOnline() && player.getPlayer() != null) {
-            context.messagePlayer(
-                player.getPlayer(),
-                this.constructMessage("OwnershipTransferred")
-                    .with("name", faction.getName())
-            );
+            context.alertPlayer(player, "PlayerNotice.FactionOwnershipTransferred", faction.getName());
         }
-        context.replyWith(
-            this.constructMessage("OwnerShipTransferredTo")
-                .with("name", player.getName())
-        );
+        context.success("CommandResponse.FactionOwnershipTransferred", faction.getName(), player.getName());
     }
 
     // "mf.force.removevassal", "mf.force.*", "mf.admin"
@@ -556,7 +534,11 @@ public class ForceCommand extends Command {
         final Faction vassal = context.getFactionArgument("vassal");
         if (liege.isVassal(vassal.getID())) liege.removeVassal(vassal.getID());
         if (vassal.isLiege(liege.getID())) vassal.setLiege(null);
-        context.replyWith("Done");
+        // inform all players in that faction that they are now independent
+        vassal.alert("FactionNotice.Independence", liege.getName());
+        // inform all players in liege faction that a vassal was granted independence
+        liege.alert("FactionNotice.VassalRemoved", vassal.getName());
+        context.success("CommandResponse.RemoveVassal.Force", vassal.getName(), liege.getName());
     }
 
     // "mf.force.rename", "mf.force.*", "mf.admin"
@@ -566,7 +548,7 @@ public class ForceCommand extends Command {
         final String newName = context.getStringArgument("name");
         // rename faction
         if (this.dataService.getFaction(newName) != null) {
-            context.replyWith("FactionAlreadyExists");
+            context.error("Error.Faction.AlreadyExists", newName);
             return;
         }
         final FactionRenameEvent renameEvent = new FactionRenameEvent(faction, oldName, newName);
@@ -578,13 +560,14 @@ public class ForceCommand extends Command {
 
         // change name
         faction.setName(newName);
-        context.replyWith("FactionNameChanged");
-
         // Prefix (if it was unset)
         if (faction.getPrefix().equalsIgnoreCase(oldName)) faction.setPrefix(newName);
 
         // Save again to overwrite current data
         this.dataService.save();
+
+        context.success("CommandResponse.Faction.Rename.Force", oldName, newName);
+        faction.alert("FactionNotice.Rename.Forced", newName);
     }
 
     // "mf.force.bonuspower", "mf.force.*", "mf.admin"
@@ -594,19 +577,26 @@ public class ForceCommand extends Command {
         // set bonus power
         this.factionService.setBonusPower(faction, amount);
         // inform sender
-        context.replyWith("Done");
+        context.success("CommandResponse.BonusPower.Force", faction.getName(), amount);
+        // inform faction
+        faction.alert("FactionNotice.BonusPower", amount);
     }
 
     // "mf.force.unlock", "mf.force.*", "mf.admin"
     public void unlockCommand(CommandContext context) {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
-        if (interactionContext == null) {
-            this.ephemeralData.getPlayersPendingInteraction().put(
-                context.getPlayer().getUniqueId(),
-                this.interactionContextFactory.create(InteractionContext.Type.LockedBlockForceUnlock)
-            );
-            context.replyWith("RightClickForceUnlock");
-        };
+        if (interactionContext != null) {
+            if (interactionContext.isLockedBlockForceUnlock()) {
+                context.cancellableError("Error.Lock.AlreadyUnlocking.Force", "/fpp force unlock cancel");
+                return;
+            }
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
+        }
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            this.interactionContextFactory.create(InteractionContext.Type.LockedBlockForceUnlock)
+        );
+        context.cancellable("CommandResponse.RightClick.Unlock.Force", "/fpp force unlock cancel");
     }
 
     public void cancelUnlockCommand(CommandContext context) {
@@ -614,7 +604,7 @@ public class ForceCommand extends Command {
         if (interactionContext != null) {
             if (interactionContext.isLockedBlockUnlock() || interactionContext.isLockedBlockForceUnlock()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
-                context.replyWith("AlertUnlockingCancelled");
+                context.success("CommandResponse.RightClick.Cancelled");
             }
         }
     }
@@ -624,7 +614,7 @@ public class ForceCommand extends Command {
         String newFactionName = context.getStringArgument("name");
 
         if (this.dataService.getFactionRepository().get(newFactionName) != null) {
-            context.replyWith("FactionAlreadyExists");
+            context.error("Error.Faction.AlreadyExists", newFactionName);
             return;
         }
 
@@ -633,7 +623,7 @@ public class ForceCommand extends Command {
         Bukkit.getPluginManager().callEvent(createEvent);
         if (! createEvent.isCancelled()) {
             this.dataService.getFactionRepository().create(faction);
-            context.replyWith("FactionCreated");
+            context.success("CommandResponse.Faction.Created", faction.getName());
         }
     }
 
@@ -641,7 +631,7 @@ public class ForceCommand extends Command {
     public void claimCommand(CommandContext context) {
         final Faction faction = context.getFactionArgument("faction");
         this.claimService.forceClaimAtPlayerLocation(context.getPlayer(), faction);
-        context.replyWith("Done");
+        context.success("CommandResponse.LandClaimed.Force", faction.getName());
     }
 
     // "mf.force.flag", "mf.force.*", "mf.admin"
@@ -650,24 +640,15 @@ public class ForceCommand extends Command {
         final String flagName = context.getStringArgument("flag");
         final ConfigurationFlag flag = faction.getFlag(flagName);
         if (flag == null) {
-            context.replyWith(
-                this.constructMessage("InvalidFactionFlag")
-                    .with("flag", flagName)
-            );
+            context.error("Error.Flag.NotFound", flagName);
             return;
         }
         final String value = context.getStringArgument("value");
         String newValue = flag.set(value);
         if (newValue == null) {
-            context.replyWith(
-                new MessageBuilder("FactionFlagValueInvalid")
-                    .with("type", flag.getRequiredType().toString())
-            );
+            context.error("Error.Setting.InvalidValue", value, flag.getName());
             return;
         }
-        context.replyWith(
-            new MessageBuilder("FactionFlagValueSet")
-                .with("value", newValue)
-        );
+        context.success("CommandResponse.Flag.Set.Force", flag.getName(), newValue, faction.getName());
     }
 }

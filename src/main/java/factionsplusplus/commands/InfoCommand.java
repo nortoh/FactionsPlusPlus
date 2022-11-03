@@ -15,9 +15,6 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class InfoCommand extends Command {
     private final FactionService factionService;
@@ -46,12 +43,12 @@ public class InfoCommand extends Command {
         final Faction target;
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
-                context.replyWith("OnlyPlayersCanUseCommand");
+                context.error("Error.PlayerExecutionRequired");
                 return;
             }
             target = context.getExecutorsFaction();
             if (target == null) {
-                context.replyWith("AlertMustBeInFactionToUseCommand");
+                context.error("Error.Faction.MembershipNeeded");
                 return;
             }
         } else {

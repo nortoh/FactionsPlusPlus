@@ -17,9 +17,6 @@ import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DemoteCommand extends Command {
 

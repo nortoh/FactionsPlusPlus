@@ -13,9 +13,6 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.entity.Player;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class ChatCommand extends Command {
 

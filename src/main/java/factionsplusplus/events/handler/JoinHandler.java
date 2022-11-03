@@ -17,7 +17,6 @@ import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.events.internal.FactionJoinEvent;
@@ -98,19 +97,11 @@ public class JoinHandler implements Listener {
         double newPower = getNewPower(player);
 
         if (record.getLastLogout() != null && record.getMinutesSinceLastLogout() > 1) {
-            record.alert(
-                Component.translatable("PlayerNotice.WelcomeBack")
-                    .color(NamedTextColor.GREEN)
-                    .args(Component.text(event.getPlayer().getName()), Component.text(record.getTimeSinceLastLogout()))
-            );
+            record.alert("PlayerNotice.WelcomeBack", NamedTextColor.GREEN, event.getPlayer().getName(), record.getTimeSinceLastLogout());
         }
 
         if (record.getPowerLost() > 0) {
-            record.alert(
-                Component.translatable("PlayerNotice.PowerDecayed")
-                    .color(NamedTextColor.YELLOW)
-                    .args(Component.text(record.getPowerLost()), Component.text(newPower))
-            );
+            record.alert("PlayerNotice.PowerDecayed", NamedTextColor.YELLOW, record.getPowerLost(), newPower);
         }
 
         record.setPowerLost(0);
@@ -180,7 +171,7 @@ public class JoinHandler implements Listener {
 
         if (playersFaction.isLiege() && this.factionService.isWeakened(playersFaction)) {
             PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
-            member.alert(Component.translatable("FactionNotice.Weakened").color(NamedTextColor.RED));
+            member.alert("FactionNotice.Weakened", NamedTextColor.RED);
         }
     }
 }

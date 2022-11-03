@@ -10,11 +10,10 @@ import com.google.inject.name.Named;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.builders.*;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class VersionCommand extends Command {
     private final String pluginVerson;
@@ -32,6 +31,8 @@ public class VersionCommand extends Command {
     }
     
     public void execute(CommandContext context) {
-        context.getSender().sendMessage(this.translate("&bFactions-Plus-Plus-" + this.pluginVerson));
+        context.getExecutorsAudience().sendMessage(
+            Component.text("Factions Plus Plus v"+this.pluginVerson).color(NamedTextColor.AQUA)
+        );
     }
 }

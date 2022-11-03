@@ -23,9 +23,6 @@ import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.events.internal.FactionWarEndEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class MakePeaceCommand extends Command {
 

@@ -17,9 +17,6 @@ import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class LeaveCommand extends Command {
     private final EphemeralData ephemeralData;

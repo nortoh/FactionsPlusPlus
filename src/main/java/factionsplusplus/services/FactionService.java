@@ -241,7 +241,8 @@ public class FactionService {
             .map(Faction::toString)
             .collect(Collectors.joining(", "));
     }
-
+    
+    // TODO: new messaging api
     public GenericMessageBuilder generateFactionInfo(Faction faction) {
         MultiMessageBuilder builder = new MultiMessageBuilder();
         // Faction header

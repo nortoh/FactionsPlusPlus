@@ -20,9 +20,6 @@ import factionsplusplus.constants.GroupRole;
 import factionsplusplus.events.internal.FactionJoinEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class JoinCommand extends Command {
     private final Logger logger;
