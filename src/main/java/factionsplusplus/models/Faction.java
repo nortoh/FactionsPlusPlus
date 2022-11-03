@@ -1,13 +1,13 @@
 package factionsplusplus.models;
 
-import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.data.beans.FactionBean;
 import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.models.interfaces.Feudal;
+import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.MessageService;
+import factionsplusplus.utils.StringUtils;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.audience.MessageType;
@@ -15,9 +15,12 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,26 +41,26 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     private boolean autoclaim = false;
     private List<UUID> attemptedVassalizations = Collections.synchronizedList(new ArrayList<>());
 
-    private final MessageService messageService;
     private final FactionRepository factionRepository;
     private final DataService dataService;
     private final BukkitAudiences adventure;
+    private final ConfigService configService;
 
     // Constructor
     @AssistedInject
-    public Faction(MessageService messageService, DataService dataService, @Named("adventure") BukkitAudiences adventure) {
-        this.messageService = messageService;
+    public Faction(DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
         this.dataService = dataService;
         this.adventure = adventure;
+        this.configService = configService;
         this.factionRepository = this.dataService.getFactionRepository();
     }
 
     @AssistedInject
     public Faction(
         @Assisted FactionBean bean,
-        MessageService messageService,
         FactionRepository factionRepository,
         DataService dataService,
+        ConfigService configService,
         @Named("adventure") BukkitAudiences adventure
     ) {
         this.uuid = bean.getId();
@@ -71,32 +74,32 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         this.relations = bean.getRelations();
         this.bases = bean.getBases();
         this.laws = bean.getLaws();
-        this.messageService = messageService;
         this.factionRepository = factionRepository;
         this.dataService = dataService;
         this.adventure = adventure;
+        this.configService = configService;
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService, @Named("adventure") BukkitAudiences adventure) {
+    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
         this.name = factionName;
         this.flags = flags;
         this.prefix = factionName;
-        this.messageService = messageService;
         this.dataService = dataService;
         this.adventure = adventure;
+        this.configService = configService;
         this.factionRepository = this.dataService.getFactionRepository();
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService, @Named("adventure") BukkitAudiences adventure) {
+    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
         this.name = factionName;
         this.setOwner(owner);
         this.flags = flags;
         this.prefix = factionName;
-        this.messageService = messageService;
         this.dataService = dataService;
         this.adventure = adventure;
+        this.configService = configService;
         this.factionRepository = this.dataService.getFactionRepository();
     }
 
@@ -392,17 +395,13 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return this.name;
     }
 
-    public void message(GenericMessageBuilder builder) {
-        this.messageService.sendFactionLocalizedMessage(this, builder);
-    }
-
     // Tools
     public void persist() {
         this.factionRepository.persist(this);
     }
 
     public void message(ComponentLike message, MessageType type) {
-        this.audiences().forEach(player -> player.sendMessage(message, type));
+        this.audience().sendMessage(message, type);
     }
 
     public void alert(ComponentLike message) {
@@ -413,6 +412,32 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         this.alert(
             Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
         );
+    }
+
+    public Component generateFactionChatComponent(Faction faction, OfflinePlayer player, String message) {
+        final TextColor factionChatColor = StringUtils.parseAsTextColor(this.configService.getString("factionChatColor"));
+        Component chatComponent = Component.text(player.getName()+":").color(NamedTextColor.WHITE).append(Component.text(" "+message).color(factionChatColor));
+        if (this.configService.getBoolean("showPrefixesInFactionChat")) {
+            final TextColor prefixColor = StringUtils.parseAsTextColor(faction.getFlag("prefixColor").toString());
+            chatComponent = Component.text(String.format("[%s] ", faction.getPrefix())).color(prefixColor).append(chatComponent);
+        }
+        return chatComponent;
+    }
+
+    public void sendToFactionChatAs(Faction faction, OfflinePlayer player, String message) {
+        this.audience().sendMessage(this.generateFactionChatComponent(faction, player, message), MessageType.CHAT);
+    }
+
+    public void sendToFactionChatAs(OfflinePlayer player, String message) {
+        this.audience().sendMessage(this.generateFactionChatComponent(this, player, message), MessageType.CHAT);
+    }
+
+
+    public Audience audience() {
+        return this.adventure.filter(sender -> {
+            if (sender instanceof Player) if (this.isMember((Player)sender)) return true;
+            return false;
+        });
     }
 
     @Override

@@ -4,6 +4,9 @@ import java.util.Arrays;
 
 import org.bukkit.ChatColor;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+
 public class StringUtils {
     public final static String[] BOOLEAN_VALUES = {"yes", "no", "true", "false", "on", "off"};
     
@@ -42,6 +45,13 @@ public class StringUtils {
             .filter(c -> c.toString().equalsIgnoreCase(color))
             .findFirst()
             .orElse(ChatColor.WHITE);
+    }
+
+    public static TextColor parseAsTextColor(String color) {
+        TextColor result = NamedTextColor.NAMES.value(color.toUpperCase());
+        if (result == null) result = TextColor.fromCSSHexString(color);
+        if (result == null) result = TextColor.fromCSSHexString(color);
+        return result;
     }
 
     public static String colorize(String input) {
