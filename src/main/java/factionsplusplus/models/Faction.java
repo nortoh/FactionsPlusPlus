@@ -8,18 +8,28 @@ import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.models.interfaces.Feudal;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.MessageService;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.NamedTextColor;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
-public class Faction extends Nation implements Feudal {
+public class Faction extends Nation implements Feudal, ForwardingAudience {
     private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
     private Map<String, FactionBase> bases = new ConcurrentHashMap<>();
     private String prefix = null;
@@ -31,12 +41,14 @@ public class Faction extends Nation implements Feudal {
     private final MessageService messageService;
     private final FactionRepository factionRepository;
     private final DataService dataService;
+    private final BukkitAudiences adventure;
 
     // Constructor
     @AssistedInject
-    public Faction(MessageService messageService, DataService dataService) {
+    public Faction(MessageService messageService, DataService dataService, @Named("adventure") BukkitAudiences adventure) {
         this.messageService = messageService;
         this.dataService = dataService;
+        this.adventure = adventure;
         this.factionRepository = this.dataService.getFactionRepository();
     }
 
@@ -45,7 +57,8 @@ public class Faction extends Nation implements Feudal {
         @Assisted FactionBean bean,
         MessageService messageService,
         FactionRepository factionRepository,
-        DataService dataService
+        DataService dataService,
+        @Named("adventure") BukkitAudiences adventure
     ) {
         this.uuid = bean.getId();
         this.name = bean.getName();
@@ -57,29 +70,33 @@ public class Faction extends Nation implements Feudal {
         this.members = bean.getMembers();
         this.relations = bean.getRelations();
         this.bases = bean.getBases();
+        this.laws = bean.getLaws();
         this.messageService = messageService;
         this.factionRepository = factionRepository;
         this.dataService = dataService;
+        this.adventure = adventure;
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService) {
+    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService, @Named("adventure") BukkitAudiences adventure) {
         this.name = factionName;
         this.flags = flags;
         this.prefix = factionName;
         this.messageService = messageService;
         this.dataService = dataService;
+        this.adventure = adventure;
         this.factionRepository = this.dataService.getFactionRepository();
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService) {
+    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, MessageService messageService, DataService dataService, @Named("adventure") BukkitAudiences adventure) {
         this.name = factionName;
         this.setOwner(owner);
         this.flags = flags;
         this.prefix = factionName;
         this.messageService = messageService;
         this.dataService = dataService;
+        this.adventure = adventure;
         this.factionRepository = this.dataService.getFactionRepository();
     }
 
@@ -381,5 +398,30 @@ public class Faction extends Nation implements Feudal {
     // Tools
     public void persist() {
         this.factionRepository.persist(this);
+    }
+
+    public void message(ComponentLike message, MessageType type) {
+        this.audiences().forEach(player -> player.sendMessage(message, type));
+    }
+
+    public void alert(ComponentLike message) {
+        this.message(message, MessageType.SYSTEM);
+    }
+
+    public void alert(String localizationKey, Object... arguments) {
+        this.alert(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+        );
+    }
+
+    @Override
+    public Iterable<? extends Audience> audiences() {
+        return this.members
+            .keySet()
+            .stream()
+            .map(Bukkit::getPlayer)
+            .filter(Objects::nonNull)
+            .map(this.adventure::player)
+            .collect(Collectors.toSet());
     }
 }
