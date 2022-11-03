@@ -10,11 +10,11 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
+import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,7 +35,6 @@ public class MoveHandler implements Listener {
     private final FactionsPlusPlus factionsPlusPlus;
     private final DynmapIntegrationService dynmapService;
     private final FactionService factionService;
-    private final MessageService messageService;
     private final DataService dataService;
     private final ClaimService claimService;
 
@@ -45,7 +44,6 @@ public class MoveHandler implements Listener {
         FactionsPlusPlus factionsPlusPlus,
         DynmapIntegrationService dynmapService,
         FactionService factionService,
-        MessageService messageService,
         DataService dataService,
         ClaimService claimService
     ) {
@@ -53,7 +51,6 @@ public class MoveHandler implements Listener {
         this.factionsPlusPlus = factionsPlusPlus;
         this.dynmapService = dynmapService;
         this.factionService = factionService;
-        this.messageService = messageService;
         this.dataService = dataService;
         this.claimService = claimService;
     }
@@ -116,7 +113,8 @@ public class MoveHandler implements Listener {
                 if (this.notAtDemesneLimit(playersFaction)) {
                     this.scheduleClaiming(player, playersFaction);
                 } else {
-                    this.messageService.sendLocalizedMessage(player, "AlertReachedDemesne");
+                    PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+                    member.error("FactionNotice.ReachedDemesne");
                 }
             }
         }

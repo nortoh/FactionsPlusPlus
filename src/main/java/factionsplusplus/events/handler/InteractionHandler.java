@@ -15,11 +15,11 @@ import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
+import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
 import factionsplusplus.utils.PlayerUtils;
-import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,7 +50,6 @@ import java.util.Objects;
 @Singleton
 public class InteractionHandler implements Listener {
     private final InteractionAccessChecker interactionAccessChecker;
-    private final MessageService messageService;
     private final FactionsPlusPlus factionsPlusPlus;
     private final LockService lockService;
     private final EphemeralData ephemeralData;
@@ -66,7 +65,6 @@ public class InteractionHandler implements Listener {
         LockService lockService,
         EphemeralData ephemeralData,
         GateService gateService,
-        MessageService messageService,
         DataService dataService,
         ClaimService claimService,
         LockedBlockFactory lockedBlockFactory
@@ -76,7 +74,6 @@ public class InteractionHandler implements Listener {
         this.lockService = lockService;
         this.ephemeralData = ephemeralData;
         this.gateService = gateService;
-        this.messageService = messageService;
         this.claimService = claimService;
         this.dataService = dataService;
         this.lockedBlockFactory = lockedBlockFactory;
@@ -93,14 +90,11 @@ public class InteractionHandler implements Listener {
             return;
         }
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         final Gate gate = this.dataService.getGateWithBlock(block);
         if (gate != null) {
             event.setCancelled(true);
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("BlockIsPartOfGateMustRemoveGate")
-                    .with("name", gate.getName())
-            );
+            member.error("Error.Gate.BlockPartOf", gate.getName());
             return;
         }
 
@@ -108,7 +102,7 @@ public class InteractionHandler implements Listener {
             boolean isOwner = this.dataService.getLockedBlock(block).getOwner().equals(player.getUniqueId());
             if (! isOwner) {
                 event.setCancelled(true);
-                this.messageService.sendLocalizedMessage(player, "AlertNonOwnership");
+                member.error("Error.Lock.NotOwner");
                 return;
             }
 
@@ -147,10 +141,12 @@ public class InteractionHandler implements Listener {
             return;
         }
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+
         if (BlockUtils.isChest(event.getBlock())) {
             boolean isNextToNonOwnedLockedChest = this.dataService.isBlockNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest) {
-                this.messageService.sendLocalizedMessage(player, "CannotPlaceChestsNextToUnownedLockedChests");
+                member.alert("PlayerNotice.ChestNextToNotOwnedLockedChest");
                 event.setCancelled(true);
                 return;
             }
@@ -193,7 +189,7 @@ public class InteractionHandler implements Listener {
             boolean isUnderOrAboveNonOwnedLockedChest = this.dataService.isBlockUnderOrAboveNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest || isUnderOrAboveNonOwnedLockedChest) {
                 event.setCancelled(true);
-                this.messageService.sendLocalizedMessage(player, "CannotPlaceHoppersNextToUnownedLockedChests");
+                member.alert("PlayerNotice.HopperNextToNotOwnedLockedChest");
             }
         }
     }
@@ -217,6 +213,7 @@ public class InteractionHandler implements Listener {
             if (context.isLockedBlockUnlock()) this.lockService.handleUnlockingBlock(event, player, clickedBlock);
         }
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         LockedBlock lockedBlock = this.dataService.getLockedBlock(clickedBlock);
         if (lockedBlock != null) {
             boolean playerHasAccess = false;
@@ -230,11 +227,7 @@ public class InteractionHandler implements Listener {
             boolean isPlayerBypassing = this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
             if (! playerHasAccess && ! isPlayerBypassing) {
                 String owner = PlayerUtils.parseAsPlayer(lockedBlock.getOwner()).getName();
-                this.messageService.sendLocalizedMessage(
-                    player,
-                    new MessageBuilder("LockedBy")
-                        .with("name", owner)
-                );
+                member.alert("CommandResponse.Lock.Inquiry", owner);
                 event.setCancelled(true);
                 return;
             }
@@ -256,7 +249,7 @@ public class InteractionHandler implements Listener {
 
         } else {
             if (context != null && context.isLockedBlockAccessCommand()) {
-                messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
+                member.error("Error.Lock.NotLocked");
             }
         }
 

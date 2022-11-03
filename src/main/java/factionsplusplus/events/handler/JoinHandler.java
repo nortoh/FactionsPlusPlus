@@ -4,7 +4,6 @@
  */
 package factionsplusplus.events.handler;
 
-import com.avaje.ebeaninternal.server.cluster.mcast.Message;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -16,15 +15,10 @@ import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.services.FactionService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
-import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.events.internal.FactionJoinEvent;
 
@@ -47,7 +41,6 @@ public class JoinHandler implements Listener {
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
     private final FactionService factionService;
     private final DataService dataService;
-    private final MessageService messageService;
     private final ClaimService claimService;
     private final DynmapIntegrationService dynmapIntegrationService;
     private final PlayerFactory playerFactory;
@@ -59,7 +52,6 @@ public class JoinHandler implements Listener {
         TerritoryOwnerNotifier territoryOwnerNotifier,
         FactionService factionService,
         DataService dataService,
-        MessageService messageService,
         ClaimService claimService,
         DynmapIntegrationService dynmapIntegrationService,
         PlayerFactory playerFactory
@@ -69,7 +61,6 @@ public class JoinHandler implements Listener {
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.factionService = factionService;
         this.dataService = dataService;
-        this.messageService = messageService;
         this.claimService = claimService;
         this.dynmapIntegrationService = dynmapIntegrationService;
         this.playerFactory = playerFactory;
@@ -159,14 +150,10 @@ public class JoinHandler implements Listener {
                 this.logger.debug("Join event was cancelled.");
                 return;
             }
-            this.messageService.sendFactionLocalizedMessage(
-                faction,
-                new MessageBuilder("HasJoined")
-                    .with("name", player.getName())
-                    .with("faction", faction.getName())
-            );
+            faction.alert("FactionNotice.PlayerJoined", player.getName());
             faction.addMember(player.getUniqueId());
-            this.messageService.sendLocalizedMessage(player, "AssignedToRandomFaction");
+            PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+            member.alert("PlayerNotice.RandomFactionAssignment", faction.getName());
             this.logger.debug(player.getName() + " has been randomly assigned to " + faction.getName() + "!");
         } else {
             this.logger.debug("Attempted to assign " + player.getName() + " to a random faction, but no factions are existent.");
@@ -192,7 +179,8 @@ public class JoinHandler implements Listener {
         }
 
         if (playersFaction.isLiege() && this.factionService.isWeakened(playersFaction)) {
-            this.messageService.sendLocalizedMessage(player, "AlertFactionIsWeakened");
+            PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+            member.alert(Component.translatable("FactionNotice.Weakened").color(NamedTextColor.RED));
         }
     }
 }
