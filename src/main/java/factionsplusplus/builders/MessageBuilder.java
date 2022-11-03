@@ -43,7 +43,6 @@ public class MessageBuilder implements GenericMessageBuilder {
 
     @Override
     public @NotNull Component asComponent() {
-        // TODO Auto-generated method stub
         return Component.translatable(this.messageLocalizationKey).args(replacements.stream().map(Component::text).collect(Collectors.toList()));
     }
 }
