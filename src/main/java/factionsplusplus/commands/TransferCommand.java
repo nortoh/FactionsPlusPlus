@@ -52,7 +52,7 @@ public class TransferCommand extends Command {
         OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID targetUUID = target.getUniqueId();
         if (targetUUID.equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotTransferToSelf");
+            context.error("Error.TransferOwnership.Self");
             return;
         }
 
@@ -67,11 +67,9 @@ public class TransferCommand extends Command {
                 context.replyWith(
                     constructMessage("OwnerShipTransferredTo").with("name", target.getName())
                 );
+                context.success("CommandResponse.FactionOwnershipTransferred", context.getExecutorsFaction().getName(), target.getName());
                 if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
-                    context.messagePlayer(
-                        target.getPlayer(),
-                        constructMessage("OwnershipTransferred").with("name", context.getExecutorsFaction().getName())
-                    );
+                    context.alertPlayer(target, "PlayerNotice.FactionOwnershipTransferred", context.getExecutorsFaction().getName());
                 }
             }
         });

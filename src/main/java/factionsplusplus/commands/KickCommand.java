@@ -59,13 +59,13 @@ public class KickCommand extends Command {
     public void execute(CommandContext context) {
         OfflinePlayer target = context.getOfflinePlayerArgument("player");
         if (target.getUniqueId().equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotKickSelf");
+            context.error("Error.Kick.Self");
             return;
         }
         Player player = context.getPlayer();
         Faction faction = context.getExecutorsFaction();
         if (faction.isOwner(target.getUniqueId())) {
-            context.replyWith("CannotKickOwner");
+            context.error("Error.Kick.Owner");
             return;
         }
         FactionKickEvent kickEvent = new FactionKickEvent(faction, target, player);

@@ -15,10 +15,6 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class UnclaimallCommand extends Command {
 
@@ -49,16 +45,16 @@ public class UnclaimallCommand extends Command {
         if (context.getRawArguments().length == 0) {
             // Self
             if (context.isConsole()) {
-                context.replyWith("OnlyPlayersCanUseCommand");
+                context.error("Error.PlayerExecutionRequired");
                 return;
             }
             faction = context.getExecutorsFaction();
             if (faction == null) {
-                context.replyWith("AlertMustBeInFactionToUseCommand");
+                context.error("Error.Faction.MembershipNeeded");
                 return;
             }
             if (! faction.isOwner(context.getPlayer().getUniqueId())) {
-                context.replyWith("AlertMustBeOwnerToUseCommand");
+                context.error("Error.Faction.OwnershipNeeded");
                 return;
             }
         } else {
@@ -66,15 +62,10 @@ public class UnclaimallCommand extends Command {
         }
         // remove faction bases
         this.factionService.removeAllBases(faction);
-
         // remove claimed chunks
         this.factionService.unclaimAllClaimedChunks(faction);
-        context.replyWith(
-            this.constructMessage("AllLandUnclaimedFrom")
-                .with("name", faction.getName())
-        );
-
         // remove locks associated with this faction
         this.factionService.removeAllOwnedLocks(faction);
+        context.success("CommandResponse.AllLandUnclaimed", faction.getName());
     }
 }

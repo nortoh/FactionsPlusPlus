@@ -51,7 +51,7 @@ public class WhoCommand extends Command {
     public void execute(CommandContext context) {
         final Faction temp = this.dataService.getPlayersFaction(context.getOfflinePlayerArgument("player"));
         if (temp == null) {
-            context.replyWith("PlayerIsNotInAFaction");
+            context.error("Error.Player.NotMemberOfFaction", context.getOfflinePlayerArgument("player").getName());
             return;
         }
         context.replyWith(this.factionService.generateFactionInfo(temp));

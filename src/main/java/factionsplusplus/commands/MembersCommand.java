@@ -43,12 +43,12 @@ public class MembersCommand extends Command {
         final Faction faction;
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
-                context.replyWith("OnlyPlayersCanUseCommand");
+                context.error("Error.PlayerExecutionRequired");
                 return;
             }
             faction = context.getExecutorsFaction();
             if (faction == null) {
-                context.replyWith("AlertMustBeInFactionToUseCommand");
+                context.error("Error.Faction.MembershipNeeded");
                 return;
             }
         } else {

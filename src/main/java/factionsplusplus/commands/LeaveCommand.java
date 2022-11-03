@@ -66,12 +66,8 @@ public class LeaveCommand extends Command {
             @Override
             public void run() {
                 faction.clearMember(player.getUniqueId());
-                context.replyWith("AlertLeftFaction");
-                faction.message(
-                    constructMessage("AlertLeftFactionTeam")
-                        .with("name", player.getName())
-                        .with("faction", faction.getName())
-                );
+                context.success("PlayerNotice.LeftFaction");
+                faction.alert("FactionNotice.PlayerLeft", player.getName());
             }
         });
     }

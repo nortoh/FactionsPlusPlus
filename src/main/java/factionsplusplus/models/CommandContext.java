@@ -249,6 +249,12 @@ public class CommandContext {
         this.messageService.sendLocalizedMessage(this.sender, builder);
     }
 
+    public void alertPlayer(OfflinePlayer player, String localizationKey, Object... arguments) {
+        this.factionsPlusPlus.getAdventure().player(player.getUniqueId()).sendMessage(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+        );
+    }
+
     public void success(String localizationKey, Object... arguments) {
         this.getExecutorsAudience().sendMessage(
             Component.text()

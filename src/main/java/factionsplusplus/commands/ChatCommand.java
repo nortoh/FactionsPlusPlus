@@ -39,7 +39,7 @@ public class ChatCommand extends Command {
         Player player = context.getPlayer();
         final boolean contains = this.ephemeralData.getPlayersInFactionChat().contains(player.getUniqueId());
 
-        final String path = (contains ? "NoLonger" : "NowSpeaking") + "InFactionChat";
+        final String path = "PlayerNotice.FactionChat." + (contains ? "Left" : "Joined");
 
         if (contains) {
             this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId());

@@ -13,15 +13,9 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class AutoClaimCommand extends Command {
 
-    /**
-     * Constructor to initialise a Command.
-     */
     @Inject
     public AutoClaimCommand() {
         super(
@@ -40,8 +34,8 @@ public class AutoClaimCommand extends Command {
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
-                context.getExecutorsFaction().toggleAutoClaim();
-                context.replyWith("AutoclaimToggled");
+                final String localizationKey = context.getExecutorsFaction().toggleAutoClaim() ? "Enabled" : "Disabled";
+                context.success("CommandResponse.Autoclaim."+localizationKey);
             }
         });
     }

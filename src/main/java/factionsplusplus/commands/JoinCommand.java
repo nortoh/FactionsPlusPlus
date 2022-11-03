@@ -63,12 +63,7 @@ public class JoinCommand extends Command {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        context.messageFaction(
-            target, 
-            this.constructMessage("HasJoined")
-                .with("name", context.getPlayer().getName())
-                .with("faction", target.getName())
-        );
+        target.alert("FactionNotice.PlayerJoined", context.getPlayer().getName());
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {

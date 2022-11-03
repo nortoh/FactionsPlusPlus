@@ -72,6 +72,7 @@ public class DeclareIndependenceCommand extends Command {
                     @Override
                     public void run() {
                         faction.upsertRelation(liege.getID(), FactionRelationType.Enemy);
+                        // TODO: localize this message
                         warRepository.create(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
                     }
                 });

@@ -38,12 +38,9 @@ public class CheckClaimCommand extends Command {
         final Faction owner = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
 
         if (owner == null) {
-            context.replyWith("LandIsUnclaimed");
-        } else {
-            context.replyWith(
-                this.constructMessage("LandClaimedBy")
-                    .with("player", owner.getName())
-            );
+            context.replyWith("CommandResponse.LandIsUnclaimed");
+            return;
         }
+        context.replyWith("CommandResponse.LandClaimedBy", owner.getName());
     }
 }

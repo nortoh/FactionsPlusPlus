@@ -86,10 +86,7 @@ public class DeclareWarCommand extends Command {
         }
 
         if (faction.isEnemy(opponent.getID())) {
-            context.replyWith(
-                this.constructMessage("AlertAlreadyAtWarWith")
-                    .with("faction", opponent.getName())
-            );
+            context.error("Error.War.AlreadyAtWar", faction.getName(), opponent.getName());
             return;
         }
 
@@ -103,13 +100,13 @@ public class DeclareWarCommand extends Command {
                 final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
                 if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
                         this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
-                    context.replyWith("CannotDeclareWarIfLiegeNotWeakened");
+                    context.error("Error.War.LiegeNotWeakened");
                 }
             }
         }
 
         if (faction.isLiege(opponent.getID())) {
-            context.replyWith("CannotDeclareWarOnLiege");
+            context.error("Error.War.Liege");
             return;
         }
 

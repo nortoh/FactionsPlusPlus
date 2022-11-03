@@ -20,9 +20,6 @@ import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class PromoteCommand extends Command {
 
@@ -55,7 +52,7 @@ public class PromoteCommand extends Command {
         final Faction faction = context.getExecutorsFaction();
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         if (faction.isOfficer(target.getUniqueId())) {
-            context.replyWith("PlayerAlreadyOfficer");
+            context.error("Error.PlayerAlreadyRole", context.getLocalizedString("Generic.Role.Officer"));
             return;
         }
         if (context.getPlayer().getUniqueId().equals(target.getUniqueId())) {
@@ -70,15 +67,12 @@ public class PromoteCommand extends Command {
                     faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
                     context.success("CommandResponse.Member.Promoted", target.getName());
                     if (target.isOnline() && target.getPlayer() != null) {
-                        context.messagePlayer(target.getPlayer(), "PromotedToOfficer");
+                        context.alertPlayer(target, "PlayerNotice.Promoted", context.getLocalizedString("Generic.Role.Officer"));
                     }
                 }
             });
         } else {
-            context.replyWith(
-                this.constructMessage("PlayerCantBePromotedBecauseOfLimit")
-                    .with("number", String.valueOf(maxOfficers))
-            );
+            context.error("Error.OfficerLimit");
         }
     }
 }
