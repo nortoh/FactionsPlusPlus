@@ -12,13 +12,13 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.builders.MessageBuilder;
 import factionsplusplus.events.internal.FactionClaimEvent;
 import factionsplusplus.events.internal.FactionUnclaimEvent;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionBase;
 import factionsplusplus.models.Gate;
+import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.ChunkUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
@@ -39,7 +39,6 @@ import static org.bukkit.Material.LADDER;
 public class ClaimService {
 
     private final ConfigService configService;
-    private final MessageService messageService;
     private final DataService dataService;
     private final FactionService factionService;
     private final InteractionAccessChecker interactionAccessChecker;
@@ -48,14 +47,12 @@ public class ClaimService {
     @Inject
     public ClaimService(
         ConfigService configService,
-        MessageService messageService,
         DataService dataService,
         FactionService factionService,
         InteractionAccessChecker interactionAccessChecker,
         Logger logger
     ) {
         this.configService = configService;
-        this.messageService = messageService;
         this.dataService = dataService;
         this.factionService = factionService;
         this.interactionAccessChecker = interactionAccessChecker;
@@ -73,18 +70,16 @@ public class ClaimService {
     public void radiusClaimAtLocation(int depth, Player claimant, Location location, Faction claimantsFaction) {
         int maxClaimRadius = this.configService.getInt("maxClaimRadius");
 
+        PlayerRecord member = this.dataService.getPlayerRecord(claimant.getUniqueId());
+
         // check if depth is valid
         if (depth < 0 || depth > maxClaimRadius) {
-            this.messageService.sendLocalizedMessage(
-                claimant,
-                new MessageBuilder("RadiusRequirement")
-                    .with("number", String.valueOf(maxClaimRadius))
-            );
+            member.error("Error.Claim.Radius", maxClaimRadius);
             return;
         }
 
         if (! this.dataService.getWorld(location.getWorld().getUID()).getFlag("allowClaims").toBoolean()) {
-            this.messageService.sendLocalizedMessage(claimant, "ClaimsDisabled");
+            member.error("Error.Claim.DisabledForWorld");
             return;
         }
 
@@ -114,11 +109,7 @@ public class ClaimService {
 
         // check if radius is valid
         if (radius <= 0 || radius > maxChunksUnclaimable) {
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("RadiusRequirement")
-                    .with("number", String.valueOf(maxChunksUnclaimable))
-            );
+            this.dataService.getPlayerRecord(player.getUniqueId()).error("RadiusRequirement", maxChunksUnclaimable);
             return;
         }
 
@@ -154,15 +145,17 @@ public class ClaimService {
         playerCoords[0] = player.getLocation().getChunk().getX();
         playerCoords[1] = player.getLocation().getChunk().getZ();
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+
         // handle admin bypass
         if (this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing()) {
             ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
             if (chunk != null) {
                 this.removeChunk(chunk, player, this.dataService.getFaction(chunk.getHolder()));
-                this.messageService.sendLocalizedMessage(player, "LandClaimedUsingAdminBypass");
+                member.success("CommandResponse.LandUnclaimedForcefully");
                 return;
             }
-            this.messageService.sendLocalizedMessage(player, "LandNotCurrentlyClaimed");
+            member.error("Error.Claim.NotClaimed");
             return;
         }
 
@@ -176,17 +169,13 @@ public class ClaimService {
         // ensure that the chunk is claimed by the player's faction.
         if (! chunk.getHolder().equals(playersFaction.getUUID())) {
             Faction chunkOwner = this.dataService.getFaction(chunk.getHolder());
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("LandClaimedBy")
-                    .with("player", chunkOwner.getName())
-            );
+            member.error("CommandResponse.LandClaimedBy", chunkOwner.getName());
             return;
         }
 
         // initiate removal
         this.removeChunk(chunk, player, playersFaction);
-        this.messageService.sendLocalizedMessage(player, "LandUnclaimed");
+        member.success("CommandResponse.LandUnclaimed");
     }
 
     /**
@@ -225,7 +214,7 @@ public class ClaimService {
         Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction != null) {
             if (this.isFactionExceedingTheirDemesneLimit(faction)) {
-                this.messageService.sendLocalizedMessage(player, "AlertMoreClaimedChunksThanPower");
+                this.dataService.getPlayerRecord(player.getUniqueId()).alert("FactionNotice.ExcessClaims");
             }
         }
     }
@@ -312,12 +301,14 @@ public class ClaimService {
 
     private void claimChunkAtLocation(Player claimant, double[] chunkCoords, World world, Faction claimantsFaction) {
 
+        PlayerRecord member = this.dataService.getPlayerRecord(claimant.getUniqueId());
+
         // if demesne limit enabled
         if (this.configService.getBoolean("limitLand")) {
             // if at demesne limit
             
             if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < this.factionService.getCumulativePowerLevel(claimantsFaction))) {
-                this.messageService.sendLocalizedMessage(claimant, "AlertReachedDemesne");
+                member.error("FactionNotice.ReachedDemesne");
                 return;
             }
         }
@@ -331,20 +322,20 @@ public class ClaimService {
 
             // if holder is player's faction
             if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && ! claimantsFaction.shouldAutoClaim()) {
-                this.messageService.sendLocalizedMessage(claimant, "LandAlreadyClaimedByYourFaction");
+                member.error("Error.Claim.FactionClaimedAlready");
                 return;
             }
 
             // if not at war with target faction
             if (! claimantsFaction.isEnemy(targetFaction.getID())) {
-                this.messageService.sendLocalizedMessage(claimant, "IsNotEnemy");
+                member.error("Error.Conquer.NotEnemies", targetFaction.getName());
                 return;
             }
 
             // surrounded chunk protection check
             if (this.configService.getBoolean("surroundedChunksProtected")) {
                 if (this.isClaimedChunkSurroundedByChunksClaimedBySameFaction(chunk)) {
-                    this.messageService.sendLocalizedMessage(claimant, "SurroundedChunkProtected");
+                    member.error("Error.Conquer.Surrounded", targetFaction.getName());
                     return;
                 }
             }
@@ -354,7 +345,7 @@ public class ClaimService {
 
             // if target faction does not have more land than their demesne limit
             if (! (targetFactionsCumulativePowerLevel < chunksClaimedByTargetFaction)) {
-                this.messageService.sendLocalizedMessage(claimant, "TargetFactionNotOverClaiming");
+                member.error("Error.Conquer.NotOverLimit", targetFaction.getName());
                 return;
             }
 
@@ -371,18 +362,8 @@ public class ClaimService {
 
                 Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                 this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                this.messageService.sendLocalizedMessage(
-                    claimant,
-                    new MessageBuilder("AlertLandConqueredFromAnotherFaction")
-                        .with("name", targetFaction.getName())
-                        .with("number", String.valueOf(this.dataService.getClaimedChunksForFaction(claimantsFaction).size()))
-                        .with("max", String.valueOf(this.factionService.getCumulativePowerLevel(claimantsFaction)))
-                );
-                this.messageService.sendFactionLocalizedMessage(
-                    targetFaction,
-                    new MessageBuilder("AlertLandConqueredFromYourFaction")
-                        .with("name", claimantsFaction.getName())
-                );
+                member.success("CommandResponse.LandConquered", targetFaction.getName(), this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), this.factionService.getCumulativePowerLevel(claimantsFaction));
+                targetFaction.alert("FactionNotice.LandConquered", claimantsFaction.getName());
             }
         } else {
             Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
@@ -391,12 +372,7 @@ public class ClaimService {
             if (! claimEvent.isCancelled()) {
                 // chunk not already claimed
                 this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                this.messageService.sendLocalizedMessage(
-                    claimant,
-                    new MessageBuilder("AlertLandClaimed")
-                        .with("number", String.valueOf(this.dataService.getClaimedChunksForFaction(claimantsFaction).size()))
-                        .with("max", String.valueOf(this.factionService.getCumulativePowerLevel(claimantsFaction)))
-                );
+                member.success("CommandResponse.LandClaimed", this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), this.factionService.getCumulativePowerLevel(claimantsFaction));
             }
         }
     }
@@ -449,10 +425,7 @@ public class ClaimService {
                 chunkToRemove.getWorldUUID().equals(baseChunk.getWorld().getUID())
             ) {
                 holdingFaction.removeBase(base.getName());
-                holdingFaction.message(
-                    new MessageBuilder("AlertFactionBaseRemoved")
-                        .with("name", base.getName())
-                );
+                holdingFaction.alert("FactionNotice.Base.Removed", base.getName());
             }
         }
 
