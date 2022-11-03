@@ -110,8 +110,9 @@ public class MoveHandler implements Listener {
 
     private void initiateAutoclaimCheck(Player player) {
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
+        // TODO: allow anybody who can claim land to autoclaim
         if (playersFaction != null && playersFaction.isOwner(player.getUniqueId())) {
-            if (playersFaction.getAutoClaimStatus()) {
+            if (playersFaction.shouldAutoClaim()) {
                 if (this.notAtDemesneLimit(playersFaction)) {
                     this.scheduleClaiming(player, playersFaction);
                 } else {

@@ -330,7 +330,7 @@ public class ClaimService {
             Faction targetFaction = this.dataService.getFaction(chunk.getHolder());
 
             // if holder is player's faction
-            if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && ! claimantsFaction.getAutoClaimStatus()) {
+            if (targetFaction.getName().equalsIgnoreCase(claimantsFaction.getName()) && ! claimantsFaction.shouldAutoClaim()) {
                 this.messageService.sendLocalizedMessage(claimant, "LandAlreadyClaimedByYourFaction");
                 return;
             }

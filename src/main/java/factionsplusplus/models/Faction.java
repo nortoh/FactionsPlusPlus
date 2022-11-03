@@ -301,12 +301,13 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     // Auto Claim
-    public void toggleAutoClaim() {
+    public boolean toggleAutoClaim() {
         this.autoclaim = ! autoclaim;
         this.persist();
+        return this.autoclaim;
     }
-
-    public boolean getAutoClaimStatus() {
+    
+    public boolean shouldAutoClaim() {
         return this.autoclaim;
     }
 
