@@ -12,6 +12,7 @@ import factionsplusplus.data.factories.LockedBlockFactory;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
+import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.BlockUtils.GenericBlockType;
 import factionsplusplus.builders.MessageBuilder;
@@ -59,18 +60,19 @@ public class LockService {
     public void handleLockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
         // if chunk is claimed
         ClaimedChunk chunk = this.dataService.getClaimedChunk(Objects.requireNonNull(event.getClickedBlock()).getLocation().getChunk());
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         if (chunk != null) {
 
             // if claimed by other faction
             if (! chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getID())) {
-                this.messageService.sendLocalizedMessage(player, "CanOnlyLockInFactionTerritory");
+                member.error("Error.Lock.ClaimedTerritory");
                 event.setCancelled(true);
                 return;
             }
 
             // if already locked
             if (this.dataService.isBlockLocked(clickedBlock)) {
-                this.messageService.sendLocalizedMessage(player, "BlockAlreadyLocked");
+                member.error("Error.Lock.AlreadyLocked");
                 event.setCancelled(true);
                 return;
             }
@@ -82,10 +84,10 @@ public class LockService {
                 return;
             }
             for (Block blockToLock : this.getAllRelatedBlocks(clickedBlock)) this.lockBlock(player, blockToLock);
-            this.messageService.sendLocalizedMessage(player, "Locked");
+            member.success("Generic.Locked");
             this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         } else {
-            this.messageService.sendLocalizedMessage(player, "CanOnlyLockBlocksInClaimedTerritory");
+            member.error("Error.Lock.ClaimedTerritory");
         }
         event.setCancelled(true);
     }
@@ -107,19 +109,20 @@ public class LockService {
         // if locked
         InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
         if (context == null) return;
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         if (this.dataService.isBlockLocked(clickedBlock)) {
             if (
                 this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) ||
                 context.isLockedBlockForceUnlock()
             ) {
                 for (Block blockToUnlock : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlockRepository().delete(blockToUnlock);
-                this.messageService.sendLocalizedMessage(player, "Unlocked");
+                member.success("Generic.Unlocked");
                 this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
                 event.setCancelled(true);
             }
             return;
         }
-        this.messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
+        member.error("Error.Lock.NotLocked");
         event.setCancelled(true);
     }
 
