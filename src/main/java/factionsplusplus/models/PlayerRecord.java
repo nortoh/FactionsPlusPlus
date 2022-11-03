@@ -6,7 +6,7 @@ package factionsplusplus.models;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.Objects;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +17,6 @@ import com.google.inject.name.Named;
 import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.data.beans.PlayerBean;
 import factionsplusplus.models.interfaces.Identifiable;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.StringUtils;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
@@ -25,10 +24,11 @@ import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 /**
  * @author Daniel McCoy Stephenson
@@ -41,33 +41,29 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     private double powerLost = 0;
     private ZonedDateTime lastLogout = ZonedDateTime.now();
 
-    private final MessageService messageService;
     private final BukkitAudiences adventure;
 
     @AssistedInject
-    public PlayerRecord(MessageService messageService, @Named("adventure") BukkitAudiences adventure) { 
-        this.messageService = messageService;
+    public PlayerRecord(@Named("adventure") BukkitAudiences adventure) { 
         this.adventure = adventure;
     }
 
     @AssistedInject
-    public PlayerRecord(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, MessageService messageService, @Named("adventure") BukkitAudiences adventure) {
+    public PlayerRecord(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, @Named("adventure") BukkitAudiences adventure) {
         this.uuid = uuid;
         this.logins = initialLogins;
         this.powerLevel = initialPowerLevel;
-        this.messageService = messageService;
         this.adventure = adventure;
     }
 
     @AssistedInject
-    public PlayerRecord(@Assisted PlayerBean bean, MessageService messageService, @Named("adventure") BukkitAudiences adventure) {
+    public PlayerRecord(@Assisted PlayerBean bean, @Named("adventure") BukkitAudiences adventure) {
         this.uuid = bean.getId();
         this.powerLevel = bean.getPower();
         this.adminBypass = bean.isAdminBypassing();
         this.powerLost = bean.getOfflinePowerLost();
         this.lastLogout = bean.getLastLogout();
         this.logins = bean.getLoginCount();
-        this.messageService = messageService;
         this.adventure = adventure;
     }
 
@@ -207,4 +203,39 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     public void alert(ComponentLike message) {
         this.message(message, MessageType.SYSTEM);
     }
+
+    public void alert(String localizationKey, Object... arguments) {
+        this.alert(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+        );
+    }
+
+    public void success(String localizationKey, Object... arguments) {
+        this.alert(
+            Component.text()
+                .append(
+                    Component.translatable("Generic.Success").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
+                )
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable(localizationKey).color(NamedTextColor.AQUA).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                )
+                .asComponent()
+        );
+    }
+
+    public void error(String localizationKey, Object... arguments) {
+        this.alert(
+            Component.text()
+                .append(
+                    Component.translatable("Generic.Error").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+                )
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                )
+                .asComponent()
+        );
+    }
+
 }
