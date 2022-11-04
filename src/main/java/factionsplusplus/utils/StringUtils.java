@@ -50,7 +50,7 @@ public class StringUtils {
     public static TextColor parseAsTextColor(String color) {
         TextColor result = NamedTextColor.NAMES.value(color.toUpperCase());
         if (result == null) result = TextColor.fromCSSHexString(color);
-        if (result == null) result = TextColor.fromCSSHexString(color);
+        if (result == null) result = TextColor.fromHexString(color);
         return result;
     }
 
