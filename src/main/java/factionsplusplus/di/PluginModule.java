@@ -8,6 +8,7 @@ import com.google.inject.name.Names;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.factories.*;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 
 public class PluginModule extends AbstractModule {
     private final FactionsPlusPlus factionsPlusPlus;
@@ -25,12 +26,19 @@ public class PluginModule extends AbstractModule {
         bind(String.class)
             .annotatedWith(Names.named("pluginVersion"))
             .toInstance(this.factionsPlusPlus.getVersion());
+        bind(BukkitAudiences.class)
+            .annotatedWith(Names.named("adventure"))
+            .toInstance(this.factionsPlusPlus.getAdventure());
+        bind(String.class)
+            .annotatedWith(Names.named("defaultLocaleTag"))
+            .toInstance(this.factionsPlusPlus.getDefaultLocaleTag());
         install(new FactoryModuleBuilder().build(InteractionContextFactory.class));
         install(new FactoryModuleBuilder().build(FactionFactory.class));
         install(new FactoryModuleBuilder().build(LockedBlockFactory.class));
         install(new FactoryModuleBuilder().build(WorldFactory.class));
         install(new FactoryModuleBuilder().build(WarFactory.class));
         install(new FactoryModuleBuilder().build(PlayerFactory.class));
+        install(new FactoryModuleBuilder().build(DuelFactory.class));
     }
 
     public Injector createInjector() {

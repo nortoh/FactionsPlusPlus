@@ -14,9 +14,6 @@ import factionsplusplus.services.DynmapIntegrationService;
 import factionsplusplus.builders.*;
 import org.bukkit.entity.Player;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class ClaimCommand extends Command {
 
@@ -50,7 +47,7 @@ public class ClaimCommand extends Command {
         if (context.getExecutorsFaction().getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
             if (! context.getExecutorsFaction().isOfficer(player.getUniqueId()) && ! context.getExecutorsFaction().isOwner(player.getUniqueId())) {
-                context.replyWith("AlertMustBeOfficerOrOwnerToClaimLand");
+                context.error("Error.Claim.NotPermitted");
                 return;
             }
         }
@@ -58,10 +55,10 @@ public class ClaimCommand extends Command {
         Integer depth = context.getIntegerArgument("radius");
         if (depth != null) {
             if (depth <= 0) {
-                context.replyWith("UsageClaimRadius");
-            } else {
-                this.claimService.radiusClaimAtLocation(depth, player, player.getLocation(), context.getExecutorsFaction());
+                context.error("Error.Claim.Radius.Invalid");
+                return;
             }
+            this.claimService.radiusClaimAtLocation(depth, player, player.getLocation(), context.getExecutorsFaction());
         } else {
             this.claimService.claimChunkAtLocation(player, player.getLocation(), context.getExecutorsFaction());
         }

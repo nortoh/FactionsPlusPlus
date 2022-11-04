@@ -21,9 +21,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class GrantAccessCommand extends Command {
 
@@ -89,22 +86,16 @@ public class GrantAccessCommand extends Command {
         if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
             InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
             if (interactionContext.isLockedBlockGrant()) {
-                context.replyWith("AlertAlreadyGrantingAccess");
+                context.cancellableError("Error.Lock.AlreadyGranting", "/fpp grantaccess cancel");
                 return false;
             }
-            context.replyWith(
-                this.constructMessage("CancelInteraction")
-                    .with("type", interactionContext.toString())
-            );
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
         return true;
     }
 
-    public void finalizeGrantRequest(CommandContext context, String target) {
-        context.replyWith(
-            this.constructMessage("RightClickGrantAccess")
-                .with("name", target)
-        );
+    public void finalizeRequest(CommandContext context, String target) {
+        context.cancellable("CommandResponse.RightClick.GrantAccess", "/fpp grantaccess cancel", target);
     }
 
     public void playerCommand(CommandContext context) {
@@ -112,15 +103,9 @@ public class GrantAccessCommand extends Command {
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID targetUUID = target.getUniqueId();
         if (targetUUID.equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotGrantAccessToSelf");
+            context.error("Error.GrantAccess.Self");
             return;
         }
-        context.getPlayer().sendMessage(context.getPlayer().getUniqueId(),
-        this.interactionContextFactory.create(
-            InteractionContext.Type.LockedBlockGrant,
-            InteractionContext.TargetType.Player,
-            targetUUID
-        ).toString());
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
             this.interactionContextFactory.create(
@@ -129,7 +114,7 @@ public class GrantAccessCommand extends Command {
                 targetUUID
             )
         );
-        this.finalizeGrantRequest(context, target.getName());
+        this.finalizeRequest(context, target.getName());
     }
 
     public void alliesCommand(CommandContext context) {
@@ -141,7 +126,7 @@ public class GrantAccessCommand extends Command {
                 InteractionContext.TargetType.Allies
             )
         );
-        this.finalizeGrantRequest(context, "all allied factions");
+        this.finalizeRequest(context, context.getLocalizedString("Generic.Ally.Plural").toLowerCase());
     }
 
     public void factionCommand(CommandContext context) {
@@ -153,7 +138,7 @@ public class GrantAccessCommand extends Command {
                 InteractionContext.TargetType.FactionMembers
             )
         );
-        this.finalizeGrantRequest(context, "all members of your faction");
+        this.finalizeRequest(context, context.getLocalizedString("Generic.FactionMembers").toLowerCase());
     }
 
     public void cancelCommand(CommandContext context) {
@@ -162,7 +147,7 @@ public class GrantAccessCommand extends Command {
             InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
             if (interactionContext.isLockedBlockGrant()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
-                context.replyWith("CommandCancelled");
+                context.success("CommandResponse.RightClick.Cancelled");
             }
         }
     }

@@ -20,9 +20,6 @@ import factionsplusplus.constants.GroupRole;
 import factionsplusplus.events.internal.FactionJoinEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class JoinCommand extends Command {
     private final Logger logger;
@@ -54,7 +51,7 @@ public class JoinCommand extends Command {
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         if (! this.dataService.hasFactionInvite(target, context.getPlayer())) {
-            context.replyWith("NotInvite");
+            context.error("Error.NotInvited", target.getName());
             return;
         }
         FactionJoinEvent joinEvent = new FactionJoinEvent(target, context.getPlayer());
@@ -63,22 +60,11 @@ public class JoinCommand extends Command {
             this.logger.debug("Join event was cancelled.");
             return;
         }
-        context.messageFaction(
-            target, 
-            this.constructMessage("HasJoined")
-                .with("name", context.getPlayer().getName())
-                .with("faction", target.getName())
-        );
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
-                dataService.removeFactionInvite(target, context.getPlayer());
-                context.replyWith(
-                    constructMessage("AlertJoinedFaction")
-                        .with("faction", target.getName())
-                );
-            }
+        target.alert("FactionNotice.PlayerJoined", context.getPlayer().getName());
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            target.upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
+            dataService.removeFactionInvite(target, context.getPlayer());
+            context.success("PlayerNotice.JoinedFaction", target.getName());
         });
     }
 }

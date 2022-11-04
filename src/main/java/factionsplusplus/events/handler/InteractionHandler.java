@@ -15,11 +15,12 @@ import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
+import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
+import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.PlayerUtils;
-import factionsplusplus.builders.MessageBuilder;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,7 +51,6 @@ import java.util.Objects;
 @Singleton
 public class InteractionHandler implements Listener {
     private final InteractionAccessChecker interactionAccessChecker;
-    private final MessageService messageService;
     private final FactionsPlusPlus factionsPlusPlus;
     private final LockService lockService;
     private final EphemeralData ephemeralData;
@@ -58,6 +58,7 @@ public class InteractionHandler implements Listener {
     private final DataService dataService;
     private final ClaimService claimService;
     private final LockedBlockFactory lockedBlockFactory;
+    private final Logger logger;
 
     @Inject
     public InteractionHandler(
@@ -66,20 +67,20 @@ public class InteractionHandler implements Listener {
         LockService lockService,
         EphemeralData ephemeralData,
         GateService gateService,
-        MessageService messageService,
         DataService dataService,
         ClaimService claimService,
-        LockedBlockFactory lockedBlockFactory
+        LockedBlockFactory lockedBlockFactory,
+        Logger logger
     ) {
         this.interactionAccessChecker = interactionAccessChecker;
         this.factionsPlusPlus = factionsPlusPlus;
         this.lockService = lockService;
         this.ephemeralData = ephemeralData;
         this.gateService = gateService;
-        this.messageService = messageService;
         this.claimService = claimService;
         this.dataService = dataService;
         this.lockedBlockFactory = lockedBlockFactory;
+        this.logger = logger;
     }
 
     @EventHandler()
@@ -93,14 +94,11 @@ public class InteractionHandler implements Listener {
             return;
         }
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         final Gate gate = this.dataService.getGateWithBlock(block);
         if (gate != null) {
             event.setCancelled(true);
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("BlockIsPartOfGateMustRemoveGate")
-                    .with("name", gate.getName())
-            );
+            member.error("Error.Gate.BlockPartOf", gate.getName());
             return;
         }
 
@@ -108,7 +106,7 @@ public class InteractionHandler implements Listener {
             boolean isOwner = this.dataService.getLockedBlock(block).getOwner().equals(player.getUniqueId());
             if (! isOwner) {
                 event.setCancelled(true);
-                this.messageService.sendLocalizedMessage(player, "AlertNonOwnership");
+                member.error("Error.Lock.NotOwner");
                 return;
             }
 
@@ -147,10 +145,12 @@ public class InteractionHandler implements Listener {
             return;
         }
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+
         if (BlockUtils.isChest(event.getBlock())) {
             boolean isNextToNonOwnedLockedChest = this.dataService.isBlockNextToNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest) {
-                this.messageService.sendLocalizedMessage(player, "CannotPlaceChestsNextToUnownedLockedChests");
+                member.alert("PlayerNotice.ChestNextToNotOwnedLockedChest");
                 event.setCancelled(true);
                 return;
             }
@@ -193,7 +193,7 @@ public class InteractionHandler implements Listener {
             boolean isUnderOrAboveNonOwnedLockedChest = this.dataService.isBlockUnderOrAboveNonOwnedLockedChest(event.getPlayer(), event.getBlock());
             if (isNextToNonOwnedLockedChest || isUnderOrAboveNonOwnedLockedChest) {
                 event.setCancelled(true);
-                this.messageService.sendLocalizedMessage(player, "CannotPlaceHoppersNextToUnownedLockedChests");
+                member.alert("PlayerNotice.HopperNextToNotOwnedLockedChest");
             }
         }
     }
@@ -217,6 +217,7 @@ public class InteractionHandler implements Listener {
             if (context.isLockedBlockUnlock()) this.lockService.handleUnlockingBlock(event, player, clickedBlock);
         }
 
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         LockedBlock lockedBlock = this.dataService.getLockedBlock(clickedBlock);
         if (lockedBlock != null) {
             boolean playerHasAccess = false;
@@ -230,11 +231,7 @@ public class InteractionHandler implements Listener {
             boolean isPlayerBypassing = this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
             if (! playerHasAccess && ! isPlayerBypassing) {
                 String owner = PlayerUtils.parseAsPlayer(lockedBlock.getOwner()).getName();
-                this.messageService.sendLocalizedMessage(
-                    player,
-                    new MessageBuilder("LockedBy")
-                        .with("name", owner)
-                );
+                member.alert("CommandResponse.Lock.Inquiry", owner);
                 event.setCancelled(true);
                 return;
             }
@@ -256,7 +253,7 @@ public class InteractionHandler implements Listener {
 
         } else {
             if (context != null && context.isLockedBlockAccessCommand()) {
-                messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
+                member.error("Error.Lock.NotLocked");
             }
         }
 
@@ -296,10 +293,8 @@ public class InteractionHandler implements Listener {
             // get chunk that armor stand is in
             location = armorStand.getLocation();
         } else if (clickedEntity instanceof ItemFrame) {
-            if (this.factionsPlusPlus.isDebugEnabled()) {
-                // TODO: use logger here
-                System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
-            }
+            this.logger.debug("DEBUG: ItemFrame interaction captured in PlayerInteractAtEntityEvent!");
+
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
 
             // get chunk that armor stand is in
@@ -336,10 +331,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerBucketFillEvent event) {
-        if (this.factionsPlusPlus.isDebugEnabled()) {
-            // TODO: use logger here
-            System.out.println("DEBUG: A player is attempting to fill a bucket!");
-        }
+        this.logger.debug("A player is attempting to fill a bucket!");
 
         Player player = event.getPlayer();
 
@@ -354,10 +346,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(PlayerBucketEmptyEvent event) {
-        if (this.factionsPlusPlus.isDebugEnabled()) {
-            // TODO: use logger here
-            System.out.println("DEBUG: A player is attempting to empty a bucket!");
-        }
+        this.logger.debug("A player is attempting to empty a bucket!");
 
         Player player = event.getPlayer();
 
@@ -372,10 +361,7 @@ public class InteractionHandler implements Listener {
 
     @EventHandler()
     public void handle(EntityPlaceEvent event) {
-        if (this.factionsPlusPlus.isDebugEnabled()) {
-            // TODO: use logger here
-            System.out.println("DEBUG: A player is attempting to place an entity!");
-        }
+        this.logger.debug("A player is attempting to place an entity!");
 
         Player player = event.getPlayer();
 
@@ -394,10 +380,7 @@ public class InteractionHandler implements Listener {
         Entity clickedEntity = event.getRightClicked();
 
         if (clickedEntity instanceof ItemFrame) {
-            if (this.factionsPlusPlus.isDebugEnabled()) {
-                // TODO: use logger here
-                System.out.println("DEBUG: ItemFrame interaction captured in PlayerInteractEntityEvent!");
-            }
+            this.logger.debug("ItemFrame interaction captured in PlayerInteractEntityEvent!");
             ItemFrame itemFrame = (ItemFrame) clickedEntity;
 
             // get chunk that armor stand is in

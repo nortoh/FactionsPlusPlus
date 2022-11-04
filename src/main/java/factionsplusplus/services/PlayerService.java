@@ -88,8 +88,10 @@ public class PlayerService {
         return playerRecord.getPower();
     }
 
-    public void increasePower(UUID playerUUID) {
-        this.increasePowerBy(playerUUID, this.configService.getInt("powerIncreaseAmount"));
+    public double increasePower(UUID playerUUID) {
+        double increaseAmount = this.configService.getDouble("powerIncreaseAmount");
+        this.increasePowerBy(playerUUID, increaseAmount);
+        return increaseAmount;
     }
 
     public void decreasePower(UUID playerUUID) {
@@ -132,8 +134,7 @@ public class PlayerService {
     private void initiatePowerIncrease(PlayerRecord record) {
         double maxPower = this.getMaxPower(record.getPlayerUUID());
         if (record.getPower() < maxPower && Objects.requireNonNull(getServer().getPlayer(record.getPlayerUUID())).isOnline()) {
-            this.increasePower(record.getPlayerUUID());
-            // TODO: re-implement messaging ALertPowerLevelIncreasedBY with amount being the config option as int "powerIncreaseAmount"
+            record.alert("PlayerNotice.PowerIncreasedBy", this.increasePower(record.getPlayerUUID()));
         }
     }
 

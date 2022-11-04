@@ -21,9 +21,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class RevokeAccessCommand extends Command {
 
@@ -90,22 +87,16 @@ public class RevokeAccessCommand extends Command {
         if (this.ephemeralData.getPlayersPendingInteraction().containsKey(playerUUID)) {
             InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
             if (interactionContext.isLockedBlockRevoke()) {
-                context.replyWith("AlreadyEnteredRevokeAccess");
+                context.cancellableError("Error.Lock.AlreadyRevoking", "/fpp revokeaccess cancel");
                 return false;
             }
-            context.replyWith(
-                this.constructMessage("CancelInteraction")
-                    .with("type", interactionContext.toString())
-            );
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
         return true;
     }
 
     public void finalizeRequest(CommandContext context, String target) {
-        context.replyWith(
-            this.constructMessage("RightClickRevokeAccess")
-                .with("name", target)
-        );
+        context.cancellable("CommandResponse.RightClick.RevokeAccess", "/fpp revokeaccess cancel", target);
     }
 
     public void playerCommand(CommandContext context) {
@@ -113,7 +104,7 @@ public class RevokeAccessCommand extends Command {
         final OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID targetUUID = target.getUniqueId();
         if (targetUUID.equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotRevokeAccessFromSelf");
+            context.error("Error.RevokeAccess.Self");
             return;
         }
         this.ephemeralData.getPlayersPendingInteraction().put(
@@ -136,7 +127,7 @@ public class RevokeAccessCommand extends Command {
                 InteractionContext.TargetType.Allies
             )
         );
-        this.finalizeRequest(context, "all allied factions");
+        this.finalizeRequest(context, context.getLocalizedString("Generic.Ally.Plural").toLowerCase());
     }
 
     public void factionCommand(CommandContext context) {
@@ -148,7 +139,7 @@ public class RevokeAccessCommand extends Command {
                 InteractionContext.TargetType.FactionMembers
             )
         );
-        this.finalizeRequest(context, "all members of your faction");
+        this.finalizeRequest(context, context.getLocalizedString("Generic.FactionMembers").toLowerCase());
     }
 
     public void cancelCommand(CommandContext context) {
@@ -157,7 +148,7 @@ public class RevokeAccessCommand extends Command {
             InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(playerUUID);
             if (interactionContext.isLockedBlockRevoke()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(playerUUID);
-                context.replyWith("Cancelled");
+                context.success("CommandResponse.RightClick.Cancelled");
             }
         }
     }

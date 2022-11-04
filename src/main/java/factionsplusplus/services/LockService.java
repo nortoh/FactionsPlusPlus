@@ -10,11 +10,15 @@ import com.google.inject.Singleton;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.data.factories.LockedBlockFactory;
 import factionsplusplus.models.ClaimedChunk;
+import factionsplusplus.models.Faction;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
+import factionsplusplus.models.PlayerRecord;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.BlockUtils.GenericBlockType;
-import factionsplusplus.builders.MessageBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -34,10 +38,10 @@ import java.util.stream.Collectors;
  */
 @Singleton
 public class LockService {
-    private final MessageService messageService;
     private final EphemeralData ephemeralData;
     private final DataService dataService;
     private final LockedBlockFactory lockedBlockFactory;
+    private final LocaleService localeService;
     private final static GenericBlockType[] LOCKABLE_BLOCKS = {
       GenericBlockType.Door,
       GenericBlockType.Chest,
@@ -49,43 +53,45 @@ public class LockService {
     };
 
     @Inject
-    public LockService(MessageService messageService, EphemeralData ephemeralData, DataService dataService, LockedBlockFactory lockedBlockFactory) {
-        this.messageService = messageService;
+    public LockService(EphemeralData ephemeralData, DataService dataService, LockedBlockFactory lockedBlockFactory, LocaleService localeService) {
         this.ephemeralData = ephemeralData;
         this.dataService = dataService;
         this.lockedBlockFactory = lockedBlockFactory;
+        this.localeService = localeService;
     }
 
     public void handleLockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
         // if chunk is claimed
         ClaimedChunk chunk = this.dataService.getClaimedChunk(Objects.requireNonNull(event.getClickedBlock()).getLocation().getChunk());
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         if (chunk != null) {
 
             // if claimed by other faction
             if (! chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getID())) {
-                this.messageService.sendLocalizedMessage(player, "CanOnlyLockInFactionTerritory");
+                member.error("Error.Lock.ClaimedTerritory");
                 event.setCancelled(true);
                 return;
             }
 
             // if already locked
             if (this.dataService.isBlockLocked(clickedBlock)) {
-                this.messageService.sendLocalizedMessage(player, "BlockAlreadyLocked");
+                member.error("Error.Lock.AlreadyLocked");
                 event.setCancelled(true);
                 return;
             }
 
             // if the block is a lockable type
             if (! BlockUtils.isGenericBlockType(clickedBlock, LOCKABLE_BLOCKS)) {
-                this.messageService.sendLocalizedMessage(player, "CanOnlyLockSpecificBlocks");
+                // TODO: localize block names using minecraft localization
+                member.error("Error.Lock.CertainBlocks");
                 event.setCancelled(true);
                 return;
             }
             for (Block blockToLock : this.getAllRelatedBlocks(clickedBlock)) this.lockBlock(player, blockToLock);
-            this.messageService.sendLocalizedMessage(player, "Locked");
+            member.success("Generic.Locked");
             this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         } else {
-            this.messageService.sendLocalizedMessage(player, "CanOnlyLockBlocksInClaimedTerritory");
+            member.error("Error.Lock.ClaimedTerritory");
         }
         event.setCancelled(true);
     }
@@ -107,26 +113,28 @@ public class LockService {
         // if locked
         InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
         if (context == null) return;
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         if (this.dataService.isBlockLocked(clickedBlock)) {
             if (
                 this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) ||
                 context.isLockedBlockForceUnlock()
             ) {
                 for (Block blockToUnlock : this.getAllRelatedBlocks(clickedBlock)) this.dataService.getLockedBlockRepository().delete(blockToUnlock);
-                this.messageService.sendLocalizedMessage(player, "Unlocked");
+                member.success("Generic.Unlocked");
                 this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
                 event.setCancelled(true);
             }
             return;
         }
-        this.messageService.sendLocalizedMessage(player, "BlockIsNotLocked");
+        member.error("Error.Lock.NotLocked");
         event.setCancelled(true);
     }
 
     public void handleGrantingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         // if not owner
         if (! this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
-            this.messageService.sendLocalizedMessage(player, "NotTheOwnerOfThisBlock");
+            member.error("Error.Lock.NotOwner");
             return;
         }
         InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
@@ -140,42 +148,39 @@ public class LockService {
                 break;
             case Allies:
                 lockedBlocks.forEach(b -> b.allowAllies());
-                grantedName = "all allied factions";
+                grantedName = this.localeService.get("Generic.Ally.Plural").toLowerCase();
                 break;
             case FactionMembers:
                 lockedBlocks.forEach(b -> b.allowFactionMembers());
-                grantedName = "all members of your faction";
+                grantedName = this.localeService.get("Generic.FactionMembers").toLowerCase();
                 break;
         }
-        this.messageService.sendLocalizedMessage(
-            player,
-            new MessageBuilder("AlertAccessGrantedTo")
-                .with("name", grantedName)
-        );
+        member.success("CommandResponse.AccessGranted", grantedName);
         this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         event.setCancelled(true);
     }
 
     public void handleCheckingAccess(PlayerInteractEvent event, LockedBlock lockedBlock, Player player) {
-        this.messageService.sendLocalizedMessage(player, "FollowingPlayersHaveAccess");
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        member.alert(Component.translatable("AccessList.Lock.Title").decorate(TextDecoration.BOLD).color(NamedTextColor.GOLD));
         for (UUID playerUUID : lockedBlock.getAccessList()) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(playerUUID);
-            this.messageService.sendLocalizedMessage(
-                player, 
-                new MessageBuilder("FPHAList")
-                    .with("name", target.getName())
-            );
+            member.alert("AccessList.Lock.Player", target.getName());
         }
-        if (lockedBlock.shouldAllowAllies()) this.messageService.sendLocalizedMessage(player, "FPHAAllies");
-        if (lockedBlock.shouldAllowFactionMembers()) this.messageService.sendLocalizedMessage(player, "FPHAMembers");
+        if (lockedBlock.shouldAllowAllies()) member.alert("AccessList.Lock.Allies");
+        if (lockedBlock.shouldAllowFactionMembers()) {
+            Faction playersFaction = this.dataService.getPlayersFaction(player);
+            if (playersFaction != null) member.alert("AccessList.Lock.FactionMembers", playersFaction.getName());
+        }
         this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
         event.setCancelled(true);
     }
 
     public void handleRevokingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
         // if not owner
         if (! this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
-            this.messageService.sendLocalizedMessage(player, "NotTheOwnerOfThisBlock");
+            member.error("Error.Lock.NotOwner");
             return;
         }
 
@@ -190,19 +195,15 @@ public class LockService {
                 break;
             case Allies:
                 lockedBlocks.forEach(b -> b.denyAllies());
-                revokedName = "all allied factions";
+                revokedName = this.localeService.get("Generic.Ally.Plural").toLowerCase();
                 break;
             case FactionMembers:
                 lockedBlocks.forEach(b -> b.denyFactionMembers());
-                revokedName = "all members of your faction";
+                revokedName = this.localeService.get("Generic.FactionMembers").toLowerCase();
                 break;
         }
 
-        this.messageService.sendLocalizedMessage(
-            player,
-            new MessageBuilder("AlertAccessRevokedFor")
-                .with("name", revokedName)
-        );
+        member.success("CommandResponse.AccessRevoked", revokedName);
 
         this.ephemeralData.getPlayersPendingInteraction().remove(player.getUniqueId());
 

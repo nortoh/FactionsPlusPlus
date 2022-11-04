@@ -5,11 +5,10 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.utils.Pair;
 import factionsplusplus.utils.PlayerUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import factionsplusplus.utils.Comparators;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.builders.MessageBuilder;
-import factionsplusplus.builders.MultiMessageBuilder;
-import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.data.factories.FactionFactory;
 import factionsplusplus.data.repositories.ClaimedChunkRepository;
 import factionsplusplus.data.repositories.FactionRepository;
@@ -22,6 +21,7 @@ import factionsplusplus.models.ConfigurationFlag;
 import javax.inject.Provider;
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -204,7 +204,7 @@ public class FactionService {
             .stream()
             .filter(faction -> this.getCumulativePowerLevel(faction) == 0)
             .forEach(faction -> {
-                // TODO: send "AlertDisbandmentDueToZeroPower" in some way to the faction
+                faction.alert("FactionNotice.Disbandment.ZeroPower");
                 this.removeFaction(faction);
             });
     }
@@ -241,48 +241,41 @@ public class FactionService {
             .map(Faction::toString)
             .collect(Collectors.joining(", "));
     }
-
-    public GenericMessageBuilder generateFactionInfo(Faction faction) {
-        MultiMessageBuilder builder = new MultiMessageBuilder();
-        // Faction header
-        builder.add(new MessageBuilder("FactionInfo.Title"));
-        // Faction name
-        builder.add(new MessageBuilder("FactionInfo.Name").with("name", faction.getName()));
+    
+    // TODO: new messaging api
+    public List<ComponentLike> generateFactionInfo(Faction faction) {
+        List<ComponentLike> factionInfo = new ArrayList<>();
+        // Header
+        factionInfo.add(Component.translatable("FactionInfo.Title"));
+        // Name
+        factionInfo.add(Component.translatable("FactionInfo.Name").args(Component.text(faction.getName())));
         // Owner
-        builder.add(new MessageBuilder("FactionInfo.Owner").with("owner", PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName()));
+        factionInfo.add(Component.translatable("FactionInfo.Owner").args(Component.text(PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName())));
         // Description (if applicable)
-        if (faction.getDescription() != null) builder.add(new MessageBuilder("FactionInfo.Description").with("desc", faction.getDescription()));
+        if (faction.getDescription() != null) factionInfo.add(Component.translatable("FactionInfo.Description").args(Component.text(faction.getDescription())));
         // Population
-        builder.add(new MessageBuilder("FactionInfo.Population").with("amount", String.valueOf(faction.getMemberCount())));
+        factionInfo.add(Component.translatable("FactionInfo.Population").args(Component.text(faction.getMemberCount())));
         // Allies (if applicable)
-        if (! faction.getAllies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.Allies").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getAllies()))));
+        if (! faction.getAllies().isEmpty()) factionInfo.add(Component.translatable("FactionInfo.Allies").args(Component.text(this.getCommaSeparatedFactionNames(faction.getAllies()))));
         // Enemies (if applicable)
-        if (! faction.getEnemies().isEmpty()) builder.add(new MessageBuilder("FactionInfo.AtWarWith").with("factions", String.join(", ", this.getCommaSeparatedFactionNames(faction.getEnemies()))));
-        // Power level
+        if (! faction.getEnemies().isEmpty()) factionInfo.add(Component.translatable("FactionInfo.Enemies").args(Component.text(this.getCommaSeparatedFactionNames(faction.getEnemies()))));
+        // Power Level
         final int claimedChunks = this.claimedChunkRepository.getAllForFaction(faction).size();
         final int cumulativePowerLevel = this.getCumulativePowerLevel(faction);
-        builder.add(new MessageBuilder("FactionInfo.PowerLevel").with("level", String.valueOf(cumulativePowerLevel)).with("max", String.valueOf(this.getMaximumCumulativePowerLevel(faction))));
+        factionInfo.add(Component.translatable("FactionInfo.PowerLevel").args(Component.text(cumulativePowerLevel), Component.text(this.getMaximumCumulativePowerLevel(faction))));
         // Demesne Size
-        builder.add(new MessageBuilder("FactionInfo.DemesneSize").with("number", String.valueOf(claimedChunks)).with("max", String.valueOf(cumulativePowerLevel)));
-
-        // Bonus power enabled?
-        if (faction.getBonusPower() != 0) builder.add(new MessageBuilder("BonusPower").with("amount", String.valueOf(faction.getBonusPower())));
-
-        // Is Vassal?
-        if (faction.hasLiege()) {
-            Faction liege = this.factionRepository.get(faction.getLiege());
-            if (liege != null) builder.add(new MessageBuilder("Liege").with("name", liege.getName()));
-        }
-
-        // Is Liege?
+        factionInfo.add(Component.translatable("FactionInfo.DemesneSize").args(Component.text(claimedChunks), Component.text(cumulativePowerLevel)));
+        // Bonus Power (if applicable)
+        if (faction.getBonusPower() != 0) factionInfo.add(Component.translatable("FactionInfo.BonusPower").args(Component.text(faction.getBonusPower())));
+        // Liege (if applicable)
+        if (faction.hasLiege()) factionInfo.add(Component.translatable("FactionInfo.Liege").args(Component.text(this.factionRepository.get(faction.getLiege()).getName())));
+        // Vassals (if applicable)
         if (faction.isLiege()) {
             int vassalContribution = this.calculateCumulativePowerLevelWithVassalContribution(faction) - this.calculateCumulativePowerLevelWithoutVassalContribution(faction);
             if (this.isWeakened(faction)) vassalContribution = 0;
-            builder.add(new MessageBuilder("Vassals").with("name", this.getCommaSeparatedFactionNames(faction.getVassals())));
-            builder.add(new MessageBuilder("VassalContribution").with("amount", String.valueOf(vassalContribution)));
+            factionInfo.add(Component.translatable("FactionInfo.Vassals").args(Component.text(this.getCommaSeparatedFactionNames(faction.getVassals()))));
+            factionInfo.add(Component.translatable("FactionInfo.VassalContribution").args(Component.text(vassalContribution)));
         }
-
-        // Send off!
-        return builder;
+        return factionInfo;
     }
 }

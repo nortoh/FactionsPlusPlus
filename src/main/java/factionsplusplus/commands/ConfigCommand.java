@@ -13,18 +13,15 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.LocaleService;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
-import factionsplusplus.builders.MultiMessageBuilder;
 import factionsplusplus.constants.SetConfigResult;
-
-import org.bukkit.ChatColor;
 
 import java.util.AbstractMap;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class ConfigCommand extends Command {
 
@@ -92,13 +89,10 @@ public class ConfigCommand extends Command {
 
     public void getCommand(CommandContext context) {
         final ConfigOption configOption = context.getConfigOptionArgument("config option");
-        context.replyWith(
-            new MultiMessageBuilder()
-                .add(this.constructMessage("ConfigOptionInfo.Title").with("name", configOption.getName()))
-                .add(this.constructMessage("ConfigOptionInfo.Description").with("desc", configOption.getDescription()))
-                .add(this.constructMessage("ConfigOptionInfo.DefaultValue").with("value", String.valueOf(configOption.getDefaultValue())))
-                .add(this.constructMessage("ConfigOptionInfo.Value").with("value", this.configService.getString(configOption.getName())))
-        );
+        context.getExecutorsAudience().sendMessage(Component.translatable("ConfigurationOption.Title").args(Component.text(configOption.getName())).color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD));
+        context.replyWith("ConfigurationOption.Description", configOption.getDescription());
+        context.replyWith("ConfigurationOption.Default", configOption.getDefaultValue());
+        context.replyWith("ConfigurationOption.Current", this.configService.getString(configOption.getName()));
     }
 
     public void setCommand(CommandContext context) {
@@ -107,24 +101,13 @@ public class ConfigCommand extends Command {
         AbstractMap.SimpleEntry<SetConfigResult, String> result = this.configService.setConfigOption(configOption.getName(), configValue);
         switch(result.getKey()) {
             case ValueSet:
-                context.replyWith(
-                    this.constructMessage("ConfigValueSet")
-                        .with("option", configOption.getName())
-                        .with("value", result.getValue())
-                );
+                context.success("CommandResponse.Config.Set", configOption.getName(), result.getValue());
                 break;
             case NotExpectedType:
-                context.replyWith(
-                    this.constructMessage("ConfigValueInvalid")
-                        .with("option", configOption.getName())
-                        .with("type", result.getValue())
-                );
+                context.error("Error.Setting.InvalidValue", result.getValue(), configOption.getName());
                 break;
             case NotUserSettable:
-                context.replyWith(
-                    this.constructMessage("ConfigValueNotUserSettable")
-                        .with("option", configOption.getName())
-                );
+                context.error("Error.Setting.NotUserSettable", configOption.getName());
                 break;
             default:
                 break;
@@ -134,6 +117,6 @@ public class ConfigCommand extends Command {
     public void reloadCommand(CommandContext context) {
         this.factionsPlusPlus.reloadConfig();
         this.localeService.reloadLanguage();
-        context.reply(ChatColor.GREEN + "Config reloaded.");
+        context.success("CommandResponse.Config.Reloaded");
     }
 }

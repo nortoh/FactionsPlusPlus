@@ -12,9 +12,11 @@ import factionsplusplus.models.Duel;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.RelationChecker;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,16 +33,14 @@ public class DamageHandler implements Listener {
     private final EphemeralData ephemeralData;
     private final ConfigService configService;
     private final RelationChecker relationChecker;
-    private final MessageService messageService;
     private final DataService dataService;
 
     @Inject
-    public DamageHandler(Logger logger, EphemeralData ephemeralData, ConfigService configService, RelationChecker relationChecker, MessageService messageService, DataService dataService) {
+    public DamageHandler(Logger logger, EphemeralData ephemeralData, ConfigService configService, RelationChecker relationChecker, DataService dataService) {
         this.logger = logger;
         this.ephemeralData = ephemeralData;
         this.configService = configService;
         this.relationChecker = relationChecker;
-        this.messageService = messageService;
         this.dataService = dataService;
     }
 
@@ -51,16 +51,16 @@ public class DamageHandler implements Listener {
      */
     @EventHandler()
     public void handle(EntityDamageByEntityEvent event) {
-        Player attacker = getAttacker(event);
-        Player victim = getVictim(event);
+        Player attacker = this.getAttacker(event);
+        Player victim = this.getVictim(event);
 
         if (attacker == null || victim == null) {
-            logger.debug("Attacker and/or victim was null in the DamageHandler class.");
-            handleEntityDamage(attacker, event);
+            this.logger.debug("Attacker and/or victim was null in the DamageHandler class.");
+            this.handleEntityDamage(attacker, event);
             return;
         }
 
-        handlePlayerVersusPlayer(attacker, victim, event);
+        this.handlePlayerVersusPlayer(attacker, victim, event);
     }
 
     /**
@@ -237,14 +237,14 @@ public class DamageHandler implements Listener {
         boolean friendlyFireAllowed = faction.getFlag("allowFriendlyFire").toBoolean();
         if (! friendlyFireAllowed) {
             event.setCancelled(true);
-            this.messageService.sendLocalizedMessage(attacker, "CannotAttackFactionMember");
+            this.dataService.getPlayerRecord(attacker.getUniqueId()).alert(Component.translatable("Error.Attack.FactionMember").color(NamedTextColor.RED));
         }
     }
 
     private void handleNonEnemyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
         if (this.configService.getBoolean("warsRequiredForPVP")) {
             event.setCancelled(true);
-            this.messageService.sendLocalizedMessage(attacker, "CannotAttackNonWarringPlayer");
+            this.dataService.getPlayerRecord(attacker.getUniqueId()).alert(Component.translatable("Error.Attack.NotAtWar").color(NamedTextColor.RED));
         }
     }
 }

@@ -4,6 +4,9 @@ import java.util.Arrays;
 
 import org.bukkit.ChatColor;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+
 public class StringUtils {
     public final static String[] BOOLEAN_VALUES = {"yes", "no", "true", "false", "on", "off"};
     
@@ -44,6 +47,13 @@ public class StringUtils {
             .orElse(ChatColor.WHITE);
     }
 
+    public static TextColor parseAsTextColor(String color) {
+        TextColor result = NamedTextColor.NAMES.value(color.toUpperCase());
+        if (result == null) result = TextColor.fromCSSHexString(color);
+        if (result == null) result = TextColor.fromHexString(color);
+        return result;
+    }
+
     public static String colorize(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
     }
@@ -58,5 +68,15 @@ public class StringUtils {
     public static String prefixWithZero(Number value) {
         String tmp = String.valueOf(value);
         return tmp.length() == 0 ? ("00") : (tmp.length() == 1 ? ("0" + value) : (tmp));
+    }
+
+    /**
+     * Method to create an array of objects for parameter parsing.
+     * 
+     * @param list of values
+     * @return Object[]
+     */
+    public static Object[] arrayFrom(Object... objects) {
+        return objects;
     }
 }

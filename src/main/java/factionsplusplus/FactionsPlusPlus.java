@@ -13,6 +13,9 @@ import factionsplusplus.externalapi.FactionsPlusPlusAPI;
 import factionsplusplus.integrators.PlaceholderAPI;
 import factionsplusplus.services.*;
 import factionsplusplus.utils.extended.Scheduler;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.translation.GlobalTranslator;
+
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -42,7 +45,7 @@ public class FactionsPlusPlus extends JavaPlugin {
     @Inject private LocaleService localeService;
     @Inject private Provider<DynmapIntegrationService> dynmapService;
     @Inject private PlayerService playerService;
-
+    private BukkitAudiences adventure;
     private Injector injector;
 
     public Injector getInjector() {
@@ -58,8 +61,10 @@ public class FactionsPlusPlus extends JavaPlugin {
      */
     @Override
     public void onEnable() {
+        this.adventure = BukkitAudiences.create(this);
         this.injector = (new PluginModule(this)).createInjector();
         this.initializeConfig();
+        this.initializeTranslations();
         this.load();
         this.scheduleRecurringTasks();
         this.registerEventHandlers();
@@ -77,6 +82,10 @@ public class FactionsPlusPlus extends JavaPlugin {
         this.dataService.save();
         this.dataService.disable();
         this.localeService.saveLanguage();
+        if (this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
+        }
     }
 
     /**
@@ -140,6 +149,23 @@ public class FactionsPlusPlus extends JavaPlugin {
     }
 
     /**
+     * Creates or loads language files, depending on the situation.
+     */
+    public void initializeTranslations() {
+        this.localeService.createLanguageFile();
+        GlobalTranslator.get().addSource(this.localeService.getRegistry());
+    }
+
+    /**
+     * Retrieves the default locale tag for the server.
+     */
+    public String getDefaultLocaleTag() {
+        final String defaultLanguage = getConfig().getString("language");
+        if (defaultLanguage == null) return "en_US";
+        return defaultLanguage;
+    }
+
+    /**
      * Creates or loads the config, depending on the situation.
      */
     private void initializeConfig() {
@@ -163,6 +189,13 @@ public class FactionsPlusPlus extends JavaPlugin {
 
     public String getStoragePath() {
         return getDataFolder().getAbsolutePath();
+    }
+
+    public BukkitAudiences getAdventure() {
+        if (this.adventure == null) {
+            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return this.adventure;
     }
 
     /**

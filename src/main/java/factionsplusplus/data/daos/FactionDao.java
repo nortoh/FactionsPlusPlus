@@ -37,7 +37,7 @@ public interface FactionDao {
             prefix = :getPrefix,
             description = :getDescription,
             bonus_power = :getBonusPower,
-            should_autoclaim = :getAutoClaimStatus
+            should_autoclaim = :shouldAutoClaim
         WHERE
             id = :getUUID        
     """)
@@ -49,7 +49,7 @@ public interface FactionDao {
             prefix = :getPrefix,
             description = :getDescription,
             bonus_power = :getBonusPower,
-            should_autoclaim = :getAutoClaimStatus
+            should_autoclaim = :shouldAutoClaim
         WHERE
             id = :getUUID        
     """)

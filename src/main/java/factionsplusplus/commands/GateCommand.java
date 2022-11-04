@@ -24,9 +24,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.List;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class GateCommand extends Command {
 
@@ -111,20 +108,17 @@ public class GateCommand extends Command {
     public Gate doCommonBlockChecks(CommandContext context) {
         final Block targetBlock = context.getPlayer().getTargetBlock(null, 16);
         if (targetBlock.getType().equals(Material.AIR)) {
-            context.replyWith("NoBlockDetectedToCheckForGate");
+            context.error("Error.Gate.NoBlock");
             return null;
         }
         final Gate gate = this.dataService.getGateWithBlock(targetBlock);
         if (gate == null) {
-            context.replyWith("TargetBlockNotPartOfGate");
+            context.error("Error.Gate.BlockNotPartOf");
             return null;
         }
         final Faction gateFaction = this.dataService.getFaction(gate.getFaction());
         if (gateFaction == null) {
-            context.replyWith(
-                this.constructMessage("ErrorCouldNotFindGatesFaction")
-                    .with("name", gate.getName())
-            );
+            context.error("Error.Gate.UnknownFaction", gate.getName());
             return null;
         }
         return gate;
@@ -134,23 +128,18 @@ public class GateCommand extends Command {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
             this.dataService.removeGate(targetGate);
-            context.replyWith(
-                this.constructMessage("RemovedGate")
-                    .with("name", targetGate.getName())
-            );
+            context.success("CommandResponse.Gate.Removed", targetGate.getName());
         }
     }
 
     public void renameCommand(CommandContext context) {
         Gate targetGate = this.doCommonBlockChecks(context);
         if (targetGate != null) {
+            final String oldName = targetGate.getName();
             final String newName = context.getStringArgument("new name");
             targetGate.setName(newName);
             this.dataService.getGateRepository().persist(targetGate);
-            context.replyWith(
-                this.constructMessage("AlertChangedGateName")
-                    .with("name", targetGate.getName())
-            );
+            context.success("CommandResponse.Gate.Renamed", oldName, newName);
         }
     }
 
@@ -159,7 +148,7 @@ public class GateCommand extends Command {
         if (interactionContext != null) {
             if (interactionContext.isGateCreating()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
-                context.replyWith("CreatingGateCancelled");
+                context.success("CommandResponse.Gate.Cancelled");
             }
         }
     }
@@ -167,32 +156,26 @@ public class GateCommand extends Command {
     public void listCommand(CommandContext context) {
         List<Gate> factionGates = this.dataService.getFactionsGates(context.getExecutorsFaction());
         if (factionGates.size() > 0) {
-            context.replyWith("FactionGate");
+            context.replyWith("GateList.Title", context.getExecutorsFaction().getName());
             for (Gate gate : factionGates) {
-                context.replyWith(
-                    this.constructMessage("GateLocation")
-                        .with("name", gate.getName())
-                        .with("location", gate.coordsToString())
-                );
+                context.replyWith("GateList.Gate", gate.getName(), gate.coordsToString());
             }
             return;
         }
-        context.replyWith("AlertNoGatesDefined");
+        context.error("Error.Gate.NoneDefined");
     }
 
     public void createCommand(CommandContext context) {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext != null) {
             if (interactionContext.isGateCreating()) {
-                context.replyWith("AlertAlreadyCreatingGate");
+                context.error("Error.Gate.AlreadyCreating");
                 return;
             }
-            context.replyWith(
-                this.constructMessage("CancelInteraction")
-                    .with("type", interactionContext.toString())
-            );
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
         String gateName = context.getStringArgument("gate name");
+        // TODO: new messaging api
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
@@ -201,6 +184,7 @@ public class GateCommand extends Command {
                 new Gate(gateName)
             )
         );
+        // TODO: new messaging api
         context.replyWith("CreatingGateClickWithHoe");
     }
 }

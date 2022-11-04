@@ -4,11 +4,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.DeathService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.services.PlayerService;
+import net.kyori.adventure.text.format.NamedTextColor;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,19 +19,19 @@ public class DeathHandler implements Listener {
     private final ConfigService configService;
     private final DeathService deathService;
     private final PlayerService playerService;
-    private final MessageService messageService;
+    private final DataService dataService;
 
     @Inject
     public DeathHandler(
         ConfigService configService,
         DeathService deathService,
         PlayerService playerService,
-        MessageService messageService
+        DataService dataService
     ) {
         this.configService = configService;
         this.deathService = deathService;
         this.playerService = playerService;
-        this.messageService = messageService;
+        this.dataService = dataService;
     }
 
     @EventHandler()
@@ -49,7 +49,7 @@ public class DeathHandler implements Listener {
             return;
         }
         this.playerService.grantPowerDueToKill(killer.getUniqueId());
-        this.messageService.sendLocalizedMessage(killer, "PowerLevelHasIncreased");
+        this.dataService.getPlayerRecord(killer.getUniqueId()).alert("PlayerNotice.PowerIncreased");
         event.getDrops().add(this.deathService.getHead(player));
     }
 
@@ -60,8 +60,7 @@ public class DeathHandler implements Listener {
     private void decreaseDyingPlayersPower(Player player) {
         double powerLost = this.playerService.revokePowerDueToDeath(player.getUniqueId());
         if (powerLost != 0) {
-            // TODO: use message service here
-            player.sendMessage(ChatColor.RED + "You lost " + powerLost + " power.");
+            this.dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.PowerDecreasedBy", NamedTextColor.RED, powerLost);
         }
     }
 }

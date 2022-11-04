@@ -17,9 +17,6 @@ import factionsplusplus.builders.CommandBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class LeaveCommand extends Command {
     private final EphemeralData ephemeralData;
@@ -62,17 +59,10 @@ public class LeaveCommand extends Command {
         }
 
         this.ephemeralData.getPlayersInFactionChat().remove(player.getUniqueId()); // Remove from Faction Chat.
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                faction.clearMember(player.getUniqueId());
-                context.replyWith("AlertLeftFaction");
-                faction.message(
-                    constructMessage("AlertLeftFactionTeam")
-                        .with("name", player.getName())
-                        .with("faction", faction.getName())
-                );
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            faction.clearMember(player.getUniqueId());
+            context.success("PlayerNotice.LeftFaction");
+            faction.alert("FactionNotice.PlayerLeft", player.getName());
         });
     }
 }

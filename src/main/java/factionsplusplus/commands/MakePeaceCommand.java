@@ -6,11 +6,15 @@ package factionsplusplus.commands;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.War;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import org.bukkit.Bukkit;
 
@@ -19,16 +23,14 @@ import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.events.internal.FactionWarEndEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class MakePeaceCommand extends Command {
 
     private final WarRepository warRepository;
+    private final BukkitAudiences adventure;
 
     @Inject
-    public MakePeaceCommand(WarRepository warRepository) {
+    public MakePeaceCommand(WarRepository warRepository, @Named("adventure") BukkitAudiences adventure) {
         super(
             new CommandBuilder()
                 .withName("makepeace")
@@ -48,29 +50,23 @@ public class MakePeaceCommand extends Command {
                 )
         );
         this.warRepository = warRepository;
+        this.adventure = adventure;
     }
     
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         final Faction faction = context.getExecutorsFaction();
         if (target == faction) {
-            context.replyWith("CannotMakePeaceWithSelf");
+            context.error("Error.MakePeace.Self");
             return;
         }
         if (faction.isTruceRequested(target.getID())) {
-            context.replyWith("AlertAlreadyRequestedPeace");
+            context.error("Error.MakePeace.AlreadyRequested", target.getName());
             return;
         }
         faction.requestTruce(target.getID());
-        context.replyWith(
-            this.constructMessage("AttemptedPeace")
-                .with("name", target.getName())
-        );
-        target.message(
-            this.constructMessage("HasAttemptedToMakePeaceWith")
-                .with("f1", faction.getName())
-                .with("f2", target.getName())
-        );
+        faction.alert("FactionNotice.PeaceRequest.Source", target.getName());
+        target.alert("FactionNotice.PeaceRequest.Target", faction.getName());
         if (faction.isTruceRequested(target.getID()) && target.isTruceRequested(faction.getID())) {
             FactionWarEndEvent warEndEvent = new FactionWarEndEvent(faction, target);
             Bukkit.getPluginManager().callEvent(warEndEvent);
@@ -90,10 +86,8 @@ public class MakePeaceCommand extends Command {
                         }
                         War war = warRepository.getActiveWarsBetween(target.getID(), faction.getID());
                         war.end();
-                        context.messageAllPlayers(
-                            constructMessage("AlertNowAtPeaceWith")
-                                .with("p1", faction.getName())
-                                .with("p2", target.getName())
+                        adventure.players().sendMessage(
+                            Component.translatable("GlobalNotice.War.Ended").color(NamedTextColor.GREEN).args(Component.text(faction.getName()), Component.text(target.getName()))
                         );
                     }
                 });

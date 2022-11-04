@@ -18,9 +18,6 @@ import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class SwearFealtyCommand extends Command {
 
@@ -51,7 +48,7 @@ public class SwearFealtyCommand extends Command {
         final Faction faction = context.getExecutorsFaction();
         final Faction target = context.getFactionArgument("faction name");
         if (! target.hasBeenOfferedVassalization(faction.getID())) {
-            context.replyWith("AlertNotOfferedVassalizationBy");
+            context.error("Error.Vassalization.NotOffered", target.getName());
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
@@ -62,16 +59,9 @@ public class SwearFealtyCommand extends Command {
                 target.removeAttemptedVassalization(faction.getID());
                 
                 // inform target faction that they have a new vassal
-                context.messageFaction(
-                    target,
-                    constructMessage("AlertFactionHasNewVassal")
-                        .with("name", faction.getName())
-                );
+                target.alert("FactionNotice.NewVassal", faction.getName());
                 // inform players faction that they have a new liege
-                context.messagePlayersFaction(
-                    constructMessage("AlertFactionHasBeenVassalized")
-                        .with("name", target.getName())
-                );
+                context.getExecutorsFaction().alert("FactionNotice.Vassalized", target.getName());
             }
         });
     }

@@ -20,9 +20,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.UUID;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class TransferCommand extends Command {
 
@@ -52,27 +49,19 @@ public class TransferCommand extends Command {
         OfflinePlayer target = context.getOfflinePlayerArgument("player");
         final UUID targetUUID = target.getUniqueId();
         if (targetUUID.equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotTransferToSelf");
+            context.error("Error.TransferOwnership.Self");
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                // Promote new owner
-                context.getExecutorsFaction().upsertMember(targetUUID, GroupRole.Owner);
-                // Demote old owner
-                context.getExecutorsFaction().upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
-                // Notify
-                context.replyWith(
-                    constructMessage("OwnerShipTransferredTo").with("name", target.getName())
-                );
-                if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
-                    context.messagePlayer(
-                        target.getPlayer(),
-                        constructMessage("OwnershipTransferred").with("name", context.getExecutorsFaction().getName())
-                    );
-                }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            // Promote new owner
+            context.getExecutorsFaction().upsertMember(targetUUID, GroupRole.Owner);
+            // Demote old owner
+            context.getExecutorsFaction().upsertMember(context.getPlayer().getUniqueId(), GroupRole.Member);
+            // Notify
+            context.success("CommandResponse.FactionOwnershipTransferred", context.getExecutorsFaction().getName(), target.getName());
+            if (target.isOnline() && target.getPlayer() != null) { // Message if we can :)
+                context.alertPlayer(target, "PlayerNotice.FactionOwnershipTransferred", context.getExecutorsFaction().getName());
             }
         });
     }

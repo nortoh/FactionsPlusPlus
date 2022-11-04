@@ -16,7 +16,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LocationData;
-import factionsplusplus.builders.MessageBuilder;
+import factionsplusplus.models.PlayerRecord;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Powerable;
@@ -26,7 +26,6 @@ import org.bukkit.Material;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +34,6 @@ import java.util.List;
 @Singleton
 public class GateService {
     private final EphemeralData ephemeralData;
-    private final MessageService messageService;
     private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
     private final DataService dataService;
@@ -43,13 +41,11 @@ public class GateService {
     @Inject
     public GateService(
         EphemeralData ephemeralData,
-        MessageService messageService,
         FactionsPlusPlus factionsPlusPlus,
         ConfigService configService,
         DataService dataService
     ) {
         this.ephemeralData = ephemeralData;
-        this.messageService = messageService;
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
         this.dataService = dataService;
@@ -82,11 +78,7 @@ public class GateService {
                 return;
             }
             event.setCancelled(true);
-            this.messageService.sendLocalizedMessage(
-                player, 
-                new MessageBuilder("PleaseWaitGate")
-                    .with("status", g.getStatus().toString().toLowerCase())
-            );
+            this.dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.GatePleaseWait", g.getStatus().toString().toLowerCase());
         }
     }
 
@@ -108,19 +100,22 @@ public class GateService {
     }
 
     public void handleCreatingGate(Block clickedBlock, Player player, PlayerInteractEvent event) {
+        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+
         if (! this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
-            this.messageService.sendLocalizedMessage(player, "CanOnlyCreateGatesInClaimedTerritory");
+            member.error("Error.Gate.ClaimedTerritory");
             return;
         } else {
             ClaimedChunk claimedChunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
+            Faction faction = this.dataService.getFaction(claimedChunk.getHolder());
             if (claimedChunk != null) {
-                if (! this.dataService.getFaction(claimedChunk.getHolder()).isMember(player.getUniqueId())) {
-                    this.messageService.sendLocalizedMessage(player, "AlertMustBeMemberToCreateGate");
+                if (! faction.isMember(player.getUniqueId())) {
+                    member.error("Error.Gate.NotMember", faction.getName());
                     return;
                 }
-                if (! this.dataService.getFaction(claimedChunk.getHolder()).isOwner(player.getUniqueId())
-                            && ! this.dataService.getFaction(claimedChunk.getHolder()).isOfficer(player.getUniqueId())) {
-                    this.messageService.sendLocalizedMessage(player, "AlertMustBeOwnerOrOfficerToCreateGate");
+                if (! faction.isOwner(player.getUniqueId())
+                            && ! faction.isOfficer(player.getUniqueId())) {
+                    member.error("Error.Gate.NotOfficer", faction.getName());
                     return;
                 }
             }
@@ -128,96 +123,96 @@ public class GateService {
 
         if (player.hasPermission("mf.gate")) {
             // TODO: Check if a gate already exists here, and if it does, print out some info of that existing gate instead of trying to create a new one.
-            ArrayList<String> messagesToSend = new ArrayList<>();
-            boolean removeFromCreatingPlayers = true;
             InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(event.getPlayer().getUniqueId());
             if (context == null) return;
+            boolean removeFromCreatingPlayers = true;
+            String confirmedMessage = null;
+            String nextMessage = null;
+            String errorMessage = null;
+            Integer stepNumber = null;
+
             if (
                 context.isGateCreating() &&
                 context.getGate().getCoord1() == null
             ) {
-                ErrorCodeAddCoord e = this.addCoord(context.getGate(), clickedBlock);
-                switch(e) {
-                    case None:
-                        messagesToSend.add("Point1PlacementSuccessful");
-                        messagesToSend.add("ClickToPlaceSecondCorner");
-                        removeFromCreatingPlayers = false;
-                        break;
-                    case MaterialMismatch:
-                        messagesToSend.add("MaterialsMismatch1");
-                        break;
-                    case WorldMismatch:
-                        messagesToSend.add("WorldsMismatch1");
-                        break;
-                    case NoCuboids:
-                        messagesToSend.add("CuboidDisallowed1");
-                        break;
-                    default:
-                        messagesToSend.add("CancelledGatePlacement1");
-                        break;
-                }
-
+                stepNumber = 1;
+                nextMessage = "PlayerNotice.Gate.ClickSecondPoint";
+                removeFromCreatingPlayers = true;
             } else if (context.isGateCreating()
                     && context.getGate().getCoord1() != null
                     && context.getGate().getCoord2() == null
                     && context.getGate().getTrigger() == null
                 ) {
                 if (! context.getGate().getCoord1().getBlock().equals(clickedBlock)) {
-                    ErrorCodeAddCoord e = this.addCoord(context.getGate(), clickedBlock);
-                    switch(e) {
-                        case None:
-                            messagesToSend.add("Point2PlacementSuccessful");
-                            messagesToSend.add("ClickTBlock");
-                            removeFromCreatingPlayers = false;
-                            break;
-                        case MaterialMismatch:
-                            messagesToSend.add("MaterialsMismatch2");
-                            break;
-                        case WorldMismatch:
-                            messagesToSend.add("WorldsMismatch2");
-                            break;
-                        case NoCuboids:
-                            messagesToSend.add("CuboidDisallowed2");
-                            break;
-                        case LessThanThreeHigh:
-                            messagesToSend.add("ThreeBlockRequirement");
-                            break;
-                        default:
-                            messagesToSend.add("CancelledGatePlacement2");
-                            break;
-                    }
+                    stepNumber = 2;
+                    nextMessage = "PlayerNotice.Gate.ClickTrigger";
+                    removeFromCreatingPlayers = false;
                 }
             } else if (context.getGate().getCoord2() != null
                     && context.getGate().getTrigger() == null
                     && ! context.getGate().getCoord2().getBlock().equals(clickedBlock)) {
-                if (clickedBlock.getBlockData() instanceof Powerable) {
-                    if (this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
-                        Gate g = context.getGate();
-                        ErrorCodeAddCoord e = this.addCoord(g, clickedBlock);
-                        switch(e) {
-                            case None:
-                                ClaimedChunk claim = this.dataService.getClaimedChunk(clickedBlock.getChunk());
-                                g.setFaction(claim.getHolder());
-                                this.dataService.getGateRepository().create(g);
-                                messagesToSend.add("Point4TriggeredSuccessfully");
-                                messagesToSend.add("GateCreated");
-                                break;
-                            default:
-                                messagesToSend.add("CancelledGatePlacementErrorLinking");
-                                break;
-                        }
-                    } else {
-                        messagesToSend.add("CanOnlyTrigger");
-                    }
-                } else {
-                    messagesToSend.add("TriggerBlockNotPowerable");
+                if (! (clickedBlock.getBlockData() instanceof Powerable)) {
+                    // error & return
+                    member.error("Error.Trigger.Unpowerable");
+                    this.ephemeralData.getPlayersPendingInteraction().remove(event.getPlayer().getUniqueId());
+                    return;
+                }
+                ClaimedChunk chunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
+                if (chunk == null) {
+                    // error & return
+                    member.error("Error.Trigger.ClaimedTerritory");
+                    this.ephemeralData.getPlayersPendingInteraction().remove(event.getPlayer().getUniqueId());
+                    return;
+                }
+                stepNumber = 3;
+                nextMessage = "GateCreated";
+            }
+            if (stepNumber == null) return;
+            ErrorCodeAddCoord errorCode = this.addCoord(context.getGate(), clickedBlock);
+            if (stepNumber < 3) {
+                switch(errorCode) {
+                    case None:
+                        confirmedMessage = "PlayerNotice.Gate.PointPlaced";
+                        break;
+                    case MaterialMismatch:
+                        errorMessage = "Error.Gate.MaterialMismatch";
+                        break;
+                    case NoCuboids:
+                        errorMessage = "Error.Gate.CuboidDisallowed";
+                        break;
+                    case WorldMismatch:
+                        errorMessage = "Error.Gate.WorldMismatch";
+                        break;
+                    case LessThanThreeHigh:
+                        errorMessage = "Error.Gate.HeightRequirement";
+                        break;
+                    case Oversized:
+                        errorMessage = "Error.Gate.TooBig";
+                        break;
+                    default:
+                        errorMessage = "Error.Gate.Cancelled";
+                        break;
+                }
+            } else {
+                ClaimedChunk chunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());
+                switch(errorCode) {
+                    case None:
+                        context.getGate().setFaction(chunk.getHolder());
+                        this.dataService.getGateRepository().create(context.getGate());
+                        confirmedMessage = "PlayerNotice.Gate.TriggerPlaced";
+                        break;
+                    default:
+                        errorMessage = "Error.Gate.LinkError";
+                        break;
                 }
             }
-            for (String localizationKey : messagesToSend) this.messageService.sendLocalizedMessage(event.getPlayer(), localizationKey);
+            if (errorMessage != null) member.error(errorMessage, stepNumber);
+            if (nextMessage != null) member.alert(nextMessage, stepNumber);
+            if (confirmedMessage != null) member.success(confirmedMessage, stepNumber);
             if (removeFromCreatingPlayers == true) this.ephemeralData.getPlayersPendingInteraction().remove(event.getPlayer().getUniqueId());
             return;
         }
-        this.messageService.sendLocalizedMessage(event.getPlayer(), new MessageBuilder("PermissionNeeded").with("permission", "mf.gate"));
+        member.error("Error.PermissionDenied", "mf.gate");
     }
 
     public void open(Gate gate) {

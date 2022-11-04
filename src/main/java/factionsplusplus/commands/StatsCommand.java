@@ -12,9 +12,6 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.services.DataService;
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class StatsCommand extends Command {
 
@@ -35,15 +32,8 @@ public class StatsCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        context.getLocalizedStrings("StatsFaction")
-            .forEach(s -> {
-                if (s.contains("#faction#")) {
-                    s = s.replace("#faction#", String.valueOf(this.dataService.getNumberOfFactions()));
-                }
-                if (s.contains("#players#")) {
-                    s = s.replace("#players#", String.valueOf(this.dataService.getNumberOfPlayers()));
-                }
-                context.reply(s);
-            });
+        context.replyWith("PluginStats.Title");
+        context.replyWith("PluginStats.FactionCount", this.dataService.getNumberOfFactions());
+        context.replyWith("PluginStats.PlayerCount", this.dataService.getNumberOfPlayers());
     }
 }

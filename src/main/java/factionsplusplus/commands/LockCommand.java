@@ -12,12 +12,8 @@ import factionsplusplus.data.factories.InteractionContextFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.InteractionContext;
-
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class LockCommand extends Command {
 
@@ -50,15 +46,19 @@ public class LockCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        // TODO: handle if already locking?
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
-        if (interactionContext == null) {
-            this.ephemeralData.getPlayersPendingInteraction().put(
-                context.getPlayer().getUniqueId(),
-                this.interactionContextFactory.create(InteractionContext.Type.LockedBlockLock)
-            );
-            context.replyWith("RightClickLock");
-        };
+        if (interactionContext != null) {
+            if (interactionContext.isLockedBlockLock()) {
+                context.cancellableError("Error.Lock.AlreadyLocking", "/fpp lock cancel");
+                return;
+            }
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
+        }
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            this.interactionContextFactory.create(InteractionContext.Type.LockedBlockLock)
+        );
+        context.cancellable("CommandResponse.RightClick.Lock", "/fpp lock cancel");
     }
 
     public void cancelCommand(CommandContext context) {
@@ -66,7 +66,7 @@ public class LockCommand extends Command {
         if (interactionContext != null) {
             if (interactionContext.isLockedBlockLock()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
-                context.replyWith("CommandCancelled");
+                context.success("CommandResponse.RightClick.Cancelled");
             }
         }
     }

@@ -19,17 +19,11 @@ import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class AllyCommand extends Command {
     protected final LocaleService localeService;
     protected final FactionRepository factionRepository;
 
-    /**
-     * Constructor to initialise a Command.
-     */
     @Inject
     public AllyCommand(
         LocaleService localeService,
@@ -64,41 +58,31 @@ public class AllyCommand extends Command {
 
         // the faction can't be itself
         if (otherFaction == context.getExecutorsFaction()) {
-            context.replyWith("CannotAllyWithSelf");
+            context.error("Error.Alliance.Self");
             return;
         }
 
         // no need to allow them to ally if they're already allies
         if (context.getExecutorsFaction().isAlly(otherFaction.getUUID())) {
-            context.replyWith("FactionAlreadyAlly");
+            context.error("Error.Alliance.Exists", otherFaction.getName());
             return;
         }
 
         if (context.getExecutorsFaction().isEnemy(otherFaction.getUUID())) {
-            context.replyWith("FactionIsEnemy");
+            context.error("Error.Alliance.Enemy", otherFaction.getName());
             return;
         }
 
         if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getUUID())) {
-            context.replyWith("AlertAlreadyRequestedAlliance");
+            context.error("Error.Alliance.AlreadyRequested", otherFaction.getName());
             return;
         }
 
         // send the request
         context.getExecutorsFaction().requestAlly(otherFaction.getID());
 
-        context.messagePlayersFaction(
-            this.constructMessage("AlertAttemptedAlliance")
-                .with("faction_a", context.getExecutorsFaction().getName())
-                .with("faction_b", otherFaction.getName())
-        );
-
-        context.messageFaction(
-            otherFaction,
-            this.constructMessage("AlertAttemptedAlliance")
-                .with("faction_a", context.getExecutorsFaction().getName())
-                .with("faction_b", otherFaction.getName())
-        );
+        context.getExecutorsFaction().alert("FactionNotice.AllianceRequest.Source", otherFaction.getName());
+        otherFaction.alert("FactionNotice.AllianceRequest.Target", context.getExecutorsFaction().getName());
 
         // check if both factions have requested an alliance
         if (context.getExecutorsFaction().isRequestedAlly(otherFaction.getUUID()) && otherFaction.isRequestedAlly(context.getExecutorsFaction().getUUID())) {
@@ -108,18 +92,9 @@ public class AllyCommand extends Command {
                     // Running this against one faction will trickle down to the other.
                     context.getExecutorsFaction().upsertRelation(otherFaction.getUUID(), FactionRelationType.Ally);
                     // message player's faction
-                    context.messagePlayersFaction(
-                        constructMessage("AlertNowAlliedWith")
-                            .with("faction", otherFaction.getName())
-                    );
-
+                    context.getExecutorsFaction().alert("FactionNotice.Allied", otherFaction.getName());
                     // message target faction
-                    context.messageFaction(
-                        otherFaction, 
-                        constructMessage("AlertNowAlliedWith")
-                            .with("faction", context.getExecutorsFaction().getName())
-                    );
-
+                    otherFaction.alert("FactionNotice.Allied", context.getExecutorsFaction().getName());
                     // remove alliance requests
                     context.getExecutorsFaction().removeAllianceRequest(otherFaction.getUUID());
                     otherFaction.removeAllianceRequest(context.getExecutorsFaction().getUUID());

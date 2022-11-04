@@ -1,8 +1,6 @@
 package factionsplusplus.models;
 
 import factionsplusplus.builders.CommandBuilder;
-import factionsplusplus.builders.MessageBuilder;
-import factionsplusplus.commands.abs.ColorTranslator;
 import factionsplusplus.builders.ArgumentBuilder;
 
 import java.util.HashMap;
@@ -13,7 +11,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 
-public class Command implements ColorTranslator {
+public class Command {
     public static final String LOCALE_PREFIX = "Alias.";
     private String name;
     private String[] aliases;
@@ -230,9 +228,5 @@ public class Command implements ColorTranslator {
     
     public String toString() {
         return this.description;
-    }
-
-    public MessageBuilder constructMessage(String localizationKey) {
-        return new MessageBuilder(localizationKey);
     }
 }

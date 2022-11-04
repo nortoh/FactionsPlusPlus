@@ -23,10 +23,6 @@ import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.events.internal.FactionWarStartEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DeclareWarCommand extends Command {
 
@@ -81,21 +77,18 @@ public class DeclareWarCommand extends Command {
         final Faction opponent = context.getFactionArgument("faction name");
 
         if (opponent == faction) {
-            context.replyWith("CannotDeclareWarOnYourself");
+            context.error("Error.War.Self");
             return;
         }
 
         if (faction.isEnemy(opponent.getID())) {
-            context.replyWith(
-                this.constructMessage("AlertAlreadyAtWarWith")
-                    .with("faction", opponent.getName())
-            );
+            context.error("Error.War.AlreadyAtWar", faction.getName(), opponent.getName());
             return;
         }
 
         if (faction.hasLiege() && opponent.hasLiege()) {
             if (faction.isVassal(opponent.getID())) {
-                context.replyWith("CannotDeclareWarOnVassal");
+                context.error("Error.War.Vassal");
                 return;
             }
 
@@ -103,28 +96,28 @@ public class DeclareWarCommand extends Command {
                 final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
                 if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
                         this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
-                    context.replyWith("CannotDeclareWarIfLiegeNotWeakened");
+                    context.error("Error.War.LiegeNotWeakened");
                 }
             }
         }
 
         if (faction.isLiege(opponent.getID())) {
-            context.replyWith("CannotDeclareWarOnLiege");
+            context.error("Error.War.Liege");
             return;
         }
 
         if (faction.isAlly(opponent.getID())) {
-            context.replyWith("CannotDeclareWarOnAlly");
+            context.error("Error.War.Ally");
             return;
         }
 
         if (this.configService.getBoolean("allowNeutrality") && (opponent.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotDeclareWarOnNeutralFaction");
+            context.error("Error.War.Neutral.Target");
             return;
         }
 
         if (this.configService.getBoolean("allowNeutrality") && (faction.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotDeclareWarIfNeutralFaction");
+            context.error("Error.War.Neutral.Source");
             return;
         }
 

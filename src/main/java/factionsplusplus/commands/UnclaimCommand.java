@@ -18,9 +18,6 @@ import org.bukkit.entity.Player;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class UnclaimCommand extends Command {
 
@@ -62,7 +59,7 @@ public class UnclaimCommand extends Command {
         if (faction.getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
             if (! faction.isOfficer(player.getUniqueId()) && ! faction.isOwner(player.getUniqueId()) && ! isPlayerBypassing) {
-                context.replyWith("NotAbleToClaim");
+                context.error("Error.Claim.NotPermitted");
                 return;
             }
         }
@@ -70,7 +67,6 @@ public class UnclaimCommand extends Command {
             this.claimService.removeChunkAtPlayerLocation(player, faction);
             this.dynmapService.updateClaimsIfAble();
             // Claim Service currently handles the message that would be sent if the chunk was removed.
-            // TODO: Also, we don't check if the user currently has a claim??
             return;
         }
         int radius = context.getIntegerArgument("radius");
@@ -78,9 +74,6 @@ public class UnclaimCommand extends Command {
             radius = 1;
         }
         this.claimService.radiusUnclaimAtLocation(radius, player, faction);
-        context.replyWith(
-            this.constructMessage("UnClaimedRadius")
-                .with("number", String.valueOf(radius))
-        );
+        context.success("CommandResponse.LandUnclaimed.Radius", radius);
     }
 }

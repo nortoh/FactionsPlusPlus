@@ -3,6 +3,7 @@ package factionsplusplus.models;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.OfflinePlayer;
@@ -11,9 +12,13 @@ import org.bukkit.entity.Player;
 import com.google.inject.Inject;
 
 import factionsplusplus.FactionsPlusPlus;
-import factionsplusplus.builders.interfaces.GenericMessageBuilder;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.MessageService;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class CommandContext {
     private Faction faction = null;
@@ -22,7 +27,6 @@ public class CommandContext {
     private HashMap<String, Object> arguments = new HashMap<>();
     private String[] rawArguments = new String[]{};
     private List<String> commandNames = new ArrayList<>();
-    @Inject private MessageService messageService;
     @Inject private LocaleService localeService;
     @Inject private FactionsPlusPlus factionsPlusPlus;
 
@@ -206,6 +210,13 @@ public class CommandContext {
         return this.commandNames;
     }
 
+    public BukkitAudiences getAdventure() {
+        return this.factionsPlusPlus.getAdventure();
+    }
+
+    public Audience getExecutorsAudience() {
+        return this.getAdventure().sender(sender);
+    }
 
     /*
      * Sends a raw message to a sender. This will go through colorization in MessageService but no translations will happen.
@@ -213,7 +224,7 @@ public class CommandContext {
      * @param message the message to send
      */
     public void reply(String message) {
-        this.messageService.send(this.sender, message);
+        this.getExecutorsAudience().sendMessage(Component.text(message));
     }
 
     /*
@@ -221,52 +232,78 @@ public class CommandContext {
      * 
      * @param localizationKey the language key as defined in the language YAML file to send
      */
-    public void replyWith(String localizationKey) {
-        this.messageService.sendLocalizedMessage(this.sender, localizationKey);
+    public void replyWith(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+        );
     }
 
-    /*
-     * Sends a localized message using a MessageBuilder instance.
-     * 
-     * @param builder the MessageBuilder instance
-     */
-    public void replyWith(GenericMessageBuilder builder) {
-        this.messageService.sendLocalizedMessage(this.sender, builder);
+    public void alertPlayer(OfflinePlayer player, String localizationKey, Object... arguments) {
+        this.factionsPlusPlus.getAdventure().player(player.getUniqueId()).sendMessage(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+        );
     }
 
-    public void messagePlayer(Player player, String localizationKey) {
-        this.messageService.sendLocalizedMessage(player, localizationKey);
+    public void success(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.text()
+                .append(
+                    Component.translatable("Generic.Success").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
+                )
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable(localizationKey).color(NamedTextColor.AQUA).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                )
+                .asComponent()
+        );
     }
 
-    public void messagePlayer(Player player, GenericMessageBuilder builder) {
-        this.messageService.sendLocalizedMessage(player, builder);
+    private Component generateErrorComponent(String localizationKey, Object... arguments) {
+        return Component.text()
+            .append(
+                Component.translatable("Generic.Error").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+            )
+            .append(Component.text(" "))
+            .append(
+                Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+            )
+            .asComponent();
     }
 
-    public void messageFaction(Faction faction, String localizationKey) {
-        this.messageService.sendFactionLocalizedMessage(faction, localizationKey);
+    public void error(String localizationKey, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(this.generateErrorComponent(localizationKey, arguments));
     }
 
-    public void messageFaction(Faction faction, GenericMessageBuilder builder) {
-        this.messageService.sendFactionLocalizedMessage(faction, builder);
+    public void cancellableError(String localizationKey, String commandToRun) {
+        this.getExecutorsAudience().sendMessage(
+            this.generateErrorComponent(localizationKey, new Object[]{})
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable("Generic.ClickHere.Cancel").color(NamedTextColor.GOLD).clickEvent(
+                        ClickEvent.runCommand(commandToRun)
+                    )
+                )
+        );
     }
 
-    public void messagePlayersFaction(String localizationKey) {
-        this.messageFaction(this.getExecutorsFaction(), localizationKey);
+    public void cancellable(String localizationKey, String commandToRun, Object... arguments) {
+        this.getExecutorsAudience().sendMessage(
+            Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
+                .append(Component.text(" "))
+                .append(
+                    Component.translatable("Generic.ClickHere.Cancel").color(NamedTextColor.GOLD).clickEvent(
+                        ClickEvent.runCommand(commandToRun)
+                    )
+                )
+        );
     }
 
-    public void messagePlayersFaction(GenericMessageBuilder builder) {
-        this.messageFaction(this.getExecutorsFaction(), builder);
-    }
-
-    public void messageAllPlayers(GenericMessageBuilder builder) {
-        this.messageService.sendAllPlayersLocalizedMessage(builder);
+    public void cancellable(String localizationKey, String commandToRun) {
+        this.cancellable(localizationKey, commandToRun, new Object[]{});
     }
 
     public String getLocalizedString(String localizationKey) {
         return this.localeService.get(localizationKey);
     }
 
-    public List<String> getLocalizedStrings(String localizationKey) {
-        return this.localeService.getStrings(localizationKey);
-    }
 }

@@ -19,9 +19,6 @@ import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.events.internal.FactionCreateEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class CreateCommand extends Command {
     private final ConfigService configService;
@@ -58,23 +55,17 @@ public class CreateCommand extends Command {
 
     public void execute(CommandContext context) {
         if (context.getExecutorsFaction() != null) {
-            context.replyWith("AlreadyInFaction");
+            context.error("Error.AlreadyInFaction.Self");
             return;
         }
         final String factionName = context.getStringArgument("faction name");
         if (factionName.length() > this.configService.getInt("factionMaxNameLength")) {
-            context.replyWith(
-                this.constructMessage("FactionNameTooLong")
-                    .with("name", factionName)
-            );
+            context.error("Error.Faction.NameTooLong", factionName);
             return;
         }
 
         if (this.factionRepository.get(factionName) != null) {
-            context.replyWith(
-                this.constructMessage("FactionAlreadyExists")
-                    .with("name", factionName)
-            );
+            context.error("Error.Faction.AlreadyExists", factionName);
             return;
         }
 
@@ -83,15 +74,9 @@ public class CreateCommand extends Command {
         FactionCreateEvent createEvent = new FactionCreateEvent(playerFaction, context.getPlayer());
         Bukkit.getPluginManager().callEvent(createEvent);
         if (! createEvent.isCancelled()) {
-            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-                @Override
-                public void run() {
-                    factionRepository.create(playerFaction);
-                    context.replyWith(
-                        constructMessage("FactionCreated")
-                            .with("name", factionName)
-                    );
-                }
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+                factionRepository.create(playerFaction);
+                context.success("CommandResponse.Faction.Created", factionName);
             });
         }
     }

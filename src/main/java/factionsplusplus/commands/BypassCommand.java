@@ -4,6 +4,8 @@
  */
 package factionsplusplus.commands;
 
+import org.bukkit.Bukkit;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -32,10 +34,11 @@ public class BypassCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        PlayerRecord record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
-        final boolean currentlyBypassing = record.isAdminBypassing();
-        final String path = (currentlyBypassing ? "NoLonger" : "Now") + "BypassingProtections";
-        record.toggleAdminBypassing();
-        context.replyWith(path);
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            PlayerRecord record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
+            final boolean currentlyBypassing = record.isAdminBypassing();
+            record.toggleAdminBypassing();
+            context.success("PlayerNotice.AdminBypass." + (currentlyBypassing ? "Disabled" : "Enabled")); 
+        });
     }
 }

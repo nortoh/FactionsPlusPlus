@@ -16,9 +16,6 @@ import factionsplusplus.services.FactionService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class WhoCommand extends Command {
     private final FactionService factionService;
@@ -51,9 +48,9 @@ public class WhoCommand extends Command {
     public void execute(CommandContext context) {
         final Faction temp = this.dataService.getPlayersFaction(context.getOfflinePlayerArgument("player"));
         if (temp == null) {
-            context.replyWith("PlayerIsNotInAFaction");
+            context.error("Error.Player.NotMemberOfFaction", context.getOfflinePlayerArgument("player").getName());
             return;
         }
-        context.replyWith(this.factionService.generateFactionInfo(temp));
+        this.factionService.generateFactionInfo(temp).forEach(component -> context.getExecutorsAudience().sendMessage(component));
     }
 }
