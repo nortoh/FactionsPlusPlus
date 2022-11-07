@@ -14,8 +14,11 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 
+import factionsplusplus.constants.GroupRole;
 import factionsplusplus.data.beans.PlayerBean;
 import factionsplusplus.models.interfaces.Identifiable;
+import factionsplusplus.services.ConfigService;
+import factionsplusplus.services.DataService;
 import factionsplusplus.utils.StringUtils;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
@@ -42,22 +45,44 @@ public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
     private ZonedDateTime lastLogout = ZonedDateTime.now();
 
     private final BukkitAudiences adventure;
+    private final DataService dataService;
+    private final ConfigService configService;
 
     @AssistedInject
-    public FPPPlayer(@Named("adventure") BukkitAudiences adventure) { 
+    public FPPPlayer(
+        @Named("adventure") BukkitAudiences adventure,
+        DataService dataService,
+        ConfigService configService
+    ) { 
         this.adventure = adventure;
+        this.dataService = dataService;
+        this.configService = configService;
     }
 
     @AssistedInject
-    public FPPPlayer(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, @Named("adventure") BukkitAudiences adventure) {
+    public FPPPlayer(
+        @Assisted UUID uuid,
+        @Assisted int initialLogins,
+        @Assisted double initialPowerLevel,
+        @Named("adventure") BukkitAudiences adventure,
+        DataService dataService,
+        ConfigService configService
+    ) {
         this.uuid = uuid;
         this.logins = initialLogins;
         this.powerLevel = initialPowerLevel;
         this.adventure = adventure;
+        this.dataService = dataService;
+        this.configService = configService;
     }
 
     @AssistedInject
-    public FPPPlayer(@Assisted PlayerBean bean, @Named("adventure") BukkitAudiences adventure) {
+    public FPPPlayer(
+        @Assisted PlayerBean bean,
+        @Named("adventure") BukkitAudiences adventure,
+        DataService dataService,
+        ConfigService configService
+    ) {
         this.uuid = bean.getId();
         this.powerLevel = bean.getPower();
         this.adminBypass = bean.isAdminBypassing();
@@ -65,6 +90,8 @@ public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
         this.lastLogout = bean.getLastLogout();
         this.logins = bean.getLoginCount();
         this.adventure = adventure;
+        this.dataService = dataService;
+        this.configService = configService;
     }
 
     public UUID getUUID() {
@@ -173,6 +200,35 @@ public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
             return days + " days and " + hoursSince + " hours";
         } else {
             return null;
+        }
+    }
+
+    // Tools
+    public double increasePowerBy(double increaseAmount) {
+        if (this.getPower() < this.getMaxPower()) {
+            this.setPower(Math.min((this.getPower() + increaseAmount), this.getMaxPower()));
+        }
+        return this.getPower();
+    }
+
+    public double decreasePowerBy(double decreaseAmount) {
+        if (this.getPower() > 0) {
+            this.setPower(Math.max((this.getPower() - decreaseAmount), 0));
+        }
+        this.increasePowerLostBy(decreaseAmount);
+        return this.getPower();
+    }
+
+    // Calculations
+    public double getMaxPower() {
+        double initialPowerLevel = this.configService.getDouble("initialMaxPowerLevel");
+        switch(GroupRole.getFromLevel(this.dataService.getPlayersFaction(this.uuid).getMember(uuid).getRole())) {
+            case Owner:
+                return (double)(initialPowerLevel * this.configService.getDouble("factionOwnerMultiplier"));
+            case Officer:
+                return (double)(initialPowerLevel * this.configService.getDouble("factionOfficerMultiplier"));
+            default:
+                return initialPowerLevel;
         }
     }
 
