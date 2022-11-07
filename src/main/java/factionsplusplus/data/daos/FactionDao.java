@@ -25,11 +25,11 @@ import java.util.List;
 
 public interface FactionDao {
     // FACTIONS
-    @SqlUpdate("INSERT IGNORE INTO factions (id, name) VALUES (:getUUID, :getName)")
+    @SqlUpdate("INSERT IGNORE INTO factions (id, name, prefix) VALUES (:getUUID, :getName, :getPrefix)")
     void insert(@BindMethods Faction faction);
 
-    @SqlUpdate("INSERT IGNORE INTO factions (id, name) VALUES (?, ?)")
-    void insert(UUID uuid, String name);
+    @SqlUpdate("INSERT IGNORE INTO factions (id, name, prefix) VALUES (:uuid, :name, :name)")
+    void insert(@Bind("uuid") UUID uuid, @Bind("name") String name);
 
     @SqlBatch("""
         UPDATE factions SET
