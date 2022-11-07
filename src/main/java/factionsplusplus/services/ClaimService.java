@@ -40,7 +40,6 @@ public class ClaimService {
 
     private final ConfigService configService;
     private final DataService dataService;
-    private final FactionService factionService;
     private final InteractionAccessChecker interactionAccessChecker;
     private final Logger logger;
 
@@ -48,13 +47,11 @@ public class ClaimService {
     public ClaimService(
         ConfigService configService,
         DataService dataService,
-        FactionService factionService,
         InteractionAccessChecker interactionAccessChecker,
         Logger logger
     ) {
         this.configService = configService;
         this.dataService = dataService;
-        this.factionService = factionService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.logger = logger;
     }
@@ -202,7 +199,7 @@ public class ClaimService {
      * @return Whether the faction's claimed land exceeds their power.
      */
     public boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > faction.getCumulativePowerLevel());
     }
 
     /**
@@ -307,7 +304,7 @@ public class ClaimService {
         if (this.configService.getBoolean("limitLand")) {
             // if at demesne limit
             
-            if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < this.factionService.getCumulativePowerLevel(claimantsFaction))) {
+            if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < claimantsFaction.getCumulativePowerLevel())) {
                 member.error("FactionNotice.ReachedDemesne");
                 return;
             }
@@ -340,7 +337,7 @@ public class ClaimService {
                 }
             }
 
-            int targetFactionsCumulativePowerLevel = this.factionService.getCumulativePowerLevel(targetFaction);
+            double targetFactionsCumulativePowerLevel = targetFaction.getCumulativePowerLevel();
             int chunksClaimedByTargetFaction = this.dataService.getClaimedChunksForFaction(targetFaction).size();
 
             // if target faction does not have more land than their demesne limit
@@ -362,7 +359,7 @@ public class ClaimService {
 
                 Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                 this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                member.success("CommandResponse.LandConquered", targetFaction.getName(), this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), this.factionService.getCumulativePowerLevel(claimantsFaction));
+                member.success("CommandResponse.LandConquered", targetFaction.getName(), this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), claimantsFaction.getCumulativePowerLevel());
                 targetFaction.alert("FactionNotice.LandConquered", claimantsFaction.getName());
             }
         } else {
@@ -372,7 +369,7 @@ public class ClaimService {
             if (! claimEvent.isCancelled()) {
                 // chunk not already claimed
                 this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                member.success("CommandResponse.LandClaimed", this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), this.factionService.getCumulativePowerLevel(claimantsFaction));
+                member.success("CommandResponse.LandClaimed", this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), claimantsFaction.getCumulativePowerLevel());
             }
         }
     }

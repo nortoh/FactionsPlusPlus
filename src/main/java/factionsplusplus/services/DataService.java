@@ -17,9 +17,7 @@ import org.bukkit.Chunk;
 
 import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.constants.FlagType;
-import factionsplusplus.constants.GroupRole;
 import factionsplusplus.data.daos.DefaultConfigurationFlagDao;
-import factionsplusplus.data.daos.FactionDao;
 import factionsplusplus.data.repositories.*;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
@@ -30,7 +28,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.ConfigOption;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.Gate;
-import factionsplusplus.models.GroupMember;
 import factionsplusplus.utils.BlockUtils;
 
 
@@ -40,7 +37,7 @@ public class DataService {
     private final FactionRepository factionRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
     private final LockedBlockRepository lockedBlockRepository;
-    private final PlayerRepository playerRecordRepository;
+    private final PlayerRepository playerRepository;
     private final CommandRepository commandRepository;
     private final ConfigOptionRepository configOptionRepository;
     private final WarRepository warRepository;
@@ -55,7 +52,7 @@ public class DataService {
         FactionRepository factionRepository,
         ClaimedChunkRepository claimedChunkRepository,
         LockedBlockRepository lockedBlockRepository,
-        PlayerRepository playerRecordRepository,
+        PlayerRepository playerRepository,
         CommandRepository commandRepository,
         ConfigOptionRepository configOptionRepository,
         WarRepository warRepository,
@@ -67,7 +64,7 @@ public class DataService {
         this.factionRepository = factionRepository;
         this.claimedChunkRepository = claimedChunkRepository;
         this.lockedBlockRepository = lockedBlockRepository;
-        this.playerRecordRepository = playerRecordRepository;
+        this.playerRepository = playerRepository;
         this.commandRepository = commandRepository;
         this.configOptionRepository = configOptionRepository;
         this.warRepository = warRepository;
@@ -274,7 +271,7 @@ public class DataService {
      * Saves all data in memory to disk. In most cases, data is written immediately. Data that is updated often may be saved using this function.
      */
     public void save() {
-        this.playerRecordRepository.persist(); // save player stats
+        this.playerRepository.persist(); // save player stats
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
     }
 
@@ -287,7 +284,7 @@ public class DataService {
         this.worldRepository.load();
         this.factionRepository.load();
         this.claimedChunkRepository.load();
-        this.playerRecordRepository.load();
+        this.playerRepository.load();
         this.lockedBlockRepository.load();
         this.gateRepository.load();
         this.warRepository.load();
@@ -326,6 +323,8 @@ public class DataService {
         this.addDefaultConfigurationFlag(new ConfigurationFlag("allowClaims", FlagDataType.Boolean, true), FlagType.World);
     }
 
+    // Factions
+
     public FactionRepository getFactionRepository() {
         return this.factionRepository;
     }
@@ -344,16 +343,6 @@ public class DataService {
 
     public Faction getPlayersFaction(UUID playerUUID) {
         return this.factionRepository.getForPlayer(playerUUID);
-    }
-
-    public void updatePlayersFactionRole(Faction faction, OfflinePlayer player, GroupRole role) {
-        GroupMember member = faction.getMember(player.getUniqueId());
-        if (member == null) faction.addMember(player.getUniqueId());
-        faction.setMemberRole(player.getUniqueId(), role);
-        this.persistentData.useExtension(FactionDao.class, dao -> {
-            GroupMember factionMember = faction.getMember(player.getUniqueId());
-            dao.upsert(faction.getUUID(), factionMember.getUUID(), factionMember.getRole());
-        });
     }
 
     public List<Faction> getFactionsInVassalageTree(Faction faction) {
@@ -399,6 +388,11 @@ public class DataService {
         return this.factionRepository.getDAO().getInvite(faction.getUUID(), player.getUniqueId()) > 0;
     }
 
+    // Gates
+
+    public GateRepository getGateRepository() {
+        return this.gateRepository;
+    }
 
     public List<Gate> getGatesForFactionsTriggerBlock(UUID factionUUID, Block targetBlock) {
         return this.getGatesForTriggerBlock(targetBlock)
@@ -430,6 +424,8 @@ public class DataService {
     public void removeGate(Gate gate) {
         this.gateRepository.delete(gate);
     }
+
+    // Claimed Chunks
 
     public ClaimedChunkRepository getClaimedChunkRepository() {
         return this.claimedChunkRepository;
@@ -467,6 +463,8 @@ public class DataService {
         return this.getClaimedChunk(chunk) != null;
     }
 
+    // Locked Blocks
+
     public LockedBlockRepository getLockedBlockRepository() {
         return this.lockedBlockRepository;
     }
@@ -487,33 +485,41 @@ public class DataService {
         return this.getLockedBlock(x, y, z, world) != null;
     }
 
-    public void createPlayer(FPPPlayer record) {
-        this.playerRecordRepository.create(record);
-    }
+    // Players
 
     public PlayerRepository getPlayerRepository() {
-        return this.playerRecordRepository;
+        return this.playerRepository;
+    }
+
+    public void createPlayer(FPPPlayer record) {
+        this.playerRepository.create(record);
+    }
+
+    public FPPPlayer getPlayer(OfflinePlayer player) {
+        return this.playerRepository.get(player.getUniqueId());
     }
 
     public FPPPlayer getPlayer(UUID playerUUID) {
-        return this.playerRecordRepository.get(playerUUID);
+        return this.playerRepository.get(playerUUID);
     }
 
     public boolean hasPlayer(OfflinePlayer player) {
-        return this.getPlayer(player.getUniqueId()) != null;
+        return this.playerRepository.contains(player.getUniqueId());
     }
 
     public boolean hasPlayer(UUID uuid) {
-        return this.getPlayer(uuid) != null;
+        return this.playerRepository.contains(uuid);
     }
 
     public int getNumberOfPlayers() {
-        return this.playerRecordRepository.count();
+        return this.playerRepository.count();
     }
 
     public Collection<FPPPlayer> getPlayers() {
-        return this.playerRecordRepository.all().values();
+        return this.playerRepository.all().values();
     }
+
+    // Commands
 
     public CommandRepository getCommandRepository() {
         return this.commandRepository;
@@ -523,6 +529,8 @@ public class DataService {
         return this.commandRepository.get(command);
     }
 
+    // Config Options
+
     public ConfigOptionRepository getConfigOptionRepository() {
         return this.configOptionRepository;
     }
@@ -531,9 +539,13 @@ public class DataService {
         return this.configOptionRepository.get(optionName);
     }
 
+    // Wars
+
     public WarRepository getWarRepository() {
         return this.warRepository;
     }
+
+    // Worlds 
 
     public WorldRepository getWorldRepository() {
         return this.worldRepository;
@@ -546,6 +558,8 @@ public class DataService {
     public World getWorld(UUID uuid) {
         return this.worldRepository.get(uuid);
     }
+
+    // Utilities
 
     public boolean isBlockNextToNonOwnedLockedChest(OfflinePlayer player, Block block) {
         // define blocks
@@ -595,9 +609,5 @@ public class DataService {
         }
 
         return false;
-    }
-
-    public GateRepository getGateRepository() {
-        return this.gateRepository;
     }
 }

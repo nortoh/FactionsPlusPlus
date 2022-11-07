@@ -14,7 +14,6 @@ import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
-import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -38,7 +37,6 @@ public class JoinHandler implements Listener {
     private final ConfigService configService;
     private final Logger logger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
-    private final FactionService factionService;
     private final DataService dataService;
     private final ClaimService claimService;
     private final DynmapIntegrationService dynmapIntegrationService;
@@ -49,7 +47,6 @@ public class JoinHandler implements Listener {
         ConfigService configService,
         Logger logger,
         TerritoryOwnerNotifier territoryOwnerNotifier,
-        FactionService factionService,
         DataService dataService,
         ClaimService claimService,
         DynmapIntegrationService dynmapIntegrationService,
@@ -58,7 +55,6 @@ public class JoinHandler implements Listener {
         this.configService = configService;
         this.logger = logger;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
-        this.factionService = factionService;
         this.dataService = dataService;
         this.claimService = claimService;
         this.dynmapIntegrationService = dynmapIntegrationService;
@@ -169,7 +165,7 @@ public class JoinHandler implements Listener {
             return;
         }
 
-        if (playersFaction.isLiege() && this.factionService.isWeakened(playersFaction)) {
+        if (playersFaction.isLiege() && playersFaction.isWeakened()) {
             FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
             member.alert("FactionNotice.Weakened", NamedTextColor.RED);
         }

@@ -97,7 +97,7 @@ public class Scheduler {
     }
 
     private boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > faction.getCumulativePowerLevel());
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {

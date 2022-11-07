@@ -11,7 +11,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
-import factionsplusplus.services.FactionService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -28,14 +27,12 @@ public class DeclareWarCommand extends Command {
 
     private final ConfigService configService;
     private final FactionRepository factionRepository;
-    private final FactionService factionService;
     private final WarRepository warRepository;
 
     @Inject
     public DeclareWarCommand(
         ConfigService configService,
         FactionRepository factionRepository,
-        FactionService factionService,
         WarRepository warRepository
     ) {
         super(
@@ -67,7 +64,6 @@ public class DeclareWarCommand extends Command {
         );
         this.configService = configService;
         this.factionRepository = factionRepository;
-        this.factionService = factionService;
         this.warRepository = warRepository;
     }
 
@@ -94,8 +90,8 @@ public class DeclareWarCommand extends Command {
 
             if (! faction.getLiege().equals(opponent.getLiege())) {
                 final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
-                if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
-                        this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
+                if (enemyLiege.calculateCumulativePowerLevelWithoutVassalContribution() <
+                        enemyLiege.getMaximumCumulativePowerLevel() / 2) {
                     context.error("Error.War.LiegeNotWeakened");
                 }
             }

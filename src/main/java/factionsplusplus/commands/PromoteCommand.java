@@ -10,7 +10,6 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.services.FactionService;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -23,10 +22,8 @@ import factionsplusplus.builders.ArgumentBuilder;
 @Singleton
 public class PromoteCommand extends Command {
 
-    private final FactionService factionService;
-
     @Inject
-    public PromoteCommand(FactionService factionService) {
+    public PromoteCommand() {
         super(
             new CommandBuilder()
                 .withName("promote")
@@ -45,7 +42,6 @@ public class PromoteCommand extends Command {
                         .isRequired()
                 )
         );
-        this.factionService = factionService;
     }
 
     public void execute(CommandContext context) {
@@ -59,8 +55,7 @@ public class PromoteCommand extends Command {
             context.error("Error.Promote.Self");
             return;
         }
-        int maxOfficers = this.factionService.calculateMaxOfficers(faction);
-        if (faction.getOfficerCount() <= maxOfficers) {
+        if (faction.getOfficerCount() <= faction.calculateMaxOfficers()) {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
                 faction.upsertMember(target.getUniqueId(), GroupRole.Officer);
                 context.success("CommandResponse.Member.Promoted", target.getName());

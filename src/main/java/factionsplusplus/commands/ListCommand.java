@@ -58,7 +58,7 @@ public class ListCommand extends Command {
                     .hoverEvent(HoverEvent.showText(
                         Component.text()
                             .append(Component.text("Power: ").decorate(TextDecoration.BOLD)) // TODO: localize
-                            .append(Component.text(this.factionService.getCumulativePowerLevel(faction)+"\n"))
+                            .append(Component.text(faction.getCumulativePowerLevel()+"\n"))
                             .append(Component.text("Members: ").decorate(TextDecoration.BOLD)) // TODO: localize
                             .append(Component.text(faction.getMemberCount()+"\n"))
                             .append(Component.text("Land: ").decorate(TextDecoration.BOLD)) // TODO: localize

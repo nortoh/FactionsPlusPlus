@@ -14,7 +14,6 @@ import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
-import factionsplusplus.services.FactionService;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,7 +33,6 @@ public class MoveHandler implements Listener {
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
     private final FactionsPlusPlus factionsPlusPlus;
     private final DynmapIntegrationService dynmapService;
-    private final FactionService factionService;
     private final DataService dataService;
     private final ClaimService claimService;
 
@@ -43,14 +41,12 @@ public class MoveHandler implements Listener {
         TerritoryOwnerNotifier territoryOwnerNotifier,
         FactionsPlusPlus factionsPlusPlus,
         DynmapIntegrationService dynmapService,
-        FactionService factionService,
         DataService dataService,
         ClaimService claimService
     ) {
         this.territoryOwnerNotifier = territoryOwnerNotifier;
         this.factionsPlusPlus = factionsPlusPlus;
         this.dynmapService = dynmapService;
-        this.factionService = factionService;
         this.dataService = dataService;
         this.claimService = claimService;
     }
@@ -121,7 +117,7 @@ public class MoveHandler implements Listener {
     }
 
     private boolean notAtDemesneLimit(Faction faction) {
-        return this.dataService.getClaimedChunksForFaction(faction).size() < this.factionService.getCumulativePowerLevel(faction);
+        return this.dataService.getClaimedChunksForFaction(faction).size() < faction.getCumulativePowerLevel();
     }
 
     private void scheduleClaiming(Player player, Faction faction) {

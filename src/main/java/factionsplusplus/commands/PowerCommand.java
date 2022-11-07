@@ -11,7 +11,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.PlayerService;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
@@ -21,14 +20,10 @@ import java.util.UUID;
 @Singleton
 public class PowerCommand extends Command {
 
-    private final PlayerService playerService;
     private final DataService dataService;
 
     @Inject
-    public PowerCommand(
-        PlayerService playerService,
-        DataService dataService
-    ) {
+    public PowerCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("power")
@@ -43,7 +38,6 @@ public class PowerCommand extends Command {
                         .isOptional()
                 )
         );
-        this.playerService = playerService;
         this.dataService = dataService;
     }
 
@@ -56,13 +50,12 @@ public class PowerCommand extends Command {
                 return;
             }
             record = this.dataService.getPlayer(context.getPlayer().getUniqueId());
-            maxPower = this.playerService.getMaxPower(context.getPlayer().getUniqueId());
-            context.replyWith("CommandResponse.Power.Self", record.getPower(), maxPower);
+            context.replyWith("CommandResponse.Power.Self", record.getPower(), record.getMaxPower());
             return;
         }
         final UUID target = context.getOfflinePlayerArgument("player").getUniqueId();
         record = this.dataService.getPlayer(target);
-        maxPower = this.playerService.getMaxPower(target);
+        maxPower = record.getMaxPower();
         context.replyWith(
             "CommandResponse.Power.Other",
             context.getOfflinePlayerArgument("player").getName(),

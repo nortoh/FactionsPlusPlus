@@ -193,7 +193,7 @@ public class DynmapIntegrator {
         /* Loop through realms and build area markers coloured in the same colour
             as each faction's liege's colour. */
         for (Faction f : this.dataService.getFactions()) {
-            UUID liegeID = this.factionService.getTopLiege(f);
+            UUID liegeID = f.getTopLiege();
             Faction liege = this.dataService.getFaction(liegeID);
             String liegeName;
             String liegeColor;
@@ -266,10 +266,10 @@ public class DynmapIntegrator {
         }
         message += "Allied With: " + this.factionService.getCommaSeparatedFactionNames(f.getAllies()) + "<br/>" +
                 "At War With: " + this.factionService.getCommaSeparatedFactionNames(f.getEnemies()) + "<br/>" +
-                "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
+                "Power Level: " + f.getCumulativePowerLevel() + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
                 this.dataService.getClaimedChunksForFaction(f).size(),
-                this.factionService.getCumulativePowerLevel(f));
+                f.getCumulativePowerLevel());
         return message;
     }
 

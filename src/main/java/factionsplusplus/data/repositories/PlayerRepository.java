@@ -70,6 +70,11 @@ public class PlayerRepository {
         return this.dataProviderService.getPersistentData().onDemand(PlayerDao.class);
     }
 
+    // Determine if a player is stored
+    public boolean contains(UUID player) {
+        return this.playerStore.containsKey(player);
+    }
+
     /*
      * Retrieves the number of players currently stored
      *

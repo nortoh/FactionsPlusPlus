@@ -13,9 +13,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.PlayerService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -27,25 +25,19 @@ import org.jetbrains.annotations.NotNull;
 public class PlaceholderAPI extends PlaceholderExpansion {
     private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
-    private final FactionService factionService;
     private final DataService dataService;
-    private final PlayerService playerService;
     private final LocaleService localeService;
 
     @Inject
     public PlaceholderAPI(
         FactionsPlusPlus factionsPlusPlus,
         ConfigService configService,
-        FactionService factionService,
         DataService dataService,
-        PlayerService playerService,
         LocaleService localeService
     ) {
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
-        this.factionService = factionService;
         this.dataService = dataService;
-        this.playerService = playerService;
         this.localeService = localeService;
     }
 
@@ -81,6 +73,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
 
         final boolean hasFaction = this.dataService.isPlayerInFaction(player);
         final Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
+        final FPPPlayer playersPowerRecord = this.dataService.getPlayer(player.getUniqueId());
 
         // Prerequisites.
         if (id.startsWith("faction_") && ! hasFaction && ! id.equalsIgnoreCase("faction_at_location")) {
@@ -96,11 +89,11 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "faction_total_claimed_chunks": // Total chunks claimed by the faction the player is in
                 return String.valueOf(this.dataService.getClaimedChunksForFaction(faction).size());
             case "faction_cumulative_power": // The cumulative power (power + bonus power) for the faction the player is in
-                return String.valueOf(this.factionService.getCumulativePowerLevel(faction));
+                return String.valueOf(faction.getCumulativePowerLevel());
             case "faction_bonus_power": // The bonus power for the faction the player is in
                 return String.valueOf(faction.getBonusPower());
             case "faction_power": // The power (cumulative power - bonus power) for the faction the player is in
-                return String.valueOf(this.factionService.getCumulativePowerLevel(faction) - faction.getBonusPower());
+                return String.valueOf(faction.getCumulativePowerLevel() - faction.getBonusPower());
             case "faction_ally_count": // The total amount of allies the faction the player is in has
                 return String.valueOf(faction.getAllies().size());
             case "faction_enemy_count": // The total amount of enemies the faction the player is in has
@@ -130,11 +123,10 @@ public class PlaceholderAPI extends PlaceholderExpansion {
                 return String.valueOf(this.dataService.getPlayer(player.getUniqueId()).getPower());
             case "faction_player_max_power": // The maximum amount of power the player can have
             case "player_max_power":
-                return String.valueOf(this.playerService.getMaxPower(player.getUniqueId()));
+                return String.valueOf(playersPowerRecord.getMaxPower());
             case "faction_player_power_full":
             case "player_power_formatted":
-                final FPPPlayer playersPowerRecord = this.dataService.getPlayer(player.getUniqueId());
-                return playersPowerRecord.getPower() + "/" + this.playerService.getMaxPower(player.getUniqueId());
+                return playersPowerRecord.getPower() + "/" + playersPowerRecord.getMaxPower();
             case "player_chunk_location": // The Player's location (chunk coordinates), useful for Scoreboards.
                 final Chunk chunk = player.getLocation().getChunk();
                 return chunk.getX() + ":" + chunk.getZ();

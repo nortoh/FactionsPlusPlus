@@ -8,13 +8,11 @@ import factionsplusplus.utils.PlayerUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import factionsplusplus.utils.Comparators;
-import factionsplusplus.utils.Logger;
 import factionsplusplus.data.factories.FactionFactory;
 import factionsplusplus.data.repositories.ClaimedChunkRepository;
 import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.data.repositories.GateRepository;
 import factionsplusplus.data.repositories.LockedBlockRepository;
-import factionsplusplus.data.repositories.PlayerRecordRepository;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
 
@@ -29,36 +27,27 @@ import java.util.stream.Collectors;
 public class FactionService {
     private final ConfigService configService;
     private final FactionRepository factionRepository;
-    private final PlayerRecordRepository playerRecordRepository;
-    private final PlayerService playerService;
     private final Provider<DynmapIntegrationService> dynmapService;
     private final LockedBlockRepository lockedBlockRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
     private final FactionFactory factionFactory;
     private final GateRepository gateRepository;
-    private final Logger logger;
 
     @Inject
     public FactionService(
         ConfigService configService,
         FactionRepository factionRepository,
-        PlayerRecordRepository playerRecordRepository,
-        PlayerService playerService,
         Provider<DynmapIntegrationService> dynmapService,
         LockedBlockRepository lockedBlockRepository,
         ClaimedChunkRepository claimedChunkRepository,
         GateRepository gateRepository,
-        Logger logger,
         FactionFactory factionFactory
     ) {
         this.configService = configService;
         this.factionRepository = factionRepository;
-        this.playerRecordRepository = playerRecordRepository;
-        this.playerService = playerService;
         this.dynmapService = dynmapService;
         this.lockedBlockRepository = lockedBlockRepository;
         this.claimedChunkRepository = claimedChunkRepository;
-        this.logger = logger;
         this.factionFactory = factionFactory;
         this.gateRepository = gateRepository;
     }
@@ -80,77 +69,6 @@ public class FactionService {
             return;
         }
         faction.setBonusPower(power);
-    }
-
-    public int calculateMaxOfficers(Faction faction) {
-        int officersPerXNumber = this.configService.getInt("officerPerMemberCount");
-        int officersFromConfig = faction.getMembers().size() / officersPerXNumber;
-        return 1 + officersFromConfig;
-    }
-
-    public int calculateCumulativePowerLevelWithoutVassalContribution(Faction faction) {
-        int powerLevel = 0;
-        for (UUID playerUUID : faction.getMembers().keySet()) {
-            try {
-                powerLevel += this.playerRecordRepository.get(playerUUID).getPower();
-            } catch (Exception e) {
-                this.logger.error(e.getMessage(), e);
-            }
-        }
-        return powerLevel;
-    }
-
-    public int calculateCumulativePowerLevelWithVassalContribution(Faction faction) {
-        int vassalContribution = 0;
-        double percentage = this.configService.getDouble("vassalContributionPercentageMultiplier");
-        for (UUID factionUUID : faction.getVassals()) {
-            Faction vassalFaction = this.factionRepository.get(factionUUID);
-            if (vassalFaction != null) {
-                vassalContribution += this.getCumulativePowerLevel(vassalFaction) * percentage;
-            }
-        }
-        return calculateCumulativePowerLevelWithoutVassalContribution(faction) + vassalContribution;
-    }
-
-    public int getCumulativePowerLevel(Faction faction) {
-        int withoutVassalContribution = this.calculateCumulativePowerLevelWithoutVassalContribution(faction);
-        int withVassalContribution = this.calculateCumulativePowerLevelWithVassalContribution(faction);
-
-        if (faction.getVassals().size() == 0 || (withoutVassalContribution < (getMaximumCumulativePowerLevel(faction) / 2))) {
-            return withoutVassalContribution + faction.getBonusPower();
-        } else {
-            return withVassalContribution + faction.getBonusPower();
-        }
-    }
-
-    public int getMaximumCumulativePowerLevel(Faction faction) {     // get max power without vassal contribution
-        int maxPower = 0;
-
-        for (UUID playerUUID : faction.getMembers().keySet()) {
-            try {
-                maxPower += this.playerService.getMaxPower(playerUUID);
-            } catch (Exception e) {
-                this.logger.error(e.getMessage(), e);
-            }
-        }
-        return maxPower;
-    }
-
-    public boolean isWeakened(Faction faction) {
-        return this.calculateCumulativePowerLevelWithoutVassalContribution(faction) < (this.getMaximumCumulativePowerLevel(faction) / 2);
-    }
-
-    public UUID getTopLiege(Faction faction)
-    {
-        UUID liegeUUID = faction.getLiege();
-        Faction topLiege = this.factionRepository.get(liegeUUID);
-        while (topLiege != null) {
-            topLiege = this.factionRepository.get(liegeUUID);
-            if (topLiege != null) {
-                liegeUUID = topLiege.getID();
-            }
-        }
-        return liegeUUID;
     }
 
     public Faction createFaction(String factionName, UUID ownerUUID) {
@@ -202,7 +120,7 @@ public class FactionService {
     public void disbandAllZeroPowerFactions() {
         this.factionRepository.all().values()
             .stream()
-            .filter(faction -> this.getCumulativePowerLevel(faction) == 0)
+            .filter(faction -> faction.getCumulativePowerLevel() == 0)
             .forEach(faction -> {
                 faction.alert("FactionNotice.Disbandment.ZeroPower");
                 this.removeFaction(faction);
@@ -223,7 +141,7 @@ public class FactionService {
     public Collection<Faction> getFactionsByPower() {
         return this.factionRepository.all().values()
             .stream()
-            .map(faction -> Pair.of(faction, this.getCumulativePowerLevel(faction)))
+            .map(faction -> Pair.of(faction, faction.getCumulativePowerLevel()))
             .sorted(Comparators.FACTIONS_BY_POWER)
             .map(pair -> pair.left())
             .collect(Collectors.toList());
@@ -261,8 +179,8 @@ public class FactionService {
         if (! faction.getEnemies().isEmpty()) factionInfo.add(Component.translatable("FactionInfo.Enemies").args(Component.text(this.getCommaSeparatedFactionNames(faction.getEnemies()))));
         // Power Level
         final int claimedChunks = this.claimedChunkRepository.getAllForFaction(faction).size();
-        final int cumulativePowerLevel = this.getCumulativePowerLevel(faction);
-        factionInfo.add(Component.translatable("FactionInfo.PowerLevel").args(Component.text(cumulativePowerLevel), Component.text(this.getMaximumCumulativePowerLevel(faction))));
+        final double cumulativePowerLevel = faction.getCumulativePowerLevel();
+        factionInfo.add(Component.translatable("FactionInfo.PowerLevel").args(Component.text(cumulativePowerLevel), Component.text(faction.getMaximumCumulativePowerLevel())));
         // Demesne Size
         factionInfo.add(Component.translatable("FactionInfo.DemesneSize").args(Component.text(claimedChunks), Component.text(cumulativePowerLevel)));
         // Bonus Power (if applicable)
@@ -271,8 +189,8 @@ public class FactionService {
         if (faction.hasLiege()) factionInfo.add(Component.translatable("FactionInfo.Liege").args(Component.text(this.factionRepository.get(faction.getLiege()).getName())));
         // Vassals (if applicable)
         if (faction.isLiege()) {
-            int vassalContribution = this.calculateCumulativePowerLevelWithVassalContribution(faction) - this.calculateCumulativePowerLevelWithoutVassalContribution(faction);
-            if (this.isWeakened(faction)) vassalContribution = 0;
+            double vassalContribution = faction.calculateCumulativePowerLevelWithVassalContribution() - faction.calculateCumulativePowerLevelWithoutVassalContribution();
+            if (faction.isWeakened()) vassalContribution = 0;
             factionInfo.add(Component.translatable("FactionInfo.Vassals").args(Component.text(this.getCommaSeparatedFactionNames(faction.getVassals()))));
             factionInfo.add(Component.translatable("FactionInfo.VassalContribution").args(Component.text(vassalContribution)));
         }
