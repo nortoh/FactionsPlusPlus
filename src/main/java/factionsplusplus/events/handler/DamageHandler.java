@@ -156,7 +156,7 @@ public class DamageHandler implements Listener {
         }
 
         // If attacker is at war with the faction, return false
-        if (attackerFaction.isEnemy(chunkHolder.getID())) return false;
+        if (attackerFaction.isEnemy(chunkHolder.getUUID())) return false;
 
         return true;
     }

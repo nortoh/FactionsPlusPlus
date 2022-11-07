@@ -110,16 +110,6 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         this.flags = flags;
     }
 
-    /*
-     * Retrieves the factions UUID.
-     *
-     * @Deprecated Use getUUID()
-     * @returns the factions UUID
-     */
-    public UUID getID() {
-        return this.uuid;
-    }
-
     // Flags
     public Map<String, ConfigurationFlag> getFlags() {
         return this.flags;

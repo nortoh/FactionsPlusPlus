@@ -243,7 +243,7 @@ public class ClaimService {
         }
 
         // if player's faction is not the same as the holder of the chunk and player isn't overriding
-        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayer(event.getPlayer().getUniqueId()).isAdminBypassing()) {
+        if (! (playersFaction.getUUID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayer(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
             if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
@@ -324,7 +324,7 @@ public class ClaimService {
             }
 
             // if not at war with target faction
-            if (! claimantsFaction.isEnemy(targetFaction.getID())) {
+            if (! claimantsFaction.isEnemy(targetFaction.getUUID())) {
                 member.error("Error.Conquer.NotEnemies", targetFaction.getName());
                 return;
             }

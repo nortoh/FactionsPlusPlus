@@ -173,12 +173,12 @@ public class InteractionHandler implements Listener {
 
                     if (this.dataService.isBlockLocked(leftChest)) {
                         // lock right chest
-                        LockedBlock right = this.lockedBlockFactory.create(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getUID());
+                        LockedBlock right = this.lockedBlockFactory.create(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getUUID(), rightChest.getX(), rightChest.getY(), rightChest.getZ(), rightChest.getWorld().getUID());
                         this.dataService.getLockedBlockRepository().create(right);
                     } else {
                         if (this.dataService.isBlockLocked(rightChest)) {
                             // lock left chest
-                            LockedBlock left = this.lockedBlockFactory.create(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getUID());
+                            LockedBlock left = this.lockedBlockFactory.create(player.getUniqueId(), this.dataService.getPlayersFaction(player.getUniqueId()).getUUID(), leftChest.getX(), leftChest.getY(), leftChest.getZ(), leftChest.getWorld().getUID());
                             this.dataService.getLockedBlockRepository().create(left);
                         }
                     }
@@ -225,7 +225,7 @@ public class InteractionHandler implements Listener {
             Faction ownersFaction = this.dataService.getFactionRepository().getForPlayer(lockedBlock.getOwner());
             if (playersFaction != null && ownersFaction != null) {
                 if (lockedBlock.shouldAllowFactionMembers() && playersFaction.equals(ownersFaction)) playerHasAccess = true;
-                if (lockedBlock.shouldAllowAllies() && ownersFaction.isAlly(playersFaction.getID())) playerHasAccess = true;
+                if (lockedBlock.shouldAllowAllies() && ownersFaction.isAlly(playersFaction.getUUID())) playerHasAccess = true;
             }
             if (lockedBlock.hasAccess(player.getUniqueId())) playerHasAccess = true;
             boolean isPlayerBypassing = this.dataService.getPlayer(player.getUniqueId()).isAdminBypassing();

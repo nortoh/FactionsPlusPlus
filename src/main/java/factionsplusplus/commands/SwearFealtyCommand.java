@@ -47,7 +47,7 @@ public class SwearFealtyCommand extends Command {
     public void execute(CommandContext context) {
         final Faction faction = context.getExecutorsFaction();
         final Faction target = context.getFactionArgument("faction name");
-        if (! target.hasBeenOfferedVassalization(faction.getID())) {
+        if (! target.hasBeenOfferedVassalization(faction.getUUID())) {
             context.error("Error.Vassalization.NotOffered", target.getName());
             return;
         }
@@ -55,8 +55,8 @@ public class SwearFealtyCommand extends Command {
             @Override
             public void run() {
                 // set vassal
-                target.upsertRelation(faction.getID(), FactionRelationType.Vassal);
-                target.removeAttemptedVassalization(faction.getID());
+                target.upsertRelation(faction.getUUID(), FactionRelationType.Vassal);
+                target.removeAttemptedVassalization(faction.getUUID());
                 
                 // inform target faction that they have a new vassal
                 target.alert("FactionNotice.NewVassal", faction.getName());

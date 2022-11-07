@@ -48,7 +48,7 @@ public class VassalizeCommand extends Command {
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         // make sure player isn't trying to vassalize their own faction
-        if (context.getExecutorsFaction().getID().equals(target.getID())) {
+        if (context.getExecutorsFaction().getUUID().equals(target.getUUID())) {
             context.error("Error.Vassalization.Self");
             return;
         }
@@ -69,7 +69,7 @@ public class VassalizeCommand extends Command {
             return;
         }
         // add faction to attemptedVassalizations
-        context.getExecutorsFaction().addAttemptedVassalization(target.getID());
+        context.getExecutorsFaction().addAttemptedVassalization(target.getUUID());
 
         // inform all players in that faction that they are trying to be vassalized
         target.alert("FactionNotice.VassalizationAttempted.Target", context.getExecutorsFaction().getName());
@@ -85,7 +85,7 @@ public class VassalizeCommand extends Command {
         while (current != null && steps < MAX_STEPS) { // Prevents infinite loop and NPE (getFaction can return null).
             Faction liege = current.getLiege();
             if (liege == null) return 0;
-            if (liege.getUUID().equals(potentialVassal.getID())) return 1;
+            if (liege.getUUID().equals(potentialVassal.getUUID())) return 1;
             current = liege;
             steps++;
         }

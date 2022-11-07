@@ -74,7 +74,7 @@ public class DeclareIndependenceCommand extends Command {
                 Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                     @Override
                     public void run() {
-                        faction.upsertRelation(liege.getID(), FactionRelationType.Enemy);
+                        faction.upsertRelation(liege.getUUID(), FactionRelationType.Enemy);
                         // TODO: localize this message
                         warRepository.create(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
                     }
@@ -85,7 +85,7 @@ public class DeclareIndependenceCommand extends Command {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    faction.upsertRelation(liege.getID(), null);
+                    faction.upsertRelation(liege.getUUID(), null);
                 }
             });
         }

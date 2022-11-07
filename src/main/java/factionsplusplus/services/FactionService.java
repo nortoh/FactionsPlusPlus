@@ -98,10 +98,10 @@ public class FactionService {
             .stream()
             .filter(faction -> ! faction.equals(targetFaction))
             .forEach(faction -> {
-                faction.removeAlly(targetFaction.getID());
-                faction.removeEnemy(targetFaction.getID());
-                faction.unsetIfLiege(targetFaction.getID());
-                faction.removeVassal(targetFaction.getID());
+                faction.removeAlly(targetFaction.getUUID());
+                faction.removeEnemy(targetFaction.getUUID());
+                faction.unsetIfLiege(targetFaction.getUUID());
+                faction.removeVassal(targetFaction.getUUID());
             });
     }
 

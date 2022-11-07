@@ -28,7 +28,7 @@ public class FPP_Faction {
 
     @Deprecated
     public UUID getID() {
-        return this.faction.getID();
+        return this.faction.getUUID();
     }
 
     public UUID getUUID() {

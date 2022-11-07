@@ -73,13 +73,13 @@ public class DeclareWarCommand extends Command {
             return;
         }
 
-        if (faction.isEnemy(opponent.getID())) {
+        if (faction.isEnemy(opponent.getUUID())) {
             context.error("Error.War.AlreadyAtWar", faction.getName(), opponent.getName());
             return;
         }
 
         if (faction.hasLiege() && opponent.hasLiege()) {
-            if (faction.isVassal(opponent.getID())) {
+            if (faction.isVassal(opponent.getUUID())) {
                 context.error("Error.War.Vassal");
                 return;
             }
@@ -93,12 +93,12 @@ public class DeclareWarCommand extends Command {
             }
         }
 
-        if (faction.isLiege(opponent.getID())) {
+        if (faction.isLiege(opponent.getUUID())) {
             context.error("Error.War.Liege");
             return;
         }
 
-        if (faction.isAlly(opponent.getID())) {
+        if (faction.isAlly(opponent.getUUID())) {
             context.error("Error.War.Ally");
             return;
         }
@@ -120,7 +120,7 @@ public class DeclareWarCommand extends Command {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    faction.upsertRelation(opponent.getID(), FactionRelationType.Enemy);
+                    faction.upsertRelation(opponent.getUUID(), FactionRelationType.Enemy);
                     String reason = context.getStringArgument("reason");
                     if (reason == null) reason = "No reason";
                     warRepository.create(faction, opponent, reason);

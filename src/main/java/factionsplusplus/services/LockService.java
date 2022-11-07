@@ -67,7 +67,7 @@ public class LockService {
         if (chunk != null) {
 
             // if claimed by other faction
-            if (! chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getID())) {
+            if (! chunk.getHolder().equals(this.dataService.getPlayersFaction(player.getUniqueId()).getUUID())) {
                 member.error("Error.Lock.ClaimedTerritory");
                 event.setCancelled(true);
                 return;

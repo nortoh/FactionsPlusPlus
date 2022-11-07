@@ -454,7 +454,7 @@ public class CommandService implements TabCompleter {
     private Faction getAllyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
-            if (context.getExecutorsFaction().isAlly(faction.getID())) {
+            if (context.getExecutorsFaction().isAlly(faction.getUUID())) {
                 return faction;
             }
             context.error("Error.Faction.NotAlly", faction.getName());
@@ -465,7 +465,7 @@ public class CommandService implements TabCompleter {
     private Faction getEnemyFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
-            if (context.getExecutorsFaction().isEnemy(faction.getID())) {
+            if (context.getExecutorsFaction().isEnemy(faction.getUUID())) {
                 return faction;
             }
             context.error("Error.Faction.NotEnemy", faction.getName());
@@ -476,7 +476,7 @@ public class CommandService implements TabCompleter {
     private Faction getVassaledFaction(CommandContext context, String argumentData) {
         final Faction faction = this.getAnyFaction(context, argumentData);
         if (faction != null) {
-            if (faction.isLiege(context.getExecutorsFaction().getID())) {
+            if (faction.isLiege(context.getExecutorsFaction().getUUID())) {
                 return faction;
             }
             context.error("Error.Faction.NotVassal", faction.getName());
@@ -784,28 +784,28 @@ public class CommandService implements TabCompleter {
         for (ArgumentFilterType type : argument.getFilters()) {
             switch(type) {
                 case Allied:
-                    input = input.filter(f -> faction.isAlly(f.getID()));
+                    input = input.filter(f -> faction.isAlly(f.getUUID()));
                     break;
                 case NotAllied:
-                    input = input.filter(f -> ! faction.isAlly(f.getID()));
+                    input = input.filter(f -> ! faction.isAlly(f.getUUID()));
                     break;
                 case NotOwnFaction:
                     input = input.filter(f -> ! faction.equals(f));
                     break;
                 case Enemy:
-                    input = input.filter(f -> faction.isEnemy(f.getID()));
+                    input = input.filter(f -> faction.isEnemy(f.getUUID()));
                     break;
                 case NotEnemy:
-                    input = input.filter(f -> ! faction.isEnemy(f.getID()));
+                    input = input.filter(f -> ! faction.isEnemy(f.getUUID()));
                     break;
                 case Vassal:
-                    input = input.filter(f -> faction.isVassal(f.getID()));
+                    input = input.filter(f -> faction.isVassal(f.getUUID()));
                     break;
                 case NotVassal:
-                    input = input.filter(f -> ! faction.isVassal(f.getID()));
+                    input = input.filter(f -> ! faction.isVassal(f.getUUID()));
                     break;
                 case OfferedVassalization:
-                    input = input.filter(f -> f.hasBeenOfferedVassalization(faction.getID()));
+                    input = input.filter(f -> f.hasBeenOfferedVassalization(faction.getUUID()));
                     break;
                 default:
                     break;

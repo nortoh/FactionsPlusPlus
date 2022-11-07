@@ -70,7 +70,7 @@ public class AllyCommand extends Command {
         }
 
         // send the request
-        context.getExecutorsFaction().requestAlly(otherFaction.getID());
+        context.getExecutorsFaction().requestAlly(otherFaction.getUUID());
 
         context.getExecutorsFaction().alert("FactionNotice.AllianceRequest.Source", otherFaction.getName());
         otherFaction.alert("FactionNotice.AllianceRequest.Target", context.getExecutorsFaction().getName());
