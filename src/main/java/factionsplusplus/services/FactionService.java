@@ -186,7 +186,7 @@ public class FactionService {
         // Bonus Power (if applicable)
         if (faction.getBonusPower() != 0) factionInfo.add(Component.translatable("FactionInfo.BonusPower").args(Component.text(faction.getBonusPower())));
         // Liege (if applicable)
-        if (faction.hasLiege()) factionInfo.add(Component.translatable("FactionInfo.Liege").args(Component.text(this.factionRepository.get(faction.getLiege()).getName())));
+        if (faction.hasLiege()) factionInfo.add(Component.translatable("FactionInfo.Liege").args(Component.text(faction.getLiege().getName())));
         // Vassals (if applicable)
         if (faction.isLiege()) {
             double vassalContribution = faction.calculateCumulativePowerLevelWithVassalContribution() - faction.calculateCumulativePowerLevelWithoutVassalContribution();

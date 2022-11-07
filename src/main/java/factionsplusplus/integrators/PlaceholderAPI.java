@@ -103,7 +103,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "faction_vassal_count": // The total amount of vassals the faction the player is in has
                 return String.valueOf(faction.getNumVassals());
             case "faction_liege": // The liege (or N/A if not a liege) of the faction the player is in
-                return faction.hasLiege() ? this.dataService.getFaction(faction.getLiege()).getName() : "N/A";
+                return faction.hasLiege() ? faction.getLiege().getName() : "N/A";
             case "faction_leader": // The leader of the faction the player is in
                 return Bukkit.getOfflinePlayer(faction.getOwner().getUUID()).getName();
             case "faction_member_count": // The total amount of members the faction the player is in has

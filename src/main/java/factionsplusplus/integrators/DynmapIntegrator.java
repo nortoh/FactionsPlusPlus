@@ -193,8 +193,7 @@ public class DynmapIntegrator {
         /* Loop through realms and build area markers coloured in the same colour
             as each faction's liege's colour. */
         for (Faction f : this.dataService.getFactions()) {
-            UUID liegeID = f.getTopLiege();
-            Faction liege = this.dataService.getFaction(liegeID);
+            Faction liege = f.getTopLiege();
             String liegeName;
             String liegeColor;
             String popupText;
@@ -259,7 +258,7 @@ public class DynmapIntegrator {
                 "<div style='display: inline;' title='" + nationMembers + "'>Population: " + f.getMembers().size() + "</div><br/>";
 
         if (f.hasLiege()) {
-            message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";
+            message += "Liege: " + f.getLiege().getName() + "<br/>";
         }
         if (f.isLiege()) {
             message += "Vassals: " + this.factionService.getCommaSeparatedFactionNames(f.getVassals()) + "<br/>";

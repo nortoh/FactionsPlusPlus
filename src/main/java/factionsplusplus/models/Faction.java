@@ -319,12 +319,13 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return this.getVassals().size() > 0;
     }
 
-    public UUID getLiege() {
+    public Faction getLiege() {
         try {
             return this.relations.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() == FactionRelationType.Liege)
                 .map(entry -> entry.getKey())
+                .map(this.dataService::getFaction)
                 .findFirst()
                 .orElse(null);
         } catch (NullPointerException e) {
@@ -346,7 +347,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     public void unsetIfLiege(UUID uuid) {
-        if (this.isLiege(uuid)) this.relations.remove(this.getLiege());
+        if (this.isLiege(uuid)) this.relations.remove(this.getLiege().getUUID());
     }
 
     // Vassals
@@ -432,16 +433,16 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return withVassalContribution + this.getBonusPower();
     }
 
-    public UUID getTopLiege()
+    public Faction getTopLiege()
     {
-        UUID liegeUUID = this.getLiege();
-        if (liegeUUID == null) return null;
+        Faction currentLiege = this.getLiege();
+        if (currentLiege == null) return null;
         Faction topLiege = null;
         do {
-            topLiege = this.dataService.getFaction(liegeUUID);
-            if (topLiege != null) liegeUUID = topLiege.getUUID();
+            topLiege = currentLiege.getLiege();
+            if (topLiege != null) currentLiege = topLiege;
         } while(topLiege != null);
-        return liegeUUID;
+        return currentLiege;
     }
 
     public boolean isWeakened() {
