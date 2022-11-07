@@ -237,14 +237,14 @@ public class DamageHandler implements Listener {
         boolean friendlyFireAllowed = faction.getFlag("allowFriendlyFire").toBoolean();
         if (! friendlyFireAllowed) {
             event.setCancelled(true);
-            this.dataService.getPlayerRecord(attacker.getUniqueId()).alert(Component.translatable("Error.Attack.FactionMember").color(NamedTextColor.RED));
+            this.dataService.getPlayer(attacker.getUniqueId()).alert(Component.translatable("Error.Attack.FactionMember").color(NamedTextColor.RED));
         }
     }
 
     private void handleNonEnemyFire(EntityDamageByEntityEvent event, Player attacker, Player victim) {
         if (this.configService.getBoolean("warsRequiredForPVP")) {
             event.setCancelled(true);
-            this.dataService.getPlayerRecord(attacker.getUniqueId()).alert(Component.translatable("Error.Attack.NotAtWar").color(NamedTextColor.RED));
+            this.dataService.getPlayer(attacker.getUniqueId()).alert(Component.translatable("Error.Attack.NotAtWar").color(NamedTextColor.RED));
         }
     }
 }
