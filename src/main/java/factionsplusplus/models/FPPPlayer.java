@@ -33,7 +33,7 @@ import org.bukkit.entity.Player;
 /**
  * @author Daniel McCoy Stephenson
  */
-public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
+public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
     private UUID uuid;
     private double powerLevel;
     private boolean adminBypass = false;
@@ -44,12 +44,12 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     private final BukkitAudiences adventure;
 
     @AssistedInject
-    public PlayerRecord(@Named("adventure") BukkitAudiences adventure) { 
+    public FPPPlayer(@Named("adventure") BukkitAudiences adventure) { 
         this.adventure = adventure;
     }
 
     @AssistedInject
-    public PlayerRecord(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, @Named("adventure") BukkitAudiences adventure) {
+    public FPPPlayer(@Assisted UUID uuid, @Assisted int initialLogins, @Assisted double initialPowerLevel, @Named("adventure") BukkitAudiences adventure) {
         this.uuid = uuid;
         this.logins = initialLogins;
         this.powerLevel = initialPowerLevel;
@@ -57,7 +57,7 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     }
 
     @AssistedInject
-    public PlayerRecord(@Assisted PlayerBean bean, @Named("adventure") BukkitAudiences adventure) {
+    public FPPPlayer(@Assisted PlayerBean bean, @Named("adventure") BukkitAudiences adventure) {
         this.uuid = bean.getId();
         this.powerLevel = bean.getPower();
         this.adminBypass = bean.isAdminBypassing();
@@ -177,18 +177,18 @@ public class PlayerRecord implements Identifiable, ForwardingAudience.Single {
     }
 
     // Get as bukkit OfflinePlayer
-    public OfflinePlayer asBukkitOfflinePlayer() {
+    public OfflinePlayer toBukkitOfflinePlayer() {
         return Bukkit.getOfflinePlayer(this.uuid);
     }
 
     // Get as bukkit Player
-    public Player asBukkitPlayer() {
+    public Player toBukkitPlayer() {
         return Bukkit.getPlayer(this.uuid);
     }
 
     @Override
     public Audience audience() {
-        return this.asBukkitPlayer() == null ? Audience.empty() : this.adventure.player(this.asBukkitPlayer());
+        return this.toBukkitPlayer() == null ? Audience.empty() : this.adventure.player(this.toBukkitPlayer());
     }
 
     public void message(ComponentLike message, MessageType type) {

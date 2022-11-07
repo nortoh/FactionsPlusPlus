@@ -13,7 +13,7 @@ import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LockedBlock;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.BlockUtils.GenericBlockType;
 import net.kyori.adventure.text.Component;
@@ -63,7 +63,7 @@ public class LockService {
     public void handleLockingBlock(PlayerInteractEvent event, Player player, Block clickedBlock) {
         // if chunk is claimed
         ClaimedChunk chunk = this.dataService.getClaimedChunk(Objects.requireNonNull(event.getClickedBlock()).getLocation().getChunk());
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
         if (chunk != null) {
 
             // if claimed by other faction
@@ -113,7 +113,7 @@ public class LockService {
         // if locked
         InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(player.getUniqueId());
         if (context == null) return;
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
         if (this.dataService.isBlockLocked(clickedBlock)) {
             if (
                 this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId()) ||
@@ -131,7 +131,7 @@ public class LockService {
     }
 
     public void handleGrantingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
         // if not owner
         if (! this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
             member.error("Error.Lock.NotOwner");
@@ -161,7 +161,7 @@ public class LockService {
     }
 
     public void handleCheckingAccess(PlayerInteractEvent event, LockedBlock lockedBlock, Player player) {
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
         member.alert(Component.translatable("AccessList.Lock.Title").decorate(TextDecoration.BOLD).color(NamedTextColor.GOLD));
         for (UUID playerUUID : lockedBlock.getAccessList()) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(playerUUID);
@@ -177,7 +177,7 @@ public class LockService {
     }
 
     public void handleRevokingAccess(PlayerInteractEvent event, Block clickedBlock, Player player) {
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
         // if not owner
         if (! this.dataService.getLockedBlock(clickedBlock).getOwner().equals(player.getUniqueId())) {
             member.error("Error.Lock.NotOwner");

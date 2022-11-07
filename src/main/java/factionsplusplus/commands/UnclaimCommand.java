@@ -11,7 +11,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ClaimService;
-import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
 import org.bukkit.entity.Player;
 
@@ -23,13 +22,11 @@ public class UnclaimCommand extends Command {
 
     private final DynmapIntegrationService dynmapService;
     private final ClaimService claimService;
-    private final DataService dataService;
 
     @Inject
     public UnclaimCommand(
         DynmapIntegrationService dynmapService,
-        ClaimService claimService,
-        DataService dataService
+        ClaimService claimService
     ) {
         super(
             new CommandBuilder()
@@ -49,16 +46,14 @@ public class UnclaimCommand extends Command {
         );
         this.dynmapService = dynmapService;
         this.claimService = claimService;
-        this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
         final Faction faction = context.getExecutorsFaction();
         final Player player = context.getPlayer();
-        final boolean isPlayerBypassing = this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
         if (faction.getFlag("mustBeOfficerToManageLand").toBoolean()) {
             // officer or owner rank required
-            if (! faction.isOfficer(player.getUniqueId()) && ! faction.isOwner(player.getUniqueId()) && ! isPlayerBypassing) {
+            if (! faction.isOfficer(player.getUniqueId()) && ! faction.isOwner(player.getUniqueId()) && ! context.getFPPPlayer().isAdminBypassing()) {
                 context.error("Error.Claim.NotPermitted");
                 return;
             }

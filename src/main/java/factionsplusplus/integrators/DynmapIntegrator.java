@@ -6,7 +6,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
@@ -498,7 +498,7 @@ public class DynmapIntegrator {
             Set<String> plids = new HashSet<>();
             Faction f = this.dataService.getFaction(holder);
             if (f != null) {
-                for (PlayerRecord record : this.dataService.getPlayerRecords()) {
+                for (FPPPlayer record : this.dataService.getPlayers()) {
                     Faction pf = this.dataService.getPlayersFaction(record.getUUID());
                     if (pf != null && pf.getName().equalsIgnoreCase(holder)) {
                         plids.add(PlayerUtils.parseAsPlayer(record.getUUID()).getName());

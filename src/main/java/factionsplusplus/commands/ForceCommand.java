@@ -21,7 +21,7 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.InteractionContext;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.models.War;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
@@ -484,7 +484,7 @@ public class ForceCommand extends Command {
     public void powerCommand(CommandContext context) {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Integer desiredPower = context.getIntegerArgument("desired power");
-        final PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
+        final FPPPlayer record = this.dataService.getPlayer(player.getUniqueId());
         record.setPower(desiredPower); // Set power :)
         record.alert("PlayerNotice.PowerSet.Forced", desiredPower);
         context.success("CommandResponse.PowerSet.Force", player.getName(), desiredPower);

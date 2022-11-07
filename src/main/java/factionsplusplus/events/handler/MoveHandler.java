@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
@@ -113,7 +113,7 @@ public class MoveHandler implements Listener {
                 if (this.notAtDemesneLimit(playersFaction)) {
                     this.scheduleClaiming(player, playersFaction);
                 } else {
-                    PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+                    FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
                     member.error("FactionNotice.ReachedDemesne");
                 }
             }

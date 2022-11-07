@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
@@ -127,13 +127,13 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             // Player specific 
             case "faction_player_power": // The total amount of power the player has
             case "player_power":
-                return String.valueOf(this.dataService.getPlayerRecord(player.getUniqueId()).getPower());
+                return String.valueOf(this.dataService.getPlayer(player.getUniqueId()).getPower());
             case "faction_player_max_power": // The maximum amount of power the player can have
             case "player_max_power":
                 return String.valueOf(this.playerService.getMaxPower(player.getUniqueId()));
             case "faction_player_power_full":
             case "player_power_formatted":
-                final PlayerRecord playersPowerRecord = this.dataService.getPlayerRecord(player.getUniqueId());
+                final FPPPlayer playersPowerRecord = this.dataService.getPlayer(player.getUniqueId());
                 return playersPowerRecord.getPower() + "/" + this.playerService.getMaxPower(player.getUniqueId());
             case "player_chunk_location": // The Player's location (chunk coordinates), useful for Scoreboards.
                 final Chunk chunk = player.getLocation().getChunk();
@@ -146,9 +146,9 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "player_total_logins": // The total amount of times a Player has logged in.
             case "player_login_count":
             case "player_logins":
-                return String.valueOf(this.dataService.getPlayerRecord(player.getUniqueId()).getLogins());
+                return String.valueOf(this.dataService.getPlayer(player.getUniqueId()).getLogins());
             case "player_session_length": // The total time since their current login. (Days:Hours:Minutes:Seconds) or (Hours:Minutes:Seconds).
-                return this.dataService.getPlayerRecord(player.getUniqueId()).getActiveSessionLength();
+                return this.dataService.getPlayer(player.getUniqueId()).getActiveSessionLength();
             case "faction_at_location": // The Faction at the Player's current location. (Wilderness if nothing).
                 ClaimedChunk claim = this.dataService.getClaimedChunk(player.getLocation().getChunk());
                 if (claim == null) return this.localeService.get("Wilderness");

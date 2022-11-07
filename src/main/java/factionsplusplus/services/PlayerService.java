@@ -6,7 +6,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.constants.FactionRank;
 import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -61,7 +61,7 @@ public class PlayerService {
     }
 
     public double increasePowerBy(UUID playerUUID, double increaseAmount) {
-        PlayerRecord playerRecord = this.dataService.getPlayerRecord(playerUUID);
+        FPPPlayer playerRecord = this.dataService.getPlayer(playerUUID);
         if (playerRecord == null) return 0;
         double currentPowerLevel = playerRecord.getPower();
         double maxPowerLevel = this.getMaxPower(playerUUID);
@@ -77,7 +77,7 @@ public class PlayerService {
     }
 
     public double decreasePowerBy(UUID playerUUID, double decreaseAmount) {
-        PlayerRecord playerRecord = this.dataService.getPlayerRecord(playerUUID);
+        FPPPlayer playerRecord = this.dataService.getPlayer(playerUUID);
         if (playerRecord == null) return 0;
         double currentPowerLevel = playerRecord.getPower();
         if (currentPowerLevel > 0) {
@@ -110,28 +110,28 @@ public class PlayerService {
 
     public void resetPowerLevels() {
         final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
-        this.dataService.getPlayerRecordRepository().all().values().forEach(record -> record.setPower(initialPowerLevel));
+        this.dataService.getPlayerRepository().all().values().forEach(record -> record.setPower(initialPowerLevel));
     }
 
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
         final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
         Arrays.stream(Bukkit.getOfflinePlayers())
-            .filter(player -> this.dataService.getPlayerRecord(player.getUniqueId()) == null)
+            .filter(player -> this.dataService.getPlayer(player.getUniqueId()) == null)
             .forEach(player -> {
-                PlayerRecord newRecord = this.playerFactory.create(player.getUniqueId(), 1, initialPowerLevel);
+                FPPPlayer newRecord = this.playerFactory.create(player.getUniqueId(), 1, initialPowerLevel);
                 newRecord.setLastLogout(ZonedDateTime.now());
-                this.dataService.createPlayerRecord(newRecord);
+                this.dataService.createPlayer(newRecord);
             });
     }
 
     public void initiatePowerIncreaseForAllPlayers() {
         Bukkit.getOnlinePlayers()
             .stream()
-            .map(player -> this.dataService.getPlayerRecord(player.getUniqueId()))
+            .map(player -> this.dataService.getPlayer(player.getUniqueId()))
             .forEach(record -> this.initiatePowerIncrease(record));
     }
 
-    private void initiatePowerIncrease(PlayerRecord record) {
+    private void initiatePowerIncrease(FPPPlayer record) {
         double maxPower = this.getMaxPower(record.getPlayerUUID());
         if (record.getPower() < maxPower && Objects.requireNonNull(getServer().getPlayer(record.getPlayerUUID())).isOnline()) {
             record.alert("PlayerNotice.PowerIncreasedBy", this.increasePower(record.getPlayerUUID()));
@@ -141,7 +141,7 @@ public class PlayerService {
     public void decreasePowerForInactivePlayers() {
         if (! this.configService.getBoolean("powerDecreases")) return;
         final int minutesBeforePowerDecrease = this.configService.getInt("minutesBeforePowerDecrease");
-        this.dataService.getPlayerRecords()
+        this.dataService.getPlayers()
             .stream()
             .filter(record -> {
                 Player player = getServer().getPlayer(record.getPlayerUUID());

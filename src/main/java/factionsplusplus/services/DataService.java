@@ -23,7 +23,7 @@ import factionsplusplus.data.daos.FactionDao;
 import factionsplusplus.data.repositories.*;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.models.World;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
@@ -40,7 +40,7 @@ public class DataService {
     private final FactionRepository factionRepository;
     private final ClaimedChunkRepository claimedChunkRepository;
     private final LockedBlockRepository lockedBlockRepository;
-    private final PlayerRecordRepository playerRecordRepository;
+    private final PlayerRepository playerRecordRepository;
     private final CommandRepository commandRepository;
     private final ConfigOptionRepository configOptionRepository;
     private final WarRepository warRepository;
@@ -55,7 +55,7 @@ public class DataService {
         FactionRepository factionRepository,
         ClaimedChunkRepository claimedChunkRepository,
         LockedBlockRepository lockedBlockRepository,
-        PlayerRecordRepository playerRecordRepository,
+        PlayerRepository playerRecordRepository,
         CommandRepository commandRepository,
         ConfigOptionRepository configOptionRepository,
         WarRepository warRepository,
@@ -487,31 +487,31 @@ public class DataService {
         return this.getLockedBlock(x, y, z, world) != null;
     }
 
-    public void createPlayerRecord(PlayerRecord record) {
+    public void createPlayer(FPPPlayer record) {
         this.playerRecordRepository.create(record);
     }
 
-    public PlayerRecordRepository getPlayerRecordRepository() {
+    public PlayerRepository getPlayerRepository() {
         return this.playerRecordRepository;
     }
 
-    public PlayerRecord getPlayerRecord(UUID playerUUID) {
+    public FPPPlayer getPlayer(UUID playerUUID) {
         return this.playerRecordRepository.get(playerUUID);
     }
 
-    public boolean hasPlayerRecord(OfflinePlayer player) {
-        return this.getPlayerRecord(player.getUniqueId()) != null;
+    public boolean hasPlayer(OfflinePlayer player) {
+        return this.getPlayer(player.getUniqueId()) != null;
     }
 
-    public boolean hasPlayerRecord(UUID uuid) {
-        return this.getPlayerRecord(uuid) != null;
+    public boolean hasPlayer(UUID uuid) {
+        return this.getPlayer(uuid) != null;
     }
 
     public int getNumberOfPlayers() {
         return this.playerRecordRepository.count();
     }
 
-    public Collection<PlayerRecord> getPlayerRecords() {
+    public Collection<FPPPlayer> getPlayers() {
         return this.playerRecordRepository.all().values();
     }
 

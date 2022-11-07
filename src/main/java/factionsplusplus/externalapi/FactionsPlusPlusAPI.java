@@ -12,7 +12,7 @@ import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.data.EphemeralData;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
@@ -109,11 +109,11 @@ public class FactionsPlusPlusAPI {
     }
 
     public double getPower(Player player) {
-        return this.dataService.getPlayerRecord(player.getUniqueId()).getPower();
+        return this.dataService.getPlayer(player.getUniqueId()).getPower();
     }
 
     public double getPower(UUID playerUUID) {
-        return this.dataService.getPlayerRecord(playerUUID).getPower();
+        return this.dataService.getPlayer(playerUUID).getPower();
     }
 
     public void forcePlayerToLeaveFactionChat(UUID uuid) {
@@ -142,14 +142,14 @@ public class FactionsPlusPlusAPI {
     }
 
     public void increasePlayerPower(Player player, int amount) {
-        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer record = this.dataService.getPlayer(player.getUniqueId());
         double originalPower = record.getPower();
         double newPower = originalPower + amount;
         record.setPower(newPower);
     }
 
     public void decreasePower(Player player, int amount) {
-        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer record = this.dataService.getPlayer(player.getUniqueId());
         double originalPower = record.getPower();
         double newPower = originalPower - amount;
         if (newPower >= 0) record.setPower(originalPower - amount);

@@ -9,7 +9,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.PlayerService;
 
@@ -48,20 +48,20 @@ public class PowerCommand extends Command {
     }
 
     public void execute(CommandContext context) {
-        final PlayerRecord record;
+        final FPPPlayer record;
         double maxPower;
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
                 context.error("Error.PlayerExecutionRequired");
                 return;
             }
-            record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
+            record = this.dataService.getPlayer(context.getPlayer().getUniqueId());
             maxPower = this.playerService.getMaxPower(context.getPlayer().getUniqueId());
             context.replyWith("CommandResponse.Power.Self", record.getPower(), maxPower);
             return;
         }
         final UUID target = context.getOfflinePlayerArgument("player").getUniqueId();
-        record = this.dataService.getPlayerRecord(target);
+        record = this.dataService.getPlayer(target);
         maxPower = this.playerService.getMaxPower(target);
         context.replyWith(
             "CommandResponse.Power.Other",

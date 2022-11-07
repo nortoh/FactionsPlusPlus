@@ -33,8 +33,8 @@ public class Duel  {
     private final DeathService deathService;
     private final BukkitAudiences adventure;
 
-    private final PlayerRecord _challenged;
-    private final PlayerRecord _challenger;
+    private final FPPPlayer _challenged;
+    private final FPPPlayer _challenger;
     private final float nearbyPlayerRadius = 64;
     private final double timeLimit;
     private DuelState duelState;
@@ -61,9 +61,9 @@ public class Duel  {
         this.factionsPlusPlus = factionsPlusPlus;
         this.ephemeralData = ephemeralData;
         this.deathService = deathService;
-        this._challenger = dataService.getPlayerRecord(challenger.getUniqueId());
+        this._challenger = dataService.getPlayer(challenger.getUniqueId());
         this.challengerHealth = challenger.getHealth();
-        this._challenged = dataService.getPlayerRecord(challenged.getUniqueId());
+        this._challenged = dataService.getPlayer(challenged.getUniqueId());
         this.challengedHealth = challenged.getHealth();
         this.timeLimit = limit;
         this.duelState = DuelState.INVITED;
@@ -82,7 +82,7 @@ public class Duel  {
     }
 
     public Player getChallenged() {
-        return this._challenged.asBukkitPlayer();
+        return this._challenged.toBukkitPlayer();
     }
 
     public boolean isChallenger(Player player) {
@@ -90,7 +90,7 @@ public class Duel  {
     }
 
     public Player getChallenger() {
-        return this._challenger.asBukkitPlayer();
+        return this._challenger.toBukkitPlayer();
     }
 
     public double getChallengerHealth() {
