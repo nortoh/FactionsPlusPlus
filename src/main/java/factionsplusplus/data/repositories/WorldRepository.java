@@ -38,8 +38,10 @@ public class WorldRepository {
     public void load() {
         try {
             this.worldStore.clear();
-            // TODO: check if world no longer exists
-            Bukkit.getWorlds().stream().forEach(this::create);
+            this.worldStore = this.getDAO().getWorlds()
+                .stream()
+                .map(bean -> this.worldFactory.create(bean))
+                .collect(Collectors.toConcurrentMap(w -> w.getUUID(), w -> w));
         } catch(Exception e) {
             this.logger.error(String.format("Error loading worlds: %s", e.getMessage()));
         }
@@ -47,6 +49,7 @@ public class WorldRepository {
 
     // Save a world after creating
     public void create(World world) {
+        if (this.worldStore.containsKey(world.getUUID())) return;
         this.getDAO().insert(world);
         world.setFlags(this.getDAO().getFlags(world.getUUID()));
         this.worldStore.put(world.getUUID(), world);
