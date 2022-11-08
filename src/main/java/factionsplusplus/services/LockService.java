@@ -82,7 +82,6 @@ public class LockService {
 
             // if the block is a lockable type
             if (! BlockUtils.isGenericBlockType(clickedBlock, LOCKABLE_BLOCKS)) {
-                // TODO: localize block names using minecraft localization
                 member.error("Error.Lock.CertainBlocks");
                 event.setCancelled(true);
                 return;
