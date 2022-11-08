@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class BaseCommand extends Command {
@@ -255,14 +256,25 @@ public class BaseCommand extends Command {
             context.error("Error.Base.NoneAccessible");
             return;
         }
-        context.replyWithMiniMessage("<color:light_purple>BaseList.Title");
-        // TODO: if they have access to another factions bases, include in this list
-        context.getExecutorsFaction().getBases().values().stream()
-            .forEach(base -> {
-                if (base.shouldAllowAllFactionMembers() || context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
-                    context.replyWith("BaseList.Base", base.getName());
-                }
-            });
+        context.replyWithMiniMessage("<color:light_purple><lang:BaseList.Title>");
+        List<FactionBase> accessibleBases = context.getFPPPlayer().getAccessibleFactionBases();
+        if (accessibleBases.size() == 0) {
+            context.error("Error.Base.NoneAccessible");
+            return;
+        }
+        context.replyWithMiniMessage(
+            accessibleBases
+                .stream()
+                .map(base -> {
+                    final boolean isOwnBase = base.getFaction().equals(context.getExecutorsFaction().getUUID());
+                    final String baseName = (isOwnBase ? base.getName() : String.format(
+                        "%s (%s)",
+                        base.getName(),
+                        this.dataService.getFaction(base.getFaction()).getName()
+                    ));
+                    return String.format("<color:yellow><lang:BaseList.Base:'<color:white>%s'>", baseName);
+                }).collect(Collectors.joining("<newline>"))
+        );
     }
 
     public void removeCommand(CommandContext context) {
