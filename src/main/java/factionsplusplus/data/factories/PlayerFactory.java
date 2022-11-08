@@ -1,12 +1,12 @@
 package factionsplusplus.data.factories;
 
 import factionsplusplus.data.beans.PlayerBean;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 
 import java.util.UUID;
 
 public interface PlayerFactory {
-    PlayerRecord create();
-    PlayerRecord create(UUID uuid, int initialLogins, double initialPowerLevel);
-    PlayerRecord create(PlayerBean bean);
+    FPPPlayer create();
+    FPPPlayer create(UUID uuid, int initialLogins, double initialPowerLevel);
+    FPPPlayer create(PlayerBean bean);
 }
