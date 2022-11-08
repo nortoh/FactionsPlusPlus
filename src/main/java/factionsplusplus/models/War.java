@@ -44,8 +44,8 @@ public class War implements Identifiable {
     @AssistedInject
     public War(@Assisted("attacker") Faction attacker, @Assisted("defender") Faction defender, @Assisted String reason, WarRepository warRepository) {
         this.uuid = UUID.randomUUID();
-        this.attacker = attacker.getID();
-        this.defender = defender.getID();
+        this.attacker = attacker.getUUID();
+        this.defender = defender.getUUID();
         this.reason = reason;
         this.started = ZonedDateTime.now();
         this.active = true;

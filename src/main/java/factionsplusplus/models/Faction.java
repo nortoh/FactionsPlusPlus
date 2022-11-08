@@ -110,16 +110,6 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         this.flags = flags;
     }
 
-    /*
-     * Retrieves the factions UUID.
-     *
-     * @Deprecated Use getUUID()
-     * @returns the factions UUID
-     */
-    public UUID getID() {
-        return this.uuid;
-    }
-
     // Flags
     public Map<String, ConfigurationFlag> getFlags() {
         return this.flags;
@@ -319,12 +309,13 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return this.getVassals().size() > 0;
     }
 
-    public UUID getLiege() {
+    public Faction getLiege() {
         try {
             return this.relations.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() == FactionRelationType.Liege)
                 .map(entry -> entry.getKey())
+                .map(this.dataService::getFaction)
                 .findFirst()
                 .orElse(null);
         } catch (NullPointerException e) {
@@ -346,7 +337,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     public void unsetIfLiege(UUID uuid) {
-        if (this.isLiege(uuid)) this.relations.remove(this.getLiege());
+        if (this.isLiege(uuid)) this.relations.remove(this.getLiege().getUUID());
     }
 
     // Vassals
@@ -395,6 +386,63 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return this.name;
     }
 
+    // Calculations
+
+    // get max power without vassal contribution
+    public double getMaximumCumulativePowerLevel() {
+        return this.getMembers().keySet()
+            .stream()
+            .map(this.dataService::getPlayer)
+            .mapToDouble(player -> player.getMaxPower())
+            .sum();
+    }
+
+    public double calculateCumulativePowerLevelWithoutVassalContribution() {
+        return this.getMembers().keySet()
+            .stream()
+            .map(this.dataService::getPlayer)
+            .mapToDouble(player -> player.getPower())
+            .sum();
+    }
+
+    public double calculateCumulativePowerLevelWithVassalContribution() {
+        return this.getVassals()
+            .stream()
+            .map(this.dataService::getFaction)
+            .mapToDouble(faction -> faction.getCumulativePowerLevel() * this.configService.getDouble("vassalContributionPercentageMultiplier"))
+            .sum() + this.calculateCumulativePowerLevelWithoutVassalContribution();
+    }
+
+    public double getCumulativePowerLevel() {
+        double withoutVassalContribution = this.calculateCumulativePowerLevelWithoutVassalContribution();
+        double withVassalContribution = this.calculateCumulativePowerLevelWithVassalContribution();
+
+        if (this.getVassals().size() == 0 || (withoutVassalContribution < (this.getMaximumCumulativePowerLevel() / 2))) {
+            return withoutVassalContribution + this.getBonusPower();
+        }
+        return withVassalContribution + this.getBonusPower();
+    }
+
+    public Faction getTopLiege() {
+        Faction currentLiege = this.getLiege();
+        if (currentLiege == null) return null;
+        Faction topLiege = null;
+        do {
+            topLiege = currentLiege.getLiege();
+            if (topLiege != null) currentLiege = topLiege;
+        } while(topLiege != null);
+        return currentLiege;
+    }
+
+    public boolean isWeakened() {
+        return this.calculateCumulativePowerLevelWithoutVassalContribution() < (this.getMaximumCumulativePowerLevel() / 2);
+    }
+
+    public int calculateMaxOfficers() {
+        return 1 + (this.getMembers().size() / this.configService.getInt("officerPerMemberCount"));
+    }
+
+
     // Tools
     public void persist() {
         this.factionRepository.persist(this);
@@ -431,7 +479,6 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     public void sendToFactionChatAs(OfflinePlayer player, String message) {
         this.audience().sendMessage(this.generateFactionChatComponent(this, player, message), MessageType.CHAT);
     }
-
 
     public Audience audience() {
         return this.adventure.filter(sender -> {

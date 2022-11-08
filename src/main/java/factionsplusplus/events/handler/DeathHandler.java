@@ -49,7 +49,7 @@ public class DeathHandler implements Listener {
             return;
         }
         this.playerService.grantPowerDueToKill(killer.getUniqueId());
-        this.dataService.getPlayerRecord(killer.getUniqueId()).alert("PlayerNotice.PowerIncreased");
+        this.dataService.getPlayer(killer.getUniqueId()).alert("PlayerNotice.PowerIncreased");
         event.getDrops().add(this.deathService.getHead(player));
     }
 
@@ -60,7 +60,7 @@ public class DeathHandler implements Listener {
     private void decreaseDyingPlayersPower(Player player) {
         double powerLost = this.playerService.revokePowerDueToDeath(player.getUniqueId());
         if (powerLost != 0) {
-            this.dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.PowerDecreasedBy", NamedTextColor.RED, powerLost);
+            this.dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.PowerDecreasedBy", NamedTextColor.RED, powerLost);
         }
     }
 }

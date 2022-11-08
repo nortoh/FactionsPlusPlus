@@ -16,7 +16,7 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
 import factionsplusplus.models.InteractionContext;
 import factionsplusplus.models.LocationData;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Powerable;
@@ -78,7 +78,7 @@ public class GateService {
                 return;
             }
             event.setCancelled(true);
-            this.dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.GatePleaseWait", g.getStatus().toString().toLowerCase());
+            this.dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.GatePleaseWait", g.getStatus().toString().toLowerCase());
         }
     }
 
@@ -100,7 +100,7 @@ public class GateService {
     }
 
     public void handleCreatingGate(Block clickedBlock, Player player, PlayerInteractEvent event) {
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
 
         if (! this.dataService.isChunkClaimed(clickedBlock.getChunk())) {
             member.error("Error.Gate.ClaimedTerritory");

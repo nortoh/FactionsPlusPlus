@@ -18,7 +18,7 @@ import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FactionBase;
 import factionsplusplus.models.Gate;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.utils.BlockUtils;
 import factionsplusplus.utils.ChunkUtils;
 import factionsplusplus.utils.InteractionAccessChecker;
@@ -40,7 +40,6 @@ public class ClaimService {
 
     private final ConfigService configService;
     private final DataService dataService;
-    private final FactionService factionService;
     private final InteractionAccessChecker interactionAccessChecker;
     private final Logger logger;
 
@@ -48,13 +47,11 @@ public class ClaimService {
     public ClaimService(
         ConfigService configService,
         DataService dataService,
-        FactionService factionService,
         InteractionAccessChecker interactionAccessChecker,
         Logger logger
     ) {
         this.configService = configService;
         this.dataService = dataService;
-        this.factionService = factionService;
         this.interactionAccessChecker = interactionAccessChecker;
         this.logger = logger;
     }
@@ -70,7 +67,7 @@ public class ClaimService {
     public void radiusClaimAtLocation(int depth, Player claimant, Location location, Faction claimantsFaction) {
         int maxClaimRadius = this.configService.getInt("maxClaimRadius");
 
-        PlayerRecord member = this.dataService.getPlayerRecord(claimant.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(claimant.getUniqueId());
 
         // check if depth is valid
         if (depth < 0 || depth > maxClaimRadius) {
@@ -109,7 +106,7 @@ public class ClaimService {
 
         // check if radius is valid
         if (radius <= 0 || radius > maxChunksUnclaimable) {
-            this.dataService.getPlayerRecord(player.getUniqueId()).error("RadiusRequirement", maxChunksUnclaimable);
+            this.dataService.getPlayer(player.getUniqueId()).error("RadiusRequirement", maxChunksUnclaimable);
             return;
         }
 
@@ -145,10 +142,10 @@ public class ClaimService {
         playerCoords[0] = player.getLocation().getChunk().getX();
         playerCoords[1] = player.getLocation().getChunk().getZ();
 
-        PlayerRecord member = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
 
         // handle admin bypass
-        if (this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing()) {
+        if (this.dataService.getPlayer(player.getUniqueId()).isAdminBypassing()) {
             ClaimedChunk chunk = this.dataService.getClaimedChunk(playerCoords[0], playerCoords[1], Objects.requireNonNull(player.getLocation().getWorld()).getUID());
             if (chunk != null) {
                 this.removeChunk(chunk, player, this.dataService.getFaction(chunk.getHolder()));
@@ -202,7 +199,7 @@ public class ClaimService {
      * @return Whether the faction's claimed land exceeds their power.
      */
     public boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > faction.getCumulativePowerLevel());
     }
 
     /**
@@ -214,7 +211,7 @@ public class ClaimService {
         Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction != null) {
             if (this.isFactionExceedingTheirDemesneLimit(faction)) {
-                this.dataService.getPlayerRecord(player.getUniqueId()).alert("FactionNotice.ExcessClaims");
+                this.dataService.getPlayer(player.getUniqueId()).alert("FactionNotice.ExcessClaims");
             }
         }
     }
@@ -227,7 +224,7 @@ public class ClaimService {
      */
     public void handleClaimedChunkInteraction(PlayerInteractEvent event, ClaimedChunk claimedChunk) {
         // player not in a faction and isn't overriding
-        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.dataService.getPlayerRecord(event.getPlayer().getUniqueId()).isAdminBypassing()) {
+        if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.dataService.getPlayer(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
             if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
@@ -246,7 +243,7 @@ public class ClaimService {
         }
 
         // if player's faction is not the same as the holder of the chunk and player isn't overriding
-        if (! (playersFaction.getID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayerRecord(event.getPlayer().getUniqueId()).isAdminBypassing()) {
+        if (! (playersFaction.getUUID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayer(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
             if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
@@ -301,13 +298,13 @@ public class ClaimService {
 
     private void claimChunkAtLocation(Player claimant, double[] chunkCoords, World world, Faction claimantsFaction) {
 
-        PlayerRecord member = this.dataService.getPlayerRecord(claimant.getUniqueId());
+        FPPPlayer member = this.dataService.getPlayer(claimant.getUniqueId());
 
         // if demesne limit enabled
         if (this.configService.getBoolean("limitLand")) {
             // if at demesne limit
             
-            if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < this.factionService.getCumulativePowerLevel(claimantsFaction))) {
+            if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < claimantsFaction.getCumulativePowerLevel())) {
                 member.error("FactionNotice.ReachedDemesne");
                 return;
             }
@@ -327,7 +324,7 @@ public class ClaimService {
             }
 
             // if not at war with target faction
-            if (! claimantsFaction.isEnemy(targetFaction.getID())) {
+            if (! claimantsFaction.isEnemy(targetFaction.getUUID())) {
                 member.error("Error.Conquer.NotEnemies", targetFaction.getName());
                 return;
             }
@@ -340,7 +337,7 @@ public class ClaimService {
                 }
             }
 
-            int targetFactionsCumulativePowerLevel = this.factionService.getCumulativePowerLevel(targetFaction);
+            double targetFactionsCumulativePowerLevel = targetFaction.getCumulativePowerLevel();
             int chunksClaimedByTargetFaction = this.dataService.getClaimedChunksForFaction(targetFaction).size();
 
             // if target faction does not have more land than their demesne limit
@@ -362,7 +359,7 @@ public class ClaimService {
 
                 Chunk toClaim = world.getChunkAt((int) chunkCoords[0], (int) chunkCoords[1]);
                 this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                member.success("CommandResponse.LandConquered", targetFaction.getName(), this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), this.factionService.getCumulativePowerLevel(claimantsFaction));
+                member.success("CommandResponse.LandConquered", targetFaction.getName(), this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), claimantsFaction.getCumulativePowerLevel());
                 targetFaction.alert("FactionNotice.LandConquered", claimantsFaction.getName());
             }
         } else {
@@ -372,7 +369,7 @@ public class ClaimService {
             if (! claimEvent.isCancelled()) {
                 // chunk not already claimed
                 this.addClaimedChunk(toClaim, claimantsFaction, claimant.getWorld());
-                member.success("CommandResponse.LandClaimed", this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), this.factionService.getCumulativePowerLevel(claimantsFaction));
+                member.success("CommandResponse.LandClaimed", this.dataService.getClaimedChunksForFaction(claimantsFaction).size(), claimantsFaction.getCumulativePowerLevel());
             }
         }
     }

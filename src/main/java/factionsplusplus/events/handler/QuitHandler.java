@@ -5,7 +5,7 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ActionBarService;
 import factionsplusplus.services.DataService;
 
@@ -35,7 +35,7 @@ public class QuitHandler implements Listener {
     public void handle(PlayerQuitEvent event) {
         this.ephemeralData.getPlayersPendingInteraction().remove(event.getPlayer().getUniqueId());
 
-        final PlayerRecord record = this.dataService.getPlayerRecord(event.getPlayer().getUniqueId());
+        final FPPPlayer record = this.dataService.getPlayer(event.getPlayer().getUniqueId());
         if (record != null) {
             record.setLastLogout(ZonedDateTime.now());
         }
@@ -47,7 +47,7 @@ public class QuitHandler implements Listener {
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, new Runnable() {
                 @Override
                 public void run() {
-                    dataService.getPlayerRecordRepository().persist(record);
+                    dataService.getPlayerRepository().persist(record);
                 }
             });
         }

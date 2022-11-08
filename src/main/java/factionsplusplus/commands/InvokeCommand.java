@@ -59,7 +59,7 @@ public class InvokeCommand extends Command {
         final Player player = context.getPlayer();
         final Faction invokee = context.getFactionArgument("allied faction name");
         final Faction warringFaction = context.getFactionArgument("enemy faction name");
-        if (! context.getExecutorsFaction().isVassal(invokee.getID())) {
+        if (! context.getExecutorsFaction().isVassal(invokee.getUUID())) {
             context.error("Error.Faction.NotAllyOrVassal", invokee.getName());
             return;
         }
@@ -72,7 +72,7 @@ public class InvokeCommand extends Command {
         if (! warStartEvent.isCancelled()) {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
                 // Update relationship
-                invokee.upsertRelation(warringFaction.getID(), FactionRelationType.Enemy);
+                invokee.upsertRelation(warringFaction.getUUID(), FactionRelationType.Enemy);
                 // Alert ally faction
                 invokee.alert("FactionNotice.WarCall.Target", context.getExecutorsFaction().getName(), warringFaction.getName());
                 // Alert warring faction

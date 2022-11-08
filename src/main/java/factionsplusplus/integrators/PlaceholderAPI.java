@@ -10,12 +10,10 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.PlayerService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -27,25 +25,19 @@ import org.jetbrains.annotations.NotNull;
 public class PlaceholderAPI extends PlaceholderExpansion {
     private final FactionsPlusPlus factionsPlusPlus;
     private final ConfigService configService;
-    private final FactionService factionService;
     private final DataService dataService;
-    private final PlayerService playerService;
     private final LocaleService localeService;
 
     @Inject
     public PlaceholderAPI(
         FactionsPlusPlus factionsPlusPlus,
         ConfigService configService,
-        FactionService factionService,
         DataService dataService,
-        PlayerService playerService,
         LocaleService localeService
     ) {
         this.factionsPlusPlus = factionsPlusPlus;
         this.configService = configService;
-        this.factionService = factionService;
         this.dataService = dataService;
-        this.playerService = playerService;
         this.localeService = localeService;
     }
 
@@ -81,6 +73,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
 
         final boolean hasFaction = this.dataService.isPlayerInFaction(player);
         final Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
+        final FPPPlayer playersPowerRecord = this.dataService.getPlayer(player.getUniqueId());
 
         // Prerequisites.
         if (id.startsWith("faction_") && ! hasFaction && ! id.equalsIgnoreCase("faction_at_location")) {
@@ -96,11 +89,11 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "faction_total_claimed_chunks": // Total chunks claimed by the faction the player is in
                 return String.valueOf(this.dataService.getClaimedChunksForFaction(faction).size());
             case "faction_cumulative_power": // The cumulative power (power + bonus power) for the faction the player is in
-                return String.valueOf(this.factionService.getCumulativePowerLevel(faction));
+                return String.valueOf(faction.getCumulativePowerLevel());
             case "faction_bonus_power": // The bonus power for the faction the player is in
                 return String.valueOf(faction.getBonusPower());
             case "faction_power": // The power (cumulative power - bonus power) for the faction the player is in
-                return String.valueOf(this.factionService.getCumulativePowerLevel(faction) - faction.getBonusPower());
+                return String.valueOf(faction.getCumulativePowerLevel() - faction.getBonusPower());
             case "faction_ally_count": // The total amount of allies the faction the player is in has
                 return String.valueOf(faction.getAllies().size());
             case "faction_enemy_count": // The total amount of enemies the faction the player is in has
@@ -110,7 +103,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "faction_vassal_count": // The total amount of vassals the faction the player is in has
                 return String.valueOf(faction.getNumVassals());
             case "faction_liege": // The liege (or N/A if not a liege) of the faction the player is in
-                return faction.hasLiege() ? this.dataService.getFaction(faction.getLiege()).getName() : "N/A";
+                return faction.hasLiege() ? faction.getLiege().getName() : "N/A";
             case "faction_leader": // The leader of the faction the player is in
                 return Bukkit.getOfflinePlayer(faction.getOwner().getUUID()).getName();
             case "faction_member_count": // The total amount of members the faction the player is in has
@@ -127,14 +120,13 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             // Player specific 
             case "faction_player_power": // The total amount of power the player has
             case "player_power":
-                return String.valueOf(this.dataService.getPlayerRecord(player.getUniqueId()).getPower());
+                return String.valueOf(this.dataService.getPlayer(player.getUniqueId()).getPower());
             case "faction_player_max_power": // The maximum amount of power the player can have
             case "player_max_power":
-                return String.valueOf(this.playerService.getMaxPower(player.getUniqueId()));
+                return String.valueOf(playersPowerRecord.getMaxPower());
             case "faction_player_power_full":
             case "player_power_formatted":
-                final PlayerRecord playersPowerRecord = this.dataService.getPlayerRecord(player.getUniqueId());
-                return playersPowerRecord.getPower() + "/" + this.playerService.getMaxPower(player.getUniqueId());
+                return playersPowerRecord.getPower() + "/" + playersPowerRecord.getMaxPower();
             case "player_chunk_location": // The Player's location (chunk coordinates), useful for Scoreboards.
                 final Chunk chunk = player.getLocation().getChunk();
                 return chunk.getX() + ":" + chunk.getZ();
@@ -146,9 +138,9 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             case "player_total_logins": // The total amount of times a Player has logged in.
             case "player_login_count":
             case "player_logins":
-                return String.valueOf(this.dataService.getPlayerRecord(player.getUniqueId()).getLogins());
+                return String.valueOf(this.dataService.getPlayer(player.getUniqueId()).getLogins());
             case "player_session_length": // The total time since their current login. (Days:Hours:Minutes:Seconds) or (Hours:Minutes:Seconds).
-                return this.dataService.getPlayerRecord(player.getUniqueId()).getActiveSessionLength();
+                return this.dataService.getPlayer(player.getUniqueId()).getActiveSessionLength();
             case "faction_at_location": // The Faction at the Player's current location. (Wilderness if nothing).
                 ClaimedChunk claim = this.dataService.getClaimedChunk(player.getLocation().getChunk());
                 if (claim == null) return this.localeService.get("Wilderness");

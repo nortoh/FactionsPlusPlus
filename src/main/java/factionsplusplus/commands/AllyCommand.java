@@ -12,23 +12,16 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
-import factionsplusplus.services.LocaleService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.FactionRelationType;
-import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.builders.ArgumentBuilder;
 
 @Singleton
 public class AllyCommand extends Command {
-    protected final LocaleService localeService;
-    protected final FactionRepository factionRepository;
 
     @Inject
-    public AllyCommand(
-        LocaleService localeService,
-        FactionRepository factionRepository
-    ) {
+    public AllyCommand() {
         super(
             new CommandBuilder()
                 .withName("ally")
@@ -48,8 +41,6 @@ public class AllyCommand extends Command {
                         .isRequired() 
                 )
         );
-        this.localeService = localeService;
-        this.factionRepository = factionRepository;
     }
 
     public void execute(CommandContext context) {
@@ -79,7 +70,7 @@ public class AllyCommand extends Command {
         }
 
         // send the request
-        context.getExecutorsFaction().requestAlly(otherFaction.getID());
+        context.getExecutorsFaction().requestAlly(otherFaction.getUUID());
 
         context.getExecutorsFaction().alert("FactionNotice.AllianceRequest.Source", otherFaction.getName());
         otherFaction.alert("FactionNotice.AllianceRequest.Target", context.getExecutorsFaction().getName());

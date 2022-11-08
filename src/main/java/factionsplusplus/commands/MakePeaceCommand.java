@@ -60,20 +60,20 @@ public class MakePeaceCommand extends Command {
             context.error("Error.MakePeace.Self");
             return;
         }
-        if (faction.isTruceRequested(target.getID())) {
+        if (faction.isTruceRequested(target.getUUID())) {
             context.error("Error.MakePeace.AlreadyRequested", target.getName());
             return;
         }
-        faction.requestTruce(target.getID());
+        faction.requestTruce(target.getUUID());
         faction.alert("FactionNotice.PeaceRequest.Source", target.getName());
         target.alert("FactionNotice.PeaceRequest.Target", faction.getName());
-        if (faction.isTruceRequested(target.getID()) && target.isTruceRequested(faction.getID())) {
+        if (faction.isTruceRequested(target.getUUID()) && target.isTruceRequested(faction.getUUID())) {
             FactionWarEndEvent warEndEvent = new FactionWarEndEvent(faction, target);
             Bukkit.getPluginManager().callEvent(warEndEvent);
             if (! warEndEvent.isCancelled()) {
                 // remove requests in case war breaks out again, and they need to make peace again
-                faction.removeRequestedTruce(target.getID());
-                target.removeRequestedTruce(faction.getID());
+                faction.removeRequestedTruce(target.getUUID());
+                target.removeRequestedTruce(faction.getUUID());
 
                 Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                     @Override
@@ -84,7 +84,7 @@ public class MakePeaceCommand extends Command {
                                 faction.clearRelation(vassal);
                             });
                         }
-                        War war = warRepository.getActiveWarsBetween(target.getID(), faction.getID());
+                        War war = warRepository.getActiveWarsBetween(target.getUUID(), faction.getUUID());
                         war.end();
                         adventure.players().sendMessage(
                             Component.translatable("GlobalNotice.War.Ended").color(NamedTextColor.GREEN).args(Component.text(faction.getName()), Component.text(target.getName()))

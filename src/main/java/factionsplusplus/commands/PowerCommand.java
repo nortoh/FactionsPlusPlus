@@ -9,9 +9,8 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.DataService;
-import factionsplusplus.services.PlayerService;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
@@ -21,14 +20,10 @@ import java.util.UUID;
 @Singleton
 public class PowerCommand extends Command {
 
-    private final PlayerService playerService;
     private final DataService dataService;
 
     @Inject
-    public PowerCommand(
-        PlayerService playerService,
-        DataService dataService
-    ) {
+    public PowerCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("power")
@@ -43,26 +38,24 @@ public class PowerCommand extends Command {
                         .isOptional()
                 )
         );
-        this.playerService = playerService;
         this.dataService = dataService;
     }
 
     public void execute(CommandContext context) {
-        final PlayerRecord record;
+        final FPPPlayer record;
         double maxPower;
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
                 context.error("Error.PlayerExecutionRequired");
                 return;
             }
-            record = this.dataService.getPlayerRecord(context.getPlayer().getUniqueId());
-            maxPower = this.playerService.getMaxPower(context.getPlayer().getUniqueId());
-            context.replyWith("CommandResponse.Power.Self", record.getPower(), maxPower);
+            record = this.dataService.getPlayer(context.getPlayer().getUniqueId());
+            context.replyWith("CommandResponse.Power.Self", record.getPower(), record.getMaxPower());
             return;
         }
         final UUID target = context.getOfflinePlayerArgument("player").getUniqueId();
-        record = this.dataService.getPlayerRecord(target);
-        maxPower = this.playerService.getMaxPower(target);
+        record = this.dataService.getPlayer(target);
+        maxPower = record.getMaxPower();
         context.replyWith(
             "CommandResponse.Power.Other",
             context.getOfflinePlayerArgument("player").getName(),

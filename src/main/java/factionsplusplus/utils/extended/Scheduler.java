@@ -91,18 +91,18 @@ public class Scheduler {
         Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction != null) {
             if (this.isFactionExceedingTheirDemesneLimit(faction)) {
-                this.dataService.getPlayerRecord(player.getUniqueId()).audience().sendMessage(Component.translatable("FactionNotice.ExcessClaims"), MessageType.SYSTEM);
+                this.dataService.getPlayer(player.getUniqueId()).audience().sendMessage(Component.translatable("FactionNotice.ExcessClaims"), MessageType.SYSTEM);
             }
         }
     }
 
     private boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > faction.getCumulativePowerLevel());
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {
         int teleport_delay = this.configService.getInt("teleportDelay");
-        this.dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.Teleport", teleport_delay);
+        this.dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.Teleport", teleport_delay);
         DelayedTeleportTask delayedTeleportTask = new DelayedTeleportTask(player, destinationLocation);
         delayedTeleportTask.runTaskLater(this.factionsPlusPlus, (long) teleport_delay * this.getRandomNumberBetween(15, 25));
     }
@@ -129,7 +129,7 @@ public class Scheduler {
             if (playerHasNotMoved()) {
                 teleportPlayer();
             } else {
-                dataService.getPlayerRecord(player.getUniqueId()).alert("PlayerNotice.Teleport.Cancelled", NamedTextColor.AQUA);
+                dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.Teleport.Cancelled", NamedTextColor.AQUA);
             }
         }
 

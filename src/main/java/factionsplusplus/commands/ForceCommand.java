@@ -21,7 +21,7 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.models.InteractionContext;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.models.War;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.DataService;
@@ -397,10 +397,10 @@ public class ForceCommand extends Command {
         FactionWarEndEvent warEndEvent = new FactionWarEndEvent(former, latter);
         Bukkit.getPluginManager().callEvent(warEndEvent);
         if (! warEndEvent.isCancelled()) {
-            if (former.isEnemy(latter.getID())) former.removeEnemy(latter.getID());
-            if (latter.isEnemy(former.getID())) latter.removeEnemy(former.getID());
+            if (former.isEnemy(latter.getUUID())) former.removeEnemy(latter.getUUID());
+            if (latter.isEnemy(former.getUUID())) latter.removeEnemy(former.getUUID());
 
-            War war = this.dataService.getWarRepository().getActiveWarsBetween(former.getID(), latter.getID());
+            War war = this.dataService.getWarRepository().getActiveWarsBetween(former.getUUID(), latter.getUUID());
             war.end();
 
             this.adventure.players().sendMessage(
@@ -484,7 +484,7 @@ public class ForceCommand extends Command {
     public void powerCommand(CommandContext context) {
         final OfflinePlayer player = context.getOfflinePlayerArgument("player");
         final Integer desiredPower = context.getIntegerArgument("desired power");
-        final PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
+        final FPPPlayer record = this.dataService.getPlayer(player.getUniqueId());
         record.setPower(desiredPower); // Set power :)
         record.alert("PlayerNotice.PowerSet.Forced", desiredPower);
         context.success("CommandResponse.PowerSet.Force", player.getName(), desiredPower);
@@ -493,7 +493,7 @@ public class ForceCommand extends Command {
     // "mf.force.renounce", "mf.force.*", "mf.admin"
     public void renounceCommand(CommandContext context) {
         final Faction faction = context.getFactionArgument("faction");
-        long changes = this.factionService.removeLiegeAndVassalReferencesToFaction(faction.getID());
+        long changes = this.factionService.removeLiegeAndVassalReferencesToFaction(faction.getUUID());
 
         if (faction.getLiege() != null) {
             faction.setLiege(null);
@@ -532,8 +532,8 @@ public class ForceCommand extends Command {
     public void removeVassalCommand(CommandContext context) {
         final Faction liege = context.getFactionArgument("liege");
         final Faction vassal = context.getFactionArgument("vassal");
-        if (liege.isVassal(vassal.getID())) liege.removeVassal(vassal.getID());
-        if (vassal.isLiege(liege.getID())) vassal.setLiege(null);
+        if (liege.isVassal(vassal.getUUID())) liege.removeVassal(vassal.getUUID());
+        if (vassal.isLiege(liege.getUUID())) vassal.setLiege(null);
         // inform all players in that faction that they are now independent
         vassal.alert("FactionNotice.Independence", liege.getName());
         // inform all players in liege faction that a vassal was granted independence

@@ -53,7 +53,7 @@ public class BreakAllianceCommand extends Command {
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
-                context.getExecutorsFaction().clearRelation(otherFaction.getID());
+                context.getExecutorsFaction().clearRelation(otherFaction.getUUID());
                 context.getExecutorsFaction().alert("FactionNotice.AllianceBroken.Source", otherFaction.getName());
                 otherFaction.alert("FactionNotice.AllianceBroken.Target", context.getExecutorsFaction().getName());
             }

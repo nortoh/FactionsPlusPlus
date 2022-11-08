@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import com.google.inject.Inject;
 
 import factionsplusplus.FactionsPlusPlus;
+import factionsplusplus.services.DataService;
 import factionsplusplus.services.LocaleService;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.audience.Audience;
@@ -29,6 +30,7 @@ public class CommandContext {
     private List<String> commandNames = new ArrayList<>();
     @Inject private LocaleService localeService;
     @Inject private FactionsPlusPlus factionsPlusPlus;
+    @Inject private DataService dataService;
 
     /*
      * Retrieves the Faction instance the executor of this command is a member of, if any.
@@ -74,6 +76,16 @@ public class CommandContext {
     public Player getPlayer() {
         if (this.isConsole()) return null;
         return (Player)this.sender;
+    }
+
+    /*
+     * Retrieves the FPPPlayer instance of the executor of this command, if available.
+     * 
+     * @returns a FPPPlayer instance of executor, or null if executed from console
+     */
+    public FPPPlayer getFPPPlayer() {
+        if (this.isConsole()) return null;
+        return this.dataService.getPlayer(((OfflinePlayer)this.sender).getUniqueId());
     }
 
     /*

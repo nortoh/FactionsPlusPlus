@@ -14,22 +14,15 @@ import factionsplusplus.utils.Logger;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
-import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.builders.ArgumentBuilder;
-
-import java.util.UUID;
 
 @Singleton
 public class VassalizeCommand extends Command {
 
     private final Logger logger;
-    private final FactionRepository factionRepository;
     
     @Inject
-    public VassalizeCommand(
-        FactionRepository factionRepository,
-        Logger logger
-    ) {
+    public VassalizeCommand(Logger logger) {
         super(
             new CommandBuilder()
                 .withName("vassalize")
@@ -49,19 +42,18 @@ public class VassalizeCommand extends Command {
                         .isRequired()
                 )
         );
-        this.factionRepository = factionRepository;
         this.logger = logger;
     }
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         // make sure player isn't trying to vassalize their own faction
-        if (context.getExecutorsFaction().getID().equals(target.getID())) {
+        if (context.getExecutorsFaction().getUUID().equals(target.getUUID())) {
             context.error("Error.Vassalization.Self");
             return;
         }
         // make sure player isn't trying to vassalize their liege
-        if (target.getID().equals(context.getExecutorsFaction().getLiege())) {
+        if (target.equals(context.getExecutorsFaction().getLiege())) {
             context.error("Error.Vassalization.Liege");
             return;
         }
@@ -77,7 +69,7 @@ public class VassalizeCommand extends Command {
             return;
         }
         // add faction to attemptedVassalizations
-        context.getExecutorsFaction().addAttemptedVassalization(target.getID());
+        context.getExecutorsFaction().addAttemptedVassalization(target.getUUID());
 
         // inform all players in that faction that they are trying to be vassalized
         target.alert("FactionNotice.VassalizationAttempted.Target", context.getExecutorsFaction().getName());
@@ -91,10 +83,10 @@ public class VassalizeCommand extends Command {
         Faction current = vassalizer;
         int steps = 0;
         while (current != null && steps < MAX_STEPS) { // Prevents infinite loop and NPE (getFaction can return null).
-            UUID liegeID = current.getLiege();
-            if (liegeID == null) return 0;
-            if (liegeID.equals(potentialVassal.getID())) return 1;
-            current = this.factionRepository.get(liegeID);
+            Faction liege = current.getLiege();
+            if (liege == null) return 0;
+            if (liege.getUUID().equals(potentialVassal.getUUID())) return 1;
+            current = liege;
             steps++;
         }
         return 2; // We don't know :/

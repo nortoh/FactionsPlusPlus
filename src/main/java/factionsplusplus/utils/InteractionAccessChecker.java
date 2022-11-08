@@ -55,7 +55,7 @@ public class InteractionAccessChecker {
     }
 
     private boolean isLandClaimedByPlayersFaction(Faction faction, ClaimedChunk claimedChunk) {
-        return faction.getID().equals(claimedChunk.getHolder());
+        return faction.getUUID().equals(claimedChunk.getHolder());
     }
 
     private boolean factionsProtectionsNotEnabled() {
@@ -63,7 +63,7 @@ public class InteractionAccessChecker {
     }
 
     private boolean isPlayerBypassing(Player player) {
-        return this.dataService.getPlayerRecord(player.getUniqueId()).isAdminBypassing();
+        return this.dataService.getPlayer(player.getUniqueId()).isAdminBypassing();
     }
 
     public boolean isOutsiderInteractionAllowed(Player player, ClaimedChunk chunk, Faction playersFaction) {

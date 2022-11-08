@@ -77,7 +77,7 @@ public class ClaimedChunkRepository {
     // Retrieve a list of all claimed chunks for a faction
     public List<ClaimedChunk> getAllForFaction(Faction faction) {
         return this.claimedChunksStore.stream()
-            .filter(chunk -> chunk.getHolder().equals(faction.getID()))
+            .filter(chunk -> chunk.getHolder().equals(faction.getUUID()))
             .collect(Collectors.toList());
     }
 
