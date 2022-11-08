@@ -7,36 +7,27 @@ package factionsplusplus.commands;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.data.EphemeralData;
+import factionsplusplus.data.factories.DuelFactory;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Duel;
 import factionsplusplus.models.Duel.DuelState;
-import factionsplusplus.services.MessageService;
-import factionsplusplus.services.DeathService;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DuelCommand extends Command {
     private final EphemeralData ephemeralData;
-    private final MessageService messageService;
-    private final FactionsPlusPlus factionsPlusPlus;
-    private final DeathService deathService;
+    private final DuelFactory duelFactory;
 
     @Inject
     public DuelCommand(
         EphemeralData ephemeralData,
-        MessageService messageService,
-        FactionsPlusPlus factionsPlusPlus,
-        DeathService deathService
+        DuelFactory duelFactory
     ) {
         super(
             new CommandBuilder()
@@ -91,35 +82,33 @@ public class DuelCommand extends Command {
                 )
         );
         this.ephemeralData = ephemeralData;
-        this.messageService = messageService;
-        this.factionsPlusPlus = factionsPlusPlus;
-        this.deathService = deathService;
+        this.duelFactory = duelFactory;
     }
 
 
     public void cancelCommand(CommandContext context) {
         Player player = context.getPlayer();
         if (! this.isDuelling(player)) {
-            context.replyWith("AlertNoPendingChallenges");
+            context.error("Error.Duel.NoSentChallenges");
             return;
         }
         final Duel duel = this.getDuel(player);
         if (duel == null) {
-            context.replyWith("AlertNoPendingChallenges");
+            context.error("Error.Duel.NoSentChallenges");
             return;
         }
         if (duel.getStatus().equals(DuelState.DUELLING)) {
-            context.replyWith("CannotCancelActiveDuel");
+            context.error("Error.Duel.CannotCancelActive");
             return;
         }
+        context.success("CommandResponse.Duel.Cancelled", duel.getChallenged().getName());
         this.ephemeralData.getDuelingPlayers().remove(duel);
-        context.replyWith("DuelChallengeCancelled");
     }
 
     public void acceptCommand(CommandContext context) {
         Player player = context.getPlayer();
         if (this.isDuelling(player)) {
-            context.replyWith("AlertAlreadyDuelingSomeone");
+            context.error("Error.Duel.InDuel");
             return;
         }
         Player target = context.getPlayerArgument("player");
@@ -131,24 +120,15 @@ public class DuelCommand extends Command {
             duel = this.ephemeralData.getDuel(player, target);
         }
         if (duel == null) {
-            context.replyWith(
-                this.constructMessage("AlertNotBeenChallengedByPlayer")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.NotChallengedBy", target.getName());
             return;
         }
         if (duel.getStatus().equals(DuelState.DUELLING)) {
-            context.replyWith(
-                this.constructMessage("AlertAlreadyDuelingPlayer")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.AlreadyInDuelWith", target.getName());
             return;
         }
         if (! duel.isChallenged(player)) {
-            context.replyWith(
-                this.constructMessage("AlertNotBeenChallengedByPlayer")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.NotChallengedBy", target.getName());
         }
         duel.acceptDuel();
     }
@@ -157,28 +137,24 @@ public class DuelCommand extends Command {
         Player target = context.getPlayerArgument("player");
         Player player = context.getPlayer();
         if (target == player) {
-            context.replyWith("CannotDuelSelf");
+            context.error("Error.Duel.Self");
             return;
         }
         if (this.isDuelling(player)) {
-            context.replyWith("AlertAlreadyDuelingSomeone");
+            context.error("Error.Duel.InDuel");
             return;
         }
         if (this.isDuelling(target)) {
-            context.replyWith(
-                this.constructMessage("PlayerAlreadyDueling")
-                    .with("name", target.getName())
-            );
+            context.error("Error.Duel.TargetAlreadyDueling", target.getName());
             return;
         }
         Integer timeLimit = context.getIntegerArgument("time limit");
         if (timeLimit == null) timeLimit = 120;
         timeLimit = Math.min(timeLimit, 120); // TODO: make maximum time configurable
-        this.inviteDuel(player, target, timeLimit);
-        context.replyWith(
-            this.constructMessage("AlertChallengeIssued")
-                .with("name", target.getName())
-        );
+        // Invite to duel
+        this.ephemeralData.getDuelingPlayers().add(this.duelFactory.create(player, target, timeLimit));
+        context.alertPlayer(target, "PlayerNotice.Duel.Challenged", player.getName());
+        context.success("CommandResponse.Duel.ChallengeSent", target.getName());
     }
 
     private Duel getDuel(Player player) {
@@ -187,14 +163,5 @@ public class DuelCommand extends Command {
 
     private boolean isDuelling(Player player) {
         return this.ephemeralData.getDuelingPlayers().stream().anyMatch(duel -> duel.hasPlayer(player) && duel.getStatus().equals(DuelState.DUELLING));
-    }
-
-    private void inviteDuel(Player player, Player target, int limit) {
-        this.messageService.sendLocalizedMessage(
-            target,
-            this.constructMessage("AlertChallengedToDuelPlusHowTo")
-                .with("name", player.getName())
-        );
-        this.ephemeralData.getDuelingPlayers().add(new Duel(this.factionsPlusPlus, this.ephemeralData, this.deathService, player, target, limit));
     }
 }

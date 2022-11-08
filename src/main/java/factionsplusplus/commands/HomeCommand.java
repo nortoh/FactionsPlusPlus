@@ -14,9 +14,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.utils.extended.Scheduler;
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class HomeCommand extends Command {
     private final Scheduler scheduler;
@@ -38,12 +35,12 @@ public class HomeCommand extends Command {
     public void execute(CommandContext context) {
         Faction faction = context.getExecutorsFaction();
         if (faction.getDefaultBase() == null) {
-            context.replyWith("NoDefeaultBase");
+            context.error("Error.Base.NoFactionDefault");
             return;
         }
         // Do they have permission?
         if (! faction.getDefaultBase().shouldAllowAllFactionMembers() && ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
-            context.replyWith("BaseTeleportDenied");
+            context.error("Error.Base.NotAccessible", faction.getDefaultBase().getName());
             return;
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), faction.getDefaultBase().getBukkitLocation());

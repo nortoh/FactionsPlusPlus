@@ -18,9 +18,6 @@ import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class SwearFealtyCommand extends Command {
 
@@ -50,28 +47,21 @@ public class SwearFealtyCommand extends Command {
     public void execute(CommandContext context) {
         final Faction faction = context.getExecutorsFaction();
         final Faction target = context.getFactionArgument("faction name");
-        if (! target.hasBeenOfferedVassalization(faction.getID())) {
-            context.replyWith("AlertNotOfferedVassalizationBy");
+        if (! target.hasBeenOfferedVassalization(faction.getUUID())) {
+            context.error("Error.Vassalization.NotOffered", target.getName());
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
                 // set vassal
-                target.upsertRelation(faction.getID(), FactionRelationType.Vassal);
-                target.removeAttemptedVassalization(faction.getID());
+                target.upsertRelation(faction.getUUID(), FactionRelationType.Vassal);
+                target.removeAttemptedVassalization(faction.getUUID());
                 
                 // inform target faction that they have a new vassal
-                context.messageFaction(
-                    target,
-                    constructMessage("AlertFactionHasNewVassal")
-                        .with("name", faction.getName())
-                );
+                target.alert("FactionNotice.NewVassal", faction.getName());
                 // inform players faction that they have a new liege
-                context.messagePlayersFaction(
-                    constructMessage("AlertFactionHasBeenVassalized")
-                        .with("name", target.getName())
-                );
+                context.getExecutorsFaction().alert("FactionNotice.Vassalized", target.getName());
             }
         });
     }

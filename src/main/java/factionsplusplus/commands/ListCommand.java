@@ -12,14 +12,14 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import factionsplusplus.builders.CommandBuilder;
-import org.bukkit.ChatColor;
 
 import java.util.Collection;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class ListCommand extends Command {
 
@@ -44,17 +44,27 @@ public class ListCommand extends Command {
 
     public void execute(CommandContext context) {
         if (this.dataService.getNumberOfFactions() == 0) {
-            context.replyWith("CurrentlyNoFactions");
+            context.replyWith("CommandResponse.Faction.NoneFound");
             return;
         }
-        context.replyWith("FactionsTitle");
+        context.getExecutorsAudience().sendMessage(
+            Component.translatable("FactionList.Title").color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD)
+        );
         Collection<Faction> sortedFactionList = this.factionService.getFactionsByPower();
-        context.replyWith("ListLegend");
-        context.reply(ChatColor.AQUA + "-----");
+        context.replyWith("FactionList.Legend");
         for (Faction faction : sortedFactionList) {
-            context.reply(ChatColor.AQUA + String.format("%-25s %10s %10s %10s", faction.getName(), "P: " +
-                    this.factionService.getCumulativePowerLevel(faction), "M: " + faction.getMemberCount(), "L: " +
-                    this.dataService.getClaimedChunksForFaction(faction).size()));
+            context.getExecutorsAudience().sendMessage(
+                Component.translatable("FactionList.Faction").args(Component.text(faction.getName())).color(NamedTextColor.AQUA)
+                    .hoverEvent(HoverEvent.showText(
+                        Component.text()
+                            .append(Component.text("Power: ").decorate(TextDecoration.BOLD)) // TODO: localize
+                            .append(Component.text(faction.getCumulativePowerLevel()+"\n"))
+                            .append(Component.text("Members: ").decorate(TextDecoration.BOLD)) // TODO: localize
+                            .append(Component.text(faction.getMemberCount()+"\n"))
+                            .append(Component.text("Land: ").decorate(TextDecoration.BOLD)) // TODO: localize
+                            .append(Component.text(this.dataService.getClaimedChunksForFaction(faction).size()))
+                    ))
+            );
         }
     }
 }

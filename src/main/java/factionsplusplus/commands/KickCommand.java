@@ -21,9 +21,6 @@ import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class KickCommand extends Command {
     private final EphemeralData ephemeralData;
@@ -59,13 +56,13 @@ public class KickCommand extends Command {
     public void execute(CommandContext context) {
         OfflinePlayer target = context.getOfflinePlayerArgument("player");
         if (target.getUniqueId().equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotKickSelf");
+            context.error("Error.Kick.Self");
             return;
         }
         Player player = context.getPlayer();
         Faction faction = context.getExecutorsFaction();
         if (faction.isOwner(target.getUniqueId())) {
-            context.replyWith("CannotKickOwner");
+            context.error("Error.Kick.Owner");
             return;
         }
         FactionKickEvent kickEvent = new FactionKickEvent(faction, target, player);
@@ -75,23 +72,11 @@ public class KickCommand extends Command {
             return;
         }
         this.ephemeralData.getPlayersInFactionChat().remove(target.getUniqueId());
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                faction.clearMember(target.getUniqueId());
-                faction.message(
-                    constructMessage("HasBeenKickedFrom")
-                        .with("name", target.getName())
-                        .with("faction", faction.getName())
-                );
-                if (target.isOnline() && target.getPlayer() != null) {
-                    context.messagePlayer(
-                        target.getPlayer(),
-                        constructMessage("AlertKicked")
-                            .with("name", player.getName())
-                    );
-                }
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            faction.clearMember(target.getUniqueId());
+            context.error("CommandResponse.Kick", target.getName(), faction.getName());
+            faction.alert("FactionNotice.PlayerKicked", target.getName());
+            if (target.isOnline() && target.getPlayer() != null) context.alertPlayer(player, "PlayerNotice.KickedFromFaction", faction.getName(), player.getName());
         });
     }
 }

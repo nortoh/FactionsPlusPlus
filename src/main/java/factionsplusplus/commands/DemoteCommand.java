@@ -17,9 +17,6 @@ import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.GroupRole;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DemoteCommand extends Command {
 
@@ -48,22 +45,14 @@ public class DemoteCommand extends Command {
         OfflinePlayer playerToBeDemoted = context.getOfflinePlayerArgument("player");
 
         if (playerToBeDemoted.getUniqueId().equals(context.getPlayer().getUniqueId())) {
-            context.replyWith("CannotDemoteSelf");
+            context.error("Error.Demote.Self");
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
-                if (playerToBeDemoted.isOnline()) {
-                    context.messagePlayer(playerToBeDemoted.getPlayer(), "AlertDemotion");
-                }
-                context.replyWith(
-                    constructMessage("PlayerDemoted")
-                        .with("name", playerToBeDemoted.getName())
-                );
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            context.getExecutorsFaction().upsertMember(playerToBeDemoted.getUniqueId(), GroupRole.Member);
+            if (playerToBeDemoted.isOnline()) context.alertPlayer(playerToBeDemoted, "PlayerNotice.Demoted", context.getLocalizedString("Generic.Role.Member"));
+            context.success("CommandResponse.Member.Demoted", playerToBeDemoted.getName());
         });
     }
 }

@@ -15,9 +15,6 @@ import factionsplusplus.models.InteractionContext;
 
 import factionsplusplus.builders.CommandBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class UnlockCommand extends Command {
 
@@ -51,13 +48,18 @@ public class UnlockCommand extends Command {
 
     public void execute(CommandContext context) {
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
-        if (interactionContext == null) {
-            this.ephemeralData.getPlayersPendingInteraction().put(
-                context.getPlayer().getUniqueId(),
-                this.interactionContextFactory.create(InteractionContext.Type.LockedBlockUnlock)
-            );
-            context.replyWith("RightClickUnlock");
-        };
+        if (interactionContext != null) {
+            if (interactionContext.isLockedBlockUnlock()) {
+                context.cancellableError("Error.Lock.AlreadyUnlocking", "/fpp unlock cancel");
+                return;
+            }
+            context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
+        }
+        this.ephemeralData.getPlayersPendingInteraction().put(
+            context.getPlayer().getUniqueId(),
+            this.interactionContextFactory.create(InteractionContext.Type.LockedBlockUnlock)
+        );
+        context.cancellable("CommandResponse.RightClick.Unlock", "/fpp unlock cancel");
     }
 
     public void cancelCommand(CommandContext context) {
@@ -65,7 +67,7 @@ public class UnlockCommand extends Command {
         if (interactionContext != null) {
             if (interactionContext.isLockedBlockUnlock() || interactionContext.isLockedBlockForceUnlock()) {
                 this.ephemeralData.getPlayersPendingInteraction().remove(context.getPlayer().getUniqueId());
-                context.replyWith("AlertUnlockingCancelled");
+                context.success("CommandResponse.RightClick.Cancelled");
             }
         }
     }

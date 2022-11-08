@@ -10,21 +10,21 @@ import java.util.Map;
 
 import factionsplusplus.data.daos.PlayerDao;
 import factionsplusplus.data.factories.PlayerFactory;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.DataProviderService;
 import factionsplusplus.utils.Logger;
 
 import java.util.stream.Collectors;
 
 @Singleton
-public class PlayerRecordRepository {
-    private Map<UUID, PlayerRecord> playerStore = new ConcurrentHashMap<>();
+public class PlayerRepository {
+    private Map<UUID, FPPPlayer> playerStore = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final PlayerFactory playerFactory;
 
     @Inject
-    public PlayerRecordRepository(Logger logger, DataProviderService dataProviderService, PlayerFactory playerFactory) {
+    public PlayerRepository(Logger logger, DataProviderService dataProviderService, PlayerFactory playerFactory) {
         this.logger = logger;
         this.dataProviderService = dataProviderService;
         this.playerFactory = playerFactory;
@@ -34,20 +34,20 @@ public class PlayerRecordRepository {
     public void load() {
         try {
             this.playerStore.clear();
-            this.playerStore = this.getDAO().get().stream().map(this.playerFactory::create).collect(Collectors.toMap(player -> (UUID)player.getUUID(), player -> (PlayerRecord)player));
+            this.playerStore = this.getDAO().get().stream().map(this.playerFactory::create).collect(Collectors.toConcurrentMap(player -> (UUID)player.getUUID(), player -> (FPPPlayer)player));
         } catch(Exception e) {
             this.logger.error(String.format("Error loading players: %s", e.getMessage()));
         }
     }
 
     // Save a record after creating
-    public void create(PlayerRecord record) {
+    public void create(FPPPlayer record) {
         this.getDAO().insert(record);
         this.playerStore.put(record.getUUID(), record);
     }
 
     // Delete a record
-    public void delete(PlayerRecord record) {
+    public void delete(FPPPlayer record) {
         this.getDAO().delete(record.getUUID());
         this.playerStore.remove(record.getUUID());
     }
@@ -56,18 +56,23 @@ public class PlayerRecordRepository {
     }
 
     // Retrieve a record by uuid
-    public PlayerRecord get(UUID playerUUID) {
+    public FPPPlayer get(UUID playerUUID) {
         return this.playerStore.get(playerUUID);
     }
 
     // Retrieve all records
-    public Map<UUID, PlayerRecord> all() {
+    public Map<UUID, FPPPlayer> all() {
         return this.playerStore;
     }
 
     // Get DAO for this repository
     public PlayerDao getDAO() {
         return this.dataProviderService.getPersistentData().onDemand(PlayerDao.class);
+    }
+
+    // Determine if a player is stored
+    public boolean contains(UUID player) {
+        return this.playerStore.containsKey(player);
     }
 
     /*
@@ -80,7 +85,7 @@ public class PlayerRecordRepository {
     }
 
     // Write to database
-    public void persist(PlayerRecord player) {
+    public void persist(FPPPlayer player) {
         this.getDAO().update(player);
     }
 

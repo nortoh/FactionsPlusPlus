@@ -6,6 +6,7 @@ package factionsplusplus.utils.extended;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.Faction;
@@ -13,10 +14,12 @@ import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.services.PlayerService;
 import factionsplusplus.utils.Logger;
-import factionsplusplus.builders.MessageBuilder;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -34,9 +37,9 @@ public class Scheduler {
     @Inject private FactionsPlusPlus factionsPlusPlus;
     @Inject private ConfigService configService;
     @Inject private PlayerService playerService;
-    @Inject private MessageService messageService;
     @Inject private FactionService factionService;
     @Inject private DataService dataService;
+    @Inject @Named("adventure") BukkitAudiences adventure;
 
     @SuppressWarnings("deprecation")
     public void schedulePowerIncrease() {
@@ -47,9 +50,11 @@ public class Scheduler {
             @Override
             public void run() {
                 logger.debug(
-                    localeService.get("ConsoleAlerts.IncreasingThePowerOfEveryPlayer")
-                        .replace("#amount#", String.valueOf(configService.getInt("powerIncreaseAmount")))
-                        .replace("#frequency#", String.valueOf(configService.getInt("minutesBetweenPowerIncreases")))
+                    localeService.get(
+                        "ConsoleAlerts.IncreasingThePowerOfEveryPlayer",
+                        configService.getInt("powerIncreaseAmount"),
+                        configService.getInt("minutesBetweenPowerIncreases")
+                    )
                 );
                 playerService.initiatePowerIncreaseForAllPlayers();
             }
@@ -58,14 +63,16 @@ public class Scheduler {
 
     @SuppressWarnings("deprecation")
     public void schedulePowerDecrease() {
-        this.logger.debug(localeService.get("ConsoleAlerts.SchedulingPowerDecrease"));
+        this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerDecrease"));
         int delay = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
         int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
         Bukkit.getScheduler().scheduleAsyncRepeatingTask(factionsPlusPlus, () -> {
             logger.debug(
-                localeService.get("ConsoleAlerts.DecreasingThePowerOfEveryPlayer")
-                    .replace("#amount#", String.valueOf(configService.getInt("powerDecreaseAmount")))
-                    .replace("#frequency#", String.valueOf(configService.getInt("minutesBetweenPowerDecreases")))
+                localeService.get(
+                    "ConsoleAlerts.DecreasingThePowerOfEveryPlayer",
+                    configService.getInt("powerDecreaseAmount"),
+                    configService.getInt("minutesBetweenPowerDecreases")
+                )
             );
 
             playerService.decreasePowerForInactivePlayers();
@@ -84,22 +91,18 @@ public class Scheduler {
         Faction faction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (faction != null) {
             if (this.isFactionExceedingTheirDemesneLimit(faction)) {
-                this.messageService.sendLocalizedMessage(player, "AlertMoreClaimedChunksThanPower");
+                this.dataService.getPlayer(player.getUniqueId()).audience().sendMessage(Component.translatable("FactionNotice.ExcessClaims"), MessageType.SYSTEM);
             }
         }
     }
 
     private boolean isFactionExceedingTheirDemesneLimit(Faction faction) {
-        return (this.dataService.getClaimedChunksForFaction(faction).size() > this.factionService.getCumulativePowerLevel(faction));
+        return (this.dataService.getClaimedChunksForFaction(faction).size() > faction.getCumulativePowerLevel());
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {
         int teleport_delay = this.configService.getInt("teleportDelay");
-        this.messageService.sendLocalizedMessage(
-            player,
-            new MessageBuilder("Teleport")
-                .with("time", String.valueOf(teleport_delay))
-        );
+        this.dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.Teleport", teleport_delay);
         DelayedTeleportTask delayedTeleportTask = new DelayedTeleportTask(player, destinationLocation);
         delayedTeleportTask.runTaskLater(this.factionsPlusPlus, (long) teleport_delay * this.getRandomNumberBetween(15, 25));
     }
@@ -126,7 +129,7 @@ public class Scheduler {
             if (playerHasNotMoved()) {
                 teleportPlayer();
             } else {
-                messageService.sendLocalizedMessage(player, "TeleportCancelled");
+                dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.Teleport.Cancelled", NamedTextColor.AQUA);
             }
         }
 

@@ -18,9 +18,6 @@ import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 import org.bukkit.Bukkit;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DisbandCommand extends Command {
 
@@ -60,13 +57,13 @@ public class DisbandCommand extends Command {
         final boolean self;
         if (context.getRawArguments().length == 0) {
             if (context.isConsole()) {
-                context.replyWith("OnlyPlayersCanUseCommand");
+                context.error("Error.PlayerExecutionRequired");
                 return;
             }
             disband = context.getExecutorsFaction();
             self = true;
             if (disband != null && disband.getMemberCount() != 1) {
-                context.replyWith("AlertMustKickAllPlayers");
+                context.error("Error.Faction.DisbandHasMembers");
                 return;
             }
         } else {
@@ -74,10 +71,7 @@ public class DisbandCommand extends Command {
             self = false;
         }
         if (disband == null) {
-            context.replyWith(
-                this.constructMessage("FactionNotFound")
-                    .with("faction", String.join(" ", context.getRawArguments()))
-            );
+            context.error("Error.Faction.NotFound", String.join(" ", context.getRawArguments()));
             return;
         }
         final Faction targetFaction = disband;
@@ -89,27 +83,14 @@ public class DisbandCommand extends Command {
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             this.logger.debug("Disband event was cancelled.");
-            context.replyWith(
-                this.constructMessage("ErrorDisbanding")
-                    .with("faction", targetFaction.getName())
-            );
+            context.error("Error.Faction.DisbandError");
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                factionRepository.delete(targetFaction);
-                if (self) {
-                    context.replyWith("FactionSuccessfullyDisbanded");
-                    ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
-                } else {
-                    context.replyWith(
-                        constructMessage("SuccessfulDisbandment")
-                            .with("faction", targetFaction.getName())
-                    );
-                }
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            factionRepository.delete(targetFaction);
+            if (self) ephemeralData.getPlayersInFactionChat().remove(context.getPlayer().getUniqueId());
+            context.success("CommandResponse.Faction.Disbanded", targetFaction.getName());
         });
     }
 }

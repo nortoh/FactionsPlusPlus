@@ -6,14 +6,17 @@ package factionsplusplus.commands;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.FactionRelationType;
-import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.events.internal.FactionWarStartEvent;
 
@@ -27,14 +30,14 @@ import org.bukkit.entity.Player;
 public class DeclareIndependenceCommand extends Command {
 
     private final ConfigService configService;
-    private final FactionRepository factionRepository;
     private final WarRepository warRepository;
+    private final BukkitAudiences adventure;
 
     @Inject
     public DeclareIndependenceCommand(
         ConfigService configService,
-        FactionRepository factionRepository,
-        WarRepository warRepository
+        WarRepository warRepository,
+        @Named("adventure") BukkitAudiences adventure
     ) {
         super(
             new CommandBuilder()
@@ -47,19 +50,19 @@ public class DeclareIndependenceCommand extends Command {
                 .requiresPermissions("mf.declareindependence")
         );
         this.configService = configService;
-        this.factionRepository = factionRepository;
         this.warRepository = warRepository;
+        this.adventure = adventure;
     }
 
     public void execute(CommandContext context) {
         Faction faction = context.getExecutorsFaction();
         Player player = context.getPlayer();
         if (! (faction.hasLiege()) || faction.getLiege() == null) {
-            context.replyWith("NotAVassalOfAFaction");
+            context.error("Error.NotAVassal");
             return;
         }
 
-        final Faction liege = this.factionRepository.get(faction.getLiege());
+        final Faction liege = faction.getLiege();
 
         // Does declaring independence mean war?
         if (! this.configService.getBoolean("allowNeutrality") || (! (faction.getFlag("neutral").toBoolean()) && ! (liege.getFlag("neutral").toBoolean()))) {
@@ -71,7 +74,8 @@ public class DeclareIndependenceCommand extends Command {
                 Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                     @Override
                     public void run() {
-                        faction.upsertRelation(liege.getID(), FactionRelationType.Enemy);
+                        faction.upsertRelation(liege.getUUID(), FactionRelationType.Enemy);
+                        // TODO: localize this message
                         warRepository.create(faction, liege, String.format("%s declared independence from %s", faction.getName(), liege.getName()));
                     }
                 });
@@ -81,14 +85,12 @@ public class DeclareIndependenceCommand extends Command {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    faction.upsertRelation(liege.getID(), null);
+                    faction.upsertRelation(liege.getUUID(), null);
                 }
             });
         }
-        context.messageAllPlayers(
-            this.constructMessage("HasDeclaredIndependence")
-                .with("faction_a", faction.getName())
-                .with("faction_b", liege.getName())
+        this.adventure.players().sendMessage(
+            Component.translatable("GlobalNotice.Independence.Declared").args(Component.text(faction.getName()), Component.text(liege.getName())).color(NamedTextColor.YELLOW)
         );
 
     }

@@ -16,15 +16,9 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class BreakAllianceCommand extends Command {
 
-    /**
-     * Constructor to initialise a Command.
-     */
     @Inject
     public BreakAllianceCommand() {
         super(
@@ -52,20 +46,16 @@ public class BreakAllianceCommand extends Command {
         final Faction otherFaction = context.getFactionArgument("faction name");
 
         if (otherFaction == context.getExecutorsFaction()) {
-            context.replyWith("CannotBreakAllianceWithSelf");
+            context.error("Error.BreakAlliance.Self");
             return;
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
             @Override
             public void run() {
-                context.getExecutorsFaction().clearRelation(otherFaction.getID());
-                context.getExecutorsFaction().message(
-                    constructMessage("AllianceBrokenWith").with("faction", otherFaction.getName())
-                );
-                otherFaction.message(
-                    constructMessage("AlertAllianceHasBeenBroken").with("faction", context.getExecutorsFaction().getName())
-                );
+                context.getExecutorsFaction().clearRelation(otherFaction.getUUID());
+                context.getExecutorsFaction().alert("FactionNotice.AllianceBroken.Source", otherFaction.getName());
+                otherFaction.alert("FactionNotice.AllianceBroken.Target", context.getExecutorsFaction().getName());
             }
         });
     }

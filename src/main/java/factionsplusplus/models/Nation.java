@@ -23,7 +23,7 @@ public class Nation extends Group implements Diplomatic, Lawful {
     protected Map<UUID, FactionRelationType> relations = new ConcurrentHashMap<>();
     protected final List<UUID> attemptedAlliances = Collections.synchronizedList(new ArrayList<>());
     protected final List<UUID> attemptedTruces = Collections.synchronizedList(new ArrayList<>());
-    protected final Map<UUID, String> laws = Collections.synchronizedMap(new LinkedHashMap<>());
+    protected Map<UUID, String> laws = Collections.synchronizedMap(new LinkedHashMap<>());
 
     @Override
     public void addAlly(UUID allyUUID) {

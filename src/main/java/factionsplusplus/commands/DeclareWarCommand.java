@@ -11,35 +11,25 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
-import factionsplusplus.services.FactionService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.constants.ArgumentFilterType;
 import factionsplusplus.constants.FactionRelationType;
-import factionsplusplus.data.repositories.FactionRepository;
 import factionsplusplus.data.repositories.WarRepository;
 import factionsplusplus.events.internal.FactionWarStartEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class DeclareWarCommand extends Command {
 
     private final ConfigService configService;
-    private final FactionRepository factionRepository;
-    private final FactionService factionService;
     private final WarRepository warRepository;
 
     @Inject
     public DeclareWarCommand(
         ConfigService configService,
-        FactionRepository factionRepository,
-        FactionService factionService,
         WarRepository warRepository
     ) {
         super(
@@ -70,8 +60,6 @@ public class DeclareWarCommand extends Command {
                 )
         );
         this.configService = configService;
-        this.factionRepository = factionRepository;
-        this.factionService = factionService;
         this.warRepository = warRepository;
     }
 
@@ -81,50 +69,47 @@ public class DeclareWarCommand extends Command {
         final Faction opponent = context.getFactionArgument("faction name");
 
         if (opponent == faction) {
-            context.replyWith("CannotDeclareWarOnYourself");
+            context.error("Error.War.Self");
             return;
         }
 
-        if (faction.isEnemy(opponent.getID())) {
-            context.replyWith(
-                this.constructMessage("AlertAlreadyAtWarWith")
-                    .with("faction", opponent.getName())
-            );
+        if (faction.isEnemy(opponent.getUUID())) {
+            context.error("Error.War.AlreadyAtWar", faction.getName(), opponent.getName());
             return;
         }
 
         if (faction.hasLiege() && opponent.hasLiege()) {
-            if (faction.isVassal(opponent.getID())) {
-                context.replyWith("CannotDeclareWarOnVassal");
+            if (faction.isVassal(opponent.getUUID())) {
+                context.error("Error.War.Vassal");
                 return;
             }
 
             if (! faction.getLiege().equals(opponent.getLiege())) {
-                final Faction enemyLiege = this.factionRepository.get(opponent.getLiege());
-                if (this.factionService.calculateCumulativePowerLevelWithoutVassalContribution(enemyLiege) <
-                        this.factionService.getMaximumCumulativePowerLevel(enemyLiege) / 2) {
-                    context.replyWith("CannotDeclareWarIfLiegeNotWeakened");
+                final Faction enemyLiege = opponent.getLiege();
+                if (enemyLiege.calculateCumulativePowerLevelWithoutVassalContribution() <
+                        enemyLiege.getMaximumCumulativePowerLevel() / 2) {
+                    context.error("Error.War.LiegeNotWeakened");
                 }
             }
         }
 
-        if (faction.isLiege(opponent.getID())) {
-            context.replyWith("CannotDeclareWarOnLiege");
+        if (faction.isLiege(opponent.getUUID())) {
+            context.error("Error.War.Liege");
             return;
         }
 
-        if (faction.isAlly(opponent.getID())) {
-            context.replyWith("CannotDeclareWarOnAlly");
+        if (faction.isAlly(opponent.getUUID())) {
+            context.error("Error.War.Ally");
             return;
         }
 
         if (this.configService.getBoolean("allowNeutrality") && (opponent.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotDeclareWarOnNeutralFaction");
+            context.error("Error.War.Neutral.Target");
             return;
         }
 
         if (this.configService.getBoolean("allowNeutrality") && (faction.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotDeclareWarIfNeutralFaction");
+            context.error("Error.War.Neutral.Source");
             return;
         }
 
@@ -135,7 +120,7 @@ public class DeclareWarCommand extends Command {
             Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    faction.upsertRelation(opponent.getID(), FactionRelationType.Enemy);
+                    faction.upsertRelation(opponent.getUUID(), FactionRelationType.Enemy);
                     String reason = context.getStringArgument("reason");
                     if (reason == null) reason = "No reason";
                     warRepository.create(faction, opponent, reason);

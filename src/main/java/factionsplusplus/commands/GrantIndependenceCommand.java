@@ -14,9 +14,6 @@ import factionsplusplus.models.Faction;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class GrantIndependenceCommand extends Command {
 
@@ -45,17 +42,9 @@ public class GrantIndependenceCommand extends Command {
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
         context.getExecutorsFaction().upsertRelation(target.getUUID(), null);
-        
         // inform all players in that faction that they are now independent
-        context.messageFaction(
-            target,
-            this.constructMessage("AlertGrantedIndependence")
-                .with("name", context.getExecutorsFaction().getName())
-        );
+        target.alert("FactionNotice.Independence", context.getExecutorsFaction().getName());
         // inform all players in players faction that a vassal was granted independence
-        context.messagePlayersFaction(
-            this.constructMessage("AlertNoLongerVassalFaction")
-                .with("name", target.getName())
-        );
+        context.getExecutorsFaction().alert("FactionNotice.VassalRemoved", target.getName());
     }
 }

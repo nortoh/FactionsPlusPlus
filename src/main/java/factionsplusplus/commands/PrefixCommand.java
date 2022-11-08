@@ -15,9 +15,6 @@ import factionsplusplus.services.DataService;
 import factionsplusplus.builders.CommandBuilder;
 import factionsplusplus.builders.ArgumentBuilder;
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class PrefixCommand extends Command {
 
@@ -50,15 +47,12 @@ public class PrefixCommand extends Command {
     public void execute(CommandContext context) {
         final String newPrefix = context.getStringArgument("new prefix");
         if (this.dataService.isFactionPrefixTaken(newPrefix)) {
-            context.replyWith("PrefixTaken");
+            context.error("Error.Prefix.Taken", newPrefix);
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                context.getExecutorsFaction().setPrefix(newPrefix);
-                context.replyWith("PrefixSet");
-            }
+        Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+            context.getExecutorsFaction().setPrefix(newPrefix);
+            context.success("CommandResponse.Faction.PrefixSet", newPrefix);
         });
     }
 }

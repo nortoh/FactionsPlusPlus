@@ -198,9 +198,9 @@ public class ConfigService {
                 .setDefaultValue(3)
                 .isInteger(),
             new ConfigOptionBuilder()
-                .withName("languageid")
-                .withDescription("The locale to use when sending messages")
-                .setDefaultValue("en-us"),
+                .withName("language")
+                .withDescription("The default locale to use when sending messages")
+                .setDefaultValue("en_US"),
             new ConfigOptionBuilder()
                 .withName("chatSharedInVassalageTrees")
                 .withDescription("If faction chat is shared across a factions vassalage tree")

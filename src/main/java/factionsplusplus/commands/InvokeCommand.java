@@ -15,13 +15,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.FactionRelationType;
 import factionsplusplus.events.internal.FactionWarStartEvent;
 import factionsplusplus.builders.ArgumentBuilder;
 
-
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class InvokeCommand extends Command {
 
@@ -62,45 +59,27 @@ public class InvokeCommand extends Command {
         final Player player = context.getPlayer();
         final Faction invokee = context.getFactionArgument("allied faction name");
         final Faction warringFaction = context.getFactionArgument("enemy faction name");
-        if (! context.getExecutorsFaction().isVassal(invokee.getID())) {
-            context.replyWith(
-                this.constructMessage("NotAnAllyOrVassal")
-                    .with("name", invokee.getName())
-            );
+        if (! context.getExecutorsFaction().isVassal(invokee.getUUID())) {
+            context.error("Error.Faction.NotAllyOrVassal", invokee.getName());
             return;
         }
         if (this.configService.getBoolean("allowNeutrality") && (invokee.getFlag("neutral").toBoolean())) {
-            context.replyWith("CannotBringNeutralFactionIntoWar");
+            context.error("Error.WarCall.Neutral");
             return;
         }
         FactionWarStartEvent warStartEvent = new FactionWarStartEvent(invokee, warringFaction, player);
         Bukkit.getPluginManager().callEvent(warStartEvent);
         if (! warStartEvent.isCancelled()) {
-            invokee.addEnemy(warringFaction.getID());
-            warringFaction.addEnemy(invokee.getID());
-
-            // Alert ally faction
-            context.messageFaction(
-                invokee,
-                this.constructMessage("AlertCalledToWar1")
-                    .with("f1", context.getExecutorsFaction().getName())
-                    .with("f2", warringFaction.getName())
-            );
-
-            // Alert warring faction
-            context.messageFaction(
-                warringFaction,
-                this.constructMessage("AlertCalledToWar2")
-                    .with("f1", context.getExecutorsFaction().getName())
-                    .with("f2", invokee.getName())
-            );
-
-            // Alert player faction
-            context.messagePlayersFaction(
-                this.constructMessage("AlertCalledToWar3")
-                    .with("f1", context.getExecutorsFaction().getName())
-                    .with("f2", warringFaction.getName())
-            );
+            Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
+                // Update relationship
+                invokee.upsertRelation(warringFaction.getUUID(), FactionRelationType.Enemy);
+                // Alert ally faction
+                invokee.alert("FactionNotice.WarCall.Target", context.getExecutorsFaction().getName(), warringFaction.getName());
+                // Alert warring faction
+                warringFaction.alert("FactionNotice.WarCall.Enemy", context.getExecutorsFaction().getName(), invokee.getName());
+                // Alert player faction
+                context.getExecutorsFaction().alert("FactionNotice.WarCall.Source", invokee.getName(), warringFaction.getName());
+            });
         }
     }
 }

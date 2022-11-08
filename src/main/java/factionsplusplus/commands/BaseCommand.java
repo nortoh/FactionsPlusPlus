@@ -164,24 +164,21 @@ public class BaseCommand extends Command {
 
     public void createCommand(CommandContext context) {
         if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("factionMaxNumberBases")) {
-            context.replyWith("MaxBasesReached");
+            context.error("Error.Base.MaximumReached");
             return;
         }
         final Faction chunkOwner = this.claimService.checkOwnershipAtPlayerLocation(context.getPlayer());
         if (chunkOwner == null || ! chunkOwner.equals(context.getExecutorsFaction())) {
-            context.replyWith("CanOnlyCreateBasesInClaimedTerritory");
+            context.error("Error.Base.ClaimedTerritory");
             return;
         }
         final String baseName = context.getStringArgument("name");
         final boolean ok = context.getExecutorsFaction().addBase(baseName, context.getPlayer().getLocation());
         if (ok) {
-            context.replyWith(
-                this.constructMessage("BaseCreated")
-                    .with("name", baseName)
-            );
+            context.success("CommandResponse.Base.Created", baseName);
             return;
         }
-        context.replyWith("ErrorCreatingBase");
+        context.error("Error.Base.Creating");
     }
 
     public void configCommand(CommandContext context) {
@@ -234,30 +231,29 @@ public class BaseCommand extends Command {
 
     public void renameCommand(CommandContext context) {
         final FactionBase base = context.getFactionBaseArgument("name");
+        final String oldName = base.getName();
         final String newName = context.getStringArgument("new name");
         if (context.getExecutorsFaction().getBase(newName) != null) {
-            context.replyWith("DuplicateBaseName");
+            context.error("Error.Base.AlreadyExists", newName);
             return;
         }
-        context.getExecutorsFaction().renameBase(base.getName(), newName);
+        context.getExecutorsFaction().renameBase(oldName, newName);
         context.getExecutorsFaction().persistBase(base);
-        context.replyWith("Done");
+        context.success("CommandResponse.Base.Renamed", oldName, newName);
     }
 
     public void listCommand(CommandContext context) {
         if (context.getExecutorsFaction().getBases().isEmpty()) {
-            context.replyWith("NoBases");
+            context.error("Error.Base.NoneAccessible");
             return;
         }
-        context.replyWith("FactionBaseList.Title");
+        // TODO: new messaging api
+        context.replyWith("BaseList.Title");
         // TODO: if they have access to another factions bases, include in this list
         context.getExecutorsFaction().getBases().values().stream()
             .forEach(base -> {
                 if (base.shouldAllowAllFactionMembers() || context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
-                    context.replyWith(
-                        this.constructMessage("FactionBaseList.Base")
-                            .with("name", base.getName())
-                    );
+                    context.replyWith("BaseList.Base", base.getName());
                 }
             });
     }
@@ -266,13 +262,10 @@ public class BaseCommand extends Command {
         final FactionBase base = context.getFactionBaseArgument("base to remove");
         final boolean ok = context.getExecutorsFaction().removeBase(base.getName());
         if (ok) {
-            context.replyWith(
-                this.constructMessage("BaseRemoved")
-                    .with("name", base.getName())
-            );
+            context.success("CommandResponse.Base.Removed", base.getName());
             return;
         }
-        context.replyWith("ErrorRemovingBase");
+        context.error("Error.Base.Removing");
     }
 
     public void teleportCommand(CommandContext context) {
@@ -282,7 +275,7 @@ public class BaseCommand extends Command {
             // must be a fall through, try to final a default base
             base = context.getExecutorsFaction().getDefaultBase();
             if (base == null) {
-                context.replyWith("NoDefaultBase");
+                context.error("Error.Base.NoFactionDefault");
                 return;
             }
         }
@@ -298,7 +291,7 @@ public class BaseCommand extends Command {
                 context.getExecutorsFaction().isAlly(null) // TODO: this should be replaced when we support a target faction
             )
         ) {
-            context.replyWith("BaseTeleportDenied");
+            context.error("Error.Base.NotAccessible", base.getName());
             return;
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), base.getBukkitLocation());

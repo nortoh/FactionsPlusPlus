@@ -6,7 +6,7 @@ import com.google.inject.Singleton;
 import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.FactionService;
 import factionsplusplus.services.LocaleService;
@@ -193,8 +193,7 @@ public class DynmapIntegrator {
         /* Loop through realms and build area markers coloured in the same colour
             as each faction's liege's colour. */
         for (Faction f : this.dataService.getFactions()) {
-            UUID liegeID = this.factionService.getTopLiege(f);
-            Faction liege = this.dataService.getFaction(liegeID);
+            Faction liege = f.getTopLiege();
             String liegeName;
             String liegeColor;
             String popupText;
@@ -259,17 +258,17 @@ public class DynmapIntegrator {
                 "<div style='display: inline;' title='" + nationMembers + "'>Population: " + f.getMembers().size() + "</div><br/>";
 
         if (f.hasLiege()) {
-            message += "Liege: " + this.dataService.getFaction(f.getLiege()).getName() + "<br/>";
+            message += "Liege: " + f.getLiege().getName() + "<br/>";
         }
         if (f.isLiege()) {
             message += "Vassals: " + this.factionService.getCommaSeparatedFactionNames(f.getVassals()) + "<br/>";
         }
         message += "Allied With: " + this.factionService.getCommaSeparatedFactionNames(f.getAllies()) + "<br/>" +
                 "At War With: " + this.factionService.getCommaSeparatedFactionNames(f.getEnemies()) + "<br/>" +
-                "Power Level: " + this.factionService.getCumulativePowerLevel(f) + "<br/>" +
+                "Power Level: " + f.getCumulativePowerLevel() + "<br/>" +
                 "Demesne Size: " + String.format("%d/%d",
                 this.dataService.getClaimedChunksForFaction(f).size(),
-                this.factionService.getCumulativePowerLevel(f));
+                f.getCumulativePowerLevel());
         return message;
     }
 
@@ -498,7 +497,7 @@ public class DynmapIntegrator {
             Set<String> plids = new HashSet<>();
             Faction f = this.dataService.getFaction(holder);
             if (f != null) {
-                for (PlayerRecord record : this.dataService.getPlayerRecords()) {
+                for (FPPPlayer record : this.dataService.getPlayers()) {
                     Faction pf = this.dataService.getPlayersFaction(record.getUUID());
                     if (pf != null && pf.getName().equalsIgnoreCase(holder)) {
                         plids.add(PlayerUtils.parseAsPlayer(record.getUUID()).getName());

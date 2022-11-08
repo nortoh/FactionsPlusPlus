@@ -9,16 +9,14 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.services.ClaimService;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.DynmapIntegrationService;
-import factionsplusplus.services.FactionService;
-import factionsplusplus.services.MessageService;
 import factionsplusplus.utils.Logger;
 import factionsplusplus.utils.TerritoryOwnerNotifier;
-import factionsplusplus.builders.MessageBuilder;
+import net.kyori.adventure.text.format.NamedTextColor;
 import factionsplusplus.data.factories.PlayerFactory;
 import factionsplusplus.events.internal.FactionJoinEvent;
 
@@ -39,9 +37,7 @@ public class JoinHandler implements Listener {
     private final ConfigService configService;
     private final Logger logger;
     private final TerritoryOwnerNotifier territoryOwnerNotifier;
-    private final FactionService factionService;
     private final DataService dataService;
-    private final MessageService messageService;
     private final ClaimService claimService;
     private final DynmapIntegrationService dynmapIntegrationService;
     private final PlayerFactory playerFactory;
@@ -51,9 +47,7 @@ public class JoinHandler implements Listener {
         ConfigService configService,
         Logger logger,
         TerritoryOwnerNotifier territoryOwnerNotifier,
-        FactionService factionService,
         DataService dataService,
-        MessageService messageService,
         ClaimService claimService,
         DynmapIntegrationService dynmapIntegrationService,
         PlayerFactory playerFactory
@@ -61,9 +55,7 @@ public class JoinHandler implements Listener {
         this.configService = configService;
         this.logger = logger;
         this.territoryOwnerNotifier = territoryOwnerNotifier;
-        this.factionService = factionService;
         this.dataService = dataService;
-        this.messageService = messageService;
         this.claimService = claimService;
         this.dynmapIntegrationService = dynmapIntegrationService;
         this.playerFactory = playerFactory;
@@ -73,7 +65,7 @@ public class JoinHandler implements Listener {
     public void handle(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (this.dataExistsForPlayer(player)) {
-            PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
+            FPPPlayer record = this.dataService.getPlayer(player.getUniqueId());
             record.incrementLogins();
             this.handlePowerDecay(record, player, event);
         } else {
@@ -97,32 +89,22 @@ public class JoinHandler implements Listener {
         this.dynmapIntegrationService.changePlayersVisibility(List.of(uuid), true);
     }
 
-    private void handlePowerDecay(PlayerRecord record, Player player, PlayerJoinEvent event) {
+    private void handlePowerDecay(FPPPlayer record, Player player, PlayerJoinEvent event) {
         double newPower = getNewPower(player);
 
         if (record.getLastLogout() != null && record.getMinutesSinceLastLogout() > 1) {
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("WelcomeBackLastLogout")
-                    .with("name", event.getPlayer().getName())
-                    .with("duration", record.getTimeSinceLastLogout())
-            );
+            record.alert("PlayerNotice.WelcomeBack", NamedTextColor.GREEN, event.getPlayer().getName(), record.getTimeSinceLastLogout());
         }
 
         if (record.getPowerLost() > 0) {
-            this.messageService.sendLocalizedMessage(
-                player,
-                new MessageBuilder("PowerHasDecayed")
-                    .with("loss", String.valueOf(record.getPowerLost()))
-                    .with("power", String.valueOf(newPower))
-            );
+            record.alert("PlayerNotice.PowerDecayed", NamedTextColor.YELLOW, record.getPowerLost(), newPower);
         }
 
         record.setPowerLost(0);
     }
 
     private double getNewPower(Player player) {
-        PlayerRecord record = this.dataService.getPlayerRecord(player.getUniqueId());
+        FPPPlayer record = this.dataService.getPlayer(player.getUniqueId());
 
         double newPower = record.getPower();
         if (newPower < 0) {
@@ -138,12 +120,12 @@ public class JoinHandler implements Listener {
     }
 
     private void createRecordsForPlayer(Player player) {
-        PlayerRecord record = this.playerFactory.create(player.getUniqueId(), 1, this.configService.getDouble("initialPowerLevel"));
-        this.dataService.getPlayerRecordRepository().create(record);
+        FPPPlayer record = this.playerFactory.create(player.getUniqueId(), 1, this.configService.getDouble("initialPowerLevel"));
+        this.dataService.getPlayerRepository().create(record);
     }
 
     private boolean dataExistsForPlayer(Player player) {
-        return this.dataService.hasPlayerRecord(player);
+        return this.dataService.hasPlayer(player);
     }
 
     private void assignPlayerToRandomFaction(Player player) {
@@ -155,14 +137,10 @@ public class JoinHandler implements Listener {
                 this.logger.debug("Join event was cancelled.");
                 return;
             }
-            this.messageService.sendFactionLocalizedMessage(
-                faction,
-                new MessageBuilder("HasJoined")
-                    .with("name", player.getName())
-                    .with("faction", faction.getName())
-            );
+            faction.alert("FactionNotice.PlayerJoined", player.getName());
             faction.addMember(player.getUniqueId());
-            this.messageService.sendLocalizedMessage(player, "AssignedToRandomFaction");
+            FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
+            member.alert("PlayerNotice.RandomFactionAssignment", faction.getName());
             this.logger.debug(player.getName() + " has been randomly assigned to " + faction.getName() + "!");
         } else {
             this.logger.debug("Attempted to assign " + player.getName() + " to a random faction, but no factions are existent.");
@@ -187,8 +165,9 @@ public class JoinHandler implements Listener {
             return;
         }
 
-        if (playersFaction.isLiege() && this.factionService.isWeakened(playersFaction)) {
-            this.messageService.sendLocalizedMessage(player, "AlertFactionIsWeakened");
+        if (playersFaction.isLiege() && playersFaction.isWeakened()) {
+            FPPPlayer member = this.dataService.getPlayer(player.getUniqueId());
+            member.alert("FactionNotice.Weakened", NamedTextColor.RED);
         }
     }
 }

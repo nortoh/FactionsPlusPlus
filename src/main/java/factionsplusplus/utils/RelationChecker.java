@@ -35,11 +35,11 @@ public class RelationChecker {
         UUID attackersFactionIndex = factionIndices.left();
         UUID victimsFactionIndex = factionIndices.right();
 
-        return ! (this.dataService.getFaction(attackersFactionIndex).isEnemy(this.dataService.getFaction(victimsFactionIndex).getID())) &&
-                ! (this.dataService.getFaction(victimsFactionIndex).isEnemy(this.dataService.getFaction(attackersFactionIndex).getID()));
+        return ! (this.dataService.getFaction(attackersFactionIndex).isEnemy(this.dataService.getFaction(victimsFactionIndex).getUUID())) &&
+                ! (this.dataService.getFaction(victimsFactionIndex).isEnemy(this.dataService.getFaction(attackersFactionIndex).getUUID()));
     }
 
     private Pair<UUID, UUID> getFactionIndices(Player player1, Player player2) {
-        return Pair.of(this.dataService.getPlayersFaction(player1).getID(), this.dataService.getPlayersFaction(player2).getID());
+        return Pair.of(this.dataService.getPlayersFaction(player1).getUUID(), this.dataService.getPlayersFaction(player2).getUUID());
     }
 }

@@ -3,6 +3,8 @@ package factionsplusplus.models.interfaces;
 import java.util.List;
 import java.util.UUID;
 
+import factionsplusplus.models.Faction;
+
 /**
  * @author Daniel Stephenson
  */
@@ -13,7 +15,7 @@ public interface Feudal {
 
     boolean isLiege();
 
-    UUID getLiege();
+    Faction getLiege();
 
     // liege
     void setLiege(UUID uuid);
