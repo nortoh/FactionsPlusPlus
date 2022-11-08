@@ -20,6 +20,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class CommandContext {
     private Faction faction = null;
@@ -248,6 +249,10 @@ public class CommandContext {
         this.getExecutorsAudience().sendMessage(
             Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
         );
+    }
+
+    public void replyWithMiniMessage(String message) {
+        this.getExecutorsAudience().sendMessage(MiniMessage.miniMessage().deserialize(message));
     }
 
     public void alertPlayer(OfflinePlayer player, String localizationKey, Object... arguments) {
