@@ -231,12 +231,12 @@ public class CommandContext {
     }
 
     /*
-     * Sends a raw message to a sender. This will go through colorization in MessageService but no translations will happen.
+     * Sends a raw message to a sender.
      * 
      * @param message the message to send
      */
     public void reply(String message) {
-        this.getExecutorsAudience().sendMessage(Component.text(message));
+        this.sender.sendMessage(message);
     }
 
     /*
