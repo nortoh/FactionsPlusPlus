@@ -24,6 +24,7 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import com.google.inject.assistedinject.Assisted;
@@ -33,8 +34,8 @@ import com.google.inject.name.Named;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Faction extends Nation implements Feudal, ForwardingAudience {
-    private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
-    private Map<String, FactionBase> bases = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, FactionBase> bases = new ConcurrentHashMap<>();
     private String prefix = null;
     private int bonusPower = 0;
     @ColumnName("should_autoclaim")
@@ -81,7 +82,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted Map<String, ConfigurationFlag> flags, DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
+    public Faction(@Assisted String factionName, @Assisted ConcurrentMap<String, ConfigurationFlag> flags, DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
         this.name = factionName;
         this.flags = flags;
         this.prefix = factionName;
@@ -92,7 +93,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     @AssistedInject
-    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted Map<String, ConfigurationFlag> flags, DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
+    public Faction(@Assisted String factionName, @Assisted UUID owner, @Assisted ConcurrentMap<String, ConfigurationFlag> flags, DataService dataService, @Named("adventure") BukkitAudiences adventure, ConfigService configService) {
         this.name = factionName;
         this.setOwner(owner);
         this.flags = flags;
@@ -106,7 +107,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     /**
      * Set the faction flags. Should only be used for internal use.
      */
-    public void setFlags(Map<String, ConfigurationFlag> flags) {
+    public void setFlags(ConcurrentMap<String, ConfigurationFlag> flags) {
         this.flags = flags;
     }
 

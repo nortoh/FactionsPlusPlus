@@ -11,8 +11,8 @@ import factionsplusplus.models.World;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 import java.util.List;
 
 public interface WorldDao {
@@ -44,7 +44,7 @@ public interface WorldDao {
     """)
     @KeyColumn("name")
     @RegisterFieldMapper(ConfigurationFlag.class)
-    Map<String, ConfigurationFlag> getFlags(UUID uuid);
+    ConcurrentMap<String, ConfigurationFlag> getFlags(UUID uuid);
 
     @SqlUpdate("""
         INSERT INTO world_flags (

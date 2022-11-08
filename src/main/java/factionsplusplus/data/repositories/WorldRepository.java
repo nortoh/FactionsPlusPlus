@@ -6,8 +6,8 @@ import com.google.inject.Inject;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -21,8 +21,8 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class WorldRepository {
-    private Map<UUID, World> worldStore = new ConcurrentHashMap<>();
-    private final Map<String, ConfigurationFlag> defaultFlags = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, World> worldStore = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConfigurationFlag> defaultFlags = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final WorldFactory worldFactory;
@@ -90,7 +90,7 @@ public class WorldRepository {
         return this.get(Bukkit.getWorld(uuid));
     }
 
-    public Map<UUID, World> all() {
+    public ConcurrentMap<UUID, World> all() {
         return this.worldStore;
     }
 
@@ -118,7 +118,7 @@ public class WorldRepository {
             .forEach(world -> this.addAnyMissingFlags(world));
     }
 
-    public Map<String, ConfigurationFlag> getDefaultFlags() {
+    public ConcurrentMap<String, ConfigurationFlag> getDefaultFlags() {
         return this.defaultFlags;
     }
 

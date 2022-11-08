@@ -4,9 +4,9 @@ import com.google.inject.Singleton;
 import com.google.inject.Inject;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.bukkit.block.Block;
 
@@ -17,7 +17,7 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class GateRepository {
-    private Map<UUID, Gate> gateStore = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, Gate> gateStore = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
 

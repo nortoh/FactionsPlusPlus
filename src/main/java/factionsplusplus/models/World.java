@@ -2,6 +2,7 @@ package factionsplusplus.models;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -18,7 +19,7 @@ import org.jdbi.v3.core.mapper.reflect.ColumnName;
 public class World implements Identifiable {
     @ColumnName("id")
     private UUID uuid;
-    private Map<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
     private final WorldRepository worldRepository;
 
     @AssistedInject
@@ -59,7 +60,7 @@ public class World implements Identifiable {
         return this.flags.get(flagName);
     }
 
-    public void setFlags(Map<String, ConfigurationFlag> flags) {
+    public void setFlags(ConcurrentMap<String, ConfigurationFlag> flags) {
         this.flags = flags;
     }
 

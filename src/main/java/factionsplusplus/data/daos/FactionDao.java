@@ -17,8 +17,8 @@ import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -87,7 +87,7 @@ public interface FactionDao {
     """)
     @KeyColumn("id")
     @RegisterFieldMapper(GroupMember.class)
-    Map<UUID, GroupMember> getMembers(UUID uuid);
+    ConcurrentMap<UUID, GroupMember> getMembers(UUID uuid);
 
     // RELATIONS
 
@@ -106,7 +106,7 @@ public interface FactionDao {
     """)
     @KeyColumn("target_faction")
     @ValueColumn("type")
-    Map<UUID, FactionRelationType> getRelations(UUID uuid);
+    ConcurrentMap<UUID, FactionRelationType> getRelations(UUID uuid);
 
     // INVITES
     @SqlUpdate("INSERT IGNORE INTO faction_invites (faction_id, player_id) VALUES (?, ?)")
@@ -133,7 +133,7 @@ public interface FactionDao {
     """)
     @KeyColumn("name")
     @RegisterFieldMapper(ConfigurationFlag.class)
-    Map<String, ConfigurationFlag> getFlags(UUID uuid);
+    ConcurrentMap<String, ConfigurationFlag> getFlags(UUID uuid);
 
     @SqlUpdate("""
         INSERT INTO faction_flags (
@@ -179,14 +179,14 @@ public interface FactionDao {
     """)
     @KeyColumn("id")
     @ValueColumn("text")
-    Map<UUID, String> getLaws(UUID uuid);
+    ConcurrentMap<UUID, String> getLaws(UUID uuid);
 
     // BASES
 
     @SqlQuery("SELECT * FROM faction_bases WHERE faction_id = ?")
     @KeyColumn("name")
     @RegisterFieldMapper(FactionBase.class)
-    Map<String, FactionBase> getBases(UUID uuid);
+    ConcurrentMap<String, FactionBase> getBases(UUID uuid);
 
     @SqlUpdate("""
         INSERT INTO faction_bases (
