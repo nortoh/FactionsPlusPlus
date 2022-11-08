@@ -5,8 +5,6 @@ import com.google.inject.Singleton;
 
 import factionsplusplus.utils.Pair;
 import factionsplusplus.utils.PlayerUtils;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentLike;
 import factionsplusplus.utils.Comparators;
 import factionsplusplus.data.factories.FactionFactory;
 import factionsplusplus.data.repositories.ClaimedChunkRepository;
@@ -160,40 +158,39 @@ public class FactionService {
             .collect(Collectors.joining(", "));
     }
     
-    // TODO: new messaging api
-    public List<ComponentLike> generateFactionInfo(Faction faction) {
-        List<ComponentLike> factionInfo = new ArrayList<>();
+    public String generateFactionInfo(Faction faction) {
+        List<String> factionInfo = new ArrayList<>();
         // Header
-        factionInfo.add(Component.translatable("FactionInfo.Title"));
+        factionInfo.add("<color:light_purple><lang:FactionInfo.Title>");
         // Name
-        factionInfo.add(Component.translatable("FactionInfo.Name").args(Component.text(faction.getName())));
+        factionInfo.add(String.format("<color:gold><lang:FactionInfo.Name:'<color:white>%s'>", faction.getName()));
         // Owner
-        factionInfo.add(Component.translatable("FactionInfo.Owner").args(Component.text(PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName())));
+        factionInfo.add(String.format("<color:gold><lang:FactionInfo.Owner:'<color:white>%s'>", PlayerUtils.parseAsPlayer(faction.getOwner().getUUID()).getName()));
         // Description (if applicable)
-        if (faction.getDescription() != null) factionInfo.add(Component.translatable("FactionInfo.Description").args(Component.text(faction.getDescription())));
+        if (faction.getDescription() != null) factionInfo.add(String.format("<color:gold><lang:FactionInfo.Description:'<color:white>%s'>", faction.getDescription()));
         // Population
-        factionInfo.add(Component.translatable("FactionInfo.Population").args(Component.text(faction.getMemberCount())));
+        factionInfo.add(String.format("<color:gold><lang:FactionInfo.Population:'<color:white>%s'>", faction.getMemberCount()));
         // Allies (if applicable)
-        if (! faction.getAllies().isEmpty()) factionInfo.add(Component.translatable("FactionInfo.Allies").args(Component.text(this.getCommaSeparatedFactionNames(faction.getAllies()))));
+        if (! faction.getAllies().isEmpty()) factionInfo.add(String.format("<color:gold><lang:FactionInfo.Allies:'<color:white>%s'>", this.getCommaSeparatedFactionNames(faction.getAllies())));
         // Enemies (if applicable)
-        if (! faction.getEnemies().isEmpty()) factionInfo.add(Component.translatable("FactionInfo.Enemies").args(Component.text(this.getCommaSeparatedFactionNames(faction.getEnemies()))));
+        if (! faction.getEnemies().isEmpty()) factionInfo.add(String.format("<color:gold><lang:FactionInfo.Enemies:'<color:white>%s'>", this.getCommaSeparatedFactionNames(faction.getEnemies())));
         // Power Level
         final int claimedChunks = this.claimedChunkRepository.getAllForFaction(faction).size();
         final double cumulativePowerLevel = faction.getCumulativePowerLevel();
-        factionInfo.add(Component.translatable("FactionInfo.PowerLevel").args(Component.text(cumulativePowerLevel), Component.text(faction.getMaximumCumulativePowerLevel())));
+        factionInfo.add(String.format("<color:gold><lang:FactionInfo.PowerLevel:'<color:white>%s':'<color:white>%s':'<color:white>%s'>", cumulativePowerLevel, "/", faction.getMaximumCumulativePowerLevel()));
         // Demesne Size
-        factionInfo.add(Component.translatable("FactionInfo.DemesneSize").args(Component.text(claimedChunks), Component.text(cumulativePowerLevel)));
+        factionInfo.add(String.format("<color:gold><lang:FactionInfo.DemesneSize:'<color:white>%s':'<color:white>%s':'<color:white>%s'>", claimedChunks, "/", cumulativePowerLevel));
         // Bonus Power (if applicable)
-        if (faction.getBonusPower() != 0) factionInfo.add(Component.translatable("FactionInfo.BonusPower").args(Component.text(faction.getBonusPower())));
+        if (faction.getBonusPower() != 0) factionInfo.add(String.format("<color:gold><lang:FactionInfo.BonusPower:'<color:white>%s'>", faction.getBonusPower()));
         // Liege (if applicable)
-        if (faction.hasLiege()) factionInfo.add(Component.translatable("FactionInfo.Liege").args(Component.text(faction.getLiege().getName())));
+        if (faction.hasLiege()) factionInfo.add(String.format("<color:gold><lang:FactionInfo.Liege:'<color:white>%s'>", faction.getLiege().getName()));
         // Vassals (if applicable)
         if (faction.isLiege()) {
             double vassalContribution = faction.calculateCumulativePowerLevelWithVassalContribution() - faction.calculateCumulativePowerLevelWithoutVassalContribution();
             if (faction.isWeakened()) vassalContribution = 0;
-            factionInfo.add(Component.translatable("FactionInfo.Vassals").args(Component.text(this.getCommaSeparatedFactionNames(faction.getVassals()))));
-            factionInfo.add(Component.translatable("FactionInfo.VassalContribution").args(Component.text(vassalContribution)));
+            factionInfo.add(String.format("<color:gold><lang:FactionInfo.Vassals:'<color:white>%s'>", this.getCommaSeparatedFactionNames(faction.getVassals())));
+            factionInfo.add(String.format("<color:gold><lang:FactionInfo.VassalContribution:'<color:white>%s'>", vassalContribution));
         }
-        return factionInfo;
+        return factionInfo.stream().collect(Collectors.joining("<newline>"));
     }
 }
