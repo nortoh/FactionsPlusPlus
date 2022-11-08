@@ -24,6 +24,8 @@ import factionsplusplus.data.repositories.*;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.LockedBlock;
 import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.Poll;
+import factionsplusplus.models.PollOption;
 import factionsplusplus.models.World;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Command;
@@ -43,6 +45,8 @@ public class DataService {
     private final PlayerRecordRepository playerRecordRepository;
     private final CommandRepository commandRepository;
     private final ConfigOptionRepository configOptionRepository;
+    private final PollRepository pollRepository;
+    private final PollOptionRepository pollOptionRepository;
     private final WarRepository warRepository;
     private final WorldRepository worldRepository;
     private final GateRepository gateRepository;
@@ -61,7 +65,9 @@ public class DataService {
         WarRepository warRepository,
         WorldRepository worldRepository,
         ConfigService configService,
-        GateRepository gateRepository
+        GateRepository gateRepository,
+        PollRepository pollRepository,
+        PollOptionRepository pollOptionRepository
     ) throws SQLException {
         this.dataProviderService = dataProviderService;
         this.factionRepository = factionRepository;
@@ -74,6 +80,8 @@ public class DataService {
         this.worldRepository = worldRepository;
         this.configService = configService;
         this.gateRepository = gateRepository;
+        this.pollRepository = pollRepository;
+        this.pollOptionRepository = pollOptionRepository;
         this.persistentData = this.dataProviderService.getPersistentData();
         this.initializePersistentData();
     }
@@ -209,7 +217,7 @@ public class DataService {
                     FOREIGN KEY(world_id) REFERENCES worlds(id) ON DELETE CASCADE,
                     FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE,
                     FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
-                )        
+                )
             """);
             handle.execute("""
                 CREATE TABLE IF NOT EXISTS locked_block_access_list (
@@ -218,7 +226,7 @@ public class DataService {
                     PRIMARY KEY (locked_block_id, player_id),
                     FOREIGN KEY(locked_block_id) REFERENCES locked_blocks(id) ON DELETE CASCADE,
                     FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE CASCADE
-                )        
+                )
             """);
             handle.execute("""
                 CREATE TABLE IF NOT EXISTS faction_gates (
@@ -267,6 +275,38 @@ public class DataService {
                     FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE
                 )
             """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS polls (
+                    id BINARY(16) NOT NULL,
+                    faction_id BINARY(16) NOT NULL,
+                    question TEXT NOT NULL,
+                    choices_allowed TINYINT NOT NULL DEFAULT 1,
+                    created_at BINARY(16),
+                    PRIMARY KEY(id),
+                    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+                    FOREIGN KEY(created_by) REFERENCES players(id) ON DELETE SET NULL
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS poll_options (
+                    id UNSIGNED INT NOT NULL AUTO_INCREMENT,
+                    poll_id BINARY(16) NOT NULL,
+                    text TEXT NOT NULL,
+                    PRIMARY KEY(id),
+                    FORIEGN KEY(poll_id) REFERENCES polls(id) ON DELETE CASCADE
+                )
+            """);
+            handle.execute("""
+                CREATE TABLE IF NOT EXISTS poll_votes (
+                    id BINARY(16) NOT NULL,
+                    player_id BINARY(16) NOT NULL,
+                    poll_id BINARY(15) NOT NULL,
+                    option_id UNSIGNED INT NOT NULL,
+                    PRIMARY KEY(player_id, poll_id, option_id),
+                    FOREIGN KEY(player_id) REFERENCES players(id) ON DELETE SET NULL,
+                    FOREIGN KEY(option_id) REFERENCES poll_options(id) ON DELETE CASCADE
+                )
+            """);
         });
     }
 
@@ -291,6 +331,7 @@ public class DataService {
         this.lockedBlockRepository.load();
         this.gateRepository.load();
         this.warRepository.load();
+        this.pollRepository.load();
     }
 
     private void addDefaultConfigurationFlag(ConfigurationFlag flag, FlagType flagScope) {
@@ -388,7 +429,7 @@ public class DataService {
     }
 
     public void addFactionInvite(Faction faction, OfflinePlayer player) {
-        this.factionRepository.getDAO().insertInvite(faction.getUUID(), player.getUniqueId());
+    this.factionRepository.getDAO().insertInvite(faction.getUUID(), player.getUniqueId());
     }
 
     public void removeFactionInvite(Faction faction, OfflinePlayer player) {
@@ -599,5 +640,21 @@ public class DataService {
 
     public GateRepository getGateRepository() {
         return this.gateRepository;
+    }
+
+    public PollRepository getPollRepository() {
+        return this.pollRepository;
+    }
+
+    public Poll getPoll(UUID uuid) {
+        return this.pollRepository.get(uuid);
+    }
+
+    public PollOptionRepository getPollOptionRepository() {
+        return this.pollOptionRepository;
+    }
+
+    public PollOption getPollOption(UUID uuid) {
+        return this.pollOptionRepository.get(uuid);
     }
 }
