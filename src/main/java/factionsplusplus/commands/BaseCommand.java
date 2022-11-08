@@ -150,9 +150,17 @@ public class BaseCommand extends Command {
                             "name",
                             new ArgumentBuilder()
                                 .setDescription("the name of the base to teleport to")
-                                .expectsFactionBaseName()
-                                .consumesAllLaterArguments()
+                                .expectsString()
+                                .expectsDoubleQuotes()
                                 .isRequired()
+                        )
+                        .addArgument(
+                            "faction name",
+                            new ArgumentBuilder()
+                                .setDescription("the faction who owns the base you wish to teleport to")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isOptional()
                         )
                 )
         );
@@ -268,9 +276,10 @@ public class BaseCommand extends Command {
     }
 
     public void teleportCommand(CommandContext context) {
-        // TODO: add ability for allies to go to an allied factions bases if permissable, probably adding an optional faction param 
-        FactionBase base = context.getFactionBaseArgument("name");
-        if (base == null) {
+        final String baseName = context.getStringArgument("name");
+        Faction baseFaction = context.getFactionArgument("faction name");
+        FactionBase base = null;
+        if (baseName == null && baseFaction == null) {
             // must be a fall through, try to final a default base
             base = context.getExecutorsFaction().getDefaultBase();
             if (base == null) {
@@ -278,20 +287,30 @@ public class BaseCommand extends Command {
                 return;
             }
         }
-        // Check if they have permissions
-        if (
-            (
-                ! base.shouldAllowAllFactionMembers() && 
-                ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)
-            )
-            ||
-            (
-                base.shouldAllowAllies() &&
-                context.getExecutorsFaction().isAlly(null) // TODO: this should be replaced when we support a target faction
-            )
-        ) {
-            context.error("Error.Base.NotAccessible", base.getName());
+        if (base == null) base = baseFaction != null ? baseFaction.getBase(baseName) : context.getExecutorsFaction().getBase(baseName);
+        if (base == null) {
+            context.error("Error.Base.NotFound");
             return;
+        }
+        // Check if they have permissions if they are a member of the faction who owns this base
+        if (baseFaction != null || context.getExecutorsFaction().getUUID().equals(base.getFaction())) {
+            if (! base.shouldAllowAllFactionMembers() && ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
+                context.error("Error.Base.NotAccessible", base.getName());
+                return;
+            }
+        }
+
+        // Check if we're targeting a base of a potential ally
+        if (baseFaction != null && ! context.getExecutorsFaction().getUUID().equals(base.getFaction())) {
+            if (
+                (
+                    base.shouldAllowAllies() &&
+                    ! baseFaction.isAlly(context.getExecutorsFaction().getUUID())
+                ) || ! base.shouldAllowAllies()
+            ) {
+                context.error("Error.Base.NotAccessible.Remote", baseFaction.getName(), base.getName());
+                return;
+            }
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), base.getBukkitLocation());
     }
