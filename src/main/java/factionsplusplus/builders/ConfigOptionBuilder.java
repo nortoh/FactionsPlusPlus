@@ -10,6 +10,7 @@ public class ConfigOptionBuilder {
     public Object defaultValue = null;
     public ConfigOptionType type = ConfigOptionType.String;
     public boolean userSettable = true;
+    public boolean hidden = false;
 
     public ConfigOptionBuilder withName(String name) {
         this.name = name;
@@ -36,6 +37,11 @@ public class ConfigOptionBuilder {
         return this;
     }
 
+    public ConfigOptionBuilder isHidden() {
+        this.hidden = true;
+        return this;
+    }
+
     public ConfigOptionBuilder isBoolean() {
         this.type = ConfigOptionType.Boolean;
         return this;
@@ -52,6 +58,6 @@ public class ConfigOptionBuilder {
     }
 
     public ConfigOption create() {
-        return new ConfigOption(name, description, type, defaultValue, userSettable);
+        return new ConfigOption(name, description, type, defaultValue, userSettable, hidden);
     }
 }
