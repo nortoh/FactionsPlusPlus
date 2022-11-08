@@ -12,7 +12,6 @@ import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigurationFlag;
 import factionsplusplus.services.ConfigService;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 import java.util.stream.Collectors;
 import factionsplusplus.builders.CommandBuilder;
@@ -85,7 +84,6 @@ public class FlagsCommand extends Command {
         });
     }
 
-    // TODO: new messaging api
     public void showCommand(CommandContext context) {
         String flagOutput = context.getExecutorsFaction().getFlags()
             .keySet()
@@ -96,8 +94,8 @@ public class FlagsCommand extends Command {
                 else if ((! this.configService.getBoolean("chat.global.prependFactionPrefix") || ! this.configService.getBoolean("faction.canSetPrefixColor")) && flagKey.equalsIgnoreCase("prefixColor")) return false;
                 return true;
             })
-            .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsFaction().getFlags().get(flagKey).toString()))
-            .collect(Collectors.joining(", "));
-        context.reply(ChatColor.AQUA + "" + flagOutput);
+            .map(flagKey -> String.format("<color:gold>%s:</color:gold> <color:aqua>%s</color:aqua>", flagKey, context.getExecutorsFaction().getFlags().get(flagKey).toString()))
+            .collect(Collectors.joining("\n"));
+        context.replyWithMiniMessage(flagOutput);
     }
 }
