@@ -247,8 +247,7 @@ public class BaseCommand extends Command {
             context.error("Error.Base.NoneAccessible");
             return;
         }
-        // TODO: new messaging api
-        context.replyWith("BaseList.Title");
+        context.replyWithMiniMessage("<color:light_purple>BaseList.Title");
         // TODO: if they have access to another factions bases, include in this list
         context.getExecutorsFaction().getBases().values().stream()
             .forEach(base -> {
