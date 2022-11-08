@@ -183,7 +183,6 @@ public class GateCommand extends Command {
             context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
         String gateName = context.getStringArgument("gate name");
-        // TODO: new messaging api
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
@@ -192,7 +191,6 @@ public class GateCommand extends Command {
                 new Gate(gateName)
             )
         );
-        // TODO: new messaging api
-        context.replyWith("CreatingGateClickWithHoe");
+        context.replyWithMiniMessage("<color:yellow><lang:CommandResponse.Gate.Create:'<lang:item.minecraft.golden_hoe>'>");
     }
 }
