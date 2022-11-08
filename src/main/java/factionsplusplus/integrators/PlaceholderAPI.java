@@ -11,7 +11,6 @@ import factionsplusplus.FactionsPlusPlus;
 import factionsplusplus.models.ClaimedChunk;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.FPPPlayer;
-import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.services.LocaleService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -24,19 +23,16 @@ import org.jetbrains.annotations.NotNull;
 @Singleton
 public class PlaceholderAPI extends PlaceholderExpansion {
     private final FactionsPlusPlus factionsPlusPlus;
-    private final ConfigService configService;
     private final DataService dataService;
     private final LocaleService localeService;
 
     @Inject
     public PlaceholderAPI(
         FactionsPlusPlus factionsPlusPlus,
-        ConfigService configService,
         DataService dataService,
         LocaleService localeService
     ) {
         this.factionsPlusPlus = factionsPlusPlus;
-        this.configService = configService;
         this.dataService = dataService;
         this.localeService = localeService;
     }
@@ -77,7 +73,7 @@ public class PlaceholderAPI extends PlaceholderExpansion {
 
         // Prerequisites.
         if (id.startsWith("faction_") && ! hasFaction && ! id.equalsIgnoreCase("faction_at_location")) {
-            return configService.getString("factionless"); // We don't want Faction-Specific Placeholders to return if they are Factionless!
+            return this.localeService.get("Generic.Factionless"); // We don't want Faction-Specific Placeholders to return if they are Factionless!
         }
 
         switch (id.toLowerCase()) {
