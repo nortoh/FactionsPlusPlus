@@ -1,3 +1,30 @@
+system:
+  version: v1.0.0-SNAPSHOT
+  language: en_US
+  debugMode: false
+  secondsBeforeInitialAutosave: 3600
+  secondsBetweenAutosaves: 3600
+  database:
+    password: ''
+    name: fpp
+    flatfile: true
+    username: ''
+    host: 127.0.0.1
+pvp:
+  friendlyFireConfigurationEnabled: true
+  requiresWar: true
+world:
+  default:
+    flags:
+      allowClaims: true
+      enabled: true
+chat:
+  faction:
+    color: gold
+    showPrefixes: false
+    sharedInVassalageTrees: false
+  global:
+    prependFactionPrefix: true
 player:
   power:
     initial: 5.0
@@ -62,30 +89,3 @@ faction:
       allowFriendlyFire: true
       territoryIndicatorColor: white
       prefixColor: white
-system:
-  version: v1.0.0-SNAPSHOT
-  language: en_US
-  debugMode: false
-  secondsBeforeInitialAutosave: 3600
-  secondsBetweenAutosaves: 3600
-  database:
-    password: ''
-    name: fpp
-    flatfile: true
-    username: ''
-    host: 127.0.0.1
-chat:
-  faction:
-    color: gold
-    showPrefixes: false
-    sharedInVassalageTrees: false
-  global:
-    prependFactionPrefix: true
-pvp:
-  friendlyFireConfigurationEnabled: true
-  requiresWar: true
-world:
-  default:
-    flags:
-      allowClaims: true
-      enabled: true
