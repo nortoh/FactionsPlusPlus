@@ -89,6 +89,10 @@ public class ConfigCommand extends Command {
 
     public void getCommand(CommandContext context) {
         final ConfigOption configOption = context.getConfigOptionArgument("config option");
+        if (configOption.isHidden()) {
+            context.error("Error.Setting.NotUserSettable", configOption.getName());
+            return;
+        }
         context.getExecutorsAudience().sendMessage(Component.translatable("ConfigurationOption.Title").args(Component.text(configOption.getName())).color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD));
         context.replyWith("ConfigurationOption.Description", configOption.getDescription());
         context.replyWith("ConfigurationOption.Default", configOption.getDefaultValue());
