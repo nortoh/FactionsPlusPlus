@@ -1,7 +1,91 @@
-database:
-  host: "127.0.0.1"
-  port: 3306
-  username: "root"
-  password: ""
-  name: "fpp"
-  flatfile: true
+player:
+  power:
+    initial: 5.0
+    maximum: 20.0
+    assignNewPlayersToRandomFaction: false
+    teleportDelay: 3
+    amountGainedOnKill: 1.0
+    officerMultiplier: 1.5
+    ownerMultiplier: 2.0
+    decreaseForInactivity:
+      enabled: true
+      frequency: 1440
+      amount: 1.0
+      minimumMinutes: 20160
+    onlineIncrease:
+      delay: 30
+      frequency: 60
+      amount: 2.0
+    lossOnDeath:
+      enabled: true
+      amount: 1.0
+faction:
+  disbandFactionsWithZeroPower: false
+  canSetPrefixColor: true
+  officerPerMemberCount: 5
+  allowNeutrality: false
+  vassalContributionPercentage: 0.75
+  limitLandByPower: true
+  allowBonusPower: true
+  limits:
+    name:
+      length: 20
+    base:
+      count: 3
+    claim:
+      radius: 3
+    gate:
+      area: 64
+      count: 5
+  protections:
+    laddersPlaceableByEnemies: true
+    preventMobSpawnInFactionTerritory: true
+    nonMembersCanInteractWithDoors: false
+    interactions:
+      enabled: true
+    claims:
+      protectSurroundedChunks: false
+  indicators:
+    title: true
+    actionbar: true
+  default:
+    flags:
+      acceptBonusPower: true
+      alliesCanInteractWithLand: false
+      dynmapTerritoryColor: '#ff0000'
+      mustBeOfficerToInviteOthers: true
+      mustBeOfficerToManageLand: true
+      neutral: false
+      enableMobProtection: true
+      public: false
+      vassalageTreeCanInteractWithLand: false
+      allowFriendlyFire: true
+      territoryIndicatorColor: white
+      prefixColor: white
+system:
+  version: v1.0.0-SNAPSHOT
+  language: en_US
+  debugMode: false
+  secondsBeforeInitialAutosave: 3600
+  secondsBetweenAutosaves: 3600
+  database:
+    password: ''
+    name: fpp
+    flatfile: true
+    username: ''
+    host: 127.0.0.1
+chat:
+  faction:
+    color: gold
+    showPrefixes: false
+    sharedInVassalageTrees: false
+  global:
+    prependFactionPrefix: true
+pvp:
+  friendlyFireConfigurationEnabled: true
+  requiresWar: true
+world:
+  default:
+    flags:
+      allowClaims: true
+      enabled: true
