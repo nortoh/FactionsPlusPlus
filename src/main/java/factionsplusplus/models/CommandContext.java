@@ -319,6 +319,10 @@ public class CommandContext {
         this.cancellable(localizationKey, commandToRun, new Object[]{});
     }
 
+    public String getLocalizedString(String localizationKey) {
+        return this.localeService.get(localizationKey);
+    }
+
     public String getLocalizedString(String localizationKey, Object... arguments) {
         return this.localeService.get(localizationKey, arguments);
     }
