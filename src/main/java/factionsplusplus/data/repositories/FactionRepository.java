@@ -298,7 +298,7 @@ public class FactionRepository {
     public void addFlagToMissingFactions(String flagName) {
         // get the flag from defaultFlags
         ConfigurationFlag flag = this.defaultFlags.get(flagName);
-        // TODO: error if null
+        if (flag == null) return;
         for (Faction faction : this.factionStore.values()) {
             if (! faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
         }
