@@ -153,7 +153,7 @@ public class FactionsPlusPlus extends JavaPlugin {
      */
     public void initializeTranslations() {
         this.localeService.createLanguageFile();
-        GlobalTranslator.get().addSource(this.localeService.getRegistry());
+        GlobalTranslator.translator().addSource(this.localeService.getRegistry());
     }
 
     /**
