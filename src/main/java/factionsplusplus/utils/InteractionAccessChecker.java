@@ -34,18 +34,22 @@ public class InteractionAccessChecker {
     }
 
     public boolean shouldEventBeCancelled(ClaimedChunk claimedChunk, Player player) {
+        // if faction protections are disabled, don't cancel
         if (this.factionsProtectionsNotEnabled()) {
             return false;
         }
 
+        // if claimed chunk is null (doesn't exist), don't cancel
         if (claimedChunk == null) {
             return false;
         }
 
+        // if player is admin bypassing, don't cancel
         if (this.isPlayerBypassing(player)) {
             return false;
         }
 
+        // if player is not part of a faction, return
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {
             return true;
