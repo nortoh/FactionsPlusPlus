@@ -49,8 +49,8 @@ public class BlockUtils {
         return Arrays.asList(types).contains(BlockUtils.toGenericType(block));
     }
 
-    // TODO: probably throw an error here if something that isn't a chest is sent here
     public static Boolean isDoubleChest(Block block) {
+        if (block.getBlockData() instanceof Chest) return null;
         Chest chestData = (Chest)block.getBlockData();
         return ! chestData.getType().equals(Chest.Type.SINGLE);
     }
@@ -63,9 +63,8 @@ public class BlockUtils {
         return toGenericType(block) == GenericBlockType.Door;
     }
 
-
-    // TODO: probably throw an error here if something that isn't a chest is sent here
     public static Block[] getDoubleChestSides(Block block) {
+        if (block.getBlockData() instanceof Chest) return null;
         org.bukkit.block.DoubleChest doubleChest = (org.bukkit.block.DoubleChest)((org.bukkit.block.Chest) block.getState()).getInventory().getHolder();
         return new Block[]{
             ((org.bukkit.block.Chest) doubleChest.getLeftSide()).getBlock(),
@@ -73,8 +72,8 @@ public class BlockUtils {
         };
     }
 
-    // TODO: probably throw an error here if something that isn't a door is sent here
     public static Block[] getDoorBlocks(Block block) {
+        if (block.getBlockData() instanceof Door) return null;
         Door doorData = (Door)block.getBlockData();
         Block[] blocks = new Block[]{
             block,
