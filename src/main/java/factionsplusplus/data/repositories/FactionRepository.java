@@ -112,7 +112,7 @@ public class FactionRepository {
 
     public void persistBase(FactionBase base) {
         this.getDAO().upsertBase(base);
-    } 
+    }
 
     public void deleteBase(FactionBase base) {
         this.getDAO().deleteBase(base);
