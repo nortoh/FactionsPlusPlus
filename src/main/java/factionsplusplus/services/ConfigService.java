@@ -384,10 +384,10 @@ public class ConfigService {
     }
 
     public void saveConfigDefaults() {
-        this.saveConfigDefaults(false, false);
+        this.saveConfigDefaults( false);
     }
 
-    public void saveConfigDefaults(Boolean onlySetIfMissing, Boolean deleteOldOptions) {
+    public void saveConfigDefaults(boolean deleteOldOptions) {
         for (ConfigOption configOption : this.configOptionRepository.all().values()) {
             // Special case for version, because we always want to set to the new version
             if (configOption.getName().equals("system.version")) getConfig().set("system.version", this.factionsPlusPlus.get().getVersion());
@@ -409,7 +409,6 @@ public class ConfigService {
                     optionExists = getConfig().isSet(configOption.getName());
                     break;
             }
-            // TODO: implemenent onlySetIfMissing
             if (! optionExists) getConfig().set(configOption.getName(), configOption.getDefaultValue());
         }
         if (deleteOldOptions) this.deleteOldConfigOptionsIfPresent();
@@ -418,7 +417,7 @@ public class ConfigService {
     }
 
     public void handleVersionMismatch() {
-        this.saveConfigDefaults(true, true);
+        this.saveConfigDefaults(true);
     }
     
     private void deleteOldConfigOptionsIfPresent() {
