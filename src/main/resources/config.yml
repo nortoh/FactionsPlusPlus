@@ -13,6 +13,8 @@ system:
 pvp:
   friendlyFireConfigurationEnabled: true
   requiresWar: true
+duel:
+  maximumChallengeAcceptTimeout: 120
 world:
   default:
     flags:

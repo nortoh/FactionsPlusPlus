@@ -13,6 +13,8 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Duel;
 import factionsplusplus.models.Duel.DuelState;
+import factionsplusplus.services.ConfigService;
+
 import org.bukkit.entity.Player;
 
 import factionsplusplus.builders.CommandBuilder;
@@ -23,11 +25,13 @@ import factionsplusplus.builders.ArgumentBuilder;
 public class DuelCommand extends Command {
     private final EphemeralData ephemeralData;
     private final DuelFactory duelFactory;
+    private final ConfigService configService;
 
     @Inject
     public DuelCommand(
         EphemeralData ephemeralData,
-        DuelFactory duelFactory
+        DuelFactory duelFactory,
+        ConfigService configService
     ) {
         super(
             new CommandBuilder()
@@ -83,6 +87,7 @@ public class DuelCommand extends Command {
         );
         this.ephemeralData = ephemeralData;
         this.duelFactory = duelFactory;
+        this.configService = configService;
     }
 
 
@@ -150,7 +155,7 @@ public class DuelCommand extends Command {
         }
         Integer timeLimit = context.getIntegerArgument("time limit");
         if (timeLimit == null) timeLimit = 120;
-        timeLimit = Math.min(timeLimit, 120); // TODO: make maximum time configurable
+        timeLimit = Math.min(timeLimit, this.configService.getInt("duel.maximumChallengeAcceptTimeout"));
         // Invite to duel
         this.ephemeralData.getDuelingPlayers().add(this.duelFactory.create(player, target, timeLimit));
         context.alertPlayer(target, "PlayerNotice.Duel.Challenged", player.getName());

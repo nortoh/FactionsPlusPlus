@@ -370,7 +370,12 @@ public class ConfigService {
                 .withName("world.default.flags.allowClaims")
                 .withDescription("If, by default, claims should be allowed in new worlds")
                 .setDefaultValue(true)
-                .isBoolean()
+                .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("duel.maximumChallengeAcceptTimeout")
+                .withDescription("The maximum amount of time, in seconds, to allow a duel challenge to go unanswered")
+                .setDefaultValue(120)
+                .isInteger()
         };
         for (ConfigOptionBuilder option : configOptions) this.configOptionRepository.add(option.create());
         String[] deprecatedOptionNames = {
