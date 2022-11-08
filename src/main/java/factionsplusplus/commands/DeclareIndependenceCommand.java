@@ -65,7 +65,7 @@ public class DeclareIndependenceCommand extends Command {
         final Faction liege = faction.getLiege();
 
         // Does declaring independence mean war?
-        if (! this.configService.getBoolean("allowNeutrality") || (! (faction.getFlag("neutral").toBoolean()) && ! (liege.getFlag("neutral").toBoolean()))) {
+        if (! this.configService.getBoolean("faction.allowNeutrality") || (! (faction.getFlag("neutral").toBoolean()) && ! (liege.getFlag("neutral").toBoolean()))) {
             // make enemies if (1) neutrality is disabled or (2) declaring faction is not neutral and liege is not neutral
             FactionWarStartEvent warStartEvent = new FactionWarStartEvent(faction, liege, player);
             Bukkit.getPluginManager().callEvent(warStartEvent);

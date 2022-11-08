@@ -163,7 +163,7 @@ public class BaseCommand extends Command {
     }
 
     public void createCommand(CommandContext context) {
-        if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("factionMaxNumberBases")) {
+        if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("faction.limits.base.count")) {
             context.error("Error.Base.MaximumReached");
             return;
         }

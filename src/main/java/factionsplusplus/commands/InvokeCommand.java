@@ -63,7 +63,7 @@ public class InvokeCommand extends Command {
             context.error("Error.Faction.NotAllyOrVassal", invokee.getName());
             return;
         }
-        if (this.configService.getBoolean("allowNeutrality") && (invokee.getFlag("neutral").toBoolean())) {
+        if (this.configService.getBoolean("faction.allowNeutrality") && (invokee.getFlag("neutral").toBoolean())) {
             context.error("Error.WarCall.Neutral");
             return;
         }

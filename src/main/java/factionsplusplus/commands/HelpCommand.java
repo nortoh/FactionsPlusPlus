@@ -90,7 +90,9 @@ public class HelpCommand extends Command {
         context.replyWith("Help.ListTitle", requestedPage+1, partitionedList.size());
         partitionedList.get(requestedPage).forEach(line -> {
             context.getExecutorsAudience().sendMessage(
-                Component.text(String.format("/mf %s %s - %s", line.getName(), line.buildSyntax(), line.getDescription()))
+                Component.text(String.format("/mf %s %s: ", line.getName(), line.buildSyntax())).color(NamedTextColor.GOLD).append(
+                    Component.text(line.getDescription()).color(NamedTextColor.WHITE)
+                )
             );
         });
     }

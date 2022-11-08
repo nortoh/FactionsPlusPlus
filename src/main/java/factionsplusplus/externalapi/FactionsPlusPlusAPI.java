@@ -101,7 +101,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public boolean isPrefixesFeatureEnabled() {
-        return this.configService.getBoolean("playersChatWithPrefixes");
+        return this.configService.getBoolean("chat.global.prependFactionPrefix");
     }
 
     public boolean isChunkClaimed(Chunk chunk) {

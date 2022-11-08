@@ -65,7 +65,7 @@ public class ClaimService {
      * @param claimantsFaction The claimant's faction.
      */
     public void radiusClaimAtLocation(int depth, Player claimant, Location location, Faction claimantsFaction) {
-        int maxClaimRadius = this.configService.getInt("maxClaimRadius");
+        int maxClaimRadius = this.configService.getInt("faction.limits.claim.radius");
 
         FPPPlayer member = this.dataService.getPlayer(claimant.getUniqueId());
 
@@ -227,7 +227,7 @@ public class ClaimService {
         if (! this.dataService.isPlayerInFaction(event.getPlayer()) && ! this.dataService.getPlayer(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
-            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
+            if (this.configService.getBoolean("faction.protections.nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -246,7 +246,7 @@ public class ClaimService {
         if (! (playersFaction.getUUID().equals(claimedChunk.getHolder())) && ! this.dataService.getPlayer(event.getPlayer().getUniqueId()).isAdminBypassing()) {
 
             Block block = event.getClickedBlock();
-            if (this.configService.getBoolean("nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
+            if (this.configService.getBoolean("faction.protections.nonMembersCanInteractWithDoors") && block != null && BlockUtils.isDoor(block)) {
                 // allow non-faction members to interact with doors
                 return;
             }
@@ -256,7 +256,7 @@ public class ClaimService {
                 // if not interacting with chest
                 if (this.canBlockBeInteractedWith(event)) {
                     // allow placing ladders
-                    if (this.configService.getBoolean("laddersPlaceableInEnemyFactionTerritory")) {
+                    if (this.configService.getBoolean("faction.protections.laddersPlaceableByEnemies")) {
                         if (event.getMaterial() == LADDER) {
                             return;
                         }
@@ -301,7 +301,7 @@ public class ClaimService {
         FPPPlayer member = this.dataService.getPlayer(claimant.getUniqueId());
 
         // if demesne limit enabled
-        if (this.configService.getBoolean("limitLand")) {
+        if (this.configService.getBoolean("faction.limitLandByPower")) {
             // if at demesne limit
             
             if (! (this.dataService.getClaimedChunksForFaction(claimantsFaction).size() < claimantsFaction.getCumulativePowerLevel())) {
@@ -330,7 +330,7 @@ public class ClaimService {
             }
 
             // surrounded chunk protection check
-            if (this.configService.getBoolean("surroundedChunksProtected")) {
+            if (this.configService.getBoolean("faction.protections.claims.protectSurroundedChunks")) {
                 if (this.isClaimedChunkSurroundedByChunksClaimedBySameFaction(chunk)) {
                     member.error("Error.Conquer.Surrounded", targetFaction.getName());
                     return;

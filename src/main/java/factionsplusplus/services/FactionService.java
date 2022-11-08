@@ -65,7 +65,7 @@ public class FactionService {
     }
 
     public void setBonusPower(Faction faction, int power) {
-        if (! this.configService.getBoolean("bonusPowerEnabled") || ! (faction.getFlag("acceptBonusPower").toBoolean())) {
+        if (! this.configService.getBoolean("faction.allowBonusPower") || ! (faction.getFlag("acceptBonusPower").toBoolean())) {
             return;
         }
         faction.setBonusPower(power);

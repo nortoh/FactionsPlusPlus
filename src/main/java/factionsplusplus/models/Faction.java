@@ -409,7 +409,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return this.getVassals()
             .stream()
             .map(this.dataService::getFaction)
-            .mapToDouble(faction -> faction.getCumulativePowerLevel() * this.configService.getDouble("vassalContributionPercentageMultiplier"))
+            .mapToDouble(faction -> faction.getCumulativePowerLevel() * this.configService.getDouble("faction.vassalContributionPercentage"))
             .sum() + this.calculateCumulativePowerLevelWithoutVassalContribution();
     }
 
@@ -439,7 +439,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     public int calculateMaxOfficers() {
-        return 1 + (this.getMembers().size() / this.configService.getInt("officerPerMemberCount"));
+        return 1 + (this.getMembers().size() / this.configService.getInt("faction.officerPerMemberCount"));
     }
 
 
@@ -463,9 +463,9 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
     }
 
     public Component generateFactionChatComponent(Faction faction, OfflinePlayer player, String message) {
-        final TextColor factionChatColor = StringUtils.parseAsTextColor(this.configService.getString("factionChatColor"));
+        final TextColor factionChatColor = StringUtils.parseAsTextColor(this.configService.getString("chat.faction.color"));
         Component chatComponent = Component.text(player.getName()+":").color(NamedTextColor.WHITE).append(Component.text(" "+message).color(factionChatColor));
-        if (this.configService.getBoolean("showPrefixesInFactionChat")) {
+        if (this.configService.getBoolean("chat.faction.showPrefixes")) {
             final TextColor prefixColor = StringUtils.parseAsTextColor(faction.getFlag("prefixColor").toString());
             chatComponent = Component.text(String.format("[%s] ", faction.getPrefix())).color(prefixColor).append(chatComponent);
         }

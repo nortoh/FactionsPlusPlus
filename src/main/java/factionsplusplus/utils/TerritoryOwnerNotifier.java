@@ -50,15 +50,15 @@ public class TerritoryOwnerNotifier {
     private ChatColor getColor(Faction holder) {
         String territoryAlertColorString;
         if (holder != null) {
-            territoryAlertColorString = holder.getFlag("territoryAlertColor").toString();
+            territoryAlertColorString = holder.getFlag("territoryIndicatorColor").toString();
         } else {
-            territoryAlertColorString = this.configService.getString("territoryAlertColor");
+            territoryAlertColorString = this.configService.getString("faction.defaults.flags.territoryIndicatorColor");
         }
         return StringUtils.parseAsChatColor(territoryAlertColorString);
     }
 
     private void setActionBar(Faction holder, Player player, ChatColor territoryAlertColor, String title) {
-        if (this.configService.getBoolean("territoryIndicatorActionbar")) {
+        if (this.configService.getBoolean("faction.indicators.actionbar")) {
 
             if (holder == null) {
                 this.actionBarService.clearPlayerActionBar(player);
@@ -70,7 +70,7 @@ public class TerritoryOwnerNotifier {
     }
 
     private void sendAlert(Player player, ChatColor territoryAlertColor, String title) {
-        if (this.configService.getBoolean("territoryAlertPopUp")) {
+        if (this.configService.getBoolean("faction.indicators.title")) {
             int fadeIn = 10;
             int stay = 70;
             int fadeOut = 20;

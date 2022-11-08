@@ -56,7 +56,7 @@ public class RenameCommand extends Command {
 
     public void execute(CommandContext context) {
         final String newName = context.getStringArgument("new faction name");
-        if (newName.length() > this.configService.getInt("factionMaxNameLength")) {
+        if (newName.length() > this.configService.getInt("faction.limits.name.length")) {
             context.error("Error.Faction.NameTooLong", newName);
             return;
         }

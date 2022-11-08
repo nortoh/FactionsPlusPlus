@@ -38,7 +38,7 @@ public class DeathHandler implements Listener {
     public void handle(PlayerDeathEvent event) {
         event.getEntity();
         Player player = event.getEntity();
-        if (this.configService.getBoolean("playersLosePowerOnDeath")) {
+        if (this.configService.getBoolean("player.power.lossOnDeath.enabled")) {
             this.decreaseDyingPlayersPower(player);
         }
         if (! this.wasPlayersCauseOfDeathAnotherPlayerKillingThem(player)) {

@@ -91,10 +91,10 @@ public class FlagsCommand extends Command {
             .keySet()
             .stream()
             .filter(flagKey -> {
-                return (
-                    (! this.configService.getBoolean("allowNeutrality") && ! flagKey.equalsIgnoreCase("neutral")) &&
-                    ((! this.configService.getBoolean("playersChatWithPrefixes") || this.configService.getBoolean("factionsCanSetPrefixColors")) && ! flagKey.equalsIgnoreCase("prefixColor"))
-                );
+                if (! this.configService.getBoolean("faction.allowNeutrality") && flagKey.equals("neutral")) return false;
+                else if (! this.configService.getBoolean("pvp.friendlyFireConfigurationEnabled") && flagKey.equals("allowFriendlyFire")) return false;
+                else if ((! this.configService.getBoolean("chat.global.prependFactionPrefix") || ! this.configService.getBoolean("faction.canSetPrefixColor")) && flagKey.equalsIgnoreCase("prefixColor")) return false;
+                return true;
             })
             .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsFaction().getFlags().get(flagKey).toString()))
             .collect(Collectors.joining(", "));

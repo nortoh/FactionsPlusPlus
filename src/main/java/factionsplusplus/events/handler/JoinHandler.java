@@ -114,13 +114,13 @@ public class JoinHandler implements Listener {
     }
 
     private void handleRandomFactionAssignmentIfNecessary(Player player) {
-        if (this.configService.getBoolean("randomFactionAssignment")) {
+        if (this.configService.getBoolean("player.assignNewPlayersToRandomFaction")) {
             this.assignPlayerToRandomFaction(player);
         }
     }
 
     private void createRecordsForPlayer(Player player) {
-        FPPPlayer record = this.playerFactory.create(player.getUniqueId(), 1, this.configService.getDouble("initialPowerLevel"));
+        FPPPlayer record = this.playerFactory.create(player.getUniqueId(), 1, this.configService.getDouble("player.power.initial"));
         this.dataService.getPlayerRepository().create(record);
     }
 
@@ -148,7 +148,7 @@ public class JoinHandler implements Listener {
     }
 
     private void setPlayerActionBarTerritoryInfo(Player player) {
-        if (this.configService.getBoolean("territoryIndicatorActionbar")) {
+        if (this.configService.getBoolean("faction.indicator.actionbar")) {
             ClaimedChunk chunk = this.dataService.getClaimedChunk(player.getLocation().getChunk());
             if (chunk != null) {
                 this.territoryOwnerNotifier.sendPlayerTerritoryAlert(player, this.dataService.getFaction(chunk.getHolder()));
