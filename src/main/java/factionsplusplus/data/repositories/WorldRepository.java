@@ -135,9 +135,4 @@ public class WorldRepository {
         }
         this.getDAO().upsertFlag(world.getUUID(), flag.getName(), flag.getValue());
     }
-
-    // Write to file
-    public void persist() {
-
-    }
 }

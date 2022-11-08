@@ -102,9 +102,4 @@ public class LockedBlockRepository {
     public LockedBlockDao getDAO() {
         return this.dataProviderService.getPersistentData().onDemand(LockedBlockDao.class);
     }
-
-    // Write to file
-    public void persist() {
-
-    }
 }

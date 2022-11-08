@@ -314,9 +314,4 @@ public class FactionRepository {
     public ConcurrentMap<String, ConfigurationFlag> getDefaultFlags() {
         return this.defaultFlags;
     }
-
-    // Write to file
-    public void persist() {
-
-    }
 }
