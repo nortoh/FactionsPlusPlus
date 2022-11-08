@@ -5,7 +5,7 @@ import org.jdbi.v3.sqlobject.config.RegisterFieldMapper;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 
 import factionsplusplus.data.beans.PlayerBean;
-import factionsplusplus.models.PlayerRecord;
+import factionsplusplus.models.FPPPlayer;
 
 import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public interface PlayerDao {
     @SqlUpdate("INSERT IGNORE INTO players (id, power) VALUES (:getPlayerUUID, :getPower)")
-    void insert(@BindMethods PlayerRecord player);
+    void insert(@BindMethods FPPPlayer player);
 
     @SqlUpdate("INSERT IGNORE INTO players (id, power) VALUES (?, ?)")
     void insert(UUID uuid, double initialPower);
@@ -30,9 +30,9 @@ public interface PlayerDao {
             last_logout = :getLastLogout,
             offline_power_lost = :getPowerLost
         WHERE
-            id = :getUUID      
+            id = :getUUID
     """)
-    void update(@BindMethods PlayerRecord player);
+    void update(@BindMethods FPPPlayer player);
 
     @SqlBatch("""
         UPDATE players SET
@@ -42,19 +42,19 @@ public interface PlayerDao {
             last_logout = :getLastLogout,
             offline_power_lost = :getPowerLost
         WHERE
-            id = :getUUID       
+            id = :getUUID
     """)
-    void update(@BindMethods Collection<PlayerRecord> players);
+    void update(@BindMethods Collection<FPPPlayer> players);
 
     @SqlUpdate("DELETE FROM players WHERE id = ?")
     void delete(UUID uuid);
-    
+
     @SqlQuery("SELECT * FROM players")
     @KeyColumn("id")
     @RegisterFieldMapper(PlayerBean.class)
     List<PlayerBean> get();
 
     @SqlQuery("SELECT * FROM players WHERE id = ?")
-    @RegisterFieldMapper(PlayerRecord.class)
-    PlayerRecord get(UUID uuid);
+    @RegisterFieldMapper(FPPPlayer.class)
+    FPPPlayer get(UUID uuid);
 }
