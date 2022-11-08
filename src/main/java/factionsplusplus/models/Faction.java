@@ -423,8 +423,7 @@ public class Faction extends Nation implements Feudal, ForwardingAudience {
         return withVassalContribution + this.getBonusPower();
     }
 
-    public Faction getTopLiege()
-    {
+    public Faction getTopLiege() {
         Faction currentLiege = this.getLiege();
         if (currentLiege == null) return null;
         Faction topLiege = null;
