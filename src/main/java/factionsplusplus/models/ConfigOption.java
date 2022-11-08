@@ -8,8 +8,16 @@ public class ConfigOption {
     private Object defaultValue;
     private ConfigOptionType type;
     private boolean userSettable;
+    private boolean hidden;
 
-    public ConfigOption(String name, String description, ConfigOptionType type, Object defaultValue, boolean userSettable) {
+    public ConfigOption(
+        String name,
+        String description,
+        ConfigOptionType type,
+        Object defaultValue,
+        boolean userSettable,
+        boolean hidden
+    ) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
@@ -35,5 +43,9 @@ public class ConfigOption {
 
     public boolean isUserSettable() {
         return this.userSettable;
+    }
+
+    public boolean isHidden() {
+        return this.hidden;
     }
 }
