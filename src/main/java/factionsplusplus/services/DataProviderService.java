@@ -12,6 +12,7 @@ import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.codec.CodecFactory;
 import org.jdbi.v3.core.qualifier.QualifiedType;
 import org.jdbi.v3.gson2.Gson2Plugin;
+import org.jdbi.v3.guava.GuavaPlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -41,6 +42,7 @@ public class DataProviderService {
             final String hostname = this.configService.getString("system.database.host");
             String port = this.configService.getString("system.database.port");
             if (port != null && port.length() > 0) port = ":"+port;
+            else port = "";
             final String name = this.configService.getString("system.database.name");
             configuration.setDataSourceClassName("org.mariadb.jdbc.MariaDbDataSource");
             configuration.addDataSourceProperty("url", String.format("jdbc:mariadb://%s%s/%s?useServerPrepStmts=true", hostname, port, name));
@@ -56,6 +58,7 @@ public class DataProviderService {
         this.persistentDataSource.setLogWriter(new PrintWriter(System.out));
         Jdbi persistentData = Jdbi.create(this.persistentDataSource)
             .installPlugin(new SqlObjectPlugin())
+            .installPlugin(new GuavaPlugin())
             .installPlugin(new Gson2Plugin());
         persistentData.registerCodecFactory(CodecFactory.forSingleCodec(QualifiedType.of(UUID.class), new UUIDCodec()));
         return persistentData;
