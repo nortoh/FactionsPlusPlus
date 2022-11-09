@@ -394,8 +394,6 @@ public class ClaimService {
      * @param holdingFaction   The faction that the chunk is owned by.
      */
     private void removeChunk(ClaimedChunk chunkToRemove, Player unclaimingPlayer, Faction holdingFaction) {
-        // String identifier = (int)chunk.getChunk().getX() + "_" + (int)chunk.getChunk().getZ();
-
         // handle faction unclaim event calling and cancellation
         FactionUnclaimEvent unclaimEvent = new FactionUnclaimEvent(holdingFaction, unclaimingPlayer, chunkToRemove.getChunk());
         Bukkit.getPluginManager().callEvent(unclaimEvent);
@@ -409,7 +407,7 @@ public class ClaimService {
 
         // ensure that the claimed chunk is owned by the player's faction
         if (! chunkToRemove.getHolder().equals(playersFaction.getUUID())) {
-            // TODO: add locale message
+            this.dataService.getPlayer(unclaimingPlayer.getUniqueId()).alert("Error.Claim.NotOwnLand");
             return;
         }
 
