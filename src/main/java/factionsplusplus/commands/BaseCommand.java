@@ -191,7 +191,6 @@ public class BaseCommand extends Command {
     }
 
     public void configCommand(CommandContext context) {
-        // TODO: localize these
         final FactionBase base = context.getFactionBaseArgument("base to edit");
         final String option = context.getStringArgument("option");
         final String value = context.getStringArgument("value");
@@ -201,7 +200,7 @@ public class BaseCommand extends Command {
                 if (isDefault == true) {
                     FactionBase defaultBase = context.getExecutorsFaction().getDefaultBase();
                     if (defaultBase != null && defaultBase.equals(base)) {
-                        context.reply("&cThis base is already your factions default base.");
+                        context.error("Error.Base.Default.AlreadyDefault");
                         return;
                     } else {
                         if (defaultBase != null) { 
@@ -209,30 +208,30 @@ public class BaseCommand extends Command {
                             context.getExecutorsFaction().persistBase(defaultBase);
                         }
                         base.toggleDefault();
-                        context.reply("&aBase set as default.");
+                        context.success("CommandResponse.Base.Set.Default.On", base.getName());
                     }
                 } else {
                     if (base.isFactionDefault()) {
                         base.toggleDefault();
-                        context.reply("&aBase no longer set as default.");
+                        context.success("CommandResponse.Base.Set.Default.Off", base.getName());
                     } else {
-                        context.reply("&cThis base isn't your factions default base.");
+                        context.error("Error.Base.Default.NotDefault");
                         return;
                     }
                 }
                 break;
             case "allowallies":
-                String newText = base.shouldAllowAllies() ? "are not" : "are";
+                String newText = base.shouldAllowAllies() ? "Off" : "On";
                 base.toggleAllowAllies();
-                context.reply(String.format("&aAllies %s allowed to teleport to this base.", newText));
+                context.success("CommandResponse.Base.Set.Allies."+newText, base.getName());
                 break;
             case "allowallfactionmembers":
-                newText = base.shouldAllowAllFactionMembers() ? "are not" : "are";
+                newText = base.shouldAllowAllFactionMembers() ? "Off" : "On";
                 base.toggleAllowAllFactionMembers();
-                context.reply(String.format("&aRanks below officer %s allowed to teleport to this base.", newText));
+                context.success("CommandResponse.Base.Set.AllFactionMembers."+newText, base.getName());
                 break;
             default:
-                context.reply("&cUnknown setting name.");
+                context.error("Error.Setting.NotFound", option);
                 return;
         }
         context.getExecutorsFaction().persistBase(base);
@@ -295,8 +294,12 @@ public class BaseCommand extends Command {
             // must be a fall through, try to final a default base
             base = context.getExecutorsFaction().getDefaultBase();
             if (base == null) {
-                context.error("Error.Base.NoFactionDefault");
-                return;
+                // if there's only one base, assume it's the default
+                base = context.getExecutorsFaction().getBases().size() == 1 ? context.getExecutorsFaction().getBases().values().iterator().next() : null;
+                if (base == null) {
+                    context.error("Error.Base.NoFactionDefault");
+                    return;
+                }
             }
         }
         if (base == null) base = baseFaction != null ? baseFaction.getBase(baseName) : context.getExecutorsFaction().getBase(baseName);
@@ -327,7 +330,7 @@ public class BaseCommand extends Command {
         this.scheduler.scheduleTeleport(context.getPlayer(), base.getBukkitLocation());
     }
 
-    public List<String> autocompleteBaseConfigValues(CommandSender sender, String argument) {
+    public List<String> autocompleteBaseConfigValues(CommandSender sender, String argument, List<String> rawArguments) {
         if (! (sender instanceof Player)) return List.of();
         Faction playersFaction = this.dataService.getPlayersFaction((Player)sender);
         if (playersFaction == null || playersFaction.getBases().isEmpty()) return List.of();
