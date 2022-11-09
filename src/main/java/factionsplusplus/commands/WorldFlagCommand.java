@@ -6,19 +6,27 @@ import com.google.inject.Singleton;
 import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigurationFlag;
-import org.bukkit.Bukkit;
+import factionsplusplus.models.World;
+import factionsplusplus.services.DataService;
 
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import factionsplusplus.builders.CommandBuilder;
+import factionsplusplus.constants.FlagDataType;
 import factionsplusplus.builders.ArgumentBuilder;
-
-// TODO: implement tab complete for basic values (i.e. true/false for boolean)
 
 @Singleton
 public class WorldFlagCommand extends Command {
 
+    private final DataService dataService;
+
     @Inject
-    public WorldFlagCommand() {
+    public WorldFlagCommand(DataService dataService) {
         super(
             new CommandBuilder()
                 .withName("worldflag")
@@ -57,6 +65,8 @@ public class WorldFlagCommand extends Command {
                         )
                 )
         );
+
+        this.dataService = dataService;
     }
     
     public void setCommand(CommandContext context) {
@@ -83,4 +93,17 @@ public class WorldFlagCommand extends Command {
             .collect(Collectors.joining("\n"));
         context.replyWithMiniMessage(flagOutput);
     }
+
+    public List<String> autoCompleteValue(CommandSender sender, String argument, List<String> rawArguments) {
+        if (! (sender instanceof Player)) return List.of();
+        final World playersWorld = this.dataService.getWorld(((Player)sender).getWorld().getUID());
+        final String flagName = rawArguments.get(2);
+        final ConfigurationFlag flag = playersWorld.getFlag(flagName);
+        List<String> completions = new ArrayList<>();
+        List<String> options = List.of();
+        if (flag.getRequiredType().equals(FlagDataType.Boolean)) options = List.of("true", "false", "yes", "no", "on", "off");
+        org.bukkit.util.StringUtil.copyPartialMatches(argument, options, completions);
+        return completions;
+    }
+
 }
