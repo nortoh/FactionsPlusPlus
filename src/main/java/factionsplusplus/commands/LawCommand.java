@@ -127,7 +127,7 @@ public class LawCommand extends Command {
         context.success("CommandResponse.Law.Edited");
     }
 
-    public List<String> autocompleteLawNumbers(CommandSender sender, String argument) {
+    public List<String> autocompleteLawNumbers(CommandSender sender, String argument, List<String> rawArguments) {
         if (! (sender instanceof Player)) return List.of();
         Faction playersFaction = this.dataService.getPlayersFaction((Player)sender);
         if (playersFaction == null || playersFaction.getLaws().size() == 0) return List.of();
