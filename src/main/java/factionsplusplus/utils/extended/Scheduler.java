@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import factionsplusplus.FactionsPlusPlus;
+import factionsplusplus.models.FPPPlayer;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
@@ -42,10 +43,34 @@ public class Scheduler {
     @Inject @Named("adventure") BukkitAudiences adventure;
 
     @SuppressWarnings("deprecation")
+    public void scheduleInvitationExpirations() {
+        this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingInviteExpirations"));
+        final int expirationHours = this.configService.getInt("faction.inviteExpirationTime");
+        Bukkit.getScheduler().scheduleAsyncRepeatingTask(this.factionsPlusPlus, new Runnable() {
+            @Override
+            public void run() {
+                dataService
+                    .getFactionRepository()
+                    .getDAO()
+                    .expireInvitesOlderThan(expirationHours)
+                    .asMap()
+                    .entrySet()
+                    .stream()
+                    .forEach(entry -> {
+                        final FPPPlayer player = dataService.getPlayer(entry.getKey());
+                        entry.getValue().stream().map(dataService::getFaction).forEach(faction -> {
+                            player.alert("PlayerNotice.FactionInvitation.Expired", faction.getName());
+                        });
+                    });
+            }
+        }, 0, 1800 * 20L);
+    }
+    
+    @SuppressWarnings("deprecation")
     public void schedulePowerIncrease() {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerIncrease"));
-        final int delay = this.configService.getInt("player.power.onlineIncrease.delay") * 60; // 30 minutes
-        final int secondsUntilRepeat = this.configService.getInt("player.power.onlineIncrease.frequency") * 60; // 1 hour
+        final int delay = this.configService.getInt("player.power.onlineIncrease.delay") * 60;
+        final int secondsUntilRepeat = this.configService.getInt("player.power.onlineIncrease.frequency") * 60;
         Bukkit.getScheduler().scheduleAsyncRepeatingTask(this.factionsPlusPlus, new Runnable() {
             @Override
             public void run() {

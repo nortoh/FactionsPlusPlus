@@ -17,6 +17,8 @@ import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
+import com.google.common.collect.ArrayListMultimap;
+
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.ArrayList;
@@ -117,6 +119,14 @@ public interface FactionDao {
 
     @SqlQuery("SELECT COUNT(1) FROM faction_invites WHERE faction_id = ? AND player_id = ?")
     int getInvite(UUID faction, UUID player);
+
+    @SqlQuery("SELECT player_id, faction_id FROM faction_invites WHERE HOUR(TIMEDIFF(current_timestamp(), invited_at)) > ?")
+    @KeyColumn("player_id")
+    @ValueColumn("faction_id")
+    ArrayListMultimap<UUID, UUID> getInvitesExpiredAfter(int hours);
+
+    @SqlBatch("DELETE FROM faction_invites WHERE player_id = ? AND faction_id IN (?)")
+    void deleteInvites(Collection<UUID> players, Collection<UUID> factions);
 
     // CONFIGURATION FLAGS
     @SqlQuery("""
@@ -270,5 +280,11 @@ public interface FactionDao {
         insert(faction);
         faction.upsertMember(faction.getOwner().getUUID(), GroupRole.Owner);
         return faction;
+    }
+
+    default ArrayListMultimap<UUID, UUID> expireInvitesOlderThan(int hours) {
+        ArrayListMultimap<UUID, UUID> expiredInvites = getInvitesExpiredAfter(hours);
+        deleteInvites(expiredInvites.keySet(), expiredInvites.values());
+        return expiredInvites;
     }
 }

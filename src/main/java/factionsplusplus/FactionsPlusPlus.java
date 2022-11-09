@@ -209,6 +209,7 @@ public class FactionsPlusPlus extends JavaPlugin {
      * Calls the Scheduler to schedule tasks that have to repeatedly be executed.
      */
     private void scheduleRecurringTasks() {
+        this.scheduler.get().scheduleInvitationExpirations();
         this.scheduler.get().schedulePowerIncrease();
         this.scheduler.get().schedulePowerDecrease();
         this.actionBarService.schedule(this);
