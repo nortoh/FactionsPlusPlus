@@ -15,6 +15,7 @@ import org.jdbi.v3.gson2.Gson2Plugin;
 import org.jdbi.v3.guava.GuavaPlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
+import org.flywaydb.core.Flyway;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -56,6 +57,8 @@ public class DataProviderService {
         }
         this.persistentDataSource = new HikariDataSource(configuration);
         this.persistentDataSource.setLogWriter(new PrintWriter(System.out));
+        Flyway flyway = Flyway.configure(this.getClass().getClassLoader()).table("migrations").dataSource(this.persistentDataSource).load();
+        flyway.migrate();
         Jdbi persistentData = Jdbi.create(this.persistentDataSource)
             .installPlugin(new SqlObjectPlugin())
             .installPlugin(new GuavaPlugin())
