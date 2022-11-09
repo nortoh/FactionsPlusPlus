@@ -6,7 +6,7 @@ import com.google.inject.Inject;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -26,8 +26,8 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class FactionRepository {
-    private Map<UUID, Faction> factionStore = new ConcurrentHashMap<>();
-    private final Map<String, ConfigurationFlag> defaultFlags = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, Faction> factionStore = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConfigurationFlag> defaultFlags = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
     private final FactionFactory factionFactory;
@@ -258,7 +258,7 @@ public class FactionRepository {
     }
 
     // Retrieve all factions
-    public Map<UUID, Faction> all() {
+    public ConcurrentMap<UUID, Faction> all() {
         return this.factionStore;
     }
 
@@ -298,7 +298,7 @@ public class FactionRepository {
     public void addFlagToMissingFactions(String flagName) {
         // get the flag from defaultFlags
         ConfigurationFlag flag = this.defaultFlags.get(flagName);
-        // TODO: error if null
+        if (flag == null) return;
         for (Faction faction : this.factionStore.values()) {
             if (! faction.getFlags().containsKey(flagName)) faction.getFlags().put(flagName, flag);
         }
@@ -311,20 +311,7 @@ public class FactionRepository {
         for (Faction faction : this.factionStore.values()) faction.getFlags().remove(flagName);
     }
 
-    public Map<String, ConfigurationFlag> getDefaultFlags() {
+    public ConcurrentMap<String, ConfigurationFlag> getDefaultFlags() {
         return this.defaultFlags;
-    }
-
-    // Write to file
-    public void persist() {
-
-    }
-
-    public enum PersistType {
-        Faction,
-        Relations,
-        Laws,
-        Members,
-        All
     }
 }

@@ -101,7 +101,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public boolean isPrefixesFeatureEnabled() {
-        return this.configService.getBoolean("playersChatWithPrefixes");
+        return this.configService.getBoolean("chat.global.prependFactionPrefix");
     }
 
     public boolean isChunkClaimed(Chunk chunk) {
@@ -125,7 +125,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public void createFactionFlag(String flagName, FlagDataType flagType, Object defaultValue) {
-        // TODO: handle the flag name already existing  
+        if (this.hasFactionFlag(flagName)) return;
         // Create the flag object
         ConfigurationFlag flag = new ConfigurationFlag(flagName, flagType, defaultValue);
         // Add to default flags for new factions
@@ -135,8 +135,7 @@ public class FactionsPlusPlusAPI {
     }
 
     public void deleteFactionFlag(String flagName) {
-        // TODO: don't allow deleting core flags
-        // TODO: handle flag not existing
+        if (this.hasFactionFlag(flagName) == false) return;
         // Remove from factions and defaults
         this.factionService.removeFlagFromFactions(flagName);
     }

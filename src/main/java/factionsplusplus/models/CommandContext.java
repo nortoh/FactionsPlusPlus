@@ -20,6 +20,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class CommandContext {
     private Faction faction = null;
@@ -231,12 +232,12 @@ public class CommandContext {
     }
 
     /*
-     * Sends a raw message to a sender. This will go through colorization in MessageService but no translations will happen.
+     * Sends a raw message to a sender.
      * 
      * @param message the message to send
      */
     public void reply(String message) {
-        this.getExecutorsAudience().sendMessage(Component.text(message));
+        this.sender.sendMessage(message);
     }
 
     /*
@@ -248,6 +249,10 @@ public class CommandContext {
         this.getExecutorsAudience().sendMessage(
             Component.translatable(localizationKey).color(NamedTextColor.YELLOW).args(Arrays.stream(arguments).map(argument -> Component.text(argument.toString())).toList())
         );
+    }
+
+    public void replyWithMiniMessage(String message) {
+        this.getExecutorsAudience().sendMessage(MiniMessage.miniMessage().deserialize(message));
     }
 
     public void alertPlayer(OfflinePlayer player, String localizationKey, Object... arguments) {
@@ -316,6 +321,10 @@ public class CommandContext {
 
     public String getLocalizedString(String localizationKey) {
         return this.localeService.get(localizationKey);
+    }
+
+    public String getLocalizedString(String localizationKey, Object... arguments) {
+        return this.localeService.get(localizationKey, arguments);
     }
 
 }

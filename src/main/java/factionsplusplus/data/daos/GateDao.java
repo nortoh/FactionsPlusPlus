@@ -13,9 +13,9 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.List;
-import java.util.Map;
 
 public interface GateDao {
 
@@ -45,7 +45,7 @@ public interface GateDao {
     @RegisterRowMapper(GateMapper.class)
     List<GateBean> get();
 
-    default Map<UUID, Gate> getAll() {
-        return get().stream().map(g -> new Gate(g)).collect(Collectors.toMap(g -> g.getUUID(), g -> g));
+    default ConcurrentMap<UUID, Gate> getAll() {
+        return get().stream().map(g -> new Gate(g)).collect(Collectors.toConcurrentMap(g -> g.getUUID(), g -> g));
     }
 }

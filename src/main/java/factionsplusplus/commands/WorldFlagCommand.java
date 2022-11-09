@@ -7,7 +7,6 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.ConfigurationFlag;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 import java.util.stream.Collectors;
 import factionsplusplus.builders.CommandBuilder;
@@ -15,9 +14,6 @@ import factionsplusplus.builders.ArgumentBuilder;
 
 // TODO: implement tab complete for basic values (i.e. true/false for boolean)
 
-/**
- * @author Callum Johnson
- */
 @Singleton
 public class WorldFlagCommand extends Command {
 
@@ -79,13 +75,12 @@ public class WorldFlagCommand extends Command {
         });
     }
 
-    // TODO: use new messaging stuff here
     public void showCommand(CommandContext context) {
         String flagOutput = context.getExecutorsWorld().getFlags()
             .keySet()
             .stream()
-            .map(flagKey -> String.format("%s: %s", flagKey, context.getExecutorsWorld().getFlags().get(flagKey).toString()))
-            .collect(Collectors.joining(", "));
-        context.reply(ChatColor.AQUA + "[World Flags] " + flagOutput);
+            .map(flagKey -> String.format("<color:gold>%s:</color:gold> <color:aqua>%s</color:aqua>", flagKey, context.getExecutorsWorld().getFlags().get(flagKey).toString()))
+            .collect(Collectors.joining("\n"));
+        context.replyWithMiniMessage(flagOutput);
     }
 }

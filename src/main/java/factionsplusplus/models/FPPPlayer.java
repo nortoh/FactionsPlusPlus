@@ -6,7 +6,9 @@ package factionsplusplus.models;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -151,6 +153,36 @@ public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
         this.powerLost += amount;
     }
 
+    public Faction getFaction() {
+        return this.dataService.getPlayersFaction(this.uuid);
+    }
+
+    public List<FactionBase> getAccessibleFactionBases() {
+        Faction ourFaction = this.getFaction();
+        // If we're not a member of a faction, there's no bases we can access.
+        if (ourFaction == null) return List.of();
+        List<FactionBase> results = new ArrayList<>();
+        // First iterate over our factions bases
+        boolean isFactionOfficer = ourFaction.getMember(this.uuid).hasRole(GroupRole.Officer);
+        ourFaction.getBases()
+            .values()
+            .stream()
+            .filter(base -> {
+                if (base.shouldAllowAllFactionMembers() || isFactionOfficer) return true;
+                return false;
+            })
+            .forEach(results::add);
+        // Now over our allies
+        ourFaction.getAllies()
+            .stream()
+            .map(this.dataService::getFaction)
+            .flatMap(faction -> faction.getBases().values().stream())
+            .filter(FactionBase::shouldAllowAllies)
+            .forEach(results::add);
+        // Return results
+        return results;
+    }
+
     public int getMinutesSinceLastLogout() {
         if (this.lastLogout == null) {
             return 0;
@@ -221,12 +253,12 @@ public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
 
     // Calculations
     public double getMaxPower() {
-        double initialPowerLevel = this.configService.getDouble("initialMaxPowerLevel");
+        double initialPowerLevel = this.configService.getDouble("player.power.maximum");
         switch(GroupRole.getFromLevel(this.dataService.getPlayersFaction(this.uuid).getMember(uuid).getRole())) {
             case Owner:
-                return (double)(initialPowerLevel * this.configService.getDouble("factionOwnerMultiplier"));
+                return (double)(initialPowerLevel * this.configService.getDouble("player.power.ownerMultiplier"));
             case Officer:
-                return (double)(initialPowerLevel * this.configService.getDouble("factionOfficerMultiplier"));
+                return (double)(initialPowerLevel * this.configService.getDouble("player.power.officerMultiplier"));
             default:
                 return initialPowerLevel;
         }

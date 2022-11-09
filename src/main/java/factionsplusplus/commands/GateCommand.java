@@ -13,6 +13,7 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.models.Gate;
+import factionsplusplus.services.ConfigService;
 import factionsplusplus.services.DataService;
 import factionsplusplus.models.InteractionContext;
 
@@ -30,12 +31,14 @@ public class GateCommand extends Command {
     private final EphemeralData ephemeralData;
     private final DataService dataService;
     private final InteractionContextFactory interactionContextFactory;
+    private final ConfigService configService;
 
     @Inject
     public GateCommand(
         EphemeralData ephemeralData,
         DataService dataService,
-        InteractionContextFactory interactionContextFactory
+        InteractionContextFactory interactionContextFactory,
+        ConfigService configService
     ) {
         super(
             new CommandBuilder()
@@ -103,6 +106,7 @@ public class GateCommand extends Command {
         this.ephemeralData = ephemeralData;
         this.dataService = dataService;
         this.interactionContextFactory = interactionContextFactory;
+        this.configService = configService;
     }
 
     public Gate doCommonBlockChecks(CommandContext context) {
@@ -166,6 +170,10 @@ public class GateCommand extends Command {
     }
 
     public void createCommand(CommandContext context) {
+        if (this.dataService.getFactionsGates(context.getExecutorsFaction()).size() >= this.configService.getInt("faction.limits.gate.count")) {
+            context.error("Error.Gate.MaximumReached");
+            return;
+        }
         InteractionContext interactionContext = this.ephemeralData.getPlayersPendingInteraction().get(context.getPlayer().getUniqueId());
         if (interactionContext != null) {
             if (interactionContext.isGateCreating()) {
@@ -175,7 +183,6 @@ public class GateCommand extends Command {
             context.replyWith("Error.InteractionEvent.Replaced", interactionContext.toString());
         }
         String gateName = context.getStringArgument("gate name");
-        // TODO: new messaging api
         if (gateName == null) gateName = context.getLocalizedString("UnnamedGate");
         this.ephemeralData.getPlayersPendingInteraction().put(
             context.getPlayer().getUniqueId(),
@@ -184,7 +191,6 @@ public class GateCommand extends Command {
                 new Gate(gateName)
             )
         );
-        // TODO: new messaging api
-        context.replyWith("CreatingGateClickWithHoe");
+        context.replyWithMiniMessage("<color:yellow><lang:CommandResponse.Gate.Create:'<lang:item.minecraft.golden_hoe>'>");
     }
 }

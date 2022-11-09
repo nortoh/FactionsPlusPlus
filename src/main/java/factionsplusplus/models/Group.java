@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,7 @@ public class Group implements Identifiable {
     protected UUID uuid = UUID.randomUUID();
     protected String name = null;
     protected String description = null;
-    protected Map<UUID, GroupMember> members = new ConcurrentHashMap<>();
+    protected ConcurrentMap<UUID, GroupMember> members = new ConcurrentHashMap<>();
 
     @Override
     public UUID getUUID() {
@@ -64,7 +65,7 @@ public class Group implements Identifiable {
         return this.getMember(playerUuid).hasRole(GroupRole.Owner);
     }
 
-    public void setMembers(Map<UUID, GroupMember> members) {
+    public void setMembers(ConcurrentMap<UUID, GroupMember> members) {
         this.members = members;
     }
 

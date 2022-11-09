@@ -1,8 +1,8 @@
 package factionsplusplus.data.beans;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import factionsplusplus.models.ConfigurationFlag;
 
@@ -11,5 +11,5 @@ import lombok.Data;
 @Data
 public class WorldBean {
     private UUID id;
-    private Map<String, ConfigurationFlag> flags = new HashMap<>();
+    private ConcurrentMap<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
 }

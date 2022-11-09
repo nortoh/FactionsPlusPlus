@@ -44,16 +44,16 @@ public class Scheduler {
     @SuppressWarnings("deprecation")
     public void schedulePowerIncrease() {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerIncrease"));
-        final int delay = this.configService.getInt("minutesBeforeInitialPowerIncrease") * 60; // 30 minutes
-        final int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerIncreases") * 60; // 1 hour
+        final int delay = this.configService.getInt("player.power.onlineIncrease.delay") * 60; // 30 minutes
+        final int secondsUntilRepeat = this.configService.getInt("player.power.onlineIncrease.frequency") * 60; // 1 hour
         Bukkit.getScheduler().scheduleAsyncRepeatingTask(this.factionsPlusPlus, new Runnable() {
             @Override
             public void run() {
                 logger.debug(
                     localeService.get(
                         "ConsoleAlerts.IncreasingThePowerOfEveryPlayer",
-                        configService.getInt("powerIncreaseAmount"),
-                        configService.getInt("minutesBetweenPowerIncreases")
+                        configService.getInt("player.power.onlineIncrease.amount"),
+                        configService.getInt("player.power.onlineIncrease.frequency")
                     )
                 );
                 playerService.initiatePowerIncreaseForAllPlayers();
@@ -64,27 +64,26 @@ public class Scheduler {
     @SuppressWarnings("deprecation")
     public void schedulePowerDecrease() {
         this.logger.debug(this.localeService.get("ConsoleAlerts.SchedulingPowerDecrease"));
-        int delay = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
-        int secondsUntilRepeat = this.configService.getInt("minutesBetweenPowerDecreases") * 60;
+        int secondsUntilRepeat = this.configService.getInt("player.power.decreaseForInactivity.frequency") * 60;
         Bukkit.getScheduler().scheduleAsyncRepeatingTask(factionsPlusPlus, () -> {
             logger.debug(
                 localeService.get(
                     "ConsoleAlerts.DecreasingThePowerOfEveryPlayer",
-                    configService.getInt("powerDecreaseAmount"),
-                    configService.getInt("minutesBetweenPowerDecreases")
+                    configService.getInt("player.power.decreaseForInactivity.amount"),
+                    configService.getInt("player.power.decreaseForInactivity.frequency")
                 )
             );
 
             playerService.decreasePowerForInactivePlayers();
 
-            if (this.configService.getBoolean("zeroPowerFactionsGetDisbanded")) {
+            if (this.configService.getBoolean("faction.disbandFactionsWithZeroPower")) {
                 this.factionService.disbandAllZeroPowerFactions();
             }
 
             for (Player player : this.factionsPlusPlus.getServer().getOnlinePlayers()) {
                 informPlayerIfTheirLandIsInDanger(player);
             }
-        }, delay * 20L, secondsUntilRepeat * 20L);
+        }, secondsUntilRepeat * 20L, secondsUntilRepeat * 20L);
     }
 
     private void informPlayerIfTheirLandIsInDanger(Player player) {
@@ -101,7 +100,7 @@ public class Scheduler {
     }
 
     public void scheduleTeleport(Player player, Location destinationLocation) {
-        int teleport_delay = this.configService.getInt("teleportDelay");
+        int teleport_delay = this.configService.getInt("player.teleportDelay");
         this.dataService.getPlayer(player.getUniqueId()).alert("PlayerNotice.Teleport", teleport_delay);
         DelayedTeleportTask delayedTeleportTask = new DelayedTeleportTask(player, destinationLocation);
         delayedTeleportTask.runTaskLater(this.factionsPlusPlus, (long) teleport_delay * this.getRandomNumberBetween(15, 25));

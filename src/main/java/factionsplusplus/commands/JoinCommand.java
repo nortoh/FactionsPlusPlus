@@ -50,7 +50,7 @@ public class JoinCommand extends Command {
 
     public void execute(CommandContext context) {
         final Faction target = context.getFactionArgument("faction name");
-        if (! this.dataService.hasFactionInvite(target, context.getPlayer())) {
+        if (! this.dataService.hasFactionInvite(target, context.getPlayer()) && target.getFlag("public").toBoolean() == false) {
             context.error("Error.NotInvited", target.getName());
             return;
         }

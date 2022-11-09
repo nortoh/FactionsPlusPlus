@@ -450,7 +450,7 @@ public class GateService {
                 area = gate.getDimZ() * gate.getDimY();
             }
 
-            if (area > this.configService.getInt("factionMaxGateArea")) {
+            if (area > this.configService.getInt("faction.limits.gate.area")) {
                 // Gate size exceeds config limit.
                 gate.setCoord2(null);
                 return ErrorCodeAddCoord.Oversized;

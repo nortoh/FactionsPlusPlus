@@ -306,21 +306,22 @@ public class DataService {
 
     private void initializeDefaultConfigurationFlags() {
         // Factions
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("mustBeOfficerToManageLand", FlagDataType.Boolean, true), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("mustBeOfficerToInviteOthers", FlagDataType.Boolean, true), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("alliesCanInteractWithLand", FlagDataType.Boolean, this.configService.getBoolean("allowAllyInteraction")), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("vassalageTreeCanInteractWithLand", FlagDataType.Boolean, this.configService.getBoolean("allowVassalageTreeInteraction")), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("neutral", FlagDataType.Boolean, false), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("dynmapTerritoryColor", FlagDataType.Color, "#ff0000"), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("territoryAlertColor", FlagDataType.Color, this.configService.getString("territoryAlertColor")), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("prefixColor", FlagDataType.Color, "white"), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("allowFriendlyFire", FlagDataType.Boolean, false), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("acceptBonusPower", FlagDataType.Boolean, true), FlagType.Faction);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("enabledMobProtection", FlagDataType.Boolean, true), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("mustBeOfficerToManageLand", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.mustBeOfficerToManageLand")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("mustBeOfficerToInviteOthers", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.mustBeOfficerToInviteOthers")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("alliesCanInteractWithLand", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.alliesCanInteractWithLand")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("vassalageTreeCanInteractWithLand", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.vassalageTreeCanInteractWithLand")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("neutral", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.neutral")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("public", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.public")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("dynmapTerritoryColor", FlagDataType.Color, this.configService.getString("faction.default.flags.dynmapTerritoryColor")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("territoryIndicatorColor", FlagDataType.Color, this.configService.getString("faction.default.flags.territoryIndicatorColor")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("prefixColor", FlagDataType.Color, this.configService.getString("faction.default.flags.prefixColor")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("allowFriendlyFire", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.allowFriendlyFire")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("acceptBonusPower", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.acceptBonusPower")), FlagType.Faction);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("enableMobProtection", FlagDataType.Boolean, this.configService.getBoolean("faction.default.flags.enableMobProtection")), FlagType.Faction);
 
         // Worlds
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("enabled", FlagDataType.Boolean, true), FlagType.World);
-        this.addDefaultConfigurationFlag(new ConfigurationFlag("allowClaims", FlagDataType.Boolean, true), FlagType.World);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("enabled", FlagDataType.Boolean, this.configService.getBoolean("world.default.flags.enabled")), FlagType.World);
+        this.addDefaultConfigurationFlag(new ConfigurationFlag("allowClaims", FlagDataType.Boolean, this.configService.getBoolean("world.default.flags.allowClaims")), FlagType.World);
     }
 
     // Factions

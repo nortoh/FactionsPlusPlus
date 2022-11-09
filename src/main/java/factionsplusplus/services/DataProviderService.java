@@ -37,17 +37,17 @@ public class DataProviderService {
 
     public Jdbi initializePersistentData() throws SQLException {
         HikariConfig configuration = new HikariConfig();
-        if (! this.configService.getBoolean("database.flatfile")) {
-            final String hostname = this.configService.getString("database.host");
-            String port = this.configService.getString("database.port");
+        if (! this.configService.getBoolean("system.database.flatfile")) {
+            final String hostname = this.configService.getString("system.database.host");
+            String port = this.configService.getString("system.database.port");
             if (port != null && port.length() > 0) port = ":"+port;
-            final String name = this.configService.getString("database.name");
+            final String name = this.configService.getString("system.database.name");
             configuration.setDataSourceClassName("org.mariadb.jdbc.MariaDbDataSource");
             configuration.addDataSourceProperty("url", String.format("jdbc:mariadb://%s%s/%s?useServerPrepStmts=true", hostname, port, name));
-            configuration.addDataSourceProperty("user", this.configService.getString("database.username"));
-            configuration.addDataSourceProperty("password", this.configService.getString("database.password"));
+            configuration.addDataSourceProperty("user", this.configService.getString("system.database.username"));
+            configuration.addDataSourceProperty("password", this.configService.getString("system.database.password"));
         } else {
-            final String fileName = this.configService.getString("database.name");
+            final String fileName = this.configService.getString("system.database.name");
             final File path = new File(this.dataPath, fileName);
             configuration.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
             configuration.addDataSourceProperty("url", String.format("jdbc:h2:file:%s;MODE=MariaDB;AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS factions\\;SET SCHEMA factions", path.toString()));

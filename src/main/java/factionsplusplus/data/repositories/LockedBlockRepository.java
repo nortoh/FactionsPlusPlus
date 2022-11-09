@@ -6,9 +6,9 @@ import com.google.inject.Inject;
 import org.bukkit.block.Block;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.Collection;
 
 import factionsplusplus.data.daos.LockedBlockDao;
@@ -18,7 +18,7 @@ import factionsplusplus.utils.Logger;
 
 @Singleton
 public class LockedBlockRepository {
-    private Map<UUID, LockedBlock> lockedBlockStore = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, LockedBlock> lockedBlockStore = new ConcurrentHashMap<>();
     private final Logger logger;
     private final DataProviderService dataProviderService;
 
@@ -101,10 +101,5 @@ public class LockedBlockRepository {
     // Get the DAO for this repository
     public LockedBlockDao getDAO() {
         return this.dataProviderService.getPersistentData().onDemand(LockedBlockDao.class);
-    }
-
-    // Write to file
-    public void persist() {
-
     }
 }

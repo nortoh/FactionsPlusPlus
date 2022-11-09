@@ -27,32 +27,28 @@ public class PlayerService {
     @Inject private PlayerFactory playerFactory;
 
     public double increasePower(UUID playerUUID) {
-        double increaseAmount = this.configService.getDouble("powerIncreaseAmount");
+        double increaseAmount = this.configService.getDouble("player.power.onlineIncrease.amount");
         this.dataService.getPlayer(playerUUID).increasePowerBy(increaseAmount);
         return increaseAmount;
     }
 
-    public void decreasePower(UUID playerUUID) {
-        this.dataService.getPlayer(playerUUID).decreasePowerBy(this.configService.getInt("powerDecreaseAmount"));
-    }
-
     public void grantPowerDueToKill(UUID playerUUID) {
-        this.dataService.getPlayer(playerUUID).increasePowerBy(this.configService.getDouble("powerGainedOnKill"));
+        this.dataService.getPlayer(playerUUID).increasePowerBy(this.configService.getDouble("player.power.amountGainedOnKill"));
     }
 
     public double revokePowerDueToDeath(UUID playerUUID) {
-        double powerLost = this.configService.getDouble("powerLostOnDeath");
+        double powerLost = this.configService.getDouble("player.power.lossOnDeath.amount");
         this.dataService.getPlayer(playerUUID).decreasePowerBy(powerLost);
         return powerLost;
     }
 
     public void resetPowerLevels() {
-        final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
+        final double initialPowerLevel = this.configService.getDouble("player.power.initial");
         this.dataService.getPlayerRepository().all().values().forEach(record -> record.setPower(initialPowerLevel));
     }
 
     public void createActivityRecordForEveryOfflinePlayer() { // this method is to ensure that when updating to a version with power decay, even players who never log in again will experience power decay
-        final double initialPowerLevel = this.configService.getDouble("initialPowerLevel");
+        final double initialPowerLevel = this.configService.getDouble("player.power.initial");
         Arrays.stream(Bukkit.getOfflinePlayers())
             .filter(player -> this.dataService.getPlayer(player.getUniqueId()) == null)
             .forEach(player -> {
@@ -77,8 +73,9 @@ public class PlayerService {
     }
 
     public void decreasePowerForInactivePlayers() {
-        if (! this.configService.getBoolean("powerDecreases")) return;
-        final int minutesBeforePowerDecrease = this.configService.getInt("minutesBeforePowerDecrease");
+        if (! this.configService.getBoolean("player.power.decreaseForInactivity.enabled")) return;
+        final int minutesBeforePowerDecrease = this.configService.getInt("player.power.decreaseForInactivity.minimumMinutes");
+        final double decreaseAmount = this.configService.getDouble("player.power.decreaseForInactivity.amount");
         this.dataService.getPlayers()
             .stream()
             .filter(record -> {
@@ -89,7 +86,7 @@ public class PlayerService {
                 return false;
             })
             .forEach(record -> {
-                this.decreasePower(record.getPlayerUUID());
+                record.decreasePowerBy(decreaseAmount);
             });
     }
 

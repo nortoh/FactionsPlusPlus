@@ -57,12 +57,12 @@ public class ListCommand extends Command {
                 Component.translatable("FactionList.Faction").args(Component.text(faction.getName())).color(NamedTextColor.AQUA)
                     .hoverEvent(HoverEvent.showText(
                         Component.text()
-                            .append(Component.text("Power: ").decorate(TextDecoration.BOLD)) // TODO: localize
-                            .append(Component.text(faction.getCumulativePowerLevel()+"\n"))
-                            .append(Component.text("Members: ").decorate(TextDecoration.BOLD)) // TODO: localize
-                            .append(Component.text(faction.getMemberCount()+"\n"))
-                            .append(Component.text("Land: ").decorate(TextDecoration.BOLD)) // TODO: localize
-                            .append(Component.text(this.dataService.getClaimedChunksForFaction(faction).size()))
+                            .append(Component.translatable("Generic.Power").decorate(TextDecoration.BOLD))
+                            .append(Component.text(": "+faction.getCumulativePowerLevel()+"\n"))
+                            .append(Component.translatable("Generic.Member.Plural").decorate(TextDecoration.BOLD))
+                            .append(Component.text(": "+faction.getMemberCount()+"\n"))
+                            .append(Component.translatable("Generic.Land").decorate(TextDecoration.BOLD))
+                            .append(Component.text(": "+this.dataService.getClaimedChunksForFaction(faction).size()))
                     ))
             );
         }

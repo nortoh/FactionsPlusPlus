@@ -42,7 +42,7 @@ public class ChatHandler implements Listener {
         }
         
         if (this.ephemeralData.isPlayerInFactionChat(event.getPlayer())) {
-            if (this.configService.getBoolean("chatSharedInVassalageTrees")) {
+            if (this.configService.getBoolean("chat.faction.sharedInVassalageTrees")) {
                 this.dataService.getFactionsInVassalageTree(playersFaction).stream().forEach(faction -> playersFaction.sendToFactionChatAs(faction, event.getPlayer(), event.getMessage()));
                 return;
             }
@@ -51,7 +51,7 @@ public class ChatHandler implements Listener {
             return;
         }
 
-        if (this.configService.getBoolean("playersChatWithPrefixes")) {
+        if (this.configService.getBoolean("chat.global.prependFactionPrefix")) {
             event.setFormat(StringUtils.parseAsChatColor(playersFaction.getFlag("prefixColor").toString()) + "" + "[" + playersFaction.getPrefix() + "] " + ChatColor.WHITE + " %s: %s");
         }
     }

@@ -103,12 +103,12 @@ public class DeclareWarCommand extends Command {
             return;
         }
 
-        if (this.configService.getBoolean("allowNeutrality") && (opponent.getFlag("neutral").toBoolean())) {
+        if (this.configService.getBoolean("faction.allowNeutrality") && (opponent.getFlag("neutral").toBoolean())) {
             context.error("Error.War.Neutral.Target");
             return;
         }
 
-        if (this.configService.getBoolean("allowNeutrality") && (faction.getFlag("neutral").toBoolean())) {
+        if (this.configService.getBoolean("faction.allowNeutrality") && (faction.getFlag("neutral").toBoolean())) {
             context.error("Error.War.Neutral.Source");
             return;
         }

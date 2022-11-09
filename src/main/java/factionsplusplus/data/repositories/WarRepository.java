@@ -94,9 +94,4 @@ public class WarRepository {
     public WarDao getDAO() {
         return this.dataProviderService.getPersistentData().onDemand(WarDao.class);
     }
-
-    // Write to file
-    public void persist() {
-
-    }
 }

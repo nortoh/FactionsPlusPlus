@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class BaseCommand extends Command {
@@ -150,9 +151,17 @@ public class BaseCommand extends Command {
                             "name",
                             new ArgumentBuilder()
                                 .setDescription("the name of the base to teleport to")
-                                .expectsFactionBaseName()
-                                .consumesAllLaterArguments()
+                                .expectsString()
+                                .expectsDoubleQuotes()
                                 .isRequired()
+                        )
+                        .addArgument(
+                            "faction name",
+                            new ArgumentBuilder()
+                                .setDescription("the faction who owns the base you wish to teleport to")
+                                .expectsFaction()
+                                .expectsDoubleQuotes()
+                                .isOptional()
                         )
                 )
         );
@@ -163,7 +172,7 @@ public class BaseCommand extends Command {
     }
 
     public void createCommand(CommandContext context) {
-        if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("factionMaxNumberBases")) {
+        if (context.getExecutorsFaction().getBases().size() >= this.configService.getInt("faction.limits.base.count")) {
             context.error("Error.Base.MaximumReached");
             return;
         }
@@ -247,15 +256,25 @@ public class BaseCommand extends Command {
             context.error("Error.Base.NoneAccessible");
             return;
         }
-        // TODO: new messaging api
-        context.replyWith("BaseList.Title");
-        // TODO: if they have access to another factions bases, include in this list
-        context.getExecutorsFaction().getBases().values().stream()
-            .forEach(base -> {
-                if (base.shouldAllowAllFactionMembers() || context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
-                    context.replyWith("BaseList.Base", base.getName());
-                }
-            });
+        context.replyWithMiniMessage("<color:light_purple><lang:BaseList.Title>");
+        List<FactionBase> accessibleBases = context.getFPPPlayer().getAccessibleFactionBases();
+        if (accessibleBases.size() == 0) {
+            context.error("Error.Base.NoneAccessible");
+            return;
+        }
+        context.replyWithMiniMessage(
+            accessibleBases
+                .stream()
+                .map(base -> {
+                    final boolean isOwnBase = base.getFaction().equals(context.getExecutorsFaction().getUUID());
+                    final String baseName = (isOwnBase ? base.getName() : String.format(
+                        "%s (%s)",
+                        base.getName(),
+                        this.dataService.getFaction(base.getFaction()).getName()
+                    ));
+                    return String.format("<color:yellow><lang:BaseList.Base:'<color:white>%s'>", baseName);
+                }).collect(Collectors.joining("<newline>"))
+        );
     }
 
     public void removeCommand(CommandContext context) {
@@ -269,9 +288,10 @@ public class BaseCommand extends Command {
     }
 
     public void teleportCommand(CommandContext context) {
-        // TODO: add ability for allies to go to an allied factions bases if permissable, probably adding an optional faction param 
-        FactionBase base = context.getFactionBaseArgument("name");
-        if (base == null) {
+        final String baseName = context.getStringArgument("name");
+        Faction baseFaction = context.getFactionArgument("faction name");
+        FactionBase base = null;
+        if (baseName == null && baseFaction == null) {
             // must be a fall through, try to final a default base
             base = context.getExecutorsFaction().getDefaultBase();
             if (base == null) {
@@ -279,20 +299,30 @@ public class BaseCommand extends Command {
                 return;
             }
         }
-        // Check if they have permissions
-        if (
-            (
-                ! base.shouldAllowAllFactionMembers() && 
-                ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)
-            )
-            ||
-            (
-                base.shouldAllowAllies() &&
-                context.getExecutorsFaction().isAlly(null) // TODO: this should be replaced when we support a target faction
-            )
-        ) {
-            context.error("Error.Base.NotAccessible", base.getName());
+        if (base == null) base = baseFaction != null ? baseFaction.getBase(baseName) : context.getExecutorsFaction().getBase(baseName);
+        if (base == null) {
+            context.error("Error.Base.NotFound");
             return;
+        }
+        // Check if they have permissions if they are a member of the faction who owns this base
+        if (baseFaction != null || context.getExecutorsFaction().getUUID().equals(base.getFaction())) {
+            if (! base.shouldAllowAllFactionMembers() && ! context.getExecutorsFaction().getMember(context.getPlayer().getUniqueId()).hasRole(GroupRole.Officer)) {
+                context.error("Error.Base.NotAccessible", base.getName());
+                return;
+            }
+        }
+
+        // Check if we're targeting a base of a potential ally
+        if (baseFaction != null && ! context.getExecutorsFaction().getUUID().equals(base.getFaction())) {
+            if (
+                (
+                    base.shouldAllowAllies() &&
+                    ! baseFaction.isAlly(context.getExecutorsFaction().getUUID())
+                ) || ! base.shouldAllowAllies()
+            ) {
+                context.error("Error.Base.NotAccessible.Remote", baseFaction.getName(), base.getName());
+                return;
+            }
         }
         this.scheduler.scheduleTeleport(context.getPlayer(), base.getBukkitLocation());
     }

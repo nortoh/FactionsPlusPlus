@@ -15,12 +15,13 @@ import java.util.UUID;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Daniel McCoy Stephenson
  */
 public class Nation extends Group implements Diplomatic, Lawful {
-    protected Map<UUID, FactionRelationType> relations = new ConcurrentHashMap<>();
+    protected ConcurrentMap<UUID, FactionRelationType> relations = new ConcurrentHashMap<>();
     protected final List<UUID> attemptedAlliances = Collections.synchronizedList(new ArrayList<>());
     protected final List<UUID> attemptedTruces = Collections.synchronizedList(new ArrayList<>());
     protected Map<UUID, String> laws = Collections.synchronizedMap(new LinkedHashMap<>());

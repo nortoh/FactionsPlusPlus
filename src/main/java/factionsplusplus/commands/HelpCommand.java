@@ -86,13 +86,13 @@ public class HelpCommand extends Command {
         if (requestedPage < 0) {
             requestedPage = 0; // Lower Limit to 0
         }
-        // TODO: new messaging api
         context.replyWith("Help.ListTitle", requestedPage+1, partitionedList.size());
-        partitionedList.get(requestedPage).forEach(line -> {
-            context.getExecutorsAudience().sendMessage(
-                Component.text(String.format("/mf %s %s - %s", line.getName(), line.buildSyntax(), line.getDescription()))
-            );
-        });
+        context.replyWithMiniMessage(
+            partitionedList.get(requestedPage).stream().map(cmd -> {
+                final String syntax = cmd.buildSyntax().length() > 0 ? String.format(" %s", cmd.buildSyntax()) : "";
+                return String.format("<color:gold>/mf %s%s:</color:gold> %s", cmd.getName(), syntax, cmd.getDescription());
+            }).collect(Collectors.joining("\n"))
+        );
     }
 
     public ArrayList<ArrayList<Command>> generateHelpPages() {

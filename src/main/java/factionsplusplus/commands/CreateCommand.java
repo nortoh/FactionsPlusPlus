@@ -59,7 +59,7 @@ public class CreateCommand extends Command {
             return;
         }
         final String factionName = context.getStringArgument("faction name");
-        if (factionName.length() > this.configService.getInt("factionMaxNameLength")) {
+        if (factionName.length() > this.configService.getInt("faction.limits.name.length")) {
             context.error("Error.Faction.NameTooLong", factionName);
             return;
         }

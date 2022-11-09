@@ -39,12 +39,12 @@ public class FactionsPlusPlus extends JavaPlugin {
     private final String pluginVersion = "v" + getDescription().getVersion();
     @Inject private ActionBarService actionBarService;
     @Inject private ConfigService configService;
-    @Inject private DataService dataService;
-    @Inject private Scheduler scheduler;
-    @Inject private CommandService commandService;
+    @Inject private Provider<DataService> dataService;
+    @Inject private Provider<Scheduler> scheduler;
+    @Inject private Provider<CommandService> commandService;
     @Inject private LocaleService localeService;
     @Inject private Provider<DynmapIntegrationService> dynmapService;
-    @Inject private PlayerService playerService;
+    @Inject private Provider<PlayerService> playerService;
     private BukkitAudiences adventure;
     private Injector injector;
 
@@ -70,8 +70,8 @@ public class FactionsPlusPlus extends JavaPlugin {
         this.registerEventHandlers();
         this.handleIntegrations();
         this.makeSureEveryPlayerExperiencesPowerDecay();
-        this.commandService.registerCommands();
-        getCommand("fpp").setTabCompleter(commandService);
+        this.commandService.get().registerCommands();
+        getCommand("fpp").setTabCompleter(commandService.get());
     }
 
     /**
@@ -79,8 +79,8 @@ public class FactionsPlusPlus extends JavaPlugin {
      */
     @Override
     public void onDisable() {
-        this.dataService.save();
-        this.dataService.disable();
+        this.dataService.get().save();
+        this.dataService.get().disable();
         this.localeService.saveLanguage();
         if (this.adventure != null) {
             this.adventure.close();
@@ -100,7 +100,7 @@ public class FactionsPlusPlus extends JavaPlugin {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (! cmd.getName().equalsIgnoreCase("fpp")) return false; // ignore commands not meant for us
-        return this.commandService.interpretCommand(sender, label, args);
+        return this.commandService.get().interpretCommand(sender, label, args);
     }
 
     /**
@@ -118,7 +118,7 @@ public class FactionsPlusPlus extends JavaPlugin {
      * @return A boolean indicating if the version is mismatched.
      */
     public boolean isVersionMismatched() {
-        String configVersion = getConfig().getString("version");
+        String configVersion = getConfig().getString("system.version");
         if (configVersion == null || this.getVersion() == null) {
             return true;
         } else {
@@ -141,11 +141,11 @@ public class FactionsPlusPlus extends JavaPlugin {
      * @return Whether debug is enabled.
      */
     public boolean isDebugEnabled() {
-        return getConfig().getBoolean("debugMode");
+        return getConfig().getBoolean("system.debugMode");
     }
 
     private void makeSureEveryPlayerExperiencesPowerDecay() {
-        this.playerService.createActivityRecordForEveryOfflinePlayer();
+        this.playerService.get().createActivityRecordForEveryOfflinePlayer();
     }
 
     /**
@@ -153,14 +153,14 @@ public class FactionsPlusPlus extends JavaPlugin {
      */
     public void initializeTranslations() {
         this.localeService.createLanguageFile();
-        GlobalTranslator.get().addSource(this.localeService.getRegistry());
+        GlobalTranslator.translator().addSource(this.localeService.getRegistry());
     }
 
     /**
      * Retrieves the default locale tag for the server.
      */
     public String getDefaultLocaleTag() {
-        final String defaultLanguage = getConfig().getString("language");
+        final String defaultLanguage = getConfig().getString("system.language");
         if (defaultLanguage == null) return "en_US";
         return defaultLanguage;
     }
@@ -202,15 +202,15 @@ public class FactionsPlusPlus extends JavaPlugin {
      * Loads stored data into Persistent Data.
      */
     private void load() {
-        this.dataService.load();
+        this.dataService.get().load();
     }
 
     /**
      * Calls the Scheduler to schedule tasks that have to repeatedly be executed.
      */
     private void scheduleRecurringTasks() {
-        this.scheduler.schedulePowerIncrease();
-        this.scheduler.schedulePowerDecrease();
+        this.scheduler.get().schedulePowerIncrease();
+        this.scheduler.get().schedulePowerDecrease();
         this.actionBarService.schedule(this);
     }
 

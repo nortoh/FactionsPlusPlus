@@ -1,8 +1,8 @@
 package factionsplusplus.data.beans;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
@@ -26,9 +26,9 @@ public class FactionBean {
     private boolean shouldAutoclaim = false;
     @Nested("home")
     private LocationData home;
-    private Map<String, ConfigurationFlag> flags = new HashMap<>();
-    private Map<UUID, GroupMember> members = new HashMap<>();
-    private Map<UUID, FactionRelationType> relations = new HashMap<>();
-    private Map<UUID, String> laws = new HashMap<>();
-    private Map<String, FactionBase> bases = new HashMap<>();
+    private ConcurrentMap<String, ConfigurationFlag> flags = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, GroupMember> members = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, FactionRelationType> relations = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, String> laws = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, FactionBase> bases = new ConcurrentHashMap<>();
 }

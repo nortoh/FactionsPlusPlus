@@ -85,9 +85,4 @@ public class ClaimedChunkRepository {
     public List<ClaimedChunk> all() {
         return this.claimedChunksStore;
     }
-
-    // Write to file
-    public void persist() {
-
-    }
 }

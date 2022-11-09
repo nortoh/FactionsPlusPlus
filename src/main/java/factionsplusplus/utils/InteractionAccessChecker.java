@@ -34,18 +34,22 @@ public class InteractionAccessChecker {
     }
 
     public boolean shouldEventBeCancelled(ClaimedChunk claimedChunk, Player player) {
+        // if faction protections are disabled, don't cancel
         if (this.factionsProtectionsNotEnabled()) {
             return false;
         }
 
+        // if claimed chunk is null (doesn't exist), don't cancel
         if (claimedChunk == null) {
             return false;
         }
 
+        // if player is admin bypassing, don't cancel
         if (this.isPlayerBypassing(player)) {
             return false;
         }
 
+        // if player is not part of a faction, return
         Faction playersFaction = this.dataService.getPlayersFaction(player.getUniqueId());
         if (playersFaction == null) {
             return true;
@@ -59,7 +63,7 @@ public class InteractionAccessChecker {
     }
 
     private boolean factionsProtectionsNotEnabled() {
-        return ! this.configService.getBoolean("factionProtectionsEnabled");
+        return ! this.configService.getBoolean("faction.protections.interactions.enabled");
     }
 
     private boolean isPlayerBypassing(Player player) {
@@ -67,7 +71,7 @@ public class InteractionAccessChecker {
     }
 
     public boolean isOutsiderInteractionAllowed(Player player, ClaimedChunk chunk, Faction playersFaction) {
-        if (! this.configService.getBoolean("factionProtectionsEnabled")) {
+        if (! this.configService.getBoolean("faction.protections.interactions.enabled")) {
             return true;
         }
 
@@ -101,7 +105,7 @@ public class InteractionAccessChecker {
             return false;
         }
 
-        boolean laddersArePlaceableInEnemyTerritory = this.configService.getBoolean("laddersPlaceableInEnemyFactionTerritory");
+        boolean laddersArePlaceableInEnemyTerritory = this.configService.getBoolean("faction.protections.laddersPlaceableByEnemies");
         boolean playerIsTryingToPlaceLadderInEnemyTerritory = blockPlaced.getType() == LADDER && playersFaction.isEnemy(claimedChunk.getHolder());
         return laddersArePlaceableInEnemyTerritory && playerIsTryingToPlaceLadderInEnemyTerritory;
     }
