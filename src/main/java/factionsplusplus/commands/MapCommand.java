@@ -43,7 +43,7 @@ public class MapCommand extends Command {
         this.dataService = dataService;
     }
 
-    // TODO: this can really slow down the server, probably should run in another thread. probably refactor too....
+    // TODO: this can really slow down the server, probably refactor... (running in another thread helps)
     public void execute(CommandContext context) {
         final Chunk center = context.getPlayer().getLocation().getChunk();
         // Needs to be Odd.

@@ -107,7 +107,7 @@ public class HelpCommand extends Command {
         return result;
     }
 
-    public List<String> autocompletePage(CommandSender sender, String argument) {
+    public List<String> autocompletePage(CommandSender sender, String argument, List<String> rawArguments) {
         List<String> completions = new ArrayList<>();
         List<String> argsToCompare = IntStream.range(1, this.generateHelpPages().size()+1).mapToObj(String::valueOf).collect(Collectors.toList());
         if (argument.length() == 0 || StringUtils.parseAsInteger(argument) == null) {

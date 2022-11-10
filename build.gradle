@@ -42,7 +42,9 @@ dependencies {
     implementation 'net.kyori:adventure-api:4.11.0'
     implementation 'net.kyori:adventure-platform-bukkit:4.1.2'
     implementation 'net.kyori:adventure-text-minimessage:4.11.0'
-    testImplementation 'org.jdbi:jdbi3-guava:3.34.0'
+    implementation 'org.jdbi:jdbi3-guava:3.34.0'
+    implementation 'org.flywaydb:flyway-core:9.7.0'
+    implementation 'org.flywaydb:flyway-mysql:9.7.0'
 }
 
 group = 'factionsplusplus'
@@ -94,6 +96,8 @@ shadowJar {
         include(dependency('net.kyori:adventure-key'))
         include(dependency('net.kyori:examination-api'))
         include(dependency('net.kyori:examination-string'))
+        include(dependency('org.flywaydb:flyway-core'))
+        include(dependency('org.flywaydb:flyway-mysql'))
     }
     relocate 'org.intellij', 'factionplusplus.shadow.org.intellij'
     relocate 'org.jetbrains', 'factionplusplus.shadow.org.jetbrains'

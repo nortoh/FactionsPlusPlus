@@ -49,6 +49,7 @@ player:
       enabled: true
       amount: 1.0
 faction:
+  inviteExpirationTime: 24
   disbandFactionsWithZeroPower: false
   canSetPrefixColor: true
   officerPerMemberCount: 5

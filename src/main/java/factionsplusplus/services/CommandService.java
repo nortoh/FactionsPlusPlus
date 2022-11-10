@@ -577,7 +577,7 @@ public class CommandService implements TabCompleter {
         return result;
     }
 
-    public List<String> handleTabCompletionForCommand(CommandSender sender, List<Command> commandStack, ArrayList<String> argumentList, int argumentIndex) {
+    public List<String> handleTabCompletionForCommand(CommandSender sender, List<Command> commandStack, List<String> argumentList, int argumentIndex, List<String> rawArguments) {
         ArrayList<String> results = new ArrayList<>();
         if (argumentList.isEmpty()) return results; // nothing left to do
         Command currentCommand = null;
@@ -599,7 +599,7 @@ public class CommandService implements TabCompleter {
             if (subCommand != null) {
                 argumentList.remove(0); // remove subcommand
                 commandStack.add(subCommand);
-                return this.handleTabCompletionForCommand(sender, commandStack, argumentList, argumentIndex);
+                return this.handleTabCompletionForCommand(sender, commandStack, argumentList, argumentIndex, rawArguments);
             }
             if (currentCommand.shouldRequireSubCommand() && argumentList.size() > 1) return results;
             for (Command commandObj : currentCommand.getSubCommands().values()) {
@@ -643,15 +643,15 @@ public class CommandService implements TabCompleter {
                 // Bail if no more arguments for command
                 argumentIndex++;
                 if (argumentIndex >= currentCommand.getArguments().size()) return results;
-                return this.handleTabCompletionForCommand(sender, commandStack, argumentList, argumentIndex);
+                return this.handleTabCompletionForCommand(sender, commandStack, argumentList, argumentIndex, rawArguments);
             }
 
             // Handle (sub)commands wanting to handle their own tab completion
             if (argument.getTabCompletionHandler() != null) {
                 try {
-                    Method executor = commandStack.get(0).getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, String.class);
+                    Method executor = commandStack.get(0).getClass().getDeclaredMethod(argument.getTabCompletionHandler(), CommandSender.class, String.class, List.class);
                     @SuppressWarnings("unchecked") // can't supress a warning on a return
-                    List<String> result = (List<String>)executor.invoke(commandStack.get(0), sender, argumentData);
+                    List<String> result = (List<String>)executor.invoke(commandStack.get(0), sender, argumentData, rawArguments);
                     return result;
                 } catch(Exception e) {
                     return results;
@@ -860,6 +860,6 @@ public class CommandService implements TabCompleter {
         if (args.length == 0) return null;
 
         // Go!
-        return this.handleTabCompletionForCommand(sender, new ArrayList<>(), new ArrayList<>(Arrays.asList(args)), 0);
+        return this.handleTabCompletionForCommand(sender, new ArrayList<>(), new ArrayList<>(Arrays.asList(args)), 0, new ArrayList<>(Arrays.asList(args)));
     }
 }

@@ -205,6 +205,11 @@ public class ConfigService {
                 .withDescription("If friendly fire is permitted if a faction so chooses.")
                 .setDefaultValue(true)
                 .isBoolean(),
+            new ConfigOptionBuilder()
+                .withName("faction.inviteExpirationTime")
+                .withDescription("The amount of time, in hours, that an invite to a faction is valid.")
+                .setDefaultValue(24)
+                .isInteger(),
             new ConfigOptionBuilder() // officerPerMemberCount
                 .withName("faction.officerPerMemberCount")
                 .withDescription("The number of officers permitted per member in a faction")
