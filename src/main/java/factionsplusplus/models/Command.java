@@ -24,7 +24,10 @@ public class Command {
     private boolean requiresFactionOfficership;
     private boolean requiresSubCommand;
     private boolean requiresNoFactionMembership;
+    private boolean hideParentCommand;
+    private boolean showSubCommandsSeparately;
     private String executorMethod;
+    private String prefix;
     private LinkedHashMap<String, CommandArgument> arguments = new LinkedHashMap<>();
     private HashMap<String, Command> subcommands = new HashMap<>();
 
@@ -40,9 +43,11 @@ public class Command {
         this.setRequiresFactionOfficership(builder.requiresFactionOfficership);
         this.setRequiresNoFactionMembership(builder.requiresNoFactionMembership);
         this.setRequiresSubCommand(builder.requiresSubCommand);
+        this.setHideParentCommand(builder.hideParentCommand);
+        this.setShowSubCommandsSeparately(builder.showSubCommandsSeparately);
         this.setExecutorMethod(builder.executorMethod);
         for (Map.Entry<String, CommandBuilder> entry : builder.subcommands.entrySet()) {
-            this.addSubCommand(entry.getKey(), new Command(entry.getValue()));
+            this.addSubCommand(entry.getKey(), new Command(entry.getValue()).setPrefix(this.getFullName()));
         }
         for (Map.Entry<String, ArgumentBuilder> entry : builder.arguments.entrySet()) {
             this.addArgument(entry.getKey(), CommandArgument.fromBuilder(entry.getValue()));
@@ -51,6 +56,10 @@ public class Command {
 
     public String getName() {
         return this.name;
+    }
+
+    public String getFullName() {
+        return String.format("%s%s", (this.prefix != null ? this.prefix+" " : ""), this.name);
     }
 
     public String getDescription() {
@@ -91,6 +100,14 @@ public class Command {
 
     public boolean shouldRequireSubCommand() {
         return this.requiresSubCommand;
+    }
+
+    public boolean shouldHideParentCommand() {
+        return this.hideParentCommand;
+    }
+
+    public boolean shouldShowSubCommandsSeparately() {
+        return this.showSubCommandsSeparately;
     }
 
     public String getExecutorMethod() {
@@ -161,6 +178,11 @@ public class Command {
         return this;
     }
 
+    public Command setPrefix(String prefix) {
+        this.prefix = prefix;
+        return this;
+    }
+
     public Command setAliases(String[] aliases) {
         this.aliases = aliases;
         return this;
@@ -208,6 +230,16 @@ public class Command {
 
     public Command setRequiresSubCommand(boolean value) {
         this.requiresSubCommand = value;
+        return this;
+    }
+
+    public Command setShowSubCommandsSeparately(boolean value) {
+        this.showSubCommandsSeparately = value;
+        return this;
+    }
+
+    public Command setHideParentCommand(boolean value) {
+        this.hideParentCommand = value;
         return this;
     }
 
