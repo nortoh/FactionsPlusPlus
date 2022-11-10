@@ -126,7 +126,7 @@ public interface FactionDao {
     ArrayListMultimap<UUID, UUID> getInvitesExpiredAfter(int hours);
 
     @SqlBatch("DELETE FROM faction_invites WHERE player_id = ? AND faction_id IN (?)")
-    void deleteInvites(Collection<UUID> players, Collection<UUID> factions);
+    void deleteInvites(UUID player, Collection<UUID> factions);
 
     // CONFIGURATION FLAGS
     @SqlQuery("""
@@ -284,7 +284,7 @@ public interface FactionDao {
 
     default ArrayListMultimap<UUID, UUID> expireInvitesOlderThan(int hours) {
         ArrayListMultimap<UUID, UUID> expiredInvites = getInvitesExpiredAfter(hours);
-        deleteInvites(expiredInvites.keySet(), expiredInvites.values());
+        expiredInvites.keySet().forEach(player -> deleteInvites(player, expiredInvites.get(player)));
         return expiredInvites;
     }
 }
