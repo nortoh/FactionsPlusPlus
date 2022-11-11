@@ -13,21 +13,18 @@ import factionsplusplus.models.Command;
 import factionsplusplus.models.CommandContext;
 import factionsplusplus.models.Faction;
 import factionsplusplus.services.DataService;
-import factionsplusplus.utils.StringUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
 import factionsplusplus.builders.CommandBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Singleton
 public class MapCommand extends Command {
-    private final char[] map_keys = "\\/#$%=&^ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789abcdeghjmnopqrsuvwxyz?".toCharArray();
-
     private final DataService dataService;
 
     @Inject
@@ -43,7 +40,6 @@ public class MapCommand extends Command {
         this.dataService = dataService;
     }
 
-    // TODO: this can really slow down the server, probably refactor... (running in another thread helps)
     public void execute(CommandContext context) {
         final Chunk center = context.getPlayer().getLocation().getChunk();
         // Needs to be Odd.
@@ -55,95 +51,51 @@ public class MapCommand extends Command {
         final int bottomRightX = center.getX() + (map_width / 2);
         final int bottomRightZ = center.getZ() + (map_height / 2);
         final Faction faction = context.getExecutorsFaction();
-        final boolean hasFaction = faction != null;
-        final HashMap<String, Integer> printedHolders = new HashMap<>();
-        final HashMap<String, String> colourMap = new HashMap<>();
-        context.reply(FontMetrics.obtainCenteredMessage("&fNorth"));
+        context.reply(FontMetrics.obtainCenteredMessage(String.format("&f%s", context.getLocalizedString("Generic.Compass.North"))));
         Bukkit.getScheduler().runTaskAsynchronously(context.getPlugin(), task -> {
-            for (int z = topLeftZ; z <= bottomRightZ; z++) {
-                final StringBuilder line = new StringBuilder();
-                for (int x = topLeftX; x <= bottomRightX; x++) {
-                    Chunk tmp = center.getWorld().getChunkAt(x, z);
-                    if (dataService.isChunkClaimed(tmp)) {
-                        ClaimedChunk chunk = dataService.getClaimedChunk(tmp);
-                        Faction chunkHolder = dataService.getFaction(chunk.getHolder());
-                        printedHolders.put(chunkHolder.getName(), printedHolders.getOrDefault(chunkHolder.getName(), 0) + 1);
-                        int index = getIndex(chunkHolder.getName(), printedHolders);
-                        char map_key = index == -1 ? '§' : map_keys[index];
-                        if (hasFaction) {
-                            String colour;
-                            if (chunk.getChunk().equals(center)) {
-                                colour = "&5"; // If the current position is the player-position, make it purple.
-                                map_key = '+';
-                                printedHolders.put(chunkHolder.getName(), printedHolders.get(chunkHolder.getName()) - 1);
-                            } else if (faction != null && chunkHolder.getName().equals(faction.getName())) {
-                                colour = "&a"; // If the faction is the player-faction, make it green.
-                                map_key = '+';
-                            } else if (faction != null && faction.isEnemy(chunk.getHolder())) {
-                                colour = "&c"; // If they are an enemy to the player-faction, make it red.
-                                colourMap.put(chunkHolder.getName(), "&c");
-                            } else if (faction != null && faction.isAlly(chunk.getHolder())) {
-                                colour = "&b"; // If they are an ally to the player-faction, make it blue.
-                                colourMap.put(chunkHolder.getName(), "&b");
-                            } else {
-                                colour = "&f"; // Default to White.
-                                colourMap.put(chunkHolder.getName(), "&f");
+            List<String> mapLines = IntStream.rangeClosed(topLeftZ, bottomRightZ).boxed().map(zCoord -> {
+                return IntStream.rangeClosed(topLeftX, bottomRightX).boxed().map(xCoord -> { // Represents a row
+                    ClaimedChunk chunk = dataService.getClaimedChunk(xCoord, zCoord, context.getPlayer().getWorld().getUID());
+                    boolean isPlayersChunk = center.getX() == xCoord && center.getZ() == zCoord && center.getWorld().equals(context.getPlayer().getWorld());
+                    String color = "gray";
+                    String key = "-";
+                    String hoverText = "<color:green><lang:Generic.Unclaimed>";
+                    // Chunk is claimed
+                    if (chunk != null) {
+                        String relation = "";
+                        if (faction != null) {
+                            color = "white";
+                            if (chunk.getHolder().equals(faction.getUUID())) color = "green";
+                            if (faction.isEnemy(chunk.getHolder())) {
+                                color = "red";
+                                relation = "Generic.Relation.Enemy";
                             }
-                            line.append(colour);
-                        } else {
-                            line.append("&c"); // Always default to Enemy.
-                        }
-                        line.append(map_key);
-                    } else {
-                        if (tmp.equals(center)) {
-                            line.append("&5+"); // If the current position is the player-position, make it purple.
-                        } else {
-                            line.append("&7-"); // Gray for no Faction.
-                        }
-                    }
-                }
-                // TODO: new messaging api
-                context.reply(StringUtils.colorize(line.toString()));
-            }
-            // TODO: new messaging api
-            context.reply(StringUtils.colorize(" &5+&7 = You"));
-            final List<String> added = new ArrayList<>();
-            int index = 0;
-            for (String printedHolder : printedHolders.keySet()) {
-                if (!(printedHolders.get(printedHolder) <= 0)) {
-                    String line;
-                    try {
-                        if (faction != null && printedHolder.equalsIgnoreCase(faction.getName())) {
-                            line = "&a+&7 = " + printedHolder;
-                        } else {
-                            if (hasFaction) {
-                                line = colourMap.get(printedHolder) + map_keys[index] + "&7 = " + printedHolder;
-                            } else {
-                                line = "&c" + map_keys[index] + "&7 = " + printedHolder;
+                            if (faction.isAlly(chunk.getHolder())) {
+                                color = "blue";
+                                relation = "Generic.Relation.Ally";
                             }
+                            if (faction.isVassal(chunk.getHolder())) {
+                                color = "aqua";
+                                relation = "Generic.Relation.Vassal";
+                            }
+                            if (faction.isLiege(chunk.getHolder())) {
+                                color = "gold";
+                                relation = "Generic.Relation.Liege";
+                            }
+                            if (relation.length() > 0) relation = String.format("(%s) ", context.getLocalizedString(relation));
                         }
-                    } catch (IndexOutOfBoundsException ex) {
-                        line = "&7§ = " + printedHolder;
+                        key = "+";
+                        hoverText = String.format("<color:yellow>%s", context.getLocalizedString("Generic.Claimed", String.format("%s%s", relation, dataService.getFaction(chunk.getHolder()).getName())));
                     }
-                    added.add(line);
-                }
-                index++;
-            }
-            if (! added.isEmpty()) { // We don't wanna send an empty line, so check if the added lines is empty or not.
-                // TODO: new messaging api
-                context.reply(" " + StringUtils.colorize(String.join(", ", added)));
-            }
+                    // Is the players current location
+                    if (isPlayersChunk) {
+                        color = "light_purple";
+                        hoverText = String.format("<color:gold><lang:Generic.YouAreHere>\n\n%s", hoverText);
+                    }
+                    return String.format("<hover:show_text:'%s'><color:%s>%s</color:%s></hover>", hoverText, color, key, color);
+                }).collect(Collectors.joining(""));
+            }).collect(Collectors.toList());
+            mapLines.forEach(context::replyWithMiniMessage);
         });
-    }
-
-    /**
-     * Method to obtain the index of a key in a hashmap.
-     *
-     * @param holder         or key.
-     * @param printedHolders hashmap.
-     * @return integer index or {@code -1}.
-     */
-    private int getIndex(String holder, HashMap<String, Integer> printedHolders) {
-        return new ArrayList<>(printedHolders.keySet()).indexOf(holder);
     }
 }
