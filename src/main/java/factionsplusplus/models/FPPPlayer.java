@@ -254,7 +254,9 @@ public class FPPPlayer implements Identifiable, ForwardingAudience.Single {
     // Calculations
     public double getMaxPower() {
         double initialPowerLevel = this.configService.getDouble("player.power.maximum");
-        switch(GroupRole.getFromLevel(this.dataService.getPlayersFaction(this.uuid).getMember(uuid).getRole())) {
+        Faction playersFaction = this.getFaction();
+        if (playersFaction == null) return initialPowerLevel;
+        switch(GroupRole.getFromLevel(playersFaction.getMember(uuid).getRole())) {
             case Owner:
                 return (double)(initialPowerLevel * this.configService.getDouble("player.power.ownerMultiplier"));
             case Officer:

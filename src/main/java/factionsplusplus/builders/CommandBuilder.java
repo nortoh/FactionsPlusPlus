@@ -17,6 +17,8 @@ public class CommandBuilder {
     public boolean requiresFactionOfficership = false;
     public boolean requiresSubCommand = false;
     public boolean requiresNoFactionMembership = false;
+    public boolean hideParentCommand = false;
+    public boolean showSubCommandsSeparately = false;
     public LinkedHashMap<String, ArgumentBuilder> arguments = new LinkedHashMap<>();
     public HashMap<String, CommandBuilder> subcommands = new HashMap<>();
 
@@ -73,6 +75,16 @@ public class CommandBuilder {
 
     public CommandBuilder requiresSubCommand() {
         this.requiresSubCommand = true;
+        return this;
+    }
+
+    public CommandBuilder shouldShowSubCommandsSeparately() {
+        this.showSubCommandsSeparately = true;
+        return this;
+    }
+
+    public CommandBuilder shouldHideParentCommand() {
+        this.hideParentCommand = true;
         return this;
     }
 
