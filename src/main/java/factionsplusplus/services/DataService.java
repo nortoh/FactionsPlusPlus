@@ -79,6 +79,7 @@ public class DataService {
      */
     public void save() {
         this.playerRepository.persist(); // save player stats
+        this.gateRepository.persist(); // update gate states
         if (this.configService.hasBeenAltered()) this.configService.saveConfigDefaults();
     }
 
