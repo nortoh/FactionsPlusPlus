@@ -12,8 +12,10 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.bukkit.Bukkit.getServer;
 
@@ -121,13 +123,6 @@ public class Gate {
 
     public void setVertical(boolean vertical) {
         this.vertical = vertical;
-    }
-
-    public boolean isIntersecting(Gate gate) {
-        boolean xoverlap = this.coord2.getX() > gate.coord1.getX() && this.coord1.getX() < this.coord2.getX();
-        boolean yoverlap = this.coord2.getY() > gate.coord1.getY() && this.coord1.getY() < gate.coord1.getY();
-        boolean zoverlap = this.coord2.getZ() > gate.coord1.getZ() && this.coord1.getZ() < this.coord2.getZ();
-        return xoverlap && yoverlap && zoverlap;
     }
 
     public int getTopLeftX() {
@@ -252,15 +247,21 @@ public class Gate {
         }
     }
 
-    public ArrayList<Block> getGateBlocks() {
-        ArrayList<Block> blocks = new ArrayList<>();
-        for (int y = this.coord1.getY(); y < this.coord2.getY(); y++) {
-            for (int z = this.coord1.getZ(); z < this.coord2.getZ(); z++) {
-                for (int x = this.coord1.getX(); x < this.coord2.getX(); x++) {
+    public Set<Block> getGateBlocks() {
+        Set<Block> blocks = new HashSet<>();
+        int yMin = Math.min(this.coord1.getY(), this.coord2.getY());
+        int yMax = Math.max(this.coord1.getY(), this.coord2.getY());
+        int zMin = Math.min(this.coord1.getZ(), this.coord2.getZ());
+        int zMax = Math.max(this.coord1.getZ(), this.coord2.getZ());
+        int xMin = Math.min(this.coord1.getX(), this.coord2.getX());
+        int xMax = Math.max(this.coord1.getX(), this.coord2.getX());
+        IntStream.rangeClosed(xMin, xMax).forEach(x -> {
+            IntStream.rangeClosed(yMin, yMax).forEach(y -> {
+                IntStream.rangeClosed(zMin, zMax).forEach(z -> {
                     blocks.add(getWorld().getBlockAt(x, y, z));
-                }
-            }
-        }
+                });
+            });
+        });
         return blocks;
     }
 
