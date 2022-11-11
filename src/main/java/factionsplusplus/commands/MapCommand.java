@@ -59,7 +59,7 @@ public class MapCommand extends Command {
                     boolean isPlayersChunk = center.getX() == xCoord && center.getZ() == zCoord && center.getWorld().equals(context.getPlayer().getWorld());
                     String color = "gray";
                     String key = "-";
-                    String hoverText = "<color:green><lang:Generic.Unclaimed>";
+                    String hoverText = "<color:green><lang:Generic.Wilderness>";
                     // Chunk is claimed
                     if (chunk != null) {
                         String relation = "";
@@ -85,12 +85,12 @@ public class MapCommand extends Command {
                             if (relation.length() > 0) relation = String.format("(%s) ", context.getLocalizedString(relation));
                         }
                         key = "+";
-                        hoverText = String.format("<color:yellow>%s", context.getLocalizedString("Generic.Claimed", String.format("%s%s", relation, dataService.getFaction(chunk.getHolder()).getName())));
+                        hoverText = String.format("<color:yellow>%s", context.getLocalizedString("Generic.Map.Claimed", String.format("%s%s", relation, dataService.getFaction(chunk.getHolder()).getName())));
                     }
                     // Is the players current location
                     if (isPlayersChunk) {
                         color = "light_purple";
-                        hoverText = String.format("<color:gold><lang:Generic.YouAreHere>\n\n%s", hoverText);
+                        hoverText = String.format("<color:gold><lang:Generic.Map.YouAreHere>\n\n%s", hoverText);
                     }
                     return String.format("<hover:show_text:'%s'><color:%s>%s</color:%s></hover>", hoverText, color, key, color);
                 }).collect(Collectors.joining(""));
