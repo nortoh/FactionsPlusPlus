@@ -122,7 +122,6 @@ public class GateService {
         }
 
         if (player.hasPermission("mf.gate")) {
-            // TODO: Check if a gate already exists here, and if it does, print out some info of that existing gate instead of trying to create a new one.
             InteractionContext context = this.ephemeralData.getPlayersPendingInteraction().get(event.getPlayer().getUniqueId());
             if (context == null) return;
             boolean removeFromCreatingPlayers = true;
@@ -137,7 +136,6 @@ public class GateService {
             ) {
                 stepNumber = 1;
                 nextMessage = "PlayerNotice.Gate.ClickSecondPoint";
-                removeFromCreatingPlayers = true;
             } else if (context.isGateCreating()
                     && context.getGate().getCoord1() != null
                     && context.getGate().getCoord2() == null
@@ -146,7 +144,6 @@ public class GateService {
                 if (! context.getGate().getCoord1().getBlock().equals(clickedBlock)) {
                     stepNumber = 2;
                     nextMessage = "PlayerNotice.Gate.ClickTrigger";
-                    removeFromCreatingPlayers = false;
                 }
             } else if (context.getGate().getCoord2() != null
                     && context.getGate().getTrigger() == null
@@ -165,7 +162,7 @@ public class GateService {
                     return;
                 }
                 stepNumber = 3;
-                nextMessage = "GateCreated";
+                nextMessage = "CommandResponse.Gate.Created";
             }
             if (stepNumber == null) return;
             ErrorCodeAddCoord errorCode = this.addCoord(context.getGate(), clickedBlock);
@@ -173,6 +170,7 @@ public class GateService {
                 switch(errorCode) {
                     case None:
                         confirmedMessage = "PlayerNotice.Gate.PointPlaced";
+                        removeFromCreatingPlayers = false;
                         break;
                     case MaterialMismatch:
                         errorMessage = "Error.Gate.MaterialMismatch";
@@ -192,6 +190,15 @@ public class GateService {
                     default:
                         errorMessage = "Error.Gate.Cancelled";
                         break;
+                }
+                if (stepNumber == 2) {
+                    Gate overlappingGate = this.dataService.getGateRepository().getAnyOverlappingGates(context.getGate());
+                    if (overlappingGate != null) {
+                        member.error("Error.Gate.Overlapping", overlappingGate.getName());
+                        removeFromCreatingPlayers = true;
+                        confirmedMessage = null;
+                        nextMessage = null;
+                    }
                 }
             } else {
                 ClaimedChunk chunk = this.dataService.getClaimedChunk(clickedBlock.getChunk());

@@ -9,12 +9,14 @@ import factionsplusplus.models.Gate;
 import factionsplusplus.data.beans.GateBean;
 import factionsplusplus.data.mappers.GateMapper;
 
+import org.jdbi.v3.sqlobject.statement.SqlBatch;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import java.util.Collection;
 import java.util.List;
 
 public interface GateDao {
@@ -38,8 +40,11 @@ public interface GateDao {
     @SqlUpdate("DELETE FROM faction_gates WHERE id = ?")
     void delete(UUID id);
 
-    @SqlUpdate("UPDATE faction_gates SET name = :getName WHERE id = :getUUID")
+    @SqlUpdate("UPDATE faction_gates SET name = :getName, is_open = :isOpen WHERE id = :getUUID")
     void update(@BindMethods Gate g);
+
+    @SqlBatch("UPDATE faction_gates SET name = :getName, is_open = :isOpen WHERE id = :getUUID")
+    void update(@BindMethods Collection<Gate> gates);
 
     @SqlQuery("SELECT * FROM faction_gates")
     @RegisterRowMapper(GateMapper.class)

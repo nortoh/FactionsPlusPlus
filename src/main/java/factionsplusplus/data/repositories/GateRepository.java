@@ -1,6 +1,7 @@
 package factionsplusplus.data.repositories;
 
 import com.google.inject.Singleton;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 import java.util.List;
@@ -87,7 +88,17 @@ public class GateRepository {
             .orElse(null);
     }
 
+    public Gate getAnyOverlappingGates(Gate gate) {
+        return this.gateStore.values().stream().filter(g -> {
+            return ! Sets.intersection(gate.getGateBlocks(), g.getGateBlocks()).isEmpty();
+        }).findFirst().orElse(null);
+    }
+
     public GateDao getDAO() {
         return this.dataProviderService.getPersistentData().onDemand(GateDao.class);
+    }
+
+    public void persist() {
+        this.getDAO().update(this.gateStore.values());
     }
 }
