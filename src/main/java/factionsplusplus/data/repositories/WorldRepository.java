@@ -42,6 +42,7 @@ public class WorldRepository {
                 .stream()
                 .map(bean -> this.worldFactory.create(bean))
                 .collect(Collectors.toConcurrentMap(w -> w.getUUID(), w -> w));
+            Bukkit.getServer().getWorlds().stream().forEach(this::create);
         } catch(Exception e) {
             this.logger.error(String.format("Error loading worlds: %s", e.getMessage()));
         }
