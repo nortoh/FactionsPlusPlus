@@ -53,7 +53,7 @@ public class DataProviderService {
             final String fileName = this.configService.getString("system.database.name");
             final File path = new File(this.dataPath, fileName);
             configuration.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
-            configuration.addDataSourceProperty("url", String.format("jdbc:h2:file:%s;MODE=MariaDB;AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS factions\\;SET SCHEMA factions", path.toString()));
+            configuration.addDataSourceProperty("url", String.format("jdbc:h2:file:%s;MODE=MYSQL;AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS factions\\;SET SCHEMA factions", path.toString()));
         }
         this.persistentDataSource = new HikariDataSource(configuration);
         this.persistentDataSource.setLogWriter(new PrintWriter(System.out));
