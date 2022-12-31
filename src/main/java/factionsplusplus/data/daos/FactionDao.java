@@ -120,7 +120,7 @@ public interface FactionDao {
     @SqlQuery("SELECT COUNT(1) FROM faction_invites WHERE faction_id = ? AND player_id = ?")
     int getInvite(UUID faction, UUID player);
 
-    @SqlQuery("SELECT player_id, faction_id FROM faction_invites WHERE TIMESTAMPDIFF(HOUR, current_timestamp(), invited_at)) > ?")
+    @SqlQuery("SELECT player_id, faction_id FROM faction_invites WHERE TIMESTAMPDIFF(HOUR, current_timestamp(), invited_at) > ?")
     @KeyColumn("player_id")
     @ValueColumn("faction_id")
     ArrayListMultimap<UUID, UUID> getInvitesExpiredAfter(int hours);
